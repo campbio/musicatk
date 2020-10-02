@@ -124,7 +124,7 @@ drop_annotation <- function(musica, column_name) {
 #' "INS", "DEL") added as an appended "Variant_Type" column
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-#' add_variant_type(musica@variants)
+#' musicatk:::add_variant_type(musica@variants)
 #' @keywords internal
 add_variant_type <- function(tab) {
   type <- rep(NA, nrow(tab))

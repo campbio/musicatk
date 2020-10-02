@@ -52,6 +52,7 @@ setClass("count_table", slots = c(name = "character",
 #' @slot count_tables Summary table with per-sample unnormalized motif counts
 #' @slot sample_annotations Sample-level annotations (e.g. age, sex, primary)
 #' @export
+#' @exportClass musica
 setClass("musica", slots = c(variants = "data.table",
                                  count_tables = "list",
                                  sample_annotations = "data.table"),
@@ -116,7 +117,7 @@ subset_variants_by_samples <- function(musica, sample_name) {
 #' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
 #' sample_annotations <- read.table(system.file("testdata",
 #' "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
-#' set_sample_annotations(musica, sample_annotations)
+#' set_sample_annotations(musica, data.table::data.table(sample_annotations))
 #' @export
 set_sample_annotations <- function(musica, annotations) {
   eval.parent(substitute(musica@sample_annotations <- annotations))
@@ -315,6 +316,7 @@ drop_na_variants <- function(variants, annot_col) {
 #' @slot perplexity Metric of goodness of model fit
 #' @slot umap List of umap data.frames for plotting and analysis
 #' @export
+#' @exportClass musica_result
 setClass("musica_result", representation(signatures = "matrix", exposures = "matrix",
                                   tables = "character",
                                   type = "character", musica = "musica",

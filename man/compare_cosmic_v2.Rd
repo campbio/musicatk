@@ -27,5 +27,5 @@ and whole-genome)
 }
 \examples{
 res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-compare_cosmic_v2(res, threshold = 0.8)
+compare_cosmic_v2(res, threshold = 0.7)
 }

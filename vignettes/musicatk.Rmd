@@ -6,12 +6,12 @@ author:
 - name: Joshua Campbell
   affiliation: *id
   email: camp@bu.edu
-output:
-  BiocStyle::html_document
-vignette: >
-  %\VignetteIndexEntry{Mutational Signature Comprehensive Analysis Toolkit}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+#output:
+#  BiocStyle::html_document
+#vignette: >
+#  %\VignetteIndexEntry{Mutational Signature Comprehensive Analysis Toolkit}
+#  %\VignetteEngine{knitr::rmarkdown}
+#  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE, results = "asis"}
@@ -151,7 +151,7 @@ plot_sample_counts(musica, "SBS96", samples[1])
 Compare to COSMIC signatures by leaving the second result as default
 
 ```{r compare_cosmic}
-#compare_cosmic_v2(result, threshold = 0.78)
+compare_cosmic_v2(result, threshold = 0.72)
 ```
 
 # Predicting exposures using existing signatures

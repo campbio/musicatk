@@ -617,10 +617,6 @@ plot_umap_sigs <- function(result) {
 
 }
 
-
-
-
-
 .addSmallLegend <- function(myPlot, pointSize = 2,
                             textSize = 10, spaceLegend = 0.5) {
   myPlot +

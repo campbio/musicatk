@@ -135,7 +135,7 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @return Returns the comparisons
 #' @examples
 #' res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' compare_cosmic_v2(res, threshold = 0.8)
+#' compare_cosmic_v2(res, threshold = 0.7)
 #' @export
 compare_cosmic_v2 <- function(result, threshold = 0.9, result_name =
                                 deparse(substitute(result))) {
