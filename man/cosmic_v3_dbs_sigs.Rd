@@ -5,7 +5,7 @@
 \alias{cosmic_v3_dbs_sigs}
 \title{COSMIC v3 DBS Genome Signatures Result Object}
 \format{
-An object of class \code{\linkS4class{"musica_result"}}.
+An object of class \code{musica_result}.
 See [predict_exposure()].
 }
 \source{

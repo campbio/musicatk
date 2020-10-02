@@ -5,7 +5,7 @@
 \alias{cosmic_v3_indel_sigs}
 \title{COSMIC v3 Indel Genome Signatures Result Object}
 \format{
-An object of class \code{\linkS4class{"musica_result"}}.
+An object of class \code{musica_result}.
 See [predict_exposure()].
 }
 \source{
