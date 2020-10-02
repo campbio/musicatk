@@ -7,7 +7,7 @@
 plot_sample_counts(musica, table_name, sample_name)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{table_name}{Name of table used for plotting counts}
 

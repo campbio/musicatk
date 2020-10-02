@@ -7,7 +7,7 @@
 set_sample_annotations(musica, annotations)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{annotations}{Sample DataFrame}
 }
@@ -21,5 +21,5 @@ Set sample level annotations for musica object
 musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
 sample_annotations <- read.table(system.file("testdata",
 "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
-set_sample_annotations(musica, sample_annotations)
+set_sample_annotations(musica, data.table::data.table(sample_annotations))
 }

@@ -7,7 +7,7 @@
 get_sample_names(musica)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 }
 \value{
 Returns names of samples in musica object

@@ -7,7 +7,7 @@
 drop_annotation(musica, column_name)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{column_name}{Name of column to drop}
 }

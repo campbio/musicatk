@@ -7,7 +7,7 @@
 annotate_transcript_strand(musica, genome_build, build_table = TRUE)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{genome_build}{Which genome build to use: hg19, hg38, or a custom TxDb
 object}

@@ -7,7 +7,7 @@
 extract_count_tables(musica)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 }
 \value{
 List of count tables objects

@@ -7,7 +7,7 @@
 #'
 #' @usage data(cosmic_v2_sigs)
 #'
-#' @format An object of class \code{\linkS4class{"musica_result"}}
+#' @format An object of class \code{musica_result}
 #' See [predict_exposure()].
 #'
 #' @keywords datasets
@@ -28,7 +28,7 @@
 #'
 #' @usage data(cosmic_v3_sbs_sigs_exome)
 #'
-#' @format An object of class \code{\linkS4class{"musica_result"}}.
+#' @format An object of class \code{musica_result}.
 #' See [predict_exposure()].
 #'
 #' @keywords datasets
@@ -49,7 +49,7 @@
 #'
 #' @usage data(cosmic_v3_sbs_sigs)
 #'
-#' @format An object of class \code{\linkS4class{"musica_result"}}.
+#' @format An object of class \code{musica_result}.
 #' See [predict_exposure()].
 #'
 #' @keywords datasets
@@ -70,7 +70,7 @@
 #'
 #' @usage data(cosmic_v3_dbs_sigs)
 #'
-#' @format An object of class \code{\linkS4class{"musica_result"}}.
+#' @format An object of class \code{musica_result}.
 #' See [predict_exposure()].
 #'
 #' @keywords datasets
@@ -91,7 +91,7 @@
 #'
 #' @usage data(cosmic_v3_indel_sigs)
 #'
-#' @format An object of class \code{\linkS4class{"musica_result"}}.
+#' @format An object of class \code{musica_result}.
 #' See [predict_exposure()].
 #'
 #' @keywords datasets

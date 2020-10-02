@@ -7,7 +7,7 @@
 create_sbs96_table(musica, g, overwrite = FALSE)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{g}{A \linkS4class{BSgenome} object indicating which genome
 reference the variants and their coordinates were derived from.}

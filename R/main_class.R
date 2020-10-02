@@ -52,8 +52,8 @@ setClass("count_table", slots = c(name = "character",
 #' @slot count_tables Summary table with per-sample unnormalized motif counts
 #' @slot sample_annotations Sample-level annotations (e.g. age, sex, primary)
 #' @export
-#' @import data.table BSgenome
-setClass("musica_data", slots = c(variants = "data.table",
+#' @exportClass musica
+setClass("musica", slots = c(variants = "data.table",
                                  count_tables = "list",
                                  sample_annotations = "data.table"),
          prototype = list(variants = data.table::data.table(),
@@ -94,7 +94,7 @@ setClass("musica_data", slots = c(variants = "data.table",
 
 #' Return sample from musica_variant object
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param sample_name Sample name to subset by
 #' @return Returns sample data.frame subset to a single sample
 #' @examples
@@ -110,14 +110,14 @@ subset_variants_by_samples <- function(musica, sample_name) {
 
 #' Set sample level annotations for musica object
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param annotations Sample DataFrame
 #' @return Sets sample_annotations slot {no return}
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
 #' sample_annotations <- read.table(system.file("testdata",
 #' "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
-#' set_sample_annotations(musica, sample_annotations)
+#' set_sample_annotations(musica, data.table::data.table(sample_annotations))
 #' @export
 set_sample_annotations <- function(musica, annotations) {
   eval.parent(substitute(musica@sample_annotations <- annotations))
@@ -125,7 +125,7 @@ set_sample_annotations <- function(musica, annotations) {
 
 #' Initialize sample annotation data.table with sample names from variants
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @return Sets sample_annotations slot {no return}
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
@@ -141,7 +141,7 @@ init_sample_annotations <- function(musica) {
 
 #' Adds sample annotation to musica object with available samples
 #' 
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param annotations table of sample-level annotations to add
 #' @param sample_column name of sample name column
 #' @param columns_to_add which annotation columns to add, defaults to all
@@ -189,7 +189,7 @@ add_sample_annotations <- function(musica, annotations, sample_column =
 
 #' Return sample annotation from musica object
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @return Sets sample_annotations slot {no return}
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
@@ -202,7 +202,7 @@ get_sample_annotations <- function(musica) {
 
 #' Return samples names for musica object
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @return Returns names of samples in musica object
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
@@ -214,7 +214,7 @@ get_sample_names <- function(musica) {
 
 #' Return variants for musica object
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @return Returns variants in musica object
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
@@ -226,7 +226,7 @@ get_variants <- function(musica) {
 
 #' Creates a new musica subsetted to only samples with enough variants
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param table_name Name of table used for subsetting
 #' @param num_counts Minimum sum count value to drop samples
 #' @return Returns a new musica object with sample annotations, count tables,
@@ -256,7 +256,7 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 
 #' Creates a new musica object subsetted to only one value of a sample annotation
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param annot_col Annotation class to use for subsetting
 #' @param annot_names Annotational value to subset to
 #' @return Returns a new musica object with sample annotations, count tables,
@@ -316,9 +316,10 @@ drop_na_variants <- function(variants, annot_col) {
 #' @slot perplexity Metric of goodness of model fit
 #' @slot umap List of umap data.frames for plotting and analysis
 #' @export
+#' @exportClass musica_result
 setClass("musica_result", representation(signatures = "matrix", exposures = "matrix",
                                   tables = "character",
-                                  type = "character", musica = "musica_data",
+                                  type = "character", musica = "musica",
                                   log_lik = "numeric", perplexity = "numeric",
                                   umap = "list"))
 

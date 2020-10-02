@@ -7,7 +7,7 @@
 subset_musica_by_annotation(musica, annot_col, annot_names)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{annot_col}{Annotation class to use for subsetting}
 

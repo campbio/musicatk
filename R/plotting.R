@@ -5,7 +5,7 @@ NULL
 
 #' Return sample from musica object
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param table_name Name of table used for plotting counts
 #' @param sample_name Sample name to plot counts
 #' @return Generates sample plot {no return}
@@ -616,10 +616,6 @@ plot_umap_sigs <- function(result) {
     ggplot2::scale_size_continuous(range = c(0.001, 1))
 
 }
-
-
-
-
 
 .addSmallLegend <- function(myPlot, pointSize = 2,
                             textSize = 10, spaceLegend = 0.5) {

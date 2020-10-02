@@ -7,7 +7,7 @@
 annotate_replication_strand(musica, rep_range, build_table = TRUE)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{rep_range}{A GRanges object with replication timing as metadata}
 

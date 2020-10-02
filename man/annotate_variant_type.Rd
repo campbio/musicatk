@@ -7,7 +7,7 @@
 annotate_variant_type(musica)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 }
 \value{
 None

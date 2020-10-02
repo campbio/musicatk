@@ -18,6 +18,6 @@ Generates a variant type table
 }
 \examples{
 musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-add_variant_type(musica@variants)
+musicatk:::add_variant_type(musica@variants)
 }
 \keyword{internal}

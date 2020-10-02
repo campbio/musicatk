@@ -15,7 +15,7 @@ discover_signatures(
 )
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{table_name}{Name of table used for signature discovery}
 
