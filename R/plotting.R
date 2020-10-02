@@ -100,12 +100,9 @@ plot_signatures <- function(result, no_legend = FALSE, plotly = FALSE,
   annot <- tab@annotation
 
   # Format signatures
-  signatures %>%
-    as.data.frame %>%
-    tibble::rownames_to_column(var = "Motif") %>%
-    tibble::tibble(.name_repair = "minimal") %>%
-    tidyr::gather("var", "val", -"Motif") -> plot_dat
-
+  plot_dat <- reshape2::melt(signatures)
+  colnames(plot_dat) <- c("motif", "signature", "exposure")
+  
   # Add color variable to data
   final_color_variable <- NULL
   if(is.null(color_variable) && !is.null(tab@color_variable)) {
@@ -129,9 +126,9 @@ plot_signatures <- function(result, no_legend = FALSE, plotly = FALSE,
   }
 
   plot_dat %>%
-    ggplot(aes_string(y = "val", x = "Motif", fill = "mutation")) +
+    ggplot(aes_string(y = "exposure", x = "motif", fill = "mutation")) +
     geom_bar(stat = "identity") +
-    facet_grid(factor(var, levels = unique(var), ordered = TRUE) ~ .,
+    facet_grid(factor(signature, ordered = TRUE) ~ .,
                labeller = ggplot2::as_labeller(structure(sig_names, names =
                                               colnames(signatures)))) +
     xlab("Motifs") + ylab("Probability") +
