@@ -1,0 +1,226 @@
+##fileformat=VCFv4.2
+##reference=file://../../hg38.fasta
+##contig=<ID=chr1,length=249250621>
+##contig=<ID=chr1_gl000191_random,length=106433>
+##contig=<ID=chr1_gl000192_random,length=547496>
+##contig=<ID=chr2,length=243199373>
+##contig=<ID=chr3,length=198022430>
+##contig=<ID=chr4,length=191154276>
+##contig=<ID=chr4_ctg9_hap1,length=590426>
+##contig=<ID=chr4_gl000193_random,length=189789>
+##contig=<ID=chr4_gl000194_random,length=191469>
+##contig=<ID=chr5,length=180915260>
+##contig=<ID=chr6,length=171115067>
+##contig=<ID=chr6_apd_hap1,length=4622290>
+##contig=<ID=chr6_cox_hap2,length=4795371>
+##contig=<ID=chr6_dbb_hap3,length=4610396>
+##contig=<ID=chr6_mann_hap4,length=4683263>
+##contig=<ID=chr6_mcf_hap5,length=4833398>
+##contig=<ID=chr6_qbl_hap6,length=4611984>
+##contig=<ID=chr6_ssto_hap7,length=4928567>
+##contig=<ID=chr7,length=159138663>
+##contig=<ID=chr7_gl000195_random,length=182896>
+##contig=<ID=chr8,length=146364022>
+##contig=<ID=chr8_gl000196_random,length=38914>
+##contig=<ID=chr8_gl000197_random,length=37175>
+##contig=<ID=chr9,length=141213431>
+##contig=<ID=chr9_gl000198_random,length=90085>
+##contig=<ID=chr9_gl000199_random,length=169874>
+##contig=<ID=chr9_gl000200_random,length=187035>
+##contig=<ID=chr9_gl000201_random,length=36148>
+##contig=<ID=chr10,length=135534747>
+##contig=<ID=chr11,length=135006516>
+##contig=<ID=chr11_gl000202_random,length=40103>
+##contig=<ID=chr12,length=133851895>
+##contig=<ID=chr13,length=115169878>
+##contig=<ID=chr14,length=107349540>
+##contig=<ID=chr15,length=102531392>
+##contig=<ID=chr16,length=90354753>
+##contig=<ID=chr17,length=81195210>
+##contig=<ID=chr17_ctg5_hap1,length=1680828>
+##contig=<ID=chr17_gl000203_random,length=37498>
+##contig=<ID=chr17_gl000204_random,length=81310>
+##contig=<ID=chr17_gl000205_random,length=174588>
+##contig=<ID=chr17_gl000206_random,length=41001>
+##contig=<ID=chr18,length=78077248>
+##contig=<ID=chr18_gl000207_random,length=4262>
+##contig=<ID=chr19,length=59128983>
+##contig=<ID=chr19_gl000208_random,length=92689>
+##contig=<ID=chr19_gl000209_random,length=159169>
+##contig=<ID=chr20,length=63025520>
+##contig=<ID=chr21,length=48129895>
+##contig=<ID=chr21_gl000210_random,length=27682>
+##contig=<ID=chr22,length=51304566>
+##contig=<ID=chrM,length=16571>
+##contig=<ID=chrUn_gl000211,length=166566>
+##contig=<ID=chrUn_gl000212,length=186858>
+##contig=<ID=chrUn_gl000213,length=164239>
+##contig=<ID=chrUn_gl000214,length=137718>
+##contig=<ID=chrUn_gl000215,length=172545>
+##contig=<ID=chrUn_gl000216,length=172294>
+##contig=<ID=chrUn_gl000217,length=172149>
+##contig=<ID=chrUn_gl000218,length=161147>
+##contig=<ID=chrUn_gl000219,length=179198>
+##contig=<ID=chrUn_gl000220,length=161802>
+##contig=<ID=chrUn_gl000221,length=155397>
+##contig=<ID=chrUn_gl000222,length=186861>
+##contig=<ID=chrUn_gl000223,length=180455>
+##contig=<ID=chrUn_gl000224,length=179693>
+##contig=<ID=chrUn_gl000225,length=211173>
+##contig=<ID=chrUn_gl000226,length=15008>
+##contig=<ID=chrUn_gl000227,length=128374>
+##contig=<ID=chrUn_gl000228,length=129120>
+##contig=<ID=chrUn_gl000229,length=19913>
+##contig=<ID=chrUn_gl000230,length=43691>
+##contig=<ID=chrUn_gl000231,length=27386>
+##contig=<ID=chrUn_gl000232,length=40652>
+##contig=<ID=chrUn_gl000233,length=45941>
+##contig=<ID=chrUn_gl000234,length=40531>
+##contig=<ID=chrUn_gl000235,length=34474>
+##contig=<ID=chrUn_gl000236,length=41934>
+##contig=<ID=chrUn_gl000237,length=45867>
+##contig=<ID=chrUn_gl000238,length=39939>
+##contig=<ID=chrUn_gl000239,length=33824>
+##contig=<ID=chrUn_gl000240,length=41933>
+##contig=<ID=chrUn_gl000241,length=42152>
+##contig=<ID=chrUn_gl000242,length=43523>
+##contig=<ID=chrUn_gl000243,length=43341>
+##contig=<ID=chrUn_gl000244,length=39929>
+##contig=<ID=chrUn_gl000245,length=36651>
+##contig=<ID=chrUn_gl000246,length=38154>
+##contig=<ID=chrUn_gl000247,length=36422>
+##contig=<ID=chrUn_gl000248,length=39786>
+##contig=<ID=chrUn_gl000249,length=38502>
+##contig=<ID=chrX,length=155270560>
+##contig=<ID=chrY,length=59373566>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic Depths of REF and ALT(s) in the order listed">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
+##FILTER=<ID=panel_of_normals,Description="">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	TCGA-97-7938-01A-11D-2167-08	TCGA-97-7938-10A-01D-2167-08
+chr1	26771167	.	G	T	.	PASS	.	GT:AD:DP	0/1:28,15:43	0/0:.,.:34
+chr1	41070596	.	T	A	.	PASS	.	GT:AD:DP	0/1:80,31:111	0/0:.,.:81
+chr1	94108667	.	C	T	.	PASS	.	GT:AD:DP	0/1:47,16:63	0/0:.,.:81
+chr1	152664370	.	C	A	.	PASS	.	GT:AD:DP	0/1:124,39:163	0/0:.,.:122
+chr1	158548005	.	G	T	.	PASS	.	GT:AD:DP	0/1:27,9:36	0/0:.,.:26
+chr1	175403525	.	C	A	.	PASS	.	GT:AD:DP	0/1:199,64:263	0/0:.,.:185
+chr1	176671022	.	C	T	.	PASS	.	GT:AD:DP	0/1:223,17:240	0/0:.,.:219
+chr1	180271709	.	T	C	.	PASS	.	GT:AD:DP	0/1:24,13:37	0/0:.,.:14
+chr1	201365296	.	C	G	.	PASS	.	GT:AD:DP	0/1:215,26:241	0/0:.,.:169
+chr1	209638534	.	C	A	.	PASS	.	GT:AD:DP	0/1:57,40:97	0/0:.,.:78
+chr1	241996253	.	G	T	.	PASS	.	GT:AD:DP	0/1:111,19:130	0/0:.,.:103
+chr1	247605723	.	C	G	.	PASS	.	GT:AD:DP	0/1:134,111:245	0/0:.,.:188
+chr2	27131801	.	T	C	.	PASS	.	GT:AD:DP	0/1:156,53:209	0/0:.,.:201
+chr2	29207214	.	C	A	.	PASS	.	GT:AD:DP	0/1:56,27:83	0/0:.,.:62
+chr2	80604104	.	T	A	.	PASS	.	GT:AD:DP	0/1:32,18:50	0/0:.,.:69
+chr2	119452046	.	C	A	.	PASS	.	GT:AD:DP	0/1:31,17:48	0/0:.,.:31
+chr2	130598694	.	G	A	.	PASS	.	GT:AD:DP	0/1:61,9:70	0/0:.,.:84
+chr2	154855246	.	G	T	.	PASS	.	GT:AD:DP	0/1:17,10:27	0/0:.,.:16
+chr2	210616444	.	C	A	.	PASS	.	GT:AD:DP	0/1:64,26:90	0/0:.,.:75
+chr2	214575698	.	A	G	.	PASS	.	GT:AD:DP	0/1:146,57:203	0/0:.,.:172
+chr2	218668106	.	C	A	.	panel_of_normals	.	GT:AD:DP	0/1:279,143:422	0/0:.,.:362
+chr3	12909274	.	C	A	.	PASS	.	GT:AD:DP	0/1:112,29:141	0/0:.,.:144
+chr3	69028256	.	T	A	.	PASS	.	GT:AD:DP	0/1:35,7:42	0/0:.,.:40
+chr3	73383706	.	G	C	.	PASS	.	GT:AD:DP	0/1:45,13:58	0/0:.,.:62
+chr3	89341072	.	G	A	.	PASS	.	GT:AD:DP	0/1:99,24:123	0/0:.,.:146
+chr3	108460348	.	C	T	.	PASS	.	GT:AD:DP	0/1:13,6:19	0/0:.,.:9
+chr4	86226	.	C	T	.	PASS	.	GT:AD:DP	0/1:33,14:47	0/0:.,.:44
+chr4	898096	.	C	A	.	PASS	.	GT:AD:DP	0/1:26,12:38	0/0:.,.:30
+chr4	65601710	.	C	A	.	PASS	.	GT:AD:DP	0/1:77,24:101	0/0:.,.:89
+chr4	67833360	.	A	T	.	PASS	.	GT:AD:DP	0/1:155,87:242	0/0:.,.:134
+chr4	82827438	.	G	T	.	PASS	.	GT:AD:DP	0/1:93,40:133	0/0:.,.:117
+chr4	90308702	.	G	T	.	PASS	.	GT:AD:DP	0/1:11,3:14	0/0:.,.:10
+chr5	9051894	.	A	G	.	PASS	.	GT:AD:DP	0/1:79,26:105	0/0:.,.:79
+chr5	31401387	.	C	A	.	PASS	.	GT:AD:DP	0/1:71,22:93	0/0:.,.:86
+chr5	55285806	.	C	A	.	PASS	.	GT:AD:DP	0/1:26,6:32	0/0:.,.:27
+chr5	126550234	.	G	C	.	PASS	.	GT:AD:DP	0/1:35,13:48	0/0:.,.:76
+chr5	134807846	.	G	A	.	PASS	.	GT:AD:DP	0/1:36,13:49	0/0:.,.:56
+chr5	141102259	.	G	T	.	PASS	.	GT:AD:DP	0/1:65,31:96	0/0:.,.:94
+chr5	141224055	.	G	A	.	PASS	.	GT:AD:DP	0/1:46,26:72	0/0:.,.:71
+chr5	157163053	.	G	C	.	panel_of_normals	.	GT:AD:DP	0/1:52,7:59	0/0:.,.:52
+chr5	159096353	.	G	C	.	PASS	.	GT:AD:DP	0/1:26,6:32	0/0:.,.:27
+chr5	179272959	.	G	T	.	PASS	.	GT:AD:DP	0/1:61,24:85	0/0:.,.:70
+chr6	8064403	.	C	T	.	PASS	.	GT:AD:DP	0/1:17,3:20	0/0:.,.:16
+chr6	54940499	.	G	C	.	PASS	.	GT:AD:DP	0/1:71,17:88	0/0:.,.:72
+chr6	65789185	.	G	T	.	PASS	.	GT:AD:DP	0/1:20,8:28	0/0:.,.:33
+chr6	121294569	.	C	A	.	PASS	.	GT:AD:DP	0/1:34,29:63	0/0:.,.:73
+chr6	167826280	.	C	A	.	PASS	.	GT:AD:DP	0/1:161,104:265	0/0:.,.:361
+chr7	23260497	.	C	A	.	PASS	.	GT:AD:DP	0/1:59,23:82	0/0:.,.:77
+chr7	48036323	.	T	TA	.	PASS	.	GT:AD:DP	0/1:6,4:10	0/0:.,.:10
+chr7	55646820	.	G	C	.	PASS	.	GT:AD:DP	0/1:44,17:61	0/0:.,.:86
+chr8	47969965	.	T	G	.	PASS	.	GT:AD:DP	0/1:53,17:70	0/0:.,.:111
+chr8	132184282	.	C	A	.	panel_of_normals	.	GT:AD:DP	0/1:96,70:166	0/0:.,.:122
+chr8	142314409	.	G	A	.	PASS	.	GT:AD:DP	0/1:28,11:39	0/0:.,.:34
+chr8	142840432	.	G	C	.	PASS	.	GT:AD:DP	0/1:41,27:68	0/0:.,.:72
+chr9	32541403	.	T	C	.	PASS	.	GT:AD:DP	0/1:32,12:44	0/0:.,.:37
+chr9	32635373	.	C	T	.	PASS	.	GT:AD:DP	0/1:85,28:113	0/0:.,.:113
+chr9	66989961	.	G	T	.	PASS	.	GT:AD:DP	0/1:92,25:117	0/0:.,.:458
+chr9	104504854	.	A	T	.	PASS	.	GT:AD:DP	0/1:141,78:219	0/0:.,.:244
+chr9	116353625	.	G	A	.	PASS	.	GT:AD:DP	0/1:69,26:95	0/0:.,.:101
+chr9	122093379	.	C	T	.	PASS	.	GT:AD:DP	0/1:15,6:21	0/0:.,.:14
+chr10	30027555	.	C	G	.	PASS	.	GT:AD:DP	0/1:72,7:79	0/0:.,.:74
+chr10	68886492	.	A	T	.	PASS	.	GT:AD:DP	0/1:40,16:56	0/0:.,.:47
+chr10	100993276	.	G	C	.	PASS	.	GT:AD:DP	0/1:151,11:162	0/0:.,.:144
+chr11	433355	.	G	T	.	panel_of_normals	.	GT:AD:DP	0/1:44,27:71	0/0:.,.:78
+chr11	4914753	.	A	T	.	PASS	.	GT:AD:DP	0/1:31,8:39	0/0:.,.:31
+chr11	55819987	.	G	A	.	PASS	.	GT:AD:DP	0/1:105,33:138	0/0:.,.:137
+chr11	113207845	.	G	A	.	PASS	.	GT:AD:DP	0/1:5,3:8	0/0:.,.:26
+chr12	50994730	.	A	AATG	.	PASS	.	GT:AD:DP	0/1:2,2:4	0/0:.,.:8
+chr12	55129776	.	G	T	.	PASS	.	GT:AD:DP	0/1:54,13:67	0/0:.,.:60
+chr12	81347666	.	G	T	.	PASS	.	GT:AD:DP	0/1:115,32:147	0/0:.,.:105
+chr12	91108643	.	A	T	.	PASS	.	GT:AD:DP	0/1:31,11:42	0/0:.,.:38
+chr12	118138075	.	C	G	.	PASS	.	GT:AD:DP	0/1:29,3:32	0/0:.,.:29
+chr13	21155139	.	C	A	.	PASS	.	GT:AD:DP	0/1:21,3:24	0/0:.,.:34
+chr13	49702473	.	C	T	.	PASS	.	GT:AD:DP	0/1:14,5:19	0/0:.,.:26
+chr13	52024294	.	T	TG	.	PASS	.	GT:AD:DP	0/1:56,28:84	0/0:.,.:108
+chr13	102849182	.	C	G	.	PASS	.	GT:AD:DP	0/1:32,4:36	0/0:.,.:28
+chr14	29578316	.	G	A	.	PASS	.	GT:AD:DP	0/1:12,7:19	0/0:.,.:42
+chr14	77306345	.	T	A	.	PASS	.	GT:AD:DP	0/1:37,8:45	0/0:.,.:34
+chr14	93612828	.	T	TA	.	PASS	.	GT:AD:DP	0/1:44,11:55	0/0:.,.:72
+chr15	22903722	.	T	A	.	PASS	.	GT:AD:DP	0/1:79,33:112	0/0:.,.:114
+chr15	25201247	.	A	G	.	PASS	.	GT:AD:DP	0/1:61,4:65	0/0:.,.:81
+chr15	101751624	.	G	T	.	PASS	.	GT:AD:DP	0/1:43,14:57	0/0:.,.:68
+chr16	590413	.	C	T	.	PASS	.	GT:AD:DP	0/1:24,4:28	0/0:.,.:23
+chr16	2206184	.	C	T	.	PASS	.	GT:AD:DP	0/1:62,28:90	0/0:.,.:77
+chr16	10180152	.	C	A	.	PASS	.	GT:AD:DP	0/1:92,35:127	0/0:.,.:119
+chr16	18838188	.	C	A	.	PASS	.	GT:AD:DP	0/1:18,4:22	0/0:.,.:14
+chr16	50305526	.	C	T	.	PASS	.	GT:AD:DP	0/1:215,23:238	0/0:.,.:238
+chr16	71064732	.	G	A	.	PASS	.	GT:AD:DP	0/1:28,9:37	0/0:.,.:38
+chr18	45669347	.	G	T	.	PASS	.	GT:AD:DP	0/1:167,68:235	0/0:.,.:197
+chr18	58536494	.	C	A	.	PASS	.	GT:AD:DP	0/1:88,24:112	0/0:.,.:117
+chr19	8950550	.	G	C	.	PASS	.	GT:AD:DP	0/1:39,4:43	0/0:.,.:34
+chr19	33512730	.	G	T	.	PASS	.	GT:AD:DP	0/1:43,13:56	0/0:.,.:71
+chr19	37363218	.	G	T	.	PASS	.	GT:AD:DP	0/1:76,26:102	0/0:.,.:99
+chr19	37363442	.	G	A	.	PASS	.	GT:AD:DP	0/1:38,9:47	0/0:.,.:49
+chr19	42215133	.	C	G	.	PASS	.	GT:AD:DP	0/1:87,25:112	0/0:.,.:115
+chr19	45786562	.	G	A	.	PASS	.	GT:AD:DP	0/1:38,17:55	0/0:.,.:54
+chr19	47367085	.	C	A	.	PASS	.	GT:AD:DP	0/1:16,7:23	0/0:.,.:61
+chr19	48326863	.	G	T	.	PASS	.	GT:AD:DP	0/1:202,66:268	0/0:.,.:265
+chr19	53807563	.	C	A	.	PASS	.	GT:AD:DP	0/1:54,17:71	0/0:.,.:57
+chr19	55174630	.	G	T	.	PASS	.	GT:AD:DP	0/1:56,23:79	0/0:.,.:103
+chr19	57356400	.	A	G	.	PASS	.	GT:AD:DP	0/1:55,26:81	0/0:.,.:55
+chr20	2794403	.	C	G	.	PASS	.	GT:AD:DP	0/1:56,18:74	0/0:.,.:68
+chr20	33037577	.	C	A	.	PASS	.	GT:AD:DP	0/1:61,30:91	0/0:.,.:88
+chr20	56248946	.	T	A	.	PASS	.	GT:AD:DP	0/1:98,49:147	0/0:.,.:116
+chr20	62216274	.	G	T	.	PASS	.	GT:AD:DP	0/1:18,11:29	0/0:.,.:23
+chr21	32666572	.	T	G	.	PASS	.	GT:AD:DP	0/1:41,13:54	0/0:.,.:53
+chr21	33554875	.	G	T	.	PASS	.	GT:AD:DP	0/1:22,11:33	0/0:.,.:30
+chr21	34449397	.	C	T	.	PASS	.	GT:AD:DP	0/1:26,19:45	0/0:.,.:39
+chr22	17548326	.	G	T	.	panel_of_normals	.	GT:AD:DP	0/1:10,7:17	0/0:.,.:18
+chr22	21682509	.	G	A	.	PASS	.	GT:AD:DP	0/1:39,4:43	0/0:.,.:50
+chr22	44296729	.	T	A	.	PASS	.	GT:AD:DP	0/1:160,38:198	0/0:.,.:210
+chrX	30235979	.	C	A	.	PASS	.	GT:AD:DP	0/1:56,16:72	0/0:.,.:80
+chrX	30559919	.	G	T	.	PASS	.	GT:AD:DP	0/1:39,14:53	0/0:.,.:62
+chrX	32380661	.	T	A	.	PASS	.	GT:AD:DP	0/1:59,26:85	0/0:.,.:79
+chrX	53552742	.	C	G	.	PASS	.	GT:AD:DP	0/1:43,24:67	0/0:.,.:51
+chrX	56565194	.	G	T	.	PASS	.	GT:AD:DP	0/1:45,16:61	0/0:.,.:67
+chrX	70853249	.	G	T	.	PASS	.	GT:AD:DP	0/1:21,10:31	0/0:.,.:50
+chrX	103076266	.	G	T	.	PASS	.	GT:AD:DP	0/1:92,25:117	0/0:.,.:97
+chrX	111708239	.	C	A	.	PASS	.	GT:AD:DP	0/1:31,12:43	0/0:.,.:51
+chrX	119759643	.	G	T	.	PASS	.	GT:AD:DP	0/1:17,5:22	0/0:.,.:18
+chrX	120362128	.	C	A	.	PASS	.	GT:AD:DP	0/1:186,60:246	0/0:.,.:245
+chrX	133217351	.	C	T	.	PASS	.	GT:AD:DP	0/1:55,18:73	0/0:.,.:68
+chrX	150641346	.	G	C	.	PASS	.	GT:AD:DP	0/1:81,40:121	0/0:.,.:89
+chrX	153692102	.	G	T	.	PASS	.	GT:AD:DP	0/1:15,5:20	0/0:.,.:28
+chrX	153935486	.	C	A	.	PASS	.	GT:AD:DP	0/1:111,42:153	0/0:.,.:123
+chrX	154441666	.	C	A	.	PASS	.	GT:AD:DP	0/1:132,6:138	0/0:.,.:107

@@ -1,0 +1,66 @@
+Package: musicatk
+Type: Package
+Title: Mutational Signature Comprehensive Analysis Toolkit
+Version: 0.99.0
+Authors@R: c(person("Aaron", "Chevalier", email = "atgc@bu.edu", role = "cre", comment = c(ORCHID = "0000-0002-3968-9250")), person(given=c("Joshua","D."), family="Campbell", email="camp@bu.edu", role=c("aut"), comment = c(ORCID = "0000-0003-0780-8662")))
+Description: The Mutational Signature TookKit has utilities for extracting variants from a variety of file formats, contains multiple methods for discovery of novel signatures or prediction of known signatures, as well as many types of downstream visualizations for exploratory analysis.
+License: GPL-3
+Encoding: UTF-8
+LazyData: TRUE
+biocViews:
+    Software,
+    BiologicalQuestion,
+    SomaticMutation
+Depends:
+    R (>= 4.0.0), 
+    NMF,
+Imports:
+    SummarizedExperiment,
+    VariantAnnotation,
+    cowplot,
+    Biostrings,
+    base,
+    methods,
+    magrittr,
+    tibble,
+    tidyr,
+    reshape2,
+    gtools,
+    gridExtra,
+    maftools,
+    MCMCprecision,
+    data.table,
+    dplyr,
+    rlang,
+    BSgenome,
+    GenomeInfoDb,
+    GenomicFeatures,
+    GenomicRanges,
+    IRanges,
+    S4Vectors,
+    uwot,
+    ggplot2,
+    stringr,
+    TxDb.Hsapiens.UCSC.hg19.knownGene,
+    TxDb.Hsapiens.UCSC.hg38.knownGene,
+    BSgenome.Hsapiens.UCSC.hg19,
+    BSgenome.Hsapiens.UCSC.hg38,
+    BSgenome.Mmusculus.UCSC.mm9,
+    BSgenome.Mmusculus.UCSC.mm10,
+    deconstructSigs,
+    decompTumor2Sig,
+    topicmodels,
+    ggrepel,
+    withr,
+    plotly
+Suggests:
+    testthat,
+    BiocStyle,
+    knitr,
+    rmarkdown,
+    survival,
+    XVector,
+    qpdf,
+    covr
+RoxygenNote: 7.1.1
+VignetteBuilder: knitr
