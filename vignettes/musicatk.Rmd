@@ -35,7 +35,7 @@ To install the latest version from Github, use the following code:
 
 ```{r, eval = FALSE}
 library(devtools)
-install_github("campbio/musicatk")
+#install_github("campbio/musicatk")
 ```
 
 The package can be loaded using the `library` command.

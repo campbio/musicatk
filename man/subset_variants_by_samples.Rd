@@ -7,7 +7,7 @@
 subset_variants_by_samples(musica, sample_name)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{sample_name}{Sample name to subset by}
 }

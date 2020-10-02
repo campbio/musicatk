@@ -5,7 +5,7 @@ NULL
 
 #' Return sample from musica object
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param table_name Name of table used for plotting counts
 #' @param sample_name Sample name to plot counts
 #' @return Generates sample plot {no return}

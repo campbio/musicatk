@@ -7,7 +7,7 @@
 get_sample_annotations(musica)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 }
 \value{
 Sets sample_annotations slot {no return}

@@ -7,7 +7,7 @@
 create_dbs_table(musica, overwrite = overwrite)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{overwrite}{Overwrite existing count table}
 }

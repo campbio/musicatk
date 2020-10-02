@@ -701,8 +701,8 @@ create_musica <- function(x, genome,
     .check_variant_ref_in_genome(dt = dt, genome = genome)
   }
 
-  # Create and return a musica_data object
-  musica <- new("musica_data", variants = dt)
+  # Create and return a musica object
+  musica <- new("musica", variants = dt)
   return(musica)
 }
 

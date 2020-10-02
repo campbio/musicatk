@@ -11,7 +11,7 @@ combine_predict_grid(grid_list, musica, signature_res)
 \item{grid_list}{A list of result objects from the prediction grid to
 combine into a single result}
 
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{signature_res}{Signatures to automatically subset from for prediction}
 }

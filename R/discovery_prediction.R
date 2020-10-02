@@ -3,7 +3,7 @@ NULL
 
 #' Discovers signatures and weights from a table of counts using NMF
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param table_name Name of table used for signature discovery
 #' @param num_signatures Number of signatures to discover, k
 #' @param method Discovery of new signatures using either LDA or NMF
@@ -21,8 +21,8 @@ NULL
 discover_signatures <- function(musica, table_name = NULL, num_signatures,
                                 method="lda", seed = 1, nstart = 1,
                                 par_cores = FALSE) {
-  if (!methods::is(musica, "musica_data")) {
-    stop("Input to discover_signatures must be a 'musica_data' object.")
+  if (!methods::is(musica, "musica")) {
+    stop("Input to discover_signatures must be a 'musica' object.")
   }
   counts_table <- .extract_count_table(musica, table_name)
   present_samples <- which(colSums(counts_table) > 0)
@@ -89,7 +89,7 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
 
 #' LDA prediction of samples based on existing signatures
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
 #' @param table_name Name of table used for posterior prediction.
@@ -403,7 +403,7 @@ whichSignatures <- function(tumor_ref = NA,
 
 #' Generate result_grid from musica based on annotation and range of k
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param table_name Name of table used for signature discovery
 #' @param discovery_type Algorithm for signature discovery
 #' @param annotation Sample annotation to split results into
@@ -584,7 +584,7 @@ auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
 
 #' Automatic filtering of inactive signatures
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param table_name Name of table used for posterior prediction (e.g. SBS96)
 #' @param signature_res Signatures to automatically subset from for prediction
 #' @param algorithm Algorithm to use for prediction. Choose from
@@ -621,7 +621,7 @@ auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
 #'
 #' @param grid_list A list of result objects from the prediction grid to
 #' combine into a single result
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param signature_res Signatures to automatically subset from for prediction
 #' @return A result object combining all samples and signatures from a
 #' prediction grid. Samples have zero exposure value for signatures not found

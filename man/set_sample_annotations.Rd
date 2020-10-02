@@ -7,7 +7,7 @@
 set_sample_annotations(musica, annotations)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{annotations}{Sample DataFrame}
 }

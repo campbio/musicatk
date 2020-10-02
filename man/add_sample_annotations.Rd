@@ -12,7 +12,7 @@ add_sample_annotations(
 )
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{annotations}{table of sample-level annotations to add}
 

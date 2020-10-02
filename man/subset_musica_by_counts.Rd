@@ -7,7 +7,7 @@
 subset_musica_by_counts(musica, table_name, num_counts)
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{table_name}{Name of table used for subsetting}
 

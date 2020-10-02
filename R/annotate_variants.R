@@ -69,7 +69,7 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
   dat[[output_column]] <- final_mut_context
   eval.parent(substitute(musica@variants <- dat))
   if (build_table) {
-    dat_musica <- methods::new("musica_data", variants = dat, count_tables =
+    dat_musica <- methods::new("musica", variants = dat, count_tables =
                                musica@count_tables,
                              sample_annotations = musica@sample_annotations)
     tab <- build_custom_table(dat_musica, variant_annotation = output_column,
@@ -103,7 +103,7 @@ annotate_variant_length <- function(musica) {
 
 #' Drops a column from the variant table that the user no longer needs
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param column_name Name of column to drop
 #' @return None
 #' @examples
@@ -141,7 +141,7 @@ add_variant_type <- function(tab) {
 
 #' Annotate variants with variant type ("SBS", "INS", "DEl", "DBS")
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @return None
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
@@ -176,7 +176,7 @@ subset_variant_by_type <- function(tab, type) {
 
 #' Add transcript strand annotation to SBS variants (defined in genes only)
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param genome_build Which genome build to use: hg19, hg38, or a custom TxDb
 #' object
 #' @param build_table Automatically build a table from this annotation
@@ -227,7 +227,7 @@ annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE)
   dat[["Transcript_Strand"]] <- final_strand
   eval.parent(substitute(musica@variants <- dat))
   if (build_table) {
-    dat_musica <- methods::new("musica_data", variants = drop_na_variants(
+    dat_musica <- methods::new("musica", variants = drop_na_variants(
       dat, "Transcript_Strand"), count_tables = musica@count_tables,
       sample_annotations = musica@sample_annotations)
     tab <- build_custom_table(musica = dat_musica, variant_annotation =
@@ -239,7 +239,7 @@ annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE)
 
 #' Add replication strand annotation to SBS variants based on bedgraph file
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param rep_range A GRanges object with replication timing as metadata
 #' @param build_table Automatically build a table from this annotation
 #' @return None
@@ -266,7 +266,7 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
   dat[["Replication_Strand"]] <- repl_variants
   eval.parent(substitute(musica@variants <- dat))
   if (build_table) {
-    dat_musica <- methods::new("musica_data", variants = drop_na_variants(
+    dat_musica <- methods::new("musica", variants = drop_na_variants(
       dat, "Replication_Strand"), count_tables = musica@count_tables,
       sample_annotations = musica@sample_annotations)
     tab <- build_custom_table(dat_musica, variant_annotation =

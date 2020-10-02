@@ -1,6 +1,6 @@
 #' Uses a genome object to find context and generate standard SBS96 tables
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
 #' @param overwrite Overwrite existing count table
@@ -207,7 +207,7 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
 
 #' Creates and adds a table for standard doublet base subsitution (DBS)
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created DBS table object
 create_dbs_table <- function(musica, overwrite = overwrite) {
@@ -315,7 +315,7 @@ rc <- function(dna) {
 
 #' Builds a standard table from user variants
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
 #' @param table_name Name of standard table to build SBS96, SBS192, DBS, or

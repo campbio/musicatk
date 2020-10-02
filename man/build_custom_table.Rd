@@ -20,7 +20,7 @@ build_custom_table(
 )
 }
 \arguments{
-\item{musica}{A \code{\linkS4class{musica_data}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{variant_annotation}{User column to use for building table}
 

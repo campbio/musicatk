@@ -30,14 +30,14 @@ table_96 <- function(sample_df) {
 
 #' Extract count tables list from a musica object
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @return List of count tables objects
 #' @export
 extract_count_tables <- function(musica) {
   #Check that object is a musica
-  if (!methods::is(musica, "musica_data")) {
+  if (!methods::is(musica, "musica")) {
     stop(strwrap(prefix = " ", initial = "", "The input object is not a
-    'musica_data' object, please use 'create_musica' to create one."))
+    'musica' object, please use 'create_musica' to create one."))
   }
 
   counts_table <- musica@count_tables
@@ -136,7 +136,7 @@ subset_count_tables <- function(musica, samples) {
 
 #' Builds a custom table from specified user variants
 #'
-#' @param musica A \code{\linkS4class{musica_data}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
 #' @param variant_annotation User column to use for building table
 #' @param name Table name to refer to (must be unique)
 #' @param description Optional description of the table content
