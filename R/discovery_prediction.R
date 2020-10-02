@@ -21,7 +21,7 @@ NULL
 discover_signatures <- function(musica, table_name = NULL, num_signatures,
                                 method="lda", seed = 1, nstart = 1,
                                 par_cores = FALSE) {
-  if (!methods::is(input, "musica_data")) {
+  if (!methods::is(musica, "musica_data")) {
     stop("Input to discover_signatures must be a 'musica_data' object.")
   }
   counts_table <- .extract_count_table(musica, table_name)

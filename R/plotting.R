@@ -90,16 +90,13 @@ plot_signatures <- function(result, no_legend = FALSE, plotly = FALSE,
                             color_variable = NULL, color_mapping = NULL,
                             text_size = 10, facet_size = 10,
                             show_x_labels = TRUE) {
-  #DBS <- FALSE
   signatures <- result@signatures
-  #groups <- reshape2::colsplit(rownames(signatures), "_", names = c("mutation",
-  #                                                                  "context"))
   sig_names <- colnames(signatures)
   table_name <- result@tables
   tab <- result@musica@count_tables[[table_name]]
   annot <- tab@annotation
 
-  # Format signatures
+  # Reorder and format signatures
   plot_dat <- reshape2::melt(signatures)
   colnames(plot_dat) <- c("motif", "signature", "exposure")
   
