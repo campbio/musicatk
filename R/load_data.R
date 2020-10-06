@@ -834,7 +834,7 @@ create_musica <- function(x, genome,
   no_match_sum <- sum(ref[!ix] != genome_ref[!ix])
   if (no_match_sum > 0) {
     warning("Reference bases for ", no_match_sum, " out of ",
-         length(ref), " variantsdid not match the reference base in the ",
+         length(ref), " variants did not match the reference base in the ",
          "'genome'. Make sure the genome reference is correct.")
   }
 }

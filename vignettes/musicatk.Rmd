@@ -169,7 +169,7 @@ pred_cosmic <- predict_exposure(musica = musica, table_name = "SBS96",
                                algorithm = "lda")
 
 plot_signatures(pred_cosmic)
-plot_exposures(pred_cosmic, proportional = TRUE)
+plot_exposures(pred_cosmic, proportional = FALSE)
 ```
 
 Note that if `signatures_to_use` is not supplied by the user, then exposures for all signatures in the result object will be estimated. We can predict exposures from any result object. For example, we can predict using the result object containing the discovered signatures:
