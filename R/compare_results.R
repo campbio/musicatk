@@ -60,11 +60,10 @@ compare_results <- function(result, other_result,
                                                                     drop = FALSE],
                                exposures = matrix(), type = "NMF",
                                musica = other_result@musica, tables = other_result@tables)
-  result_plot <- plot_signatures(result_subset)
-  result_plot <- result_plot + ggplot2::ggtitle(result_name)
-  cosmic_plot <- plot_signatures(other_subset)
-  cosmic_plot <- cosmic_plot + ggplot2::ggtitle(other_result_name)
-  gridExtra::grid.arrange(result_plot, cosmic_plot, ncol = 2)
+
+  .plot_compare_result_signatures(result_subset, other_subset,
+                                  res1_name = result_name,
+                                  res2_name = other_result_name)
   return(comparison)
 }
 
@@ -108,21 +107,20 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   signatures <- result@signatures
   comparison <- sig_compare(signatures, cosmic_res@signatures, threshold)
   result_subset <- methods::new(
-    "musica_result", signatures = result@signatures[, comparison$xindex, drop = FALSE],
+    "musica_result", signatures = result@signatures[, comparison$xindex,
+                                                    drop = FALSE],
     exposures = matrix(), type = "NMF", tables = result@tables,
     musica = result@musica)
   other_subset <- methods::new("musica_result", signatures =
                                  cosmic_res@signatures[, comparison$yindex,
                                                        drop = FALSE],
-                               exposures = matrix(), type = "NMF", tables = cosmic_res@tables,
+                               exposures = matrix(), type = "NMF",
+                               tables = cosmic_res@tables,
                                musica = cosmic_res@musica)
-  result_plot <- plot_signatures(result_subset)
-  result_plot <- result_plot + ggplot2::ggtitle(result_name)
-  cosmic_plot <- plot_signatures(other_subset)
-  cosmic_plot <- cosmic_plot + ggplot2::ggtitle(paste("COSMIC Signatures v3",
-                                                      variant_class, " ",
-                                                      sample_type, sep = ""))
-  gridExtra::grid.arrange(result_plot, cosmic_plot, ncol = 2)
+  
+  .plot_compare_result_signatures(result_subset, other_subset,
+                                  res1_name = result_name,
+                                  res2_name = "COSMIC Signatures (V3)")
   return(comparison)
 }
 
@@ -154,15 +152,10 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, result_name =
                                exposures = matrix(), type = "NMF",
                                musica = cosmic_v2_sigs@musica,
                                tables = cosmic_v2_sigs@tables)
-  result_plot <- plot_signatures(result_subset)
-  legend <- cowplot::get_legend(result_plot)
-  result_plot <- result_plot + ggplot2::ggtitle(result_name) +
-    theme(legend.position = "none")
-  cosmic_plot <- plot_signatures(other_subset)
-  cosmic_plot <- cosmic_plot + ggplot2::ggtitle("COSMIC Signatures v2") +
-    theme(legend.position = "none")
-  gridExtra::grid.arrange(result_plot, cosmic_plot, legend, ncol = 3,
-                          widths = c(0.4, 0.4, 0.2))
+
+  .plot_compare_result_signatures(result_subset, other_subset,
+                                  res1_name = result_name,
+                                  res2_name = "COSMIC Signatures (V2)")
   return(comparison)
 }
 
@@ -203,4 +196,23 @@ cosmic_v2_subtype_map <- function(tumor_type) {
     print(subtypes[partial[i]])
     print(present_sig[[partial[i]]])
   }
+}
+
+
+.plot_compare_result_signatures <- function(res1, res2,
+                                            res1_name = "", res2_name = "") {
+  res1_plot <- plot_signatures(res1, legend = TRUE) +
+    ggplot2::ggtitle(res1_name) 
+  legend <- cowplot::get_legend(res1_plot)
+  res1_plot <- res1_plot + theme(legend.position = "none")
+  
+  res2_plot <- plot_signatures(res2, legend = FALSE) +
+    ggplot2::ggtitle(res2_name)
+  
+  layout <- matrix(seq(2), ncol = 2, nrow = 9, byrow = TRUE)
+  layout <- rbind(layout, c(3,3))
+  g <- gridExtra::grid.arrange(res1_plot, res2_plot, legend,
+                          layout_matrix = layout, ncol = 3,
+                          widths = c(0.45, 0.45, 0.1))
+  return(g)
 }

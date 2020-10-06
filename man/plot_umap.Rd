@@ -7,7 +7,7 @@
 plot_umap(
   result,
   point_size = 0.7,
-  no_legend = FALSE,
+  legend = TRUE,
   label_clusters = TRUE,
   label_size = 3,
   legend_size = 3,
@@ -20,7 +20,7 @@ plot_umap(
 
 \item{point_size}{Scatter plot point size}
 
-\item{no_legend}{Remove legend}
+\item{legend}{Remove legend}
 
 \item{label_clusters}{Add annotation labels to clusters (may not work well
 for split or small clusters)}

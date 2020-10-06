@@ -71,8 +71,7 @@ plot_full <- function(sample) {
 #' Plotting Signature Motif counts/spectra
 #'
 #' @param result S4 Result Object
-#' @param no_legend Remove legend from plot
-#' @param no_legend Remove legend from plot
+#' @param legend Whether to include the legend for mutation types in the plot.
 #' @param plotly add plotly layer for plot interaction
 #' @param color_variable Annotation column to use for coloring plotted motifs,
 #' provided by counts table from input result's musica object
@@ -81,73 +80,60 @@ plot_full <- function(sample) {
 #' @param text_size Size of axis text
 #' @param facet_size Size of facet text
 #' @param show_x_labels Toggle plotting of x-axis labels
+#' @param same_scale If \code{TRUE}, the scale of the probability for each
+#' signature will be the same. If \code{FALSE}, then the scale of the y-axis
+#' will be adjusted for each signature. Default \code{TRUE}.
 #' @return Generates plot {no return}
 #' @examples
 #' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
 #' plot_signatures(result)
 #' @export
-plot_signatures <- function(result, no_legend = FALSE, plotly = FALSE,
+plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
                             color_variable = NULL, color_mapping = NULL,
                             text_size = 10, facet_size = 10,
-                            show_x_labels = TRUE) {
+                            show_x_labels = TRUE,
+                            same_scale = TRUE) {
   signatures <- result@signatures
   sig_names <- colnames(signatures)
   table_name <- result@tables
   tab <- result@musica@count_tables[[table_name]]
   annot <- tab@annotation
 
-  # Reorder and format signatures
-  plot_dat <- reshape2::melt(signatures)
-  colnames(plot_dat) <- c("motif", "signature", "exposure")
-  
-  # Add color variable to data
-  final_color_variable <- NULL
-  if(is.null(color_variable) && !is.null(tab@color_variable)) {
-    color_variable <- tab@color_variable
-  }
-  if(length(color_variable) == 1 && color_variable %in% colnames(annot)) {
-    final_color_variable <- annot[,tab@color_variable]
-  } else if (length(color_variable) == nrow(signatures)) {
-    final_color_variable <- color_variable
-  } else {
-    warning("'color_variable' must be a column in the table annotation: ",
-        paste(colnames(annot), collapse = ", "), ". Or it must be the ",
-       "same length as the number of motifs in the signatures: ",
-       nrow(signatures))
-  }
-  if(!is.null(final_color_variable)) {
-    plot_dat <- cbind(plot_dat, mutation = final_color_variable)
-  }
   if(is.null(color_mapping)) {
     color_mapping <- tab@color_mapping
   }
-
-  plot_dat %>%
-    ggplot(aes_string(y = "exposure", x = "motif", fill = "mutation")) +
+  plot_dat <- .pivot_signatures(signatures, tab,
+                                color_variable = color_variable)
+  
+  # Wether to rescale y axis
+  scales <- ifelse(isTRUE(same_scale), "fixed", "free_y")
+  
+  plot_dat$df %>%
+    ggplot(aes_string(y = "exposure", x = "motif", fill = "mutation_color")) +
     geom_bar(stat = "identity") +
     facet_grid(factor(signature, ordered = TRUE) ~ .,
-               labeller = ggplot2::as_labeller(structure(sig_names, names =
-                                              colnames(signatures)))) +
+               scales = scales,
+               labeller = ggplot2::as_labeller(structure(plot_dat$names,
+                                  names = names(plot_dat$names)))) +
     xlab("Motifs") + ylab("Probability") +
     ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1)) +
     ggplot2::scale_y_continuous(expand = c(0, 0)) +
     ggplot2::scale_fill_manual(values = color_mapping) +
     ggplot2::scale_x_discrete(labels=annot$context) -> p
 
-
-    p <- .gg_default_theme(p, text_size = text_size, facet_size = facet_size) +
+  # Adjust theme
+  p <- .gg_default_theme(p, text_size = text_size, facet_size = facet_size) +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
-
 
   if (!isTRUE(show_x_labels)) {
     p <- p + theme(axis.text.x = element_blank(),
                    axis.ticks.x = element_blank(),
                    panel.grid.major.x = element_blank())
   }
-  if (isTRUE(no_legend)) {
+  if (!isTRUE(legend)) {
     p <- p + theme(legend.position = "none")
   } else {
-    p <- .addSmallLegend(p) + theme(legend.position="top",
+    p <- .addSmallLegend(p) + theme(legend.position="bottom",
                                     legend.title = element_blank())
   }
   if (isTRUE(plotly)) {
@@ -159,67 +145,29 @@ plot_signatures <- function(result, no_legend = FALSE, plotly = FALSE,
 #' Plotting Signature Motif counts/spectra
 #'
 #' @param result S4 Result Object
-#' @param table_name Table to use for reconstruction error plotting
-#' @param sample_number Sample number within result to plot error
+#' @param sample Name or index of sample within result object
 #' @param plotly add plotly layer for plot interaction
 #' @return Generates plot {no return}
 #' @examples
 #' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' plot_sample_reconstruction_error(result, "SBS96", 1)
+#' plot_sample_reconstruction_error(result, "TCGA-ER-A197-06A-32D-A197-08")
 #' @export
-plot_sample_reconstruction_error <- function(result, table_name, sample_number,
+plot_sample_reconstruction_error <- function(result, sample,
                                              plotly = FALSE) {
-  signatures <- .extract_count_table(result@musica, table_name)[, sample_number,
+  signatures <- .extract_count_table(result@musica, result@tables)[, sample,
                                                               drop = FALSE]
   sample_name <- colnames(signatures)
-  reconstructed <- reconstruct_sample(result, sample_number)
-  error <- signatures - reconstructed
-  colnames(error) <- "Error"
-
-  groups <- reshape2::colsplit(rownames(signatures), "_", names = c("mutation",
-                                                                    "context"))
-
-  signatures %>%
-    as.data.frame %>%
-    tibble::rownames_to_column(var = "Motif") %>%
-    tidyr::gather("var", "val", -"Motif") %>%
-    cbind(groups[, "mutation"]) -> plot_dat
-
-  reconstructed %>%
-    as.data.frame %>%
-    tibble::rownames_to_column(var = "Motif") %>%
-    tidyr::gather("var", "val", -"Motif") %>%
-    cbind(groups[, "mutation"]) -> reconstructed_dat
-
-  error %>%
-    as.data.frame %>%
-    tibble::rownames_to_column(var = "Motif") %>%
-    tidyr::gather("var", "val", -"Motif") %>%
-    cbind(groups[, "mutation"]) -> error_dat
-
-  plot_dat <- rbind(plot_dat, reconstructed_dat, error_dat)
-  colnames(plot_dat) <- c("Motif", "var", "val", "mutation")
-  plot_dat$var <- factor(plot_dat$var, levels = c(sample_name, "Reconstructed",
-                                                  "Error"))
-
-  plot_dat %>%
-    ggplot(aes_string(y = "val", x = "Motif", fill = "mutation")) +
-    geom_bar(stat = "identity") + theme_bw() + xlab("Motifs") +
-    ylab("Proportion") + theme(axis.text.x = element_blank(),
-                                                axis.ticks.x = element_blank(),
-                                                strip.text.y =
-                                                  element_text(size = 7),
-                               text = element_text(family = "Courier")) +
-    ggplot2::scale_y_continuous(expand = c(0, 0)) +
-    ggplot2::facet_wrap(~ var, drop = TRUE, scales = "fixed") +
-    ggplot2::scale_x_discrete(breaks = NULL) -> p
-  p <- p + ggplot2::scale_fill_manual(values = c(
-    "#5ABCEBFF", "#050708FF", "#D33C32FF", "#CBCACBFF", "#ABCD72FF",
-    "#E7C9C6FF"))
-  if (plotly) {
-    p <- plotly::ggplotly(p)
-  }
-  return(p)
+  reconstructed <- reconstruct_sample(result, sample)
+  sigs <- cbind(signatures, reconstructed, signatures - reconstructed)
+  colnames(sigs) <- c("Counts", "Reconstructed", "Difference")
+  
+  recontruct_result <- methods::new("musica_result",
+                      signatures = sigs,
+                      exposures = matrix(), type = "NMF",
+                      musica = result@musica,
+                      tables = result@tables)
+  plot_signatures(recontruct_result, same_scale = FALSE) +
+    ggplot2::ggtitle("Reconstruction error", subtitle = sample_name) + ylab("")
 }
 
 #' Plots signature weights for each sample
@@ -233,7 +181,7 @@ plot_sample_reconstruction_error <- function(result, table_name, sample_number,
 #' @param num_samples Number of sorted samples to plot
 #' @param thresh_zero Max level to zero out for better plotting when sorting
 #' by multiple signatures
-#' @param no_legend Don't plot legend
+#' @param legend Don't plot legend
 #' @param plotly add plotly layer for plot interaction
 #' @return Generates plot {no return}
 #' @examples
@@ -244,7 +192,7 @@ plot_exposures <- function(result, proportional = TRUE, label_samples = FALSE,
                            samples_plotted = colnames(result@exposures),
                            sort_samples = "numerical",
                            num_samples = length(colnames(result@exposures)),
-                           thresh_zero = FALSE, no_legend = FALSE,
+                           thresh_zero = FALSE, legend = TRUE,
                            plotly = FALSE) {
   samples <- result@exposures
   if (thresh_zero) {
@@ -317,7 +265,7 @@ plot_exposures <- function(result, proportional = TRUE, label_samples = FALSE,
     p <- p + theme(axis.text.x = element_blank(), axis.ticks.x =
                      element_blank())
   }
-  if (no_legend) {
+  if (isTRUE(legend)) {
     p <- p + theme(legend.position = "none")
   }
   if (plotly) {
@@ -535,7 +483,7 @@ create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
 #'
 #' @param result Result object containing UMAP data.frame
 #' @param point_size Scatter plot point size
-#' @param no_legend Remove legend
+#' @param legend Remove legend
 #' @param label_clusters Add annotation labels to clusters (may not work well
 #' for split or small clusters)
 #' @param label_size Size of cluster labels
@@ -550,7 +498,7 @@ create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
 #' create_umap(result, "Tumor_Subtypes", n_neighbors = 5)
 #' plot_umap(result)
 #' @export
-plot_umap <- function(result, point_size = 0.7, no_legend = FALSE,
+plot_umap <- function(result, point_size = 0.7, legend = TRUE,
                       label_clusters = TRUE, label_size = 3, legend_size = 3,
                       text_box = TRUE, plotly = FALSE) {
   umap_df <- result@umap$umap_df
@@ -563,7 +511,7 @@ plot_umap <- function(result, point_size = 0.7, no_legend = FALSE,
   } else if (label_clusters) {
     p <- ggplot(umap_df, aes_string(x = "x", y = "y", col = "type")) +
       geom_point(size = point_size) + ggplot2::ggtitle("UMAP")
-    if (no_legend) {
+    if (isTRUE(legend)) {
       p <- p + theme(legend.position = "none")
     }
     centroid_list <- lapply(unique(cluster), function(x) {
@@ -616,6 +564,63 @@ plot_umap_sigs <- function(result) {
     ggplot2::scale_size_continuous(range = c(0.001, 1))
 
 }
+
+
+
+# Utility functions -------------------------------
+.pivot_signatures <- function(signatures, tab, sig_names = NULL,
+                              color_variable = NULL) {
+  if(is.null(sig_names)) {
+    sig_names <- colnames(signatures)  
+  }
+  annot <- tab@annotation
+  
+  # Ensure signature colnames are unique
+  # They can not be unique in the sig_compare function if one signature
+  # is matched up against several others in the second result object
+  colnames(signatures) <- paste0(colnames(signatures),
+                                 "-", seq(ncol(signatures)))
+  names(sig_names) <- colnames(signatures)
+    
+  # Rormat signature matrix into long data.frame
+  signatures %>%
+    as.data.frame %>%
+    tibble::rownames_to_column(var = "motif") %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(names(sig_names)),
+                        names_to = "signature",
+                        values_to = "exposure",
+                        names_repair = "minimal") -> df
+  
+  # Check for mutation color variable in annot table
+  final_color_variable <- NULL
+  if(is.null(color_variable) && !is.null(tab@color_variable)) {
+    color_variable <- tab@color_variable
+  }
+  
+  # Set up color variable if supplied as vector or the name of a column in
+  # the table annotation
+  if(length(color_variable) == 1 && color_variable %in% colnames(annot)) {
+    final_color_variable <- annot[df$motif,tab@color_variable]
+  } else if (length(color_variable) == nrow(signatures)) {
+    final_color_variable <- color_variable
+  } else {
+    warning("'color_variable' must be a column in the table annotation: ",
+            paste(colnames(annot), collapse = ", "), ". Or it must be the ",
+            "same length as the number of motifs in the signatures: ",
+            nrow(signatures))
+  }
+  
+  # Save color variable to df if it was specified
+  if(!is.null(final_color_variable)) {
+    df <- cbind(df, mutation_color = final_color_variable)
+  }
+
+  # Make sure signature order is preserved using factor
+  df$signature <- factor(df$signature, levels = names(sig_names))
+  
+  return(list(df = df, names = sig_names))
+}
+
 
 .addSmallLegend <- function(myPlot, pointSize = 2,
                             textSize = 10, spaceLegend = 0.5) {

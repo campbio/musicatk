@@ -6,19 +6,20 @@
 \usage{
 plot_signatures(
   result,
-  no_legend = FALSE,
+  legend = TRUE,
   plotly = FALSE,
   color_variable = NULL,
   color_mapping = NULL,
   text_size = 10,
   facet_size = 10,
-  show_x_labels = TRUE
+  show_x_labels = TRUE,
+  same_scale = TRUE
 )
 }
 \arguments{
 \item{result}{S4 Result Object}
 
-\item{no_legend}{Remove legend from plot}
+\item{legend}{Whether to include the legend for mutation types in the plot.}
 
 \item{plotly}{add plotly layer for plot interaction}
 
@@ -33,6 +34,10 @@ counts table from input result's musica object}
 \item{facet_size}{Size of facet text}
 
 \item{show_x_labels}{Toggle plotting of x-axis labels}
+
+\item{same_scale}{If \code{TRUE}, the scale of the probability for each
+signature will be the same. If \code{FALSE}, then the scale of the y-axis
+will be adjusted for each signature. Default \code{TRUE}.}
 }
 \value{
 Generates plot {no return}
