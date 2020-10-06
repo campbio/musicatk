@@ -1,3 +1,6 @@
+#' @importFrom utils capture.output
+NULL
+
 # Count Tables object/methods -------------------------------
 
 #' Object containing the count table matrices, their names and descriptions
@@ -32,16 +35,28 @@ setClass("count_table", slots = c(name = "character",
                                   color_mapping = "character",
                                   description = "character"))
 
-#setMethod("show", "Count_Tables",
-#          function(object)cat("Count_Tables Object containing: ",
-#                              "\n**Count Tables: \n",
-#                              apply(cbind(do.call("rbind", lapply(
-#                                object@table_list, dim)), "\n"), 1, paste),
-#                              "\n**Names: \n",
-#                              paste(unlist(object@table_name), "\n", sep = ""),
-#                              "\n**Descriptions: \n",
-#                              paste(unlist(object@description), "\n", sep = ""))
-#)
+setMethod("show", "count_table",
+          function(object)    cat("Count_Table: ", object@name,
+                                  c("\nMotifs:", dim(object@count_table)[1], 
+                                    "\nSamples:", dim(object@count_table)[2], 
+                                    "\n"),
+                                    "\n**Annotations: \n",
+                                    paste(capture.output(rbind(head(
+                                      object@annotation), "...")), 
+                                      collapse = "\n"),
+                                    "\n\n**Features: \n",
+                                    paste(capture.output(rbind(head(
+                                      object@features), "...")), 
+                                      collapse = "\n"),
+                                    "\n\n**Types: \n",
+                                    paste0(unique(object@type), "\n"),
+                                    "\n**Color Variable: \n",
+                                    paste0(object@color_variable, "\n"),
+                                    "\n**Color Mapping: \n",
+                                    paste0(object@color_mapping, "\n"),
+                                    "\n**Descriptions: \n",
+                                    paste0(object@description, "\n"))
+          )
 
 # Primary variant object/methods -------------------------------
 
