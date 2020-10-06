@@ -1,4 +1,4 @@
 library("testthat")
-library("BAGEL")
+library("musicatk")
 
-test_check("BAGEL")
+test_check("musicatk")

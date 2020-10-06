@@ -92,7 +92,7 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
                  " `genome` for DBS or Indel", sep = ""))
     }
   } else if (sample_type == "genome") {
-    if (variant_class %in% c("snv", "SNV", "SNV96", "SBS")) {
+    if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       cosmic_res <- cosmic_v3_sbs_sigs
     } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
       cosmic_res <- cosmic_v3_dbs_sigs
