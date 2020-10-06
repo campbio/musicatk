@@ -53,7 +53,7 @@ VCFs and MAFs, 2) selecting the appropriate reference genome 3) creating a music
 Variants can be extracted from various formats using the following functions:
 
 * The `extract_variants_from_vcf_file()` function will extract variants from a [VCF](https://samtools.github.io/hts-specs/) file. The file will be imported using the readVcf function from the [VariantAnnotation](https://bioconductor.org/packages/release/bioc/html/VariantAnnotation.html) package and then the variant information will be extracted from this object.
-* The `extract_variants_from_vcf()` function extracts variants from a `CollapsedVCF``` or `ExpandedVCF` object from the [VariantAnnotation](https://bioconductor.org/packages/release/bioc/html/VariantAnnotation.html) package.
+* The `extract_variants_from_vcf()` function extracts variants from a `CollapsedVCF` or `ExpandedVCF` object from the [VariantAnnotation](https://bioconductor.org/packages/release/bioc/html/VariantAnnotation.html) package.
 * The `extract_variants_from_maf_file()` function will extract variants from a file in [Mutation Annotation Format (MAF)](https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/) used by TCGA.
 * The `extract_variants_from_maf()` function will extract variants from a MAF object created by the [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html) package. 
 * The `extract_variants_from_matrix()` function will get the information from a matrix or data.frame like object that has columns for the chromosome, start position, end position, reference allele, and mutation allele. 
@@ -130,7 +130,7 @@ plot_signatures(result)
 ```
 
 ## Exposures
-**Exposures** are defined as the amount of each signature in each tumor. Barplots showing the exposures in each sample can be plotted:
+**Exposures** are defined as the estimated amount of each signature in each tumor. Barplots showing the exposures in each sample can be plotted:
 ```{r exposures_raw}
 plot_exposures(result, proportional = FALSE)
 ```

@@ -4,19 +4,12 @@
 \alias{plot_sample_reconstruction_error}
 \title{Plotting Signature Motif counts/spectra}
 \usage{
-plot_sample_reconstruction_error(
-  result,
-  table_name,
-  sample_number,
-  plotly = FALSE
-)
+plot_sample_reconstruction_error(result, sample, plotly = FALSE)
 }
 \arguments{
 \item{result}{S4 Result Object}
 
-\item{table_name}{Table to use for reconstruction error plotting}
-
-\item{sample_number}{Sample number within result to plot error}
+\item{sample}{Name or index of sample within result object}
 
 \item{plotly}{add plotly layer for plot interaction}
 }
@@ -28,5 +21,5 @@ Plotting Signature Motif counts/spectra
 }
 \examples{
 result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-plot_sample_reconstruction_error(result, "SBS96", 1)
+plot_sample_reconstruction_error(result, "TCGA-ER-A197-06A-32D-A197-08")
 }
