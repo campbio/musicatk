@@ -6,67 +6,45 @@ NULL
 #' Return sample from musica object
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param table_name Name of table used for plotting counts
-#' @param sample_name Sample name to plot counts
+#' @param sample_names Names or indices of samples to plot.
+#' @param table_name Name of table used for plotting counts. If \code{NULL},
+#' then the first table in the \code{\linkS4class{musica}} object will be used.
+#' Default \code{NULL}.
 #' @return Generates sample plot {no return}
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' plot_sample_counts(musica, "SBS96", get_sample_names(musica)[1])
+#' plot_sample_counts(musica, sample_names = get_sample_names(musica)[1])
 #' @export
-plot_sample_counts <- function(musica, table_name, sample_name) {
-  if (length(sample_name) != 1) {
-    stop("`please specify exactly one sample")
+plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
+
+  if(is.null(table_name)) {
+   table_name <- names(musica@count_tables)[1]
+  }  
+  
+  # Extract counts for specific samples
+  tab <- .extract_count_table(musica, table_name)
+  ix <- match(sample_names, colnames(tab))
+  if(all(is.na(ix))) {
+    stop("The values in 'sample_names' did not match any sample IDs in table '",
+         table_name, "'.")
   }
-  sample_number <- which(get_sample_names(musica = musica) == sample_name)
-  sample <- .extract_count_table(musica, table_name)[, sample_number]
-  plot_full(sample)
+  else if(anyNA(ix)) {
+    warning("The following samples in 'sample_names' were not found  in ",
+            "table '", table_name, 
+            "' and will ", "be exlcuded from the plot: ",
+            paste(sample_names[is.na(ix)], collapse = ", "))
+    ix <- ix[!is.na(ix)]
+  }
+  sample_counts <- tab[, ix, drop = FALSE]
+  
+  result <- methods::new("musica_result",
+                          signatures = sample_counts,exposures = matrix(),
+                          type = "sample", musica = musica,
+                          tables = table_name)
+  g <- plot_signatures(result) + ggplot2::ylab("Mutation Counts")
+  return(g)
 }
 
-#' Complete Plotting of input data
-#'
-#' @param sample Single sample DataFrame
-#' @return Generates sample plot {no return}
-plot_full <- function(sample) {
-  mut_summary <- table_96(sample)
-  major <- table(mut_summary[, "Type"])
-  df <- data.frame(major)
-  mut <- data.frame(table(mut_summary$mutation))
-
-  plot_major <- ggplot(df, aes_string(x = "Var1", y = "Freq",
-                                               fill = "Var1")) + geom_bar(stat =
-                                                               "identity") +
-    theme(axis.text.x = element_text(angle = 70, vjust = 0.5),
-          text = element_text(family = "Courier"), legend.position = "none") +
-    xlab("Major Motif") + ylab("Counts")  + ggplot2::scale_fill_manual(
-      values = c("#5ABCEBFF", "#050708FF", "#D33C32FF", "#CBCACBFF",
-                 "#ABCD72FF", "#E7C9C6FF"))
-
-  df2 <- data.frame(major = substr(mut$Var1, 1, 3), minor =
-                      substr(mut$Var1, 5, 7), num = mut$Freq)
-  df2$major <- as.character(df2$major)
-  df2$minor <- as.character(df2$minor)
-  plot_iris2 <- df2 %>% ggplot(aes_string(y = "num", x = "minor",
-                                          fill = "major")) +
-    ggplot2::facet_grid(~ major, scales = "free_x") +
-    geom_bar(stat = "identity") + cowplot::background_grid(major = "y",
-                                                           minor = "none") +
-    cowplot::panel_border() + theme(axis.text.x = element_text(angle = 90,
-                                                               vjust = 0.5,
-                                                               hjust = 1),
-                                    text = element_text(family = "Courier")) +
-    xlab("Minor Motif") + ylab("Counts") + ggplot2::labs(fill = "SNP") +
-    ggplot2::scale_fill_manual(values = c(
-      "#5ABCEBFF", "#050708FF", "#D33C32FF", "#CBCACBFF", "#ABCD72FF",
-      "#E7C9C6FF"))
-  legend <- cowplot::get_legend(plot_iris2)
-  plot_iris2 <- plot_iris2 + theme(legend.position = "none")
-
-  theme_set(cowplot::theme_cowplot(font_size = 8)) # reduce default font size
-
-  p <- cowplot::plot_grid(plot_iris2, legend, plot_major, labels = "AUTO",
-                          ncol = 2, rel_widths = c(10, 1))
-  return(p)
-}
 
 #' Plotting Signature Motif counts/spectra
 #'
@@ -225,7 +203,7 @@ plot_exposures <- function(result, proportional = TRUE, label_samples = FALSE,
   }else {
     if (!all(sort_samples %in% rownames(samples))) {
       stop("Signature is not present in this result, please choose from: \n",
-           paste0(rownames(samples), collapse = "\n"))
+           paste0(rownames(samples), collapse = ", "))
     }
     if (length(sort_samples) == 1) {
       plot_dat$var <- factor(plot_dat$var, levels =

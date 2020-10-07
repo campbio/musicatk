@@ -54,7 +54,8 @@ extract_count_tables <- function(musica) {
 
   #Check that table exists within this musica
   if (!table_name %in% names(musica@count_tables)) {
-    stop(paste0("'", table_name, "' does not exist. Current table names are: ",
+    stop(paste0("The table '", table_name, "' does not exist. ",
+               "Tables in the 'musica' object include: ",
                 paste(names(musica@count_tables), collapse = ", ")))
   }
 

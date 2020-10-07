@@ -144,7 +144,7 @@ Counts for individual samples can also be plotted:
 
 ```{r sample_counts}
 samples <- get_sample_names(musica)
-plot_sample_counts(musica, "SBS96", samples[1])
+plot_sample_counts(musica, sample_names = samples[c(3,4,5)], table_name = "SBS96")
 ```
 
 ## Comparison to external signatures (e.g. COSMIC)

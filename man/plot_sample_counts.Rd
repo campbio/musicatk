@@ -4,14 +4,16 @@
 \alias{plot_sample_counts}
 \title{Return sample from musica object}
 \usage{
-plot_sample_counts(musica, table_name, sample_name)
+plot_sample_counts(musica, sample_names, table_name = NULL)
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{table_name}{Name of table used for plotting counts}
+\item{sample_names}{Names or indices of samples to plot.}
 
-\item{sample_name}{Sample name to plot counts}
+\item{table_name}{Name of table used for plotting counts. If \code{NULL},
+then the first table in the \code{\linkS4class{musica}} object will be used.
+Default \code{NULL}.}
 }
 \value{
 Generates sample plot {no return}
@@ -21,5 +23,5 @@ Return sample from musica object
 }
 \examples{
 musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-plot_sample_counts(musica, "SBS96", get_sample_names(musica)[1])
+plot_sample_counts(musica, sample_names = get_sample_names(musica)[1])
 }
