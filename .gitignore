@@ -2,9 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
-.Rbuildignore
 .DS_Store
 R/.DS_Store
 validation/
 inst/doc
-musica.Rproj
+musicatk.Rproj
