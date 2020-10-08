@@ -132,12 +132,12 @@ plot_signatures(result)
 ## Exposures
 **Exposures** are defined as the estimated amount of each signature in each tumor. Barplots showing the exposures in each sample can be plotted:
 ```{r exposures_raw}
-plot_exposures(result, proportional = FALSE)
+plot_exposure_bar(result)
 ```
 
 The proportion of each exposure in each tumor can be shown by setting ```proprotional = TRUE```:
 ```{r exposures_prop}
-plot_exposures(result, proportional = TRUE)
+plot_exposure_bar(result, proportional = TRUE)
 ```
 
 Counts for individual samples can also be plotted:
@@ -169,7 +169,7 @@ pred_cosmic <- predict_exposure(musica = musica, table_name = "SBS96",
                                algorithm = "lda")
 
 plot_signatures(pred_cosmic)
-plot_exposures(pred_cosmic, proportional = FALSE)
+plot_exposure_bar(pred_cosmic)
 ```
 
 Note that if `signatures_to_use` is not supplied by the user, then exposures for all signatures in the result object will be estimated. We can predict exposures from any result object. For example, we can predict using the result object containing the discovered signatures:
@@ -204,11 +204,10 @@ add_sample_annotations(musica = musica, annotations = sample_annotations,
 #Add tumor type annotations to our samples
 res <- discover_signatures(musica, table_name = "SBS96", num_signatures = 3)
 
-plot_exposures_by_annotation(res, annotation = "Tumor_Subtypes")
-plot_exposures_by_annotation(res, annotation = "Tumor_Subtypes", 
-                             proportional = FALSE)
-plot_exposures_by_annotation(res, annotation = "Tumor_Subtypes", 
-                             by_group = FALSE)
+plot_exposure_bar(res, annotation = "Tumor_Subtypes")
+plot_exposure_bar(res, annotation = "Tumor_Subtypes", proportional = TRUE)
+plot_exposure_box(res, group_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposure_box(res, plot_type = "box", group_by = "annotation", annotation = "Tumor_Subtypes")
 ```
 
 

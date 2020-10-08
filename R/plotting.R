@@ -148,244 +148,6 @@ plot_sample_reconstruction_error <- function(result, sample,
     ggplot2::ggtitle("Reconstruction error", subtitle = sample_name) + ylab("")
 }
 
-#' Plots signature weights for each sample
-#'
-#' @param result S4 Result Object
-#' @param proportional Whether weights are normalized to sum to 1 or not
-#' @param label_samples Whether to display sample names or not
-#' @param samples_plotted A subset of samples to plot
-#' @param sort_samples Defaults to numerical, may be total 'counts', or a
-#' specific signatures name (e.g. 'Signature1)
-#' @param num_samples Number of sorted samples to plot
-#' @param thresh_zero Max level to zero out for better plotting when sorting
-#' by multiple signatures
-#' @param legend Don't plot legend
-#' @param plotly add plotly layer for plot interaction
-#' @return Generates plot {no return}
-#' @examples
-#' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' plot_exposures(result)
-#' @export
-plot_exposures <- function(result, proportional = TRUE, label_samples = FALSE,
-                           samples_plotted = colnames(result@exposures),
-                           sort_samples = "numerical",
-                           num_samples = length(colnames(result@exposures)),
-                           thresh_zero = FALSE, legend = TRUE,
-                           plotly = FALSE) {
-  samples <- result@exposures
-  if (thresh_zero) {
-    samples[samples < thresh_zero] <- 0
-  }
-  if (!all(samples_plotted %in% colnames(samples))) {
-    stop(strwrap(prefix = " ", initial = "", "Some samples specified are
-    not in this dataset, available samples are as follows: "), "\n",
-         paste0(colnames(samples), collapse = "\n"))
-  }
-  samples <- samples[, samples_plotted, drop = FALSE]
-  y_label <- "counts"
-  counts <- colSums(samples)
-  if (proportional) {
-    y_label <- "%"
-    samples <- sweep(samples, 2, colSums(samples), FUN = "/")
-  }
-  samples %>%
-    as.data.frame %>%
-    tibble::rownames_to_column(var = "make") %>%
-    tidyr::gather("var", "val", -"make") -> plot_dat
-  if (length(sort_samples == 1) && sort_samples == "numerical") {
-    plot_dat$var <- factor(plot_dat$var, levels =
-                             unique(gtools::mixedsort(plot_dat$var)))
-  }else if (length(sort_samples == 1) && sort_samples == "counts") {
-    #counts <- colSums(samples)
-    plot_dat$var <- factor(plot_dat$var, levels =
-                             unique(plot_dat$var)
-                           [order(counts, decreasing = TRUE)])
-  }else {
-    if (!all(sort_samples %in% rownames(samples))) {
-      stop("Signature is not present in this result, please choose from: \n",
-           paste0(rownames(samples), collapse = ", "))
-    }
-    if (length(sort_samples) == 1) {
-      plot_dat$var <- factor(plot_dat$var, levels =
-                               unique(plot_dat$var)[order(samples[
-                                 sort_samples, ], decreasing = TRUE)])
-    }
-    else{
-      plot_dat$var <- factor(plot_dat$var, levels =
-                               unique(plot_dat$var)[do.call(order,
-                                                            c(decreasing = TRUE,
-                                               as.data.frame(
-                                                 t(samples[sort_samples, ]))))])
-    }
-  }
-  samples_to_use <- levels(plot_dat$var)[seq_len(num_samples)]
-  plot_dat <- plot_dat[which(plot_dat$var %in% samples_to_use), ]
-
-
-  #Testing
-  plot_dat_table <- plot_dat %>% dplyr::arrange(.data$make)
-  if (all(!sort_samples %in% c("numerical", "counts"))) {
-    plot_levels <- c(setdiff(unique(plot_dat_table$make), sort_samples),
-                     rev(sort_samples))
-    plot_dat_table$make <- factor(plot_dat_table$make, levels = plot_levels)
-  }
-
-  plot_dat_table %>%
-    ggplot() + geom_bar(aes_string(y = "val", x = "var", fill = "make"),
-                        stat = "identity") + theme_bw() + theme(legend.title =
-                                                  element_blank(), axis.text.x =
-                         element_text(angle = 90, hjust = 1, vjust = 0.5),
-                       panel.grid.major.x = element_blank(),
-                       text = element_text(family = "Courier")) +
-    xlab("Samples") + ylab(paste("Signatures (", y_label, ")", sep = "")) +
-    ggplot2::scale_y_continuous(expand = c(0, 0)) -> p
-  if (!label_samples) {
-    p <- p + theme(axis.text.x = element_blank(), axis.ticks.x =
-                     element_blank())
-  }
-  if (isTRUE(legend)) {
-    p <- p + theme(legend.position = "none")
-  }
-  if (plotly) {
-    p <- plotly::ggplotly(p, tooltip = c("x", "y"))
-  }
-  return(p)
-}
-
-#' Plots signature weights for each sample gridded by single annotation
-#'
-#' @param result S4 Result Object
-#' @param proportional Whether weights are normalized to sum to 1 or not
-#' @param label_samples Whether to display sample names or not
-#' @param sort_samples Defaults to numerical, may be total 'counts', or a
-#' specific signatures name (e.g. 'Signature1)
-#' @param annotation Annotation to use for facet_wrap
-#' @param by_group Plot subplots by annotation or by signature
-#' @param num_samples Number of sorted samples to plot
-#' @param no_legend Remove legend from the plot
-#' @param thresh_zero Max level to zero out for better plotting when sorting
-#' by multiple signatures
-#' @param plotly add plotly layer for plot interaction
-#' @return Generates plot {no return}
-#' @examples
-#' result <- readRDS(system.file("testdata", "res_annot.rds",
-#' package = "musicatk"))
-#' plot_exposures_by_annotation(result, "Tumor_Subtypes")
-#' @export
-plot_exposures_by_annotation <- function(result, annotation,
-                                         proportional = TRUE,
-                                         label_samples = FALSE,
-                                         sort_samples = "numerical",
-                                         by_group = TRUE, num_samples = FALSE,
-                                         no_legend = FALSE, thresh_zero = FALSE,
-                                         plotly = FALSE) {
-  samples <- result@exposures
-  if (thresh_zero) {
-    samples[samples < thresh_zero] <- 0
-  }
-  y_label <- "counts"
-  if (proportional) {
-    y_label <- "%"
-    samples <- sweep(samples, 2, colSums(samples), FUN = "/")
-  }
-  samples %>%
-    as.data.frame %>%
-    tibble::rownames_to_column(var = "make") %>%
-    tidyr::gather("var", "val", -"make") -> plot_dat
-  annot_dt <- result@musica@sample_annotations
-  plot_dat$annotation <- annot_dt[[annotation]][match(plot_dat$var,
-                                                      annot_dt[["Samples"]])]
-  #Normal alphabetical sorting of samples
-  if (length(sort_samples == 1) && sort_samples == "numerical") {
-    plot_dat$var <- factor(plot_dat$var, levels =
-                             unique(gtools::mixedsort(plot_dat$var)))
-    #Sorting of samples by counts
-  }else if (length(sort_samples == 1) && sort_samples == "counts") {
-    counts <- colSums(samples)
-    plot_dat$var <- factor(plot_dat$var, levels =
-                             unique(plot_dat$var)
-                           [order(counts, decreasing = TRUE)])
-    #Sorting of samples by counts of specific signature(s)
-  }else {
-    if (!all(sort_samples %in% rownames(samples))) {
-      stop("Signature is not present in this result, please choose from: \n",
-           paste0(rownames(samples), collapse = "\n"))
-    }
-    if (length(sort_samples) == 1) {
-      plot_dat$var <- factor(plot_dat$var, levels =
-                               unique(plot_dat$var)[order(samples[
-                                 sort_samples, ], decreasing = TRUE)])
-    }
-    else {
-      plot_dat$var <- factor(plot_dat$var, levels = unique(plot_dat$var)[
-        do.call(order, c(decreasing = TRUE, as.data.frame(t(samples[
-          sort_samples, ]))))])
-    }
-  }
-  if (num_samples) {
-    if (all(!sort_samples %in% c("numerical", "counts"))) {
-      sub_dat <- plot_dat[plot_dat$make == sort_samples, ]
-    } else {
-      sub_dat <- plot_dat
-    }
-    data.table::setorderv(sub_dat, cols = "val", order = -1)
-    annots <- unique(plot_dat$annotation)
-    samples_to_use <- NULL
-    for (annot in annots) {
-      samples_to_use <- c(samples_to_use, as.character(utils::head(sub_dat[
-        sub_dat$annotation == annot, "var"], num_samples)))
-    }
-    plot_dat <- plot_dat[which(plot_dat$var %in% samples_to_use), ]
-  }
-
-  plot_dat_table <- plot_dat %>% dplyr::arrange(.data$make)
-
-  #If used, sorts indicated signature to the bottom so it's easier to see
-  if (all(!sort_samples %in% c("numerical", "counts"))) {
-    plot_levels <- c(setdiff(unique(plot_dat_table$make), sort_samples),
-                     rev(sort_samples))
-    plot_dat_table$make <- factor(plot_dat_table$make, levels = plot_levels)
-  }
-  if (by_group) {
-    plot_dat_table %>%
-      ggplot(aes_string(y = "val", x = "var", fill = "make",
-                        text = "annotation")) + geom_bar(
-                          stat = "identity") + theme_bw() + theme(
-                            legend.title = element_blank(), axis.text.x =
-              element_text(angle = 90, hjust = 1, vjust = 0.5),
-            panel.grid.major.x = element_blank()) + xlab("Samples") +
-      ylab(paste("Signatures (", y_label, ")", sep = "")) +
-      ggplot2::scale_y_continuous(expand = c(0, 0)) -> p
-    p <- p + ggplot2::facet_wrap(~ annotation, drop = TRUE, scales = "free")
-  } else {
-    plot_dat_table %>%
-      ggplot(aes_string(x = "annotation", y = "val", fill = "annotation",
-                        text = "annotation")) +
-      ggplot2::geom_boxplot() + theme_bw() + theme(legend.title =
-                                                     element_blank(),
-                                                   axis.text.x =
-              element_text(angle = 90, hjust = 1, vjust = 0.5),
-            panel.grid.major.x = element_blank()) + xlab("Annotation") +
-      ylab(paste("Signatures (", y_label, ")", sep = "")) -> p
-    #See if this makes plotly work
-    p <- p + geom_point(alpha = 0)
-
-    p <- p + ggplot2::facet_wrap(~ make, drop = FALSE, scales = "free")
-  }
-  p <- p + theme(text = element_text(family = "Courier", size = 10),
-                 strip.text.y = element_text(size = 5))
-  if (!label_samples) {
-    p <- p + theme(axis.text.x = element_blank(), axis.ticks.x =
-                     element_blank())
-  }
-  if (no_legend) {
-    p <- p + theme(legend.position = "none")
-  }
-  if (plotly) {
-    p <- plotly::ggplotly(p)#, hoverinfo = "legendgroup+x", hovermode = "x")
-  }
-  return(p)
-}
 
 #' Create a UMAP data.frame from a result object
 #'
@@ -621,5 +383,22 @@ plot_umap_sigs <- function(result) {
     text = element_text(family = "Courier",
                         size = text_size))
   return(p)
+}
+
+.discrete_colors <- function(n, palette = c("ggplot", "random"),
+                                 seed = 12345) {
+  palette <- match.arg(palette) 
+  if (palette == "random") {
+    withr::with_seed(seed, {
+      # Using code from package "randomcoloR"
+      #km <- stats::kmeans(colorSpace, n, iter.max = 20)
+      #colors <- unname(colorspace::hex(colorspace::LAB(km$centers)))
+      #colors <- colors[order(colors)]
+    })
+  } else {
+    hues <- seq(15, 375, length = n + 1)
+    colors <- grDevices::hcl(h = hues, l = 65, c = 100)[1:n]
+  }
+  return(colors)
 }
 

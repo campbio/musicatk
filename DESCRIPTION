@@ -52,7 +52,8 @@ Imports:
     topicmodels,
     ggrepel,
     withr,
-    plotly
+    plotly,
+    colorspace
 Suggests:
     testthat,
     BiocStyle,
