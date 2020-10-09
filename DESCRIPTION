@@ -24,7 +24,6 @@ Imports:
     magrittr,
     tibble,
     tidyr,
-    reshape2,
     gtools,
     gridExtra,
     maftools,
@@ -53,7 +52,7 @@ Imports:
     ggrepel,
     withr,
     plotly,
-    colorspace
+    utils
 Suggests:
     testthat,
     BiocStyle,
