@@ -189,24 +189,19 @@ compare_results(result = pred_cosmic, other_result = pred_our_sigs, threshold = 
 # Use of sample annotations for advanced sample comparisons
 ## Adding annotations
 ```{r annotations}
-sample_annotations <- read.table(system.file("testdata", 
+annot <- read.table(system.file("testdata", 
                                              "sample_annotations.txt", 
                                              package = "musicatk"), sep = "\t", 
                                  header=TRUE)
-init_sample_annotations(musica)
-add_sample_annotations(musica = musica, annotations = sample_annotations, 
-                       sample_column = "Sample_Names", 
-                       columns_to_add = "Tumor_Subtypes")
+sample_annotations(result, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 ```
 
 ## Standard discovery using musicatk with sample annotations
 ```{r plot_annotations}
-#Add tumor type annotations to our samples
-res <- discover_signatures(musica, table_name = "SBS96", num_signatures = 3)
+plot_exposures(result, plot_type = "bar", group_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposures(result, plot_type = "box", proportion = TRUE, group_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposures(result, plot_type = "box", group_by = "signature", color_by = "annotation", annotation = "Tumor_Subtypes")
 
-plot_exposures(res, plot_type = "bar", annotation = "Tumor_Subtypes")
-plot_exposures(res, plot_type = "bar",  annotation = "Tumor_Subtypes", proportional = TRUE)
-plot_exposures(res, plot_type = "violin", group_by = "annotation", annotation = "Tumor_Subtypes")
 ```
 
 
