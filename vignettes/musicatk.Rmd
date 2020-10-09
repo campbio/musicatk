@@ -143,7 +143,7 @@ plot_exposures(result, plot_type = "bar", proportional = TRUE)
 Counts for individual samples can also be plotted:
 
 ```{r sample_counts}
-samples <- get_sample_names(musica)
+samples <- sample_names(musica)
 plot_sample_counts(musica, sample_names = samples[c(3,4,5)], table_name = "SBS96")
 ```
 

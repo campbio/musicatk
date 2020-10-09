@@ -50,6 +50,6 @@ sample_annotations(result, "New_Annotation") <- rep(c("A", "B"), c(3, 4))
 sample_annotations(result)
 }
 \seealso{
-See \code{\link{get_sample_names}} to get the list of samples in 
+See \code{\link{sample_names}} to get a vector of sample names in 
 the \code{\linkS4class{musica}} or \code{\linkS4class{musica_result}} object.
 }

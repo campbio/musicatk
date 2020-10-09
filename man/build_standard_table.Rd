@@ -42,7 +42,7 @@ annotate_transcript_strand(musica, "19")
 build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 
 musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-annotate_replication_strand(musica, musicatk::rep_range)
+annotate_replication_strand(musica, rep_range)
 build_standard_table(musica, g, "SBS192", "Replication_Strand")
 
 musica <- readRDS(system.file("testdata", "dbs_musica.rds",

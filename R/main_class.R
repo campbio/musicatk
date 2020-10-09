@@ -70,10 +70,10 @@ setMethod("show", "count_table",
 #' @exportClass musica
 setClass("musica", slots = c(variants = "data.table",
                                  count_tables = "list",
-                                 sample_annotations = "data.table"),
+                                 sample_annotations = "data.frame"),
          prototype = list(variants = data.table::data.table(),
                    count_tables = list(),
-                   sample_annotations = data.table::data.table()))
+                   sample_annotations = data.frame()))
 
 # setMethod("show", "musica_variants",
 #           function(object)cat(cat("musica object containing \n**Variants: \n"),
@@ -122,18 +122,6 @@ subset_variants_by_samples <- function(musica, sample_name) {
 }
 
 # Sample-Level object/methods -------------------------------
-
-#' Return samples names for musica object
-#'
-#' @param musica A \code{\linkS4class{musica}} object.
-#' @return Returns names of samples in musica object
-#' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-#' get_sample_names(musica)
-#' @export
-get_sample_names <- function(musica) {
-  return(unique(musica@variants$sample))
-}
 
 #' Return variants for musica object
 #'

@@ -23,5 +23,5 @@ Return sample from musica object
 }
 \examples{
 musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-plot_sample_counts(musica, sample_names = get_sample_names(musica)[1])
+plot_sample_counts(musica, sample_names = sample_names(musica)[1])
 }

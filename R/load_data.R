@@ -702,7 +702,11 @@ create_musica <- function(x, genome,
   }
 
   # Create and return a musica object
-  musica <- new("musica", variants = dt)
+  s <- gtools::mixedsort(unique(dt$sample))
+  annot <- data.frame(Samples = factor(s, levels = s))
+  dt$sample <- factor(dt$sample, levels = s)
+  
+  musica <- new("musica", variants = dt, sample_annotations = annot)
   return(musica)
 }
 
@@ -717,7 +721,6 @@ create_musica <- function(x, genome,
   chr_u <- unique(chr)
   genome_u <- unique(GenomeInfoDb::seqnames(genome))
   diff <- setdiff(chr_u, genome_u)
-
 
   if (length(diff) > 0) {
     # Try to use GenomeInfoDb to determine style of variants and genome

@@ -13,7 +13,7 @@ NULL
 #' @return Generates sample plot {no return}
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' plot_sample_counts(musica, sample_names = get_sample_names(musica)[1])
+#' plot_sample_counts(musica, sample_names = sample_names(musica)[1])
 #' @export
 plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
 
