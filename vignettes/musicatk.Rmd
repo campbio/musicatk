@@ -201,7 +201,6 @@ sample_annotations(result, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 plot_exposures(result, plot_type = "bar", group_by = "annotation", annotation = "Tumor_Subtypes")
 plot_exposures(result, plot_type = "box", proportion = TRUE, group_by = "annotation", annotation = "Tumor_Subtypes")
 plot_exposures(result, plot_type = "box", group_by = "signature", color_by = "annotation", annotation = "Tumor_Subtypes")
-
 ```
 
 

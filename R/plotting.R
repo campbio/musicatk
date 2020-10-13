@@ -305,8 +305,6 @@ plot_umap_sigs <- function(result) {
 
 }
 
-
-
 # Utility functions -------------------------------
 .pivot_signatures <- function(signatures, tab, sig_names = NULL,
                               color_variable = NULL) {
@@ -360,7 +358,6 @@ plot_umap_sigs <- function(result) {
   
   return(list(df = df, names = sig_names))
 }
-
 
 .addSmallLegend <- function(myPlot, pointSize = 2,
                             textSize = 10, spaceLegend = 0.5) {
