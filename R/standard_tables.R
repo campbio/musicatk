@@ -152,7 +152,7 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
 
   maf_mut_id <- paste(final_mut_type, final_mut_context, dat[[strand_type]],
                      sep = "_")
-  tumor_id <- as.factor(dat$sample)
+  tumor_id <- dat$sample
 
   ## Define all mutation types for 196 substitution scheme
   b1 <- rep(rep(c("A", "C", "G", "T"), each = 24), 2)
@@ -257,13 +257,17 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
             paste0("TT>NN", "_", c("AA", "AC", "AG", "CA", "CC", "CG", "GA",
                                    "GC", "GG")))
 
-  sample_names <- unique(dbs$sample)
+  sample_names <-sample_names(musica)
   num_samples <- length(sample_names)
   variant_tables <- vector("list", length = num_samples)
   for (i in seq_len(num_samples)) {
     sample_index <- which(dbs$sample == sample_names[i])
-    variant_tables[[i]] <- table(factor(full[sample_index],
-                                        levels = full_motif))
+    if(length(sample_index) > 0) {
+      variant_tables[[i]] <- table(factor(full[sample_index],
+                                          levels = full_motif))
+    } else {
+      variant_tables[[i]] <- rep(0, length(full_motif))
+    }
   }
   mut_table <- do.call(cbind, variant_tables)
   colnames(mut_table) <- sample_names
@@ -334,7 +338,7 @@ rc <- function(dna) {
 #' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 #'
 #' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-#' annotate_replication_strand(musica, musicatk::rep_range)
+#' annotate_replication_strand(musica, rep_range)
 #' build_standard_table(musica, g, "SBS192", "Replication_Strand")
 #'
 #' musica <- readRDS(system.file("testdata", "dbs_musica.rds",
@@ -394,13 +398,14 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   all_del <- as.data.frame(subset_variant_by_type(var, "DEL"))
   samples <- unique(c(as.character(all_ins$sample),
                       as.character(all_del$sample)))
+  all_samples <- sample_names(musica)
   dimlist <- list(row_names = c(.get_indel_motifs("bp1", 0, 0),
                                 .get_indel_motifs("bp1", 1, 0),
                                 .get_indel_motifs("del", NA, NA),
                                 .get_indel_motifs("ins", NA, NA),
                                 .get_indel_motifs("micro", NA, NA)),
-                  column_names = samples)
-  mut_table <- matrix(NA, nrow = 83, ncol = length(samples), dimnames = dimlist)
+                  column_names = all_samples)
+  mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), dimnames = dimlist)
   for(sample in samples) {
     ins <- all_ins[which(all_ins$sample == sample), ]
     del <- all_del[which(all_del$sample == sample), ]

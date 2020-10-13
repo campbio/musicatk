@@ -631,7 +631,7 @@ auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
 #' grid <- auto_predict_grid(musica, "SBS96", cosmic_v2_sigs, "lda",
 #' "Tumor_Subtypes", combine_res = FALSE)
 #' combined <- combine_predict_grid(grid, musica, cosmic_v2_sigs)
-#' plot_exposures_by_annotation(combined, "Tumor_Subtypes")
+#' plot_exposures(combined, group_by="annotation", annotation="Tumor_Subtypes")
 #' @export
 combine_predict_grid <- function(grid_list, musica, signature_res) {
   sig_names <- NULL

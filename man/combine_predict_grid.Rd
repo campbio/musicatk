@@ -29,5 +29,5 @@ musica <- readRDS(system.file("testdata", "musica_annot.rds", package = "musicat
 grid <- auto_predict_grid(musica, "SBS96", cosmic_v2_sigs, "lda",
 "Tumor_Subtypes", combine_res = FALSE)
 combined <- combine_predict_grid(grid, musica, cosmic_v2_sigs)
-plot_exposures_by_annotation(combined, "Tumor_Subtypes")
+plot_exposures(combined, group_by="annotation", annotation="Tumor_Subtypes")
 }

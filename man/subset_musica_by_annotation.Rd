@@ -23,10 +23,10 @@ Creates a new musica object subsetted to only one value of a sample annotation
 }
 \examples{
 musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-sample_annotations <- read.table(system.file("testdata",
+annot <- read.table(system.file("testdata",
 "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
-init_sample_annotations(musica)
-add_sample_annotations(musica, sample_annotations, sample_column =
-"Sample_Names", columns_to_add = "Tumor_Subtypes")
-subset_musica_by_annotation(musica, "Tumor_Subtypes", "Lung")
+
+sample_annotations(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+
+musica <- subset_musica_by_annotation(musica, "Tumor_Subtypes", "Lung")
 }

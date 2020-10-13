@@ -132,19 +132,19 @@ plot_signatures(result)
 ## Exposures
 **Exposures** are defined as the estimated amount of each signature in each tumor. Barplots showing the exposures in each sample can be plotted:
 ```{r exposures_raw}
-plot_exposures(result, proportional = FALSE)
+plot_exposures(result, plot_type = "bar")
 ```
 
 The proportion of each exposure in each tumor can be shown by setting ```proprotional = TRUE```:
 ```{r exposures_prop}
-plot_exposures(result, proportional = TRUE)
+plot_exposures(result, plot_type = "bar", proportional = TRUE)
 ```
 
 Counts for individual samples can also be plotted:
 
 ```{r sample_counts}
-samples <- get_sample_names(musica)
-plot_sample_counts(musica, "SBS96", samples[1])
+samples <- sample_names(musica)
+plot_sample_counts(musica, sample_names = samples[c(3,4,5)], table_name = "SBS96")
 ```
 
 ## Comparison to external signatures (e.g. COSMIC)
@@ -169,7 +169,7 @@ pred_cosmic <- predict_exposure(musica = musica, table_name = "SBS96",
                                algorithm = "lda")
 
 plot_signatures(pred_cosmic)
-plot_exposures(pred_cosmic, proportional = FALSE)
+plot_exposures(pred_cosmic, plot_type = "bar")
 ```
 
 Note that if `signatures_to_use` is not supplied by the user, then exposures for all signatures in the result object will be estimated. We can predict exposures from any result object. For example, we can predict using the result object containing the discovered signatures:
@@ -189,26 +189,18 @@ compare_results(result = pred_cosmic, other_result = pred_our_sigs, threshold = 
 # Use of sample annotations for advanced sample comparisons
 ## Adding annotations
 ```{r annotations}
-sample_annotations <- read.table(system.file("testdata", 
+annot <- read.table(system.file("testdata", 
                                              "sample_annotations.txt", 
                                              package = "musicatk"), sep = "\t", 
                                  header=TRUE)
-init_sample_annotations(musica)
-add_sample_annotations(musica = musica, annotations = sample_annotations, 
-                       sample_column = "Sample_Names", 
-                       columns_to_add = "Tumor_Subtypes")
+sample_annotations(result, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 ```
 
 ## Standard discovery using musicatk with sample annotations
 ```{r plot_annotations}
-#Add tumor type annotations to our samples
-res <- discover_signatures(musica, table_name = "SBS96", num_signatures = 3)
-
-plot_exposures_by_annotation(res, annotation = "Tumor_Subtypes")
-plot_exposures_by_annotation(res, annotation = "Tumor_Subtypes", 
-                             proportional = FALSE)
-plot_exposures_by_annotation(res, annotation = "Tumor_Subtypes", 
-                             by_group = FALSE)
+plot_exposures(result, plot_type = "bar", group_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposures(result, plot_type = "box", proportion = TRUE, group_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposures(result, plot_type = "box", group_by = "signature", color_by = "annotation", annotation = "Tumor_Subtypes")
 ```
 
 

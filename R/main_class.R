@@ -70,10 +70,10 @@ setMethod("show", "count_table",
 #' @exportClass musica
 setClass("musica", slots = c(variants = "data.table",
                                  count_tables = "list",
-                                 sample_annotations = "data.table"),
+                                 sample_annotations = "data.frame"),
          prototype = list(variants = data.table::data.table(),
                    count_tables = list(),
-                   sample_annotations = data.table::data.table()))
+                   sample_annotations = data.frame()))
 
 # setMethod("show", "musica_variants",
 #           function(object)cat(cat("musica object containing \n**Variants: \n"),
@@ -122,110 +122,6 @@ subset_variants_by_samples <- function(musica, sample_name) {
 }
 
 # Sample-Level object/methods -------------------------------
-
-#' Set sample level annotations for musica object
-#'
-#' @param musica A \code{\linkS4class{musica}} object.
-#' @param annotations Sample DataFrame
-#' @return Sets sample_annotations slot {no return}
-#' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' sample_annotations <- read.table(system.file("testdata",
-#' "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
-#' set_sample_annotations(musica, data.table::data.table(sample_annotations))
-#' @export
-set_sample_annotations <- function(musica, annotations) {
-  eval.parent(substitute(musica@sample_annotations <- annotations))
-}
-
-#' Initialize sample annotation data.table with sample names from variants
-#'
-#' @param musica A \code{\linkS4class{musica}} object.
-#' @return Sets sample_annotations slot {no return}
-#' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' init_sample_annotations(musica)
-#' @export
-init_sample_annotations <- function(musica) {
-  #samples <- unique(tools::file_path_sans_ext(
-  #  musica@variants$Tumor_Sample_Barcode))
-  samples <- unique(musica@variants$sample)
-  sample_dt <- data.table::data.table(Samples = samples)
-  eval.parent(substitute(musica@sample_annotations <- sample_dt))
-}
-
-#' Adds sample annotation to musica object with available samples
-#' 
-#' @param musica A \code{\linkS4class{musica}} object.
-#' @param annotations table of sample-level annotations to add
-#' @param sample_column name of sample name column
-#' @param columns_to_add which annotation columns to add, defaults to all
-#' @return Sets sample_annotations slot {no return}
-#' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' init_sample_annotations(musica)
-#' sample_annotations <- read.table(system.file("testdata",
-#' "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
-#' add_sample_annotations(musica = musica, annotations = sample_annotations,
-#' sample_column = "Sample_Names", columns_to_add = "Tumor_Subtypes")
-#' musica
-#' @export
-add_sample_annotations <- function(musica, annotations, sample_column =
-                                     "Sample_ID", columns_to_add =
-                                     colnames(annotations)) {
-  musica_annotations <- get_sample_annotations(musica)
-  if (all(is.na(musica_annotations))) {
-    stop(strwrap(prefix = " ", initial = "", "Please run init_sample_annotations
-                 on this musica object before adding sample annotations."))
-  }
-  if (!sample_column %in% colnames(annotations)) {
-    stop(strwrap(prefix = " ", initial = "", "User-defined sample_column is
-                 not in input annotations, please check and rerun."))
-  }
-  if (!all(musica_annotations$Samples %in%
-          annotations[, sample_column])) {
-    stop(strwrap(prefix = " ", initial = "", "Some samples are missing
-                 annotations, please check input annotations and rerun."))
-  }
-  if (!all(columns_to_add %in% colnames(annotations))) {
-    stop(strwrap(prefix = " ", initial = "", paste("Some user-defined
-                                                   columns_to_add are not in
-                                                   the input annotations, (",
-                 toString(columns_to_add[which(!columns_to_add %in%
-                                        colnames(annotations))]),
-                 ") please check and rerun.", sep = "")))
-  }
-  matches <- match(musica_annotations$Samples,
-                  annotations[, sample_column])
-  musica_annotations <- cbind(musica_annotations, annotations[matches, columns_to_add,
-                                                       drop = FALSE])
-  eval.parent(substitute(musica@sample_annotations <- musica_annotations))
-}
-
-#' Return sample annotation from musica object
-#'
-#' @param musica A \code{\linkS4class{musica}} object.
-#' @return Sets sample_annotations slot {no return}
-#' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-#' init_sample_annotations(musica)
-#' get_sample_annotations(musica)
-#' @export
-get_sample_annotations <- function(musica) {
-  return(musica@sample_annotations)
-}
-
-#' Return samples names for musica object
-#'
-#' @param musica A \code{\linkS4class{musica}} object.
-#' @return Returns names of samples in musica object
-#' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-#' get_sample_names(musica)
-#' @export
-get_sample_names <- function(musica) {
-  return(unique(musica@variants$sample))
-}
 
 #' Return variants for musica object
 #'
@@ -279,12 +175,12 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 #' type
 #' @examples
 #' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' sample_annotations <- read.table(system.file("testdata",
+#' annot <- read.table(system.file("testdata",
 #' "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
-#' init_sample_annotations(musica)
-#' add_sample_annotations(musica, sample_annotations, sample_column =
-#' "Sample_Names", columns_to_add = "Tumor_Subtypes")
-#' subset_musica_by_annotation(musica, "Tumor_Subtypes", "Lung")
+#'
+#' sample_annotations(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+#'
+#' musica <- subset_musica_by_annotation(musica, "Tumor_Subtypes", "Lung")
 #' @export
 subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
   if (!all(annot_col %in% colnames(musica@sample_annotations))) {
