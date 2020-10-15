@@ -1,19 +1,21 @@
 Package: musicatk
 Type: Package
 Title: Mutational Signature Comprehensive Analysis Toolkit
-Version: 0.99.4
+Version: 0.99.5
 Authors@R: c(person("Aaron", "Chevalier", email = "atgc@bu.edu", role = "cre", comment = c(ORCHID = "0000-0002-3968-9250")), person(given=c("Joshua","D."), family="Campbell", email="camp@bu.edu", role=c("aut"), comment = c(ORCID = "0000-0003-0780-8662")))
-Description: The Mutational Signature TookKit has utilities for extracting variants from a variety of file formats, contains multiple methods for discovery of novel signatures or prediction of known signatures, as well as many types of downstream visualizations for exploratory analysis.
-License: file LICENSE
+Description: Mutational signatures are carcinogenic exposures or aberrant cellular processes that can cause alterations to the genome that contribute to uncontrolled cell growth. We created musicatk (MUtational SIgnature Comprehensive Analysis ToolKit) to address shortcomings in versatility and ease of use in other pre-existing computational tools. Although many different types of mutational data have been generated, current software packages do not have a flexible framework to allow users to mix and match different types of mutations in the mutational signature inference process. Musicatk enables users to count and combine multiple mutation types, including SBS, DBS, and indels. Musicatk calculates replication strand, transcription strand and combinations of these features along with discovery from unique and proprietary genomic feature associated with any mutation type. Musicatk also implements several methods for discovery of new signatures as well as methods to infer exposure given an existing set of signatures. Musicatk provides visualization and downstream analysis to find patterns in signatures and exposures after discovery including comparison of sample cohorts and find matching signatures including COSMIC v2 and COSMIC v3 which includes SBS, DBS, INDEL from whole-exome and whole-genome derivations.
+License: LGPL-3
+BugReports: https://github.com/campbio/musicatk/issues
 Encoding: UTF-8
-LazyData: TRUE
+LazyData: FALSE
 biocViews:
     Software,
     BiologicalQuestion,
-    SomaticMutation
+    SomaticMutation,
+    VariantAnnotation
 Depends:
     R (>= 4.0.0), 
-    NMF,
+    NMF
 Imports:
     SummarizedExperiment,
     VariantAnnotation,

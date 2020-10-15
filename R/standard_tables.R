@@ -5,6 +5,7 @@
 #' reference the variants and their coordinates were derived from.
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created SBS96 count table object
+#' @keywords internal
 create_sbs96_table <- function(musica, g, overwrite = FALSE) {
   dat <- subset_variant_by_type(musica@variants, type = "SBS")
   ref <- as.character(dat$ref)
@@ -103,6 +104,7 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created SBS192 count table object built using either
 #' transcript strand or replication strand
+#' @keywords internal
 create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
   if (!strand_type %in% c("Transcript_Strand", "Replication_Strand")) {
     stop("Please select either Transcript_Strand or Replication_Strand")
@@ -210,6 +212,7 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created DBS table object
+#' @keywords internal
 create_dbs_table <- function(musica, overwrite = overwrite) {
   dbs <- subset_variant_by_type(musica@variants, "DBS")
 
@@ -294,7 +297,7 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
 
 .gg_color_hue <- function(n) {
   hues = base::seq(15, 375, length = n + 1)
-  return(grDevices::hcl(h = hues, l = 65, c = 100)[1:n])
+  return(grDevices::hcl(h = hues, l = 65, c = 100)[seq_len(n)])
 }
 
 #' Reverse complement of a string using biostrings
@@ -330,23 +333,23 @@ rc <- function(dna) {
 #' @examples
 #' g <- select_genome("19")
 #'
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #'
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' annotate_transcript_strand(musica, "19")
 #' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 #'
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
+#' data(rep_range)
 #' annotate_replication_strand(musica, rep_range)
 #' build_standard_table(musica, g, "SBS192", "Replication_Strand")
 #'
-#' musica <- readRDS(system.file("testdata", "dbs_musica.rds",
-#' package = "musicatk"))
-#' build_standard_table(musica, g, "DBS")
+#' data(dbs_musica)
+#' build_standard_table(dbs_musica, g, "DBS")
 #'
-#' musica <- readRDS(system.file("testdata", "indel_musica.rds", package = "musicatk"))
-#' build_standard_table(musica, g, table_name = "INDEL")
+#' data(indel_musica)
+#' build_standard_table(indel_musica, g, table_name = "INDEL")
 #' @export
 build_standard_table <- function(musica, g, table_name, strand_type = NA,
                                  overwrite = FALSE) {
@@ -449,12 +452,12 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   }
 
   motif <- rownames(mut_table)
-  mutation <- c(substr(motif[1:24], 1, 5),
+  mutation <- c(substr(motif[seq_len(24)], 1, 5),
                 paste(unlist(lapply(strsplit(motif[25:83], "_"), "[[", 1)),
                       unlist(lapply(strsplit(motif[25:83], "_"), "[[", 2)),
                       unlist(lapply(strsplit(motif[25:83], "_"), "[[", 3)),
                       sep = "_"))
-  context <- c(substr(motif[1:24], 7, 9),
+  context <- c(substr(motif[seq_len(24)], 7, 9),
                unlist(lapply(strsplit(motif[25:83], "_"), "[[", 3)))
   annotation <- data.frame(motif = motif, mutation = mutation,
                            context = context)
@@ -532,7 +535,7 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   final_type[ind] <- final_type[ind] %>% Biostrings::DNAStringSet() %>%
     Biostrings::reverseComplement() %>% as.character()
   repeats = rep(NA, length(final_type))
-  for(i in 1:length(type)) {
+  for(i in seq_len(length(type))) {
     repeats[i] <- .count_repeat(final_type[i], rflank[i]) +
       .count_repeat(final_type[i], rev(lflank[i])) + plus
   }
@@ -551,7 +554,7 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1, range_end + 10,
                                       as.character = TRUE)
   repeats = rep(NA, length(type))
-  for(i in 1:length(type)) {
+  for(i in seq_len(length(type))) {
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
       .count_repeat(type[i], rev(lflank[i]))
   }
@@ -577,13 +580,13 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   maybe_micro <- which(!has_repeat)
 
   micro <- rep(NA, length(type))
-  for(i in 1:length(type)) {
+  for(i in seq_len(length(type))) {
     micro[i] <- max(.micro_left(type[i], lflank[i]),
                     .micro_right(type[i], rflank[i]))
   }
 
   repeats = rep(NA, length(type))
-  for(i in 1:length(type)) {
+  for(i in seq_len(length(type))) {
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
       .count_repeat(type[i], rev(lflank[i])) + 1
   }

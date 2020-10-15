@@ -36,7 +36,7 @@ Returns a result object with results and input object
 Discovers signatures and weights from a table of counts using NMF
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 discover_signatures(musica = musica, table_name = "SBS96",

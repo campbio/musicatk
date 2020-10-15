@@ -18,10 +18,10 @@ NULL
 #' @return None
 #' it to the musica
 #' @examples
-#' #musica <- readRDS(system.file("testdata", "musica_sbs96_tiny.rds",
-#' #package = "musicatk"))
-#' #add_flank_to_variants(musica, 1, 2)
-#' #add_flank_to_variants(musica, -2, -1)
+#' data(musica_sbs96_tiny)
+#' g <- select_genome("19")
+#' add_flank_to_variants(musica_sbs96_tiny, g, 1, 2)
+#' add_flank_to_variants(musica_sbs96_tiny, g, -2, -1)
 #' @export
 add_flank_to_variants <- function(musica, g, flank_start, flank_end,
                                   build_table = TRUE, overwrite = FALSE) {
@@ -75,7 +75,7 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
     tab <- build_custom_table(dat_musica, variant_annotation = output_column,
                          name = output_column, return_instead = FALSE,
                          overwrite = overwrite)
-    eval.parent(substitute(musica@count_tables <- tab))
+    eval.parent(substitute(musica@count_tables[[output_column]] <- tab))
   }
 }
 
@@ -85,7 +85,7 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
 #' @param musica Input samples
 #' @return None
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' annotate_variant_length(musica)
 #' musica
 #' @export
@@ -107,7 +107,7 @@ annotate_variant_length <- function(musica) {
 #' @param column_name Name of column to drop
 #' @return None
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' drop_annotation(musica, "Variant_Type")
 #' @export
 drop_annotation <- function(musica, column_name) {
@@ -123,8 +123,9 @@ drop_annotation <- function(musica, column_name) {
 #' @return Returns the inputted variant table with variant type ("SBS", "DBS",
 #' "INS", "DEL") added as an appended "Variant_Type" column
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-#' musicatk:::add_variant_type(musica@variants)
+#' data(musica)
+#' variants <- get_variants(musica)
+#' musicatk:::add_variant_type(variants)
 #' @keywords internal
 add_variant_type <- function(tab) {
   type <- rep(NA, nrow(tab))
@@ -144,7 +145,7 @@ add_variant_type <- function(tab) {
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @return None
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' annotate_variant_type(musica)
 #' @export
 annotate_variant_type <- function(musica) {
@@ -159,7 +160,7 @@ annotate_variant_type <- function(musica) {
 #' @return Returns the input variant table subsetted to only contain variants
 #' of the specified variant type
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' annotate_variant_type(musica)
 #' subset_variant_by_type(get_variants(musica), "SBS")
 #' @export
@@ -182,7 +183,7 @@ subset_variant_by_type <- function(tab, type) {
 #' @param build_table Automatically build a table from this annotation
 #' @return None
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' annotate_transcript_strand(musica, 19)
 #' @export
 annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE) {
@@ -244,7 +245,8 @@ annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE)
 #' @param build_table Automatically build a table from this annotation
 #' @return None
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
+#' data(rep_range)
 #' annotate_replication_strand(musica, rep_range)
 #' @export
 annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {

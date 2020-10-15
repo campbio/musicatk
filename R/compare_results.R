@@ -41,7 +41,7 @@ sig_compare <- function(sig1, sig2, threshold=0.9) {
 #' @param other_result_name title for plot of second result signatures
 #' @return Returns the comparisons
 #' @examples
-#' res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+#' data(res)
 #' compare_results(res, res, threshold = 0.8)
 #' @export
 compare_results <- function(result, other_result,
@@ -77,7 +77,7 @@ compare_results <- function(result, other_result,
 #' @param result_name title for plot user result signatures
 #' @return Returns the comparisons
 #' @examples
-#' res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+#' data(res)
 #' compare_cosmic_v3(res, "SBS", "genome", threshold = 0.8)
 #' @export
 compare_cosmic_v3 <- function(result, variant_class, sample_type,
@@ -132,7 +132,7 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @param result_name title for plot user result signatures
 #' @return Returns the comparisons
 #' @examples
-#' res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+#' data(res)
 #' compare_cosmic_v2(res, threshold = 0.7)
 #' @export
 compare_cosmic_v2 <- function(result, threshold = 0.9, result_name =

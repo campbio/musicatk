@@ -41,8 +41,7 @@ ggplotly object is returned
 Plot a UMAP data.frame
 }
 \examples{
-result <- readRDS(system.file("testdata", "res_annot.rds",
-package = "musicatk"))
-create_umap(result, "Tumor_Subtypes", n_neighbors = 5)
-plot_umap(result)
+data(res_annot)
+create_umap(res_annot, "Tumor_Subtypes", n_neighbors = 5)
+plot_umap(res_annot)
 }

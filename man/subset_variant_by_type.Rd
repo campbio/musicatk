@@ -19,7 +19,7 @@ of the specified variant type
 Subsets a variant table based on Variant Type
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 annotate_variant_type(musica)
 subset_variant_by_type(get_variants(musica), "SBS")
 }

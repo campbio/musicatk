@@ -15,3 +15,4 @@ Returns a 96 motif summary table
 \description{
 Generates a 96 motif table based on input counts for plotting
 }
+\keyword{internal}

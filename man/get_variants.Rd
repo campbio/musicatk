@@ -16,6 +16,6 @@ Returns variants in musica object
 Return variants for musica object
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 get_variants(musica)
 }

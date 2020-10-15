@@ -34,21 +34,21 @@ Builds a standard table from user variants
 \examples{
 g <- select_genome("19")
 
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 annotate_transcript_strand(musica, "19")
 build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
+data(rep_range)
 annotate_replication_strand(musica, rep_range)
 build_standard_table(musica, g, "SBS192", "Replication_Strand")
 
-musica <- readRDS(system.file("testdata", "dbs_musica.rds",
-package = "musicatk"))
-build_standard_table(musica, g, "DBS")
+data(dbs_musica)
+build_standard_table(dbs_musica, g, "DBS")
 
-musica <- readRDS(system.file("testdata", "indel_musica.rds", package = "musicatk"))
-build_standard_table(musica, g, table_name = "INDEL")
+data(indel_musica)
+build_standard_table(indel_musica, g, table_name = "INDEL")
 }

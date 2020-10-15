@@ -26,6 +26,6 @@ Compare a result object to COSMIC V2 SBS Signatures (combination whole-exome
 and whole-genome)
 }
 \examples{
-res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+data(res)
 compare_cosmic_v2(res, threshold = 0.7)
 }

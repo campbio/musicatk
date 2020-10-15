@@ -42,12 +42,12 @@ downstream plotting functions such as \code{\link{plot_exposures}} or
 \code{\link{plot_umap}} to group or color samples by a particular annotation.
 }
 \examples{
-result <- readRDS(system.file("testdata", "res_annot.rds", package = "musicatk"))
-sample_annotations(result)
+data(res_annot)
+sample_annotations(res_annot)
 
 # Add new annotation
-sample_annotations(result, "New_Annotation") <- rep(c("A", "B"), c(3, 4))
-sample_annotations(result)
+sample_annotations(res_annot, "New_Annotation") <- rep(c("A", "B"), c(3, 4))
+sample_annotations(res_annot)
 }
 \seealso{
 See \code{\link{sample_names}} to get a vector of sample names in 

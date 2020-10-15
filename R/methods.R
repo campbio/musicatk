@@ -8,8 +8,8 @@
 #' @return A matrix of exposures
 #' @export
 #' @examples
-#' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' exposures(result)
+#' data(res)
+#' exposures(res)
 setGeneric(
   name = "exposures",
   def = function(result)
@@ -38,8 +38,8 @@ setMethod(
 #' @return A matrix of mutational signatures
 #' @export
 #' @examples
-#' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' signatures(result)
+#' data(res)
+#' signatures(res)
 setGeneric(
   name = "signatures",
   def = function(result)
@@ -76,12 +76,12 @@ setMethod(
 #' the \code{\linkS4class{musica}} or \code{\linkS4class{musica_result}} object.
 #' @export
 #' @examples
-#' result <- readRDS(system.file("testdata", "res_annot.rds", package = "musicatk"))
-#' sample_annotations(result)
+#' data(res_annot)
+#' sample_annotations(res_annot)
 #' 
 #' # Add new annotation
-#' sample_annotations(result, "New_Annotation") <- rep(c("A", "B"), c(3, 4))
-#' sample_annotations(result)
+#' sample_annotations(res_annot, "New_Annotation") <- rep(c("A", "B"), c(3, 4))
+#' sample_annotations(res_annot)
 setGeneric(
   name = "sample_annotations",
   def = function(object)
@@ -170,8 +170,8 @@ setReplaceMethod(
 #' @return A character vector of sample names
 #' @export
 #' @examples
-#' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' sample_names(result)
+#' data(res)
+#' sample_names(res)
 setGeneric(
   name = "sample_names",
   def = function(object)

@@ -30,6 +30,6 @@ Returns the comparisons
 Compare two result files to find similar signatures
 }
 \examples{
-res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+data(res)
 compare_results(res, res, threshold = 0.8)
 }

@@ -46,6 +46,6 @@ A result object containing signatures and sample weights
 Generate result_grid from musica based on annotation and range of k
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-grid <- generate_result_grid(musica, "SBS96", "nmf", k_start = 2, k_end = 5)
+data(musica_sbs96)
+grid <- generate_result_grid(musica_sbs96, "SBS96", "nmf", k_start = 2, k_end = 5)
 }

@@ -62,9 +62,8 @@
 #' using \code{\link[plotly]{plotly}}. Default \code{FALSE}.
 #' @return Generates a ggplot or plotly object
 #' @examples
-#' result <- readRDS(system.file("testdata", "res_annot.rds",
-#' package = "musicatk"))
-#' plot_exposures(result, plot_type = "bar", annotation = "Tumor_Subtypes")
+#' data(res_annot)
+#' plot_exposures(res_annot, plot_type = "bar", annotation = "Tumor_Subtypes")
 #' @export
 plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
                           proportional = FALSE,
@@ -81,8 +80,6 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
                           legend = TRUE, 
                           plotly = FALSE) {
   
-  #palette <- match.arg(palette)
-  palette <- "ggplot"
   group_by <- match.arg(group_by)
   color_by <- match.arg(color_by)
   plot_type <- match.arg(plot_type)
@@ -198,7 +195,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   # Add the ability to create a permanent color palette that is the same
   # no matter what the order of the signatures are
   if(color_by == "signature") {
-    sig_color <- .discrete_colors(nrow(exposures), palette = palette)
+    sig_color <- .discrete_colors(nrow(exposures))
     names(sig_color) <- rownames(exposures)
     p <- p + ggplot2::scale_discrete_manual("fill", values = sig_color)
   }

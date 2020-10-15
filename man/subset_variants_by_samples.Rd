@@ -18,6 +18,6 @@ Returns sample data.frame subset to a single sample
 Return sample from musica_variant object
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+musica <- readRDS(system.file("extdata", "musica.rds", package = "musicatk"))
 subset_variants_by_samples(musica, "public_LUAD_TCGA-97-7938.vcf")
 }

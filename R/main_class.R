@@ -113,7 +113,7 @@ setClass("musica", slots = c(variants = "data.table",
 #' @param sample_name Sample name to subset by
 #' @return Returns sample data.frame subset to a single sample
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' musica <- readRDS(system.file("extdata", "musica.rds", package = "musicatk"))
 #' subset_variants_by_samples(musica, "public_LUAD_TCGA-97-7938.vcf")
 #' @export
 subset_variants_by_samples <- function(musica, sample_name) {
@@ -128,7 +128,7 @@ subset_variants_by_samples <- function(musica, sample_name) {
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @return Returns variants in musica object
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' get_variants(musica)
 #' @export
 get_variants <- function(musica) {
@@ -144,8 +144,8 @@ get_variants <- function(musica) {
 #' and variants subsetted to only contains samples with the specified minimum
 #' number of counts (column sums) in the specified table
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' subset_musica_by_counts(musica, "SBS96", 20)
+#' data(musica_sbs96)
+#' subset_musica_by_counts(musica_sbs96, "SBS96", 20)
 #' @export
 subset_musica_by_counts <- function(musica, table_name, num_counts) {
   tab <- .extract_count_table(musica, table_name)
@@ -174,13 +174,14 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 #' and variants subsetted to only contains samples of the specified annotation
 #' type
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' annot <- read.table(system.file("testdata",
-#' "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
+#' data(musica_sbs96)
+#' annot <- read.table(system.file("extdata", "sample_annotations.txt", 
+#' package = "musicatk"), sep = "\t", header=TRUE)
 #'
-#' sample_annotations(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+#' sample_annotations(musica_sbs96, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 #'
-#' musica <- subset_musica_by_annotation(musica, "Tumor_Subtypes", "Lung")
+#' musica_sbs96 <- subset_musica_by_annotation(musica_sbs96, "Tumor_Subtypes", 
+#' "Lung")
 #' @export
 subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
   if (!all(annot_col %in% colnames(musica@sample_annotations))) {
@@ -240,8 +241,8 @@ setClass("musica_result", representation(signatures = "matrix", exposures = "mat
 #' @param name_vector Vector of user-defined signature names
 #' @return Result object with user-defined signatures names
 #' @examples
-#' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' name_signatures(result, c("smoking", "apobec", "unknown"))
+#' data(res)
+#' name_signatures(res, c("smoking", "apobec", "unknown"))
 #' @export
 name_signatures <- function(result, name_vector) {
   num_sigs <- length(colnames(result@signatures))

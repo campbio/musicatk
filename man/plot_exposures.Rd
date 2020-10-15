@@ -103,7 +103,6 @@ parameter. For barplots, various methods of sorting samples from left
 to right can be chosen using the \code{sort_samples} parameter.
 }
 \examples{
-result <- readRDS(system.file("testdata", "res_annot.rds",
-package = "musicatk"))
-plot_exposures(result, plot_type = "bar", annotation = "Tumor_Subtypes")
+data(res_annot)
+plot_exposures(res_annot, plot_type = "bar", annotation = "Tumor_Subtypes")
 }

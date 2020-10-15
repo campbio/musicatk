@@ -32,6 +32,6 @@ Compare a result object to COSMIC V3 Signatures; Select exome or genome for
 SBS and only genome for DBS or Indel classes
 }
 \examples{
-res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+data(res)
 compare_cosmic_v3(res, "SBS", "genome", threshold = 0.8)
 }

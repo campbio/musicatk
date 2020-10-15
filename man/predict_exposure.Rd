@@ -11,7 +11,6 @@ predict_exposure(
   signature_res,
   algorithm,
   signatures_to_use = seq_len(ncol(signature_res@signatures)),
-  seed = 1,
   verbose = FALSE
 )
 }
@@ -31,8 +30,6 @@ Must match the table type used to generate the prediction signatures}
 
 \item{signatures_to_use}{Which signatures in set to use (default all)}
 
-\item{seed}{Seed to use for reproducible results, set to null to disable}
-
 \item{verbose}{Whether to show intermediate results}
 }
 \value{
@@ -42,9 +39,14 @@ A result object containing signatures and sample weights
 LDA prediction of samples based on existing signatures
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 predict_exposure(musica = musica, table_name = "SBS96",
 signature_res = cosmic_v2_sigs, algorithm = "lda")
+
+#Predict using seed
+seed <- 1
+withr::with_seed(seed, predict_exposure(musica = musica, 
+table_name = "SBS96", signature_res = cosmic_v2_sigs, algorithm = "lda"))
 }

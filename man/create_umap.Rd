@@ -10,8 +10,7 @@ create_umap(
   n_neighbors = 30,
   min_dist = 0.75,
   spread = 1,
-  proportional = TRUE,
-  seed = FALSE
+  proportional = TRUE
 )
 }
 \arguments{
@@ -36,8 +35,6 @@ Default 1.
 See `?uwot::umap` for more information.}
 
 \item{proportional}{Whether weights are normalized to sum to 1 or not}
-
-\item{seed}{Use a seed for reproducible results}
 }
 \value{
 UMAP data.frame
@@ -46,8 +43,12 @@ UMAP data.frame
 Create a UMAP data.frame from a result object
 }
 \examples{
-result <- readRDS(system.file("testdata", "res_annot.rds",
-package = "musicatk"))
-create_umap(result = result, annotation = "Tumor_Subtypes",
+data(res_annot)
+create_umap(result = res_annot, annotation = "Tumor_Subtypes",
 n_neighbors = 5)
+
+# Use with_seed to create a reproducible result
+seed <- 1
+withr::with_seed(seed, create_umap(result = res_annot, annotation = 
+"Tumor_Subtypes", n_neighbors = 5))
 }

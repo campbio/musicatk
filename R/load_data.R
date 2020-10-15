@@ -101,11 +101,11 @@ select_genome <- function(x) {
 #' @return Returns a data.table of variants from a vcf
 #' @examples
 #' # Get loations of two vcf files and a maf file
-#' luad_vcf_file <- system.file("testdata", "public_LUAD_TCGA-97-7938.vcf",
+#' luad_vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
 #' package = "musicatk")
-#' lusc_maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' lusc_maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
-#' melanoma_vcfs <- list.files(system.file("testdata", package = "musicatk"),
+#' melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
 #'   pattern = glob2rx("*SKCM*vcf"), full.names = TRUE)
 #'
 #' # Read all files in at once
@@ -249,7 +249,7 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 #' section of the VCF. Default \code{NULL}.
 #' @return Returns a data.table of variants from a vcf
 #' @examples
-#' vcf_file <- system.file("testdata", "public_LUAD_TCGA-97-7938.vcf",
+#' vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
 #'   package = "musicatk")
 #'
 #' library(VariantAnnotation)
@@ -390,7 +390,7 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 #' formatting errors.
 #' @return Returns a data.table of variants extracted from a vcf
 #' @examples
-#' vcf <- system.file("testdata", "public_LUAD_TCGA-97-7938.vcf",
+#' vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
 #'   package = "musicatk")
 #' variants <- extract_variants_from_vcf_file(vcf_file = vcf)
 #' @export
@@ -445,8 +445,9 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
                  " \nAdditional information: \n", vcf[1], sep = ""))
     }
     alt_input[, "End_Position"] <- alt_input[, "POS"]
-    alt_input <- alt_input[, colnames(alt_input)[c(1:2, ncol(alt_input),
-                                                   4:(ncol(alt_input) - 1))]]
+    alt_input <- alt_input[, colnames(alt_input)[c(seq_len(2), ncol(alt_input),
+                                                   seq(4, (ncol(alt_input) - 1))
+                                                   )]]
 
     # Needs to be changed so that it creates a VCF object which can be
     # passed to extract_variants_from_vcf
@@ -489,7 +490,7 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
 #' @return Returns a data.table of variants from a maf which can be used to
 #' create a \code{musica} object.
 #' @examples
-#' maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
 #' library(maftools)
 #' maf <- read.maf(maf_file)
@@ -535,7 +536,7 @@ extract_variants_from_maf <- function(maf, extra_fields = NULL) {
 #' @return Returns a data.table of variants from a maf which can be used to
 #' create a \code{musica} object.
 #' @examples
-#' maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
 #' library(maftools)
 #' maf <- read.maf(maf_file)
@@ -584,7 +585,7 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "chr",
 #' object. Default \code{NULL}.
 #' @return Returns a data.table of variants from a maf
 #' @examples
-#' maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
 #' maf <- extract_variants_from_maf_file(maf_file = maf_file)
 #' @export
@@ -629,7 +630,7 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' Default \code{TRUE}.
 #' @return Returns a musica object
 #' @examples
-#' maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
 #' variants <- extract_variants_from_maf_file(maf_file)
 #' g <- select_genome("38")

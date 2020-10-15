@@ -12,8 +12,8 @@ NULL
 #' Default \code{NULL}.
 #' @return Generates sample plot {no return}
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' plot_sample_counts(musica, sample_names = sample_names(musica)[1])
+#' data(musica_sbs96)
+#' plot_sample_counts(musica_sbs96, sample_names = sample_names(musica)[1])
 #' @export
 plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
 
@@ -63,8 +63,8 @@ plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
 #' will be adjusted for each signature. Default \code{TRUE}.
 #' @return Generates plot {no return}
 #' @examples
-#' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' plot_signatures(result)
+#' data(res)
+#' plot_signatures(res)
 #' @export
 plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
                             color_variable = NULL, color_mapping = NULL,
@@ -127,8 +127,8 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
 #' @param plotly add plotly layer for plot interaction
 #' @return Generates plot {no return}
 #' @examples
-#' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' plot_sample_reconstruction_error(result, "TCGA-ER-A197-06A-32D-A197-08")
+#' data(res)
+#' plot_sample_reconstruction_error(res, "TCGA-ER-A197-06A-32D-A197-08")
 #' @export
 plot_sample_reconstruction_error <- function(result, sample,
                                              plotly = FALSE) {
@@ -167,16 +167,19 @@ plot_sample_reconstruction_error <- function(result, sample,
 #' Default 1.
 #' See `?uwot::umap` for more information.
 #' @param proportional Whether weights are normalized to sum to 1 or not
-#' @param seed Use a seed for reproducible results
 #' @return UMAP data.frame
 #' @examples
-#' result <- readRDS(system.file("testdata", "res_annot.rds",
-#' package = "musicatk"))
-#' create_umap(result = result, annotation = "Tumor_Subtypes",
+#' data(res_annot)
+#' create_umap(result = res_annot, annotation = "Tumor_Subtypes",
 #' n_neighbors = 5)
+#' 
+#' # Use with_seed to create a reproducible result
+#' seed <- 1
+#' withr::with_seed(seed, create_umap(result = res_annot, annotation = 
+#' "Tumor_Subtypes", n_neighbors = 5))
 #' @export
 create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
-                        spread = 1, proportional = TRUE, seed = FALSE) {
+                        spread = 1, proportional = TRUE) {
   samples <- t(result@exposures)
   range_limit <- function(x) {
     (x / max(x))
@@ -184,17 +187,9 @@ create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
   if (proportional) {
     samples <- sweep(samples, 2, colSums(samples), FUN = "/")
   }
-  if (seed) {
-    umap_out <- withr::with_seed(seed, uwot::umap(samples, n_neighbors =
-                                                     n_neighbors, min_dist =
-                                                     min_dist, spread = spread,
-                                                   n_threads = 1, pca = NULL,
-                                                   metric = "cosine"))
-  } else {
-    umap_out <- uwot::umap(samples, n_neighbors = n_neighbors,
-                            min_dist = min_dist, spread = spread,
-                            n_threads = 1, pca = NULL, metric = "cosine")
-  }
+  umap_out <- uwot::umap(samples, n_neighbors = n_neighbors, min_dist = 
+                           min_dist, spread = spread, n_threads = 1, pca = NULL,
+                         metric = "cosine")
   x <- umap_out[, 1]
   y <- umap_out[, 2]
   annot <- result@musica@sample_annotations
@@ -206,7 +201,7 @@ create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
   n_sigs <- ncol(samples)
   n_samples <- nrow(samples)
   sig_names <- colnames(samples)
-  for (i in 1:n_sigs) {
+  for (i in seq_len(n_sigs)) {
     sig_name <- sig_names[i]
     sig_df <- rbind(sig_df, data.frame(x = x, y = y, level =
                                                      range_limit(
@@ -233,10 +228,9 @@ create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
 #' @return Returns a ggplot2 plot of the created umap, if plotly = TRUE the
 #' ggplotly object is returned
 #' @examples
-#' result <- readRDS(system.file("testdata", "res_annot.rds",
-#' package = "musicatk"))
-#' create_umap(result, "Tumor_Subtypes", n_neighbors = 5)
-#' plot_umap(result)
+#' data(res_annot)
+#' create_umap(res_annot, "Tumor_Subtypes", n_neighbors = 5)
+#' plot_umap(res_annot)
 #' @export
 plot_umap <- function(result, point_size = 0.7, legend = TRUE,
                       label_clusters = TRUE, label_size = 3, legend_size = 3,
@@ -289,10 +283,9 @@ plot_umap <- function(result, point_size = 0.7, legend = TRUE,
 #' @param result Result object containing UMAP data.frame
 #' @return Returns ggplot2 plot of the created umap
 #' @examples
-#' result <- readRDS(system.file("testdata", "res_annot.rds",
-#' package = "musicatk"))
-#' create_umap(result, "Tumor_Subtypes", n_neighbors = 5)
-#' plot_umap_sigs(result)
+#' data(res_annot)
+#' create_umap(res_annot, "Tumor_Subtypes", n_neighbors = 5)
+#' plot_umap_sigs(res_annot)
 #' @export
 plot_umap_sigs <- function(result) {
   umap_df_sigs <- result@umap$umap_df_sigs
@@ -382,20 +375,9 @@ plot_umap_sigs <- function(result) {
   return(p)
 }
 
-.discrete_colors <- function(n, palette = c("ggplot", "random"),
-                                 seed = 12345) {
-  palette <- match.arg(palette) 
-  if (palette == "random") {
-    withr::with_seed(seed, {
-      # Using code from package "randomcoloR"
-      #km <- stats::kmeans(colorSpace, n, iter.max = 20)
-      #colors <- unname(colorspace::hex(colorspace::LAB(km$centers)))
-      #colors <- colors[order(colors)]
-    })
-  } else {
-    hues <- seq(15, 375, length = n + 1)
-    colors <- grDevices::hcl(h = hues, l = 65, c = 100)[1:n]
-  }
+.discrete_colors <- function(n) {
+  hues <- seq(15, 375, length = n + 1)
+  colors <- grDevices::hcl(h = hues, l = 65, c = 100)[seq_len(n)]
   return(colors)
 }
 

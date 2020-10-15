@@ -2,6 +2,7 @@
 #'
 #' @param sample_df Input counts table
 #' @return Returns a 96 motif summary table
+#' @keywords internal
 table_96 <- function(sample_df) {
   motif <- names(sample_df)
   expanded <- rep(motif, sample_df)
@@ -158,7 +159,7 @@ subset_count_tables <- function(musica, samples) {
 #' otherwise the table object is automatically added to the musica's
 #' count_tables list and nothing is returned
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' annotate_transcript_strand(musica, "19", build_table = FALSE)
 #' build_custom_table(musica, "Transcript_Strand", "Transcript_Strand",
 #' data_factor = factor(c("T", "U")))
