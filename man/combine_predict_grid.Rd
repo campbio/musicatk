@@ -26,6 +26,7 @@ for samples in an annotation where that signature was not predicted
 }
 \examples{
 data(musica_annot)
+data(cosmic_v2_sigs)
 grid <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
 "Tumor_Subtypes", combine_res = FALSE)
 combined <- combine_predict_grid(grid, musica_annot, cosmic_v2_sigs)

@@ -102,6 +102,7 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
 #' @return A result object containing signatures and sample weights
 #' @examples
 #' data(musica)
+#' data(cosmic_v2_sigs)
 #' g <- select_genome("19")
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #' predict_exposure(musica = musica, table_name = "SBS96",
@@ -608,6 +609,7 @@ auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
 #' in that annotation type.
 #' @examples
 #' data(musica_annot)
+#' data(cosmic_v2_sigs)
 #' grid <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
 #' "Tumor_Subtypes", combine_res = FALSE)
 #' combined <- combine_predict_grid(grid, musica_annot, cosmic_v2_sigs)

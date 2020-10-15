@@ -40,6 +40,7 @@ LDA prediction of samples based on existing signatures
 }
 \examples{
 data(musica)
+data(cosmic_v2_sigs)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 predict_exposure(musica = musica, table_name = "SBS96",
