@@ -6,12 +6,12 @@ author:
 - name: Joshua Campbell
   affiliation: *id
   email: camp@bu.edu
-#output:
-#  BiocStyle::html_document
-#vignette: >
-#  %\VignetteIndexEntry{Mutational Signature Comprehensive Analysis Toolkit}
-#  %\VignetteEngine{knitr::rmarkdown}
-#  \usepackage[utf8]{inputenc}
+output:
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Mutational Signature Comprehensive Analysis Toolkit}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE, results = "asis"}
@@ -163,6 +163,7 @@ cosmic_v2_subtype_map("lung")
 Exposures for a subset of COSMIC signatures 4, 11, 12, 15 in our current dataset:
 
 ```{r predict_cosmic}
+data("cosmic_v2_sigs")
 pred_cosmic <- predict_exposure(musica = musica, table_name = "SBS96",
                                signature_res = cosmic_v2_sigs,
                                signatures_to_use =  c(12, 4, 11, 15),

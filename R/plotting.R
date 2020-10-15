@@ -13,7 +13,8 @@ NULL
 #' @return Generates sample plot {no return}
 #' @examples
 #' data(musica_sbs96)
-#' plot_sample_counts(musica_sbs96, sample_names = sample_names(musica)[1])
+#' plot_sample_counts(musica_sbs96, sample_names = 
+#' sample_names(musica_sbs96)[1])
 #' @export
 plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
 
