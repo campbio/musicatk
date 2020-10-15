@@ -113,8 +113,8 @@ setClass("musica", slots = c(variants = "data.table",
 #' @param sample_name Sample name to subset by
 #' @return Returns sample data.frame subset to a single sample
 #' @examples
-#' musica <- readRDS(system.file("extdata", "musica.rds", package = "musicatk"))
-#' subset_variants_by_samples(musica, "public_LUAD_TCGA-97-7938.vcf")
+#' data(musica)
+#' subset_variants_by_samples(musica, "TCGA-94-7557-01A-11D-2122-08")
 #' @export
 subset_variants_by_samples <- function(musica, sample_name) {
   return(musica@variants[which(musica@variants$sample == sample_name),
