@@ -22,6 +22,6 @@ mutation motif in each sample. Rows correspond to each motif and
 columns correspond to each signature.
 }
 \examples{
-result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-signatures(result)
+data(res)
+signatures(res)
 }

@@ -22,6 +22,6 @@ each signature for each sample. Rows correspond to each signature and
 columns correspond to each sample.
 }
 \examples{
-result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-exposures(result)
+data(res)
+exposures(res)
 }

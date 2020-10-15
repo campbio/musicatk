@@ -69,7 +69,7 @@ Returns a musica object
 Add description
 }
 \examples{
-maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 package = "musicatk")
 variants <- extract_variants_from_maf_file(maf_file)
 g <- select_genome("38")

@@ -18,7 +18,7 @@ Adds an annotation to the input musica's variant table with length of each
 variant
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 annotate_variant_length(musica)
 musica
 }

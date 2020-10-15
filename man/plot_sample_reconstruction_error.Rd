@@ -20,6 +20,6 @@ Generates plot {no return}
 Plotting Signature Motif counts/spectra
 }
 \examples{
-result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-plot_sample_reconstruction_error(result, "TCGA-ER-A197-06A-32D-A197-08")
+data(res)
+plot_sample_reconstruction_error(res, "TCGA-ER-A197-06A-32D-A197-08")
 }

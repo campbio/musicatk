@@ -18,6 +18,6 @@ Result object with user-defined signatures names
 Return sample from musica object
 }
 \examples{
-result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-name_signatures(result, c("smoking", "apobec", "unknown"))
+data(res)
+name_signatures(res, c("smoking", "apobec", "unknown"))
 }

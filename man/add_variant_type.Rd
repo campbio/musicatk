@@ -17,7 +17,8 @@ Returns the inputted variant table with variant type ("SBS", "DBS",
 Generates a variant type table
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-musicatk:::add_variant_type(musica@variants)
+data(musica)
+variants <- get_variants(musica)
+musicatk:::add_variant_type(variants)
 }
 \keyword{internal}

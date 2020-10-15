@@ -27,6 +27,6 @@ a unique list of samples names in the order they are inside the
 \code{\linkS4class{musica}} object.
 }
 \examples{
-result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-sample_names(result)
+data(res)
+sample_names(res)
 }

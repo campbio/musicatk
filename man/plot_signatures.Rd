@@ -46,6 +46,6 @@ Generates plot {no return}
 Plotting Signature Motif counts/spectra
 }
 \examples{
-result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-plot_signatures(result)
+data(res)
+plot_signatures(res)
 }

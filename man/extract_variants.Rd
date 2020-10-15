@@ -115,11 +115,11 @@ will be ignored for these items.
 }
 \examples{
 # Get loations of two vcf files and a maf file
-luad_vcf_file <- system.file("testdata", "public_LUAD_TCGA-97-7938.vcf",
+luad_vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
 package = "musicatk")
-lusc_maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+lusc_maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 package = "musicatk")
-melanoma_vcfs <- list.files(system.file("testdata", package = "musicatk"),
+melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
   pattern = glob2rx("*SKCM*vcf"), full.names = TRUE)
 
 # Read all files in at once

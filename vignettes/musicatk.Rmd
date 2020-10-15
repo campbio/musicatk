@@ -63,22 +63,22 @@ Below are some examples of extracting variants from MAF and VCF files:
 
 ```{r extract_variants, message = FALSE}
 # Extract variants from a MAF File
-lusc_maf <- system.file("testdata", "public_TCGA.LUSC.maf", package = "musicatk") 
+lusc_maf <- system.file("extdata", "public_TCGA.LUSC.maf", package = "musicatk") 
 lusc.variants <- extract_variants_from_maf_file(maf_file = lusc_maf)
 
 # Extract variants from an individual VCF file
-luad_vcf <- system.file("testdata", "public_LUAD_TCGA-97-7938.vcf", 
+luad_vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf", 
                          package = "musicatk")
 luad.variants <- extract_variants_from_vcf_file(vcf_file = luad_vcf)
 
 # Extract variants from multiple files and/or objects
-melanoma_vcfs <- list.files(system.file("testdata", package = "musicatk"), 
+melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"), 
                            pattern = glob2rx("*SKCM*vcf"), full.names = TRUE)
 variants <- extract_variants(c(lusc_maf, luad_vcf, melanoma_vcfs))
 ```
 
 ## Choosing a genome
-musicatk uses [BSgenome](https://bioconductor.org/packages/release/bioc/html/BSgenome.html) objects to access genome sequence information that flanks each mutation which is used bases for generating mutation count tables. BSgenome objects store full genome sequences for different organisms. A full list of supported organisms can be obtained by running ```available.genomes()```. Custom genomes can be forged as well (see [BSgenome](https://bioconductor.org/packages/release/bioc/html/BSgenome.html) documentation). musicatk provides a utility function called ```select_genome()``` to allow users to quickly select human genome build versions "hg19" and "hg38" or mouse genome builds "mm9" and "mm10". The reference sequencing for these genomes are in UCSC format (e.g. chr1).
+musicatk uses [BSgenome](https://bioconductor.org/packages/release/bioc/html/BSgenome.html) objects to access genome sequence information that flanks each mutation which is used bases for generating mutation count tables. BSgenome objects store full genome sequences for different organisms. A full list of supported organisms can be obtained by running `available.genomes()`. Custom genomes can be forged as well (see [BSgenome](https://bioconductor.org/packages/release/bioc/html/BSgenome.html) documentation). musicatk provides a utility function called `select_genome()` to allow users to quickly select human genome build versions "hg19" and "hg38" or mouse genome builds "mm9" and "mm10". The reference sequencing for these genomes are in UCSC format (e.g. chr1).
 
 ```{r select_genome}
 g <- select_genome("hg38")
@@ -135,7 +135,7 @@ plot_signatures(result)
 plot_exposures(result, plot_type = "bar")
 ```
 
-The proportion of each exposure in each tumor can be shown by setting ```proprotional = TRUE```:
+The proportion of each exposure in each tumor can be shown by setting `proprotional = TRUE`:
 ```{r exposures_prop}
 plot_exposures(result, plot_type = "bar", proportional = TRUE)
 ```
@@ -163,6 +163,7 @@ cosmic_v2_subtype_map("lung")
 Exposures for a subset of COSMIC signatures 4, 11, 12, 15 in our current dataset:
 
 ```{r predict_cosmic}
+data("cosmic_v2_sigs")
 pred_cosmic <- predict_exposure(musica = musica, table_name = "SBS96",
                                signature_res = cosmic_v2_sigs,
                                signatures_to_use =  c(12, 4, 11, 15),
@@ -189,18 +190,19 @@ compare_results(result = pred_cosmic, other_result = pred_our_sigs, threshold = 
 # Use of sample annotations for advanced sample comparisons
 ## Adding annotations
 ```{r annotations}
-annot <- read.table(system.file("testdata", 
-                                             "sample_annotations.txt", 
-                                             package = "musicatk"), sep = "\t", 
-                                 header=TRUE)
+annot <- read.table(system.file("extdata", "sample_annotations.txt", 
+                                package = "musicatk"), sep = "\t", header=TRUE)
 sample_annotations(result, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 ```
 
 ## Standard discovery using musicatk with sample annotations
 ```{r plot_annotations}
-plot_exposures(result, plot_type = "bar", group_by = "annotation", annotation = "Tumor_Subtypes")
-plot_exposures(result, plot_type = "box", proportion = TRUE, group_by = "annotation", annotation = "Tumor_Subtypes")
-plot_exposures(result, plot_type = "box", group_by = "signature", color_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposures(result, plot_type = "bar", group_by = "annotation", 
+               annotation = "Tumor_Subtypes")
+plot_exposures(result, plot_type = "box", proportion = TRUE, 
+               group_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposures(result, plot_type = "box", group_by = "signature", 
+               color_by = "annotation", annotation = "Tumor_Subtypes")
 ```
 
 
@@ -208,11 +210,19 @@ plot_exposures(result, plot_type = "box", group_by = "signature", color_by = "an
 
 Several functions make use of stochastic algorithms or procedures which 
 require the use of random number generator (RNG) for simulation or sampling. 
-To maintain reproducibility, all these functions use a **default seed of 1** to 
-make sure same results are generated each time one of these functions is 
-called. Explicitly setting the `seed` arguments is needed for greater control 
-and randomness. These functions include *discover_signatures*, 
+To maintain reproducibility, all these functions should be called using 
+```withr::with_seed(seed, function())``` make sure same results are generated 
+each time one of these functions is called. Using with_seed for reproducibility 
+is important for several functions including *discover_signatures*, 
 *predict_exposure*, and *create_umap*.
+
+```{r reproducible_prediction}
+seed <- 1
+reproducible_prediction <- withr::with_seed(seed, 
+                                            predict_exposure(musica = musica, 
+                                                         table_name = "SBS96",
+                                 signature_res = result, algorithm = "lda"))
+```
 
 
 # Session Information
