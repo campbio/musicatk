@@ -766,7 +766,7 @@ create_musica <- function(x, genome,
              "genome: ", paste(head(genome_u, 5), collapse = ", "))
       } else {
         # Attempt to map variants to genome object
-        new_chr <- chr
+        new_chr <- as.character(chr)
         map_error <- try(GenomeInfoDb::seqlevelsStyle(new_chr) <-
                            genome_style, silent = TRUE)
         if (is(map_error, "try-error")) {
