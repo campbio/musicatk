@@ -626,6 +626,7 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' id for each variant. Default \code{"Tumor_Sample_Barcode"}.
 #' @param extra_fields Which additional fields to extract and include in
 #' the musica object. Default \code{NULL}.
+#' @param convert_dbs Flag to convert adjacent SBS into DBS
 #' @param verbose Whether to print status messages during error checking.
 #' Default \code{TRUE}.
 #' @return Returns a musica object
@@ -646,6 +647,7 @@ create_musica <- function(x, genome,
                          alt_col = "alt",
                          sample_col = "sample",
                          extra_fields = NULL,
+                         convert_dbs = TRUE,
                          verbose = TRUE) {
 
   used_fields <- c(.required_musica_headers(), extra_fields)
@@ -702,6 +704,24 @@ create_musica <- function(x, genome,
     .check_variant_ref_in_genome(dt = dt, genome = genome)
   }
 
+  if (isTRUE(convert_dbs)) {
+    if (isTRUE(verbose)) {
+      message("Converting adjacent SBS into DBS")
+    }
+    sbs <- which(dt$Variant_Type == "SBS")
+    adjacent <- which(diff(dt$start) == 1)
+    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent+1 %in% sbs & 
+                                dt$chr[adjacent] == dt$chr[adjacent+1])]
+    if (length(dbs_ind) > 0) {
+      message(length(dbs_ind), " SBS converted to DBS")
+      dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
+      dt$ref[dbs_ind] <- paste0(dt$ref[dbs_ind], dt$ref[dbs_ind + 1])
+      dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
+      dt$Variant_Type[dbs_ind] <- "DBS"
+      dt <- dt[-(dbs_ind + 1), ]
+    }
+  }
+  
   # Create and return a musica object
   s <- gtools::mixedsort(unique(dt$sample))
   annot <- data.frame(Samples = factor(s, levels = s))

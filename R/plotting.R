@@ -1,6 +1,7 @@
 #' @importFrom ggplot2 ggplot aes geom_bar theme theme_set geom_point aes_string
 #' @importFrom ggplot2 facet_grid theme_bw xlab ylab element_blank element_text
 #' @importFrom rlang .data
+#' @importFrom withr with_seed
 NULL
 
 #' Return sample from musica object
