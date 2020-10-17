@@ -16,6 +16,7 @@ create_musica(
   alt_col = "alt",
   sample_col = "sample",
   extra_fields = NULL,
+  convert_dbs = TRUE,
   verbose = TRUE
 )
 }
@@ -58,6 +59,8 @@ id for each variant. Default \code{"Tumor_Sample_Barcode"}.}
 
 \item{extra_fields}{Which additional fields to extract and include in
 the musica object. Default \code{NULL}.}
+
+\item{convert_dbs}{Flag to convert adjacent SBS into DBS}
 
 \item{verbose}{Whether to print status messages during error checking.
 Default \code{TRUE}.}

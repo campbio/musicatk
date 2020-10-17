@@ -15,3 +15,7 @@ List of count tables objects
 \description{
 Extract count tables list from a musica object
 }
+\examples{
+data(musica)
+extract_count_tables(musica)
+}
