@@ -33,6 +33,9 @@ table_96 <- function(sample_df) {
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @return List of count tables objects
+#' @examples 
+#' data(musica)
+#' extract_count_tables(musica)
 #' @export
 extract_count_tables <- function(musica) {
   #Check that object is a musica
