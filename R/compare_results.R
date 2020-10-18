@@ -38,7 +38,7 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   comparison[[metric_name]] <- as.numeric(comparison[[metric_name]])
   comparison$x_sig_index <- as.numeric(comparison$x_sig_index)
   comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
-  comparison <- comparison[order(comparison[[metric]], decreasing = TRUE)]
+  comparison <- comparison[order(comparison[[metric]], decreasing = TRUE),]
   
   return(comparison)
 }

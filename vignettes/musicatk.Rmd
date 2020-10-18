@@ -151,7 +151,7 @@ plot_sample_counts(musica, sample_names = samples[c(3,4,5)], table_name = "SBS96
 Compare to COSMIC signatures by leaving the second result as default
 
 ```{r compare_cosmic}
-compare_cosmic_v2(result, threshold = 0.6)
+compare_cosmic_v2(result, threshold = 0.75)
 ```
 
 # Predicting exposures using existing signatures
@@ -160,13 +160,13 @@ We can list which signatures are present in each tumor type according to the [CO
 cosmic_v2_subtype_map("lung")
 ```
 
-Exposures for a subset of COSMIC signatures 4, 11, 12, 15 in our current dataset:
+Exposures for a subset of COSMIC signatures in our current dataset:
 
 ```{r predict_cosmic}
 data("cosmic_v2_sigs")
 pred_cosmic <- predict_exposure(musica = musica, table_name = "SBS96",
                                signature_res = cosmic_v2_sigs,
-                               signatures_to_use =  c(12, 4, 11, 15),
+                               signatures_to_use =  c(1, 4, 7, 13),
                                algorithm = "lda")
 
 plot_signatures(pred_cosmic)
