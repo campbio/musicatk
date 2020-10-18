@@ -14,7 +14,7 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   }
   if(metric == "jsd") {
     matches <- .jsd(sig1, sig2)
-    metric_name("1_minus_jsd")
+    metric_name <- "1_minus_jsd"
   } else {
     matches <- .cosine(sig1, sig2)
     metric_name <- "cosine"
@@ -38,7 +38,7 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   comparison[[metric_name]] <- as.numeric(comparison[[metric_name]])
   comparison$x_sig_index <- as.numeric(comparison$x_sig_index)
   comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
-  comparison <- comparison[order(comparison[[metric]], decreasing = TRUE),]
+  comparison <- comparison[order(comparison[[metric_name]], decreasing = TRUE),]
   
   return(comparison)
 }
@@ -159,7 +159,7 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                               result_name = deparse(substitute(result))) {
   signatures <- result@signatures
   comparison <- sig_compare(sig1 = signatures, sig2 = cosmic_v2_sigs@signatures,
-                            threshold = threshold, metric = "cosine")
+                            threshold = threshold, metric = metric)
   result_subset <- methods::new("musica_result",
                                 signatures =
                                   result@signatures[, comparison$x_sig_index, drop =
