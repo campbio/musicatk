@@ -151,7 +151,7 @@ plot_sample_counts(musica, sample_names = samples[c(3,4,5)], table_name = "SBS96
 Compare to COSMIC signatures by leaving the second result as default
 
 ```{r compare_cosmic}
-compare_cosmic_v2(result, threshold = 0.72)
+compare_cosmic_v2(result, threshold = 0.6)
 ```
 
 # Predicting exposures using existing signatures
