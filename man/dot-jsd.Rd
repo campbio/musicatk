@@ -11,6 +11,8 @@ between two matrices}
 \item{p}{First matrix}
 
 \item{q}{Second matrix}
+
+\item{epsilon}{Number to add to all probabilities. Default \code{0.0000001}.}
 }
 \value{
 Returns matrix of 1 - Jensen-Shannon Divergences
@@ -18,9 +20,4 @@ Returns matrix of 1 - Jensen-Shannon Divergences
 \description{
 Calculates 1 - Jensen-Shannon Divergences between all pairs of columns 
 between two matrices
-}
-\examples{
-p <- c(0.2, 0.3, 0.4, 0.5, 0.6)
-q <- c(0.6, 0.5, 0.4, 0.3, 0.2)
-.jsd(p, q)
 }

@@ -49,6 +49,8 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 #' @param result A \code{\linkS4class{musica_result}} object.
 #' @param other_result A second \code{\linkS4class{musica_result}} object.
 #' @param threshold threshold for similarity
+#' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+#' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot of first result signatures
 #' @param other_result_name title for plot of second result signatures
 #' @return Returns the comparisons
@@ -56,13 +58,13 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 #' data(res)
 #' compare_results(res, res, threshold = 0.8)
 #' @export
-compare_results <- function(result, other_result,
-                            threshold = 0.9, result_name =
+compare_results <- function(result, other_result, threshold = 0.9,
+                             metric = "cosine", result_name =
                               deparse(substitute(result)), other_result_name =
                               deparse(substitute(other_result))) {
   signatures <- result@signatures
   comparison <- sig_compare(sig1 = signatures, sig2 = other_result@signatures,
-                            threshold = threshold, metric = "cosine")
+                            threshold = threshold, metric = metric)
   result_subset <- methods::new("musica_result",
                                 signatures = result@signatures[, comparison$x_sig_index,
                                                                drop = FALSE], exposures =
@@ -87,15 +89,17 @@ compare_results <- function(result, other_result,
 #' @param variant_class Compare to SBS, DBS, or Indel
 #' @param sample_type exome (SBS only) or genome
 #' @param threshold threshold for similarity
+#' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+#' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot user result signatures
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
 #' compare_cosmic_v3(res, "SBS", "genome", threshold = 0.8)
 #' @export
-compare_cosmic_v3 <- function(result, variant_class, sample_type,
-                              threshold = 0.9, result_name =
-                                deparse(substitute(result))) {
+compare_cosmic_v3 <- function(result, variant_class, sample_type, 
+                              metric = "cosine", threshold = 0.9,
+                              result_name = deparse(substitute(result))) {
   if (sample_type == "exome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       cosmic_res <- cosmic_v3_sbs_sigs_exome
@@ -119,7 +123,7 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   }
   signatures <- result@signatures
   comparison <- sig_compare(sig1 = signatures, sig2 = cosmic_res@signatures,
-                            threshold = threshold, metric = "cosine")
+                            threshold = threshold, metric = metric)
   result_subset <- methods::new(
     "musica_result", signatures = result@signatures[, comparison$x_sig_index,
                                                     drop = FALSE],
@@ -143,14 +147,16 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #'
 #' @param result A \code{\linkS4class{musica_result}} object.
 #' @param threshold threshold for similarity
+#' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+#' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot user result signatures
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
 #' compare_cosmic_v2(res, threshold = 0.7)
 #' @export
-compare_cosmic_v2 <- function(result, threshold = 0.9, result_name =
-                                deparse(substitute(result))) {
+compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
+                              result_name = deparse(substitute(result))) {
   signatures <- result@signatures
   comparison <- sig_compare(sig1 = signatures, sig2 = cosmic_v2_sigs@signatures,
                             threshold = threshold, metric = "cosine")
