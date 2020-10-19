@@ -8,6 +8,7 @@ compare_results(
   result,
   other_result,
   threshold = 0.9,
+  metric = "cosine",
   result_name = deparse(substitute(result)),
   other_result_name = deparse(substitute(other_result))
 )
@@ -18,6 +19,9 @@ compare_results(
 \item{other_result}{A second \code{\linkS4class{musica_result}} object.}
 
 \item{threshold}{threshold for similarity}
+
+\item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 
 \item{result_name}{title for plot of first result signatures}
 

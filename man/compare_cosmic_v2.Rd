@@ -8,6 +8,7 @@ and whole-genome)}
 compare_cosmic_v2(
   result,
   threshold = 0.9,
+  metric = "cosine",
   result_name = deparse(substitute(result))
 )
 }
@@ -15,6 +16,9 @@ compare_cosmic_v2(
 \item{result}{A \code{\linkS4class{musica_result}} object.}
 
 \item{threshold}{threshold for similarity}
+
+\item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 
 \item{result_name}{title for plot user result signatures}
 }
