@@ -6,7 +6,7 @@
 \usage{
 discover_signatures(
   musica,
-  table_name = NULL,
+  table_name,
   num_signatures,
   method = "lda",
   seed = 1,

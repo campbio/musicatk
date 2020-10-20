@@ -233,7 +233,7 @@ setClass("musica_result", representation(signatures = "matrix", exposures = "mat
                                   tables = "character",
                                   type = "character", musica = "musica",
                                   log_lik = "numeric", perplexity = "numeric",
-                                  umap = "list"))
+                                  umap = "matrix"))
 
 #' Return sample from musica object
 #'
@@ -247,8 +247,8 @@ setClass("musica_result", representation(signatures = "matrix", exposures = "mat
 name_signatures <- function(result, name_vector) {
   num_sigs <- length(colnames(result@signatures))
   if (length(name_vector) != num_sigs) {
-    stop(paste("Please provide a full list of signatures names (length = ",
-               num_sigs, ")", sep = ""))
+    stop("Please provide a full list of signatures names (length = ",
+               num_sigs, ").")
   }
   eval.parent(substitute(colnames(result@signatures) <- name_vector))
   eval.parent(substitute(rownames(result@exposures) <- name_vector))

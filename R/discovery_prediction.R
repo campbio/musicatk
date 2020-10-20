@@ -18,7 +18,7 @@ NULL
 #' discover_signatures(musica = musica, table_name = "SBS96",
 #' num_signatures = 3, method = "nmf", seed = 12345, nstart = 1)
 #' @export
-discover_signatures <- function(musica, table_name = NULL, num_signatures,
+discover_signatures <- function(musica, table_name, num_signatures,
                                 method="lda", seed = 1, nstart = 1,
                                 par_cores = FALSE) {
   if (!methods::is(musica, "musica")) {
