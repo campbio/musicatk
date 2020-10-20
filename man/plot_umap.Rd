@@ -7,7 +7,7 @@
 plot_umap(
   result,
   color_by = c("signatures", "annotation", "none"),
-  proportional = FALSE,
+  proportional = TRUE,
   annotation = NULL,
   point_size = 0.7,
   same_scale = TRUE,
@@ -31,7 +31,7 @@ generated with no coloring. Default \code{"signature"}.}
 
 \item{proportional}{If \code{TRUE}, then the exposures will be normalized
 to between 0 and 1 by dividing by the total number of counts for each sample.
-Default \code{FALSE}.}
+Default \code{TRUE}.}
 
 \item{annotation}{Sample annotation used to color the points. One used
 when \code{color_by = "annotation"}. Default \code{NULL}.}
