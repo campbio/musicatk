@@ -21,3 +21,4 @@ Returns matrix of 1 - Jensen-Shannon Divergences
 Calculates 1 - Jensen-Shannon Divergences between all pairs of columns 
 between two matrices
 }
+\keyword{internal}

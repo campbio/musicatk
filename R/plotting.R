@@ -20,7 +20,7 @@ NULL
 plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
 
   if(is.null(table_name)) {
-   table_name <- names(musica@count_tables)[1]
+   table_name <- names(tables(musica))[1]
   }  
   
   # Extract counts for specific samples
@@ -73,10 +73,10 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
                             text_size = 10, facet_size = 10,
                             show_x_labels = TRUE,
                             same_scale = TRUE) {
-  signatures <- result@signatures
+  signatures <- signatures(result)
   sig_names <- colnames(signatures)
   table_name <- result@tables
-  tab <- result@musica@count_tables[[table_name]]
+  tab <- tables(result)[[table_name]]
   annot <- tab@annotation
 
   if(is.null(color_mapping)) {
@@ -134,8 +134,8 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
 #' @export
 plot_sample_reconstruction_error <- function(result, sample,
                                              plotly = FALSE) {
-  signatures <- .extract_count_table(result@musica, result@tables)[, sample,
-                                                              drop = FALSE]
+  signatures <- .extract_count_table(musica(result), 
+                                     table_name(result))[, sample, drop = FALSE]
   sample_name <- colnames(signatures)
   reconstructed <- reconstruct_sample(result, sample)
   sigs <- cbind(signatures, reconstructed, signatures - reconstructed)
@@ -144,8 +144,8 @@ plot_sample_reconstruction_error <- function(result, sample,
   recontruct_result <- methods::new("musica_result",
                       signatures = sigs,
                       exposures = matrix(), type = "NMF",
-                      musica = result@musica,
-                      tables = result@tables)
+                      musica = musica(result),
+                      tables = table_name(result))
   plot_signatures(recontruct_result, same_scale = FALSE) +
     ggplot2::ggtitle("Reconstruction error", subtitle = sample_name) + ylab("")
 }
@@ -182,7 +182,7 @@ plot_sample_reconstruction_error <- function(result, sample,
 #' @export
 create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
                         spread = 1, proportional = TRUE) {
-  samples <- t(result@exposures)
+  samples <- t(exposures(result))
   range_limit <- function(x) {
     (x / max(x))
     }
@@ -194,7 +194,7 @@ create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
                          metric = "cosine")
   x <- umap_out[, 1]
   y <- umap_out[, 2]
-  annot <- result@musica@sample_annotations
+  annot <- samp_annot(result)
   samp_ind <- match(rownames(samples), annot$Samples)
   df <- data.frame(x = x, y = y, type = annot[[annotation]][samp_ind],
                    samp = rownames(samples))

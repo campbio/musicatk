@@ -44,30 +44,30 @@ extract_count_tables <- function(musica) {
     'musica' object, please use 'create_musica' to create one."))
   }
 
-  counts_table <- musica@count_tables
+  counts_table <- tables(musica)
   return(counts_table)
 }
 
 .extract_count_table <- function(musica, table_name) {
   #Check that at least one table exists
-  if (length(musica@count_tables) == 0) {
+  if (length(tables(musica)) == 0) {
     stop(strwrap(prefix = " ", initial = "", "The counts table is either
     missing or malformed, please run create tables e.g. [build_standard_table]
     prior to this function."))
   }
 
   #Check that table exists within this musica
-  if (!table_name %in% names(musica@count_tables)) {
+  if (!table_name %in% names(tables(musica))) {
     stop(paste0("The table '", table_name, "' does not exist. ",
                "Tables in the 'musica' object include: ",
-                paste(names(musica@count_tables), collapse = ", ")))
+                paste(names(tables(musica)), collapse = ", ")))
   }
 
   return(extract_count_tables(musica)[[table_name]]@count_table)
 }
 
 subset_count_tables <- function(musica, samples) {
-  tables <- musica@count_tables
+  tables <- tables(musica)
   table_names <- names(tables)
   for (name in table_names) {
     sub_tab <- tables[[name]]
@@ -85,9 +85,9 @@ subset_count_tables <- function(musica, samples) {
                                return_table = FALSE, overwrite = FALSE) {
 
   # Check that table name is unique compared to existing tables
-  if (name %in% names(musica@count_tables) & !overwrite) {
+  if (name %in% names(tables(musica)) & !overwrite) {
     stop(paste("Table names must be unique. Current table names are: ",
-               paste(names(musica@count_tables), collapse = ", "), sep = ""))
+               paste(names(tables(musica)), collapse = ", "), sep = ""))
   }
 
   # Error checking of variables
@@ -131,10 +131,10 @@ subset_count_tables <- function(musica, samples) {
   } else {
     tab <- list(tab)
     names(tab) <- name
-    #musica@count_tables <- c(musica@count_tables, tab)
+    #musica@count_tables <- c(tables(musica), tab)
     .table_exists_warning(musica, name, overwrite)
-    eval.parent(substitute(musica@count_tables[[name]] <- tab))
-    #musica@count_tables[[name]] <- tab
+    eval.parent(substitute(tables(musica)[[name]] <- tab))
+    #tables(musica)[[name]] <- tab
     #return(musica)
   }
 }
@@ -173,8 +173,8 @@ build_custom_table <- function(musica, variant_annotation, name,
                                type = NULL, color_variable = NULL,
                                color_mapping = NULL, return_instead = FALSE,
                                overwrite = FALSE) {
-  tab <- musica@count_tables
-  variants <- musica@variants
+  tab <- tables(musica)
+  variants <- variants(musica)
   .table_exists_warning(musica = musica, table_name = name, overwrite = overwrite)
 
   #Check that variant column exists
@@ -235,12 +235,12 @@ build_custom_table <- function(musica, variant_annotation, name,
   if (return_instead) {
     return(built_table)
   } else {
-    eval.parent(substitute(musica@count_tables[[name]] <- built_table))
+    eval.parent(substitute(tables(musica)[[name]] <- built_table))
   }
 }
 
 combine_count_tables <- function(musica, to_comb, name, description = NA) {
-  tab <- musica@count_tables
+  tab <- tables(musica)
 
   #Check that table names are unique
   if (name %in% names(tab)) {
@@ -263,15 +263,15 @@ combine_count_tables <- function(musica, to_comb, name, description = NA) {
   }
   tab@table_name[[name]] <- name
   tab@description[[name]] <- description
-  eval.parent(substitute(musica@count_tables <- tab))
+  eval.parent(substitute(tables(musica) <- tab))
 }
 
 drop_count_table <- function(musica, table_name) {
-  tab <- musica@count_tables
+  tab <- tables(musica)
   if (!table_name %in% names(tab)) {
     stop(paste(table_name, " does not exist. Current table names are: ",
                names(tab), sep = ""))
   }
   tab[[table_name]] <- NULL
-  eval.parent(substitute(musica@count_tables <- tab))
+  eval.parent(substitute(tables(musica) <- tab))
 }

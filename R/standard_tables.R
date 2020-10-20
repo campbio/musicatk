@@ -7,7 +7,7 @@
 #' @return Returns the created SBS96 count table object
 #' @keywords internal
 create_sbs96_table <- function(musica, g, overwrite = FALSE) {
-  dat <- subset_variant_by_type(musica@variants, type = "SBS")
+  dat <- subset_variant_by_type(variants(musica), type = "SBS")
   ref <- as.character(dat$ref)
   alt <- as.character(dat$alt)
   mut_type <- paste(ref, ">", alt, sep = "")
@@ -109,7 +109,7 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
   if (!strand_type %in% c("Transcript_Strand", "Replication_Strand")) {
     stop("Please select either Transcript_Strand or Replication_Strand")
   }
-  dat <- musica@variants
+  dat <- variants(musica)
   dat <- subset_variant_by_type(dat, "SBS")
   dat <- drop_na_variants(dat, strand_type)
 
@@ -214,7 +214,7 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
 #' @return Returns the created DBS table object
 #' @keywords internal
 create_dbs_table <- function(musica, overwrite = overwrite) {
-  dbs <- subset_variant_by_type(musica@variants, "DBS")
+  dbs <- subset_variant_by_type(variants(musica), "DBS")
 
   ref <- dbs$ref
   alt <- dbs$alt
@@ -312,7 +312,7 @@ rc <- function(dna) {
     rev_com <- as.character(Biostrings::reverseComplement(
       Biostrings::DNAString(dna)))
   } else if (is(dna, "character") && length(dna) > 1) {
-    rev_com <- vapply(dna, rc, FUN.VALUE = "ATGC")
+    rev_com <- sapply(dna, rc)
     names(rev_com) <- NULL
   } else {
     stop("Must be character or character vector")
@@ -396,11 +396,11 @@ build_standard_table <- function(musica, g, table_name, strand_type = NA,
 }
 
 create_indel_table <- function(musica, g, overwrite = FALSE) {
-  var <- musica@variants
+  var <- variants(musica)
   all_ins <- as.data.frame(subset_variant_by_type(var, "INS"))
   all_del <- as.data.frame(subset_variant_by_type(var, "DEL"))
-  samples <- unique(c(as.character(all_ins$sample),
-                      as.character(all_del$sample)))
+  #samples <- unique(c(as.character(all_ins$sample),
+  #                    as.character(all_del$sample)))
   all_samples <- sample_names(musica)
   dimlist <- list(row_names = c(.get_indel_motifs("bp1", 0, 0),
                                 .get_indel_motifs("bp1", 1, 0),
@@ -409,7 +409,7 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
                                 .get_indel_motifs("micro", NA, NA)),
                   column_names = all_samples)
   mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), dimnames = dimlist)
-  for(sample in samples) {
+  for(sample in all_samples) {
     ins <- all_ins[which(all_ins$sample == sample), ]
     del <- all_del[which(all_del$sample == sample), ]
 
@@ -466,14 +466,15 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   names(color_mapping) <- unique(annotation$mutation)
 
   #TODO error in counting, we're missing some
-  incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
-  dummy_features <- rep(NA, length(var$Variant_Type))
+  #incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
+  dummy_features <- rep(NA, length(which(var$Variant_Type %in% c("INS", "DEL"))))
 
   tab <- .create_count_table(musica = musica, name = "INDEL",
                              count_table = mut_table,
                              annotation = annotation,
                              features = data.frame(mutation = dummy_features),
-                             type = Rle(rep("INDEL", length(var$Variant_Type))),
+                             type = Rle(rep("INDEL", length(which(
+                               var$Variant_Type %in% c("INS", "DEL"))))),
                              color_variable = "mutation",
                              color_mapping = color_mapping,
                              description = paste0("Standard count table for ",

@@ -117,23 +117,11 @@ setClass("musica", slots = c(variants = "data.table",
 #' subset_variants_by_samples(musica, "TCGA-94-7557-01A-11D-2122-08")
 #' @export
 subset_variants_by_samples <- function(musica, sample_name) {
-  return(musica@variants[which(musica@variants$sample == sample_name),
-                      ])
+  return(variants(musica)[
+    which(variants(musica)$sample == sample_name), ])
 }
 
 # Sample-Level object/methods -------------------------------
-
-#' Return variants for musica object
-#'
-#' @param musica A \code{\linkS4class{musica}} object.
-#' @return Returns variants in musica object
-#' @examples
-#' data(musica)
-#' get_variants(musica)
-#' @export
-get_variants <- function(musica) {
-  return(musica@variants)
-}
 
 #' Creates a new musica subsetted to only samples with enough variants
 #'
@@ -151,16 +139,16 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
   tab <- .extract_count_table(musica, table_name)
   min_samples <- colnames(tab)[which(colSums(tab) >= num_counts)]
 
-  musica@count_tables <- subset_count_tables(musica, min_samples)
+  tables(musica) <- subset_count_tables(musica, min_samples)
 
   #Subset variants
-  musica@variants <- musica@variants[which(musica@variants$Tumor_Sample_Barcode %in%
+  variants(musica) <- variants(musica)[which(variants(musica)$Tumor_Sample_Barcode %in%
                                       min_samples), ]
 
   #Subset sample annotations
-  if (nrow(musica@sample_annotations) != 0) {
-    musica@sample_annotations <- musica@sample_annotations[which(
-      musica@sample_annotations$Samples %in% min_samples), ]
+  if (nrow(samp_annot(musica)) != 0) {
+    samp_annot(musica) <- sampe_annot(musica)[which(
+      samp_annot(musica)$Samples %in% min_samples), ]
   }
   return(musica)
 }
@@ -184,20 +172,20 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 #' "Lung")
 #' @export
 subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
-  if (!all(annot_col %in% colnames(musica@sample_annotations))) {
+  if (!all(annot_col %in% colnames(samp_annot(musica)))) {
     stop(paste(annot_col, " not found in annotation columns, please review.",
                sep = ""))
   }
-  annotation_index <- which(musica@sample_annotations[[which(colnames(
-    musica@sample_annotations) %in% annot_col)]] %in% annot_names)
+  annotation_index <- which(samp_annot(musica)[[which(colnames(
+    samp_annot(musica)) %in% annot_col)]] %in% annot_names)
   if (length(annotation_index) == 0) {
     stop(paste(annot_names, " not present in ", annot_col,
                " column, please review.", sep = "", collapse = TRUE))
   }
-  musica@sample_annotations <- musica@sample_annotations[annotation_index, ]
-  annotation_samples <- musica@sample_annotations$"Samples"
-  musica@count_tables <- subset_count_tables(musica, annotation_samples)
-  musica@variants <- musica@variants[which(musica@variants$Tumor_Sample_Barcode %in%
+  samp_annot(musica) <- samp_annot(musica)[annotation_index, ]
+  annotation_samples <- samp_annot(musica)$"Samples"
+  tables(musica) <- subset_count_tables(musica, annotation_samples)
+  variants(musica) <- variants(musica)[which(variants(musica)$Tumor_Sample_Barcode %in%
                                       annotation_samples), ]
   return(musica)
 }

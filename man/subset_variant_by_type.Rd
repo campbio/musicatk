@@ -21,5 +21,5 @@ Subsets a variant table based on Variant Type
 \examples{
 data(musica)
 annotate_variant_type(musica)
-subset_variant_by_type(get_variants(musica), "SBS")
+subset_variant_by_type(variants(musica), "SBS")
 }

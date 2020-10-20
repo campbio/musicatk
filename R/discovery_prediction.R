@@ -47,10 +47,9 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
 
     result <- methods::new("musica_result", signatures = lda_sigs,
                                tables = table_name,
-                               exposures = weights, type = "LDA", musica = musica,
-                               log_lik = stats::median(lda_out@loglikelihood),
-                               perplexity = topicmodels::perplexity(lda_out))
-    result@exposures <- sweep(result@exposures, 2, colSums(result@exposures),
+                               exposures = weights, type = "LDA", 
+                           musica = musica)
+    result@exposures <- sweep(exposures(result), 2, colSums(exposures(result)),
                               FUN = "/")
   } else if (method == "nmf") {
     #Needed to prevent error with entirely zero rows
@@ -71,9 +70,9 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
                                tables = table_name,
                                exposures = decomp@fit@H, type = "NMF",
                                musica = musica, log_lik = decomp@residuals)
-    result@signatures <- sweep(result@signatures, 2, colSums(result@signatures),
-                               FUN = "/")
-    result@exposures <- sweep(result@exposures, 2, colSums(result@exposures),
+    signatures(result) <- sweep(signatures(result), 2, 
+                                colSums(signatures(result)), FUN = "/")
+    exposures(result) <- sweep(exposures(result), 2, colSums(exposures(result)),
                               FUN = "/")
   } else{
     stop("That method is not supported. Please select 'lda' or 'nmf' ",
@@ -82,7 +81,7 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
   # Multiply Weights by sample counts
   sample_counts <- colSums(counts_table)
   matched <- match(colnames(counts_table), names(sample_counts))
-  result@exposures <- sweep(result@exposures, 2, sample_counts[matched],
+  result@exposures <- sweep(exposures(result), 2, sample_counts[matched],
                             FUN = "*")
   return(result)
 }
@@ -115,8 +114,8 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
 #' @export
 predict_exposure <- function(musica, g, table_name, signature_res, algorithm,
                              signatures_to_use = seq_len(ncol(
-                               signature_res@signatures)), verbose = FALSE) {
-  signature <- signature_res@signatures[, signatures_to_use]
+                               signatures(signature_res))), verbose = FALSE) {
+  signature <- signatures(signature_res)[, signatures_to_use]
   counts_table <- .extract_count_table(musica, table_name)
   present_samples <- which(colSums(counts_table) > 0)
   counts_table <- counts_table[, present_samples]
@@ -133,7 +132,7 @@ predict_exposure <- function(musica, g, table_name, signature_res, algorithm,
     rownames(exposures) <- colnames(signature)
     type_name <- "decompTumor2Sig"
   }else if (algorithm %in% c("ds", "deconstruct", "deconstructSigs")) {
-    sigs.input <- deconstructSigs::mut.to.sigs.input(mut.ref = musica@variants,
+    sigs.input <- deconstructSigs::mut.to.sigs.input(mut.ref = variants(musica),
                               sample.id = "sample", chr = "chr", pos = "start", 
                               ref = "ref", alt = "alt", bsg = g)
     sig_all <- t(signature)
@@ -167,8 +166,8 @@ predict_exposure <- function(musica, g, table_name, signature_res, algorithm,
   # Multiply Weights by sample counts
   sample_counts <- colSums(counts_table)
   matched <- match(colnames(counts_table), names(sample_counts))
-  result@exposures <- sweep(result@exposures, 2, sample_counts[matched],
-                            FUN = "*")
+  exposures(result) <- sweep(exposures(result), 2, sample_counts[matched], 
+                             FUN = "*")
   return(result)
 }
 
@@ -255,7 +254,7 @@ predict_decompTumor2Sig <- function(sample_mat, signature_mat) {
 
 #placeholder
 .multi_modal_discovery <- function(musica, num_signatures, motif96_name,
-                                  rflank_name, lflank_name, max.iter=125) {
+                                  rflank_name, lflank_name, max.iter = 125) {
   motif96 <- .extract_count_table(musica, motif96_name)
   rflank <- .extract_count_table(musica, rflank_name)
   lflank <- .extract_count_table(musica, lflank_name)
@@ -273,7 +272,8 @@ whichSignatures <- function(tumor_ref = NA,
                            contexts_needed = FALSE,
                            tri_counts_method = "default") {
   if (is(tumor_ref, 'matrix')) {
-    stop(paste("Input tumor.ref needs to be a data frame or location of input text file", sep = ""))
+    stop(paste("Input tumor.ref needs to be a data frame or location of ", 
+               "input text file", sep = ""))
   }
 
   if (exists("tumor.ref", mode = "list") | is(tumor_ref, "data.frame")) {
@@ -307,7 +307,8 @@ whichSignatures <- function(tumor_ref = NA,
   }
   tumor <- subset(tumor, rownames(tumor) == sample_id)
   if (round(rowSums(tumor), digits = 1) != 1) {
-    stop(paste("Sample: ", sample_id, " is not normalized\n", 'Consider using "contexts.needed = TRUE"', sep = " "))
+    stop(paste0("Sample: ", sample_id, " is not normalized. Consider using ", 
+    "contexts.needed = TRUE", sep = " "))
   }
   signatures <- signatures_ref
 
@@ -315,9 +316,11 @@ whichSignatures <- function(tumor_ref = NA,
   original_sigs <- signatures
 
   # Check column names are formatted correctly
-  if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < length(colnames(signatures))) {
+  if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < 
+      length(colnames(signatures))) {
     colnames(tumor) <- deconstructSigs::changeColumnNames(colnames(tumor))
-    if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < length(colnames(signatures))) {
+    if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < 
+        length(colnames(signatures))) {
       stop("Check column names on input file")
     }
   }
@@ -398,7 +401,8 @@ whichSignatures <- function(tumor_ref = NA,
 #' @return A result object containing signatures and sample weights
 #' @examples
 #' data(musica_sbs96)
-#' grid <- generate_result_grid(musica_sbs96, "SBS96", "nmf", k_start = 2, k_end = 5)
+#' grid <- generate_result_grid(musica_sbs96, "SBS96", "nmf", k_start = 2, 
+#' k_end = 5)
 #' @export
 generate_result_grid <- function(musica, table_name, discovery_type = "lda",
                                  annotation = NA, k_start, k_end, n_start = 1,
@@ -424,8 +428,8 @@ generate_result_grid <- function(musica, table_name, discovery_type = "lda",
 
   #Generate and set result_list
   if (!is.na(annotation)) {
-    annot_samples <- musica@sample_annotations$Samples
-    annot <- musica@sample_annotations$Tumor_Type
+    annot_samples <- samp_annot(musica)$Samples
+    annot <- samp_annot(musica)$Tumor_Type
     annot_names <- unique(annot)
     num_annotation <- length(annot_names)
   } else {
@@ -441,17 +445,17 @@ generate_result_grid <- function(musica, table_name, discovery_type = "lda",
       }
       cur_ind <- which(annot == annot_names[i])
       cur_annot_samples <- annot_samples[cur_ind]
-      cur_annot_variants <- musica@variants[which(
-        musica@variants$sample %in% cur_annot_samples), ]
+      cur_annot_variants <- variants(musica)[which(
+        variants(musica)$sample %in% cur_annot_samples), ]
 
       cur_musica <- methods::new("musica", variants = cur_annot_variants,
                        sample_annotations =
-                         musica@sample_annotations[cur_ind, ],
+                         samp_annot(musica)[cur_ind, ],
                        count_tables = subset_count_tables(musica,
                                                           cur_annot_samples))
     } else {
       cur_musica <- musica
-      cur_annot_samples <- unique(musica@variants$sample)
+      cur_annot_samples <- unique(variants(musica)$sample)
     }
     #Used for reconstruction error
     cur_counts <- .extract_count_table(cur_musica, table_name)
@@ -481,11 +485,12 @@ generate_result_grid <- function(musica, table_name, discovery_type = "lda",
 }
 
 reconstruct_sample <- function(result, sample_number) {
-  reconstruction <- matrix(apply(sweep(result@signatures, 2,
-                                       result@exposures[, sample_number,
+  reconstruction <- matrix(apply(sweep(signatures(result), 2,
+                                       exposures(result)[, sample_number,
                                                       drop = FALSE], FUN = "*"),
-                                 1, sum), dimnames =
-                             list(rownames(result@signatures), "Reconstructed"))
+                                 1, sum), dimnames = list(
+                                   rownames(signatures(result)), 
+                                   "Reconstructed"))
   return(reconstruction)
 }
 
@@ -532,13 +537,13 @@ auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
                        proportion_samples, rare_exposure =
                        rare_exposure)
   } else {
-    available_annotations <- setdiff(colnames(musica@sample_annotations),
+    available_annotations <- setdiff(colnames(samp_annot(musica)),
                                      "Samples")
     if (!sample_annotation %in% available_annotations) {
       stop(paste0("Sample annotation ", sample_annotation, " not found, ",
                  "available annotations: ", available_annotations))
     }
-    annot <- unique(musica@sample_annotations[[sample_annotation]])
+    annot <- unique(samp_annot(musica)[[sample_annotation]])
     result <- list()
     for (i in seq_along(annot)) {
       if (verbose) {
@@ -584,7 +589,7 @@ auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
   test_predicted <- predict_exposure(musica = musica, table_name = table_name,
                                     signature_res = signature_res,
                                     algorithm = algorithm)
-  exposures <- test_predicted@exposures
+  exposures <- exposures(test_predicted)
   num_samples <- ncol(exposures)
   exposures <- sweep(exposures, 2, colSums(exposures), "/")
   to_use <- as.numeric(which(apply(exposures, 1, function(x)

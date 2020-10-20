@@ -9,6 +9,7 @@
 #' @param q Second matrix
 #' @param epsilon Number to add to all probabilities. Default \code{0.0000001}.
 #' @return Returns matrix of 1 - Jensen-Shannon Divergences
+#' @keywords internal
 .jsd <- function(p, q, epsilon = 0.0000001) {
   # Add small value to handle zeros and then renormalize using prop.table
   p <- prop.table(p + epsilon, margin = 2)

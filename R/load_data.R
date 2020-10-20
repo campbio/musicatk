@@ -626,7 +626,10 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' id for each variant. Default \code{"Tumor_Sample_Barcode"}.
 #' @param extra_fields Which additional fields to extract and include in
 #' the musica object. Default \code{NULL}.
-#' @param convert_dbs Flag to convert adjacent SBS into DBS
+#' @param convert_dbs Flag to convert adjacent SBS into DBS (original SBS are 
+#' removed)
+#' @param standardize_indels Flag to convert indel style (e.g. `C > CAT` 
+#' becomes `- > AT` and `GCACA > G` becomes `CACA > -`)
 #' @param verbose Whether to print status messages during error checking.
 #' Default \code{TRUE}.
 #' @return Returns a musica object
@@ -648,6 +651,7 @@ create_musica <- function(x, genome,
                          sample_col = "sample",
                          extra_fields = NULL,
                          convert_dbs = TRUE,
+                         standardize_indels = TRUE,
                          verbose = TRUE) {
 
   used_fields <- c(.required_musica_headers(), extra_fields)
@@ -719,6 +723,47 @@ create_musica <- function(x, genome,
       dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
       dt$Variant_Type[dbs_ind] <- "DBS"
       dt <- dt[-(dbs_ind + 1), ]
+    }
+  }
+  
+  if (isTRUE(standardize_indels)) {
+    if (isTRUE(verbose)) {
+      message("Standardizing INS/DEL style")
+    }
+    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% c("A", "T", "G", "C"))
+    if (length(comp_ins > 0)) {
+      message("Removing ", length(comp_ins), " compound insertions")
+      dt <- dt[-comp_ins, ]
+    }
+    
+    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% c("A", "T", "G", "C"))
+    if (length(comp_del > 0)) {
+      message("Removing ", length(comp_del), " compound deletions")
+      dt <- dt[-comp_del, ]
+    }
+    
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% c("A", "T", "G", "C"))
+    if (length(ins)) {
+      message("Converting ", length(ins), " insertions")
+      dt$ref[ins] <- "-"
+      ins_alt <- dt$alt[ins]
+      dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
+    }
+    
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% c("A", "T", "G", "C"))
+    if (length(ins)) {
+      message("Converting ", length(ins), " insertions")
+      dt$ref[ins] <- "-"
+      ins_alt <- dt$alt[ins]
+      dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
+    }
+    
+    del <- which(dt$Variant_Type == "DEL" & dt$alt %in% c("A", "T", "G", "C"))
+    if (length(del)) {
+      message("Converting ", length(del), " deletions")
+      dt$alt[del] <- "-"
+      del_ref <- dt$ref[del]
+      dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
     }
   }
   
