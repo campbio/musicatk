@@ -160,7 +160,6 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
     id <- rep(NULL, length(input_list))
   }
 
-
   pb <- utils::txtProgressBar(min = 0, max = length(input_list), initial = 0,
                                 style = 3)
   for (i in seq_along(inputs)) {
@@ -730,19 +729,22 @@ create_musica <- function(x, genome,
     if (isTRUE(verbose)) {
       message("Standardizing INS/DEL style")
     }
-    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% c("A", "T", "G", "C"))
+    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% 
+                        c("A", "T", "G", "C"))
     if (length(comp_ins > 0)) {
       message("Removing ", length(comp_ins), " compound insertions")
       dt <- dt[-comp_ins, ]
     }
     
-    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% c("A", "T", "G", "C"))
+    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% 
+                        c("A", "T", "G", "C"))
     if (length(comp_del > 0)) {
       message("Removing ", length(comp_del), " compound deletions")
       dt <- dt[-comp_del, ]
     }
     
-    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% c("A", "T", "G", "C"))
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
+                   c("A", "T", "G", "C"))
     if (length(ins)) {
       message("Converting ", length(ins), " insertions")
       dt$ref[ins] <- "-"
@@ -750,7 +752,8 @@ create_musica <- function(x, genome,
       dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
     }
     
-    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% c("A", "T", "G", "C"))
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
+                   c("A", "T", "G", "C"))
     if (length(ins)) {
       message("Converting ", length(ins), " insertions")
       dt$ref[ins] <- "-"
@@ -758,7 +761,8 @@ create_musica <- function(x, genome,
       dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
     }
     
-    del <- which(dt$Variant_Type == "DEL" & dt$alt %in% c("A", "T", "G", "C"))
+    del <- which(dt$Variant_Type == "DEL" & dt$alt %in% 
+                   c("A", "T", "G", "C"))
     if (length(del)) {
       message("Converting ", length(del), " deletions")
       dt$alt[del] <- "-"

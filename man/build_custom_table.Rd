@@ -8,7 +8,7 @@ build_custom_table(
   musica,
   variant_annotation,
   name,
-  description = "",
+  description = character(),
   data_factor = NA,
   annotation_df = NULL,
   features = NULL,

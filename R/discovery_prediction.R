@@ -16,9 +16,9 @@ NULL
 #' g <- select_genome("19")
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #' discover_signatures(musica = musica, table_name = "SBS96",
-#' num_signatures = 3, method = "nmf", seed = 12345, nstart = 1)
+#' num_signatures = 3, method = "lda", seed = 12345, nstart = 1)
 #' @export
-discover_signatures <- function(musica, table_name = NULL, num_signatures,
+discover_signatures <- function(musica, table_name, num_signatures,
                                 method="lda", seed = 1, nstart = 1,
                                 par_cores = FALSE) {
   if (!methods::is(musica, "musica")) {
@@ -49,7 +49,7 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
                                tables = table_name,
                                exposures = weights, type = "LDA", 
                            musica = musica)
-    result@exposures <- sweep(exposures(result), 2, colSums(exposures(result)),
+    exposures(result) <- sweep(exposures(result), 2, colSums(exposures(result)),
                               FUN = "/")
   } else if (method == "nmf") {
     #Needed to prevent error with entirely zero rows
@@ -69,7 +69,7 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
     result <- methods::new("musica_result", signatures = decomp@fit@W,
                                tables = table_name,
                                exposures = decomp@fit@H, type = "NMF",
-                               musica = musica, log_lik = decomp@residuals)
+                               musica = musica)
     signatures(result) <- sweep(signatures(result), 2, 
                                 colSums(signatures(result)), FUN = "/")
     exposures(result) <- sweep(exposures(result), 2, colSums(exposures(result)),
@@ -81,7 +81,7 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
   # Multiply Weights by sample counts
   sample_counts <- colSums(counts_table)
   matched <- match(colnames(counts_table), names(sample_counts))
-  result@exposures <- sweep(exposures(result), 2, sample_counts[matched],
+  exposures(result) <- sweep(exposures(result), 2, sample_counts[matched],
                             FUN = "*")
   return(result)
 }
@@ -401,7 +401,7 @@ whichSignatures <- function(tumor_ref = NA,
 #' @return A result object containing signatures and sample weights
 #' @examples
 #' data(musica_sbs96)
-#' grid <- generate_result_grid(musica_sbs96, "SBS96", "nmf", k_start = 2, 
+#' grid <- generate_result_grid(musica_sbs96, "SBS96", "lda", k_start = 2, 
 #' k_end = 5)
 #' @export
 generate_result_grid <- function(musica, table_name, discovery_type = "lda",
@@ -415,9 +415,9 @@ generate_result_grid <- function(musica, table_name, discovery_type = "lda",
                                    "annotation_used" = annotation, "k_start" =
                                      k_start, "k_end" = k_end,
                                    "total_num_samples" =
-                                     nrow(musica@sample_annotations),
+                                     nrow(samp_annot(musica)),
                                    "nstart" = n_start, seed = seed)
-  result_grid@grid_params <- params
+  set_grid_params(result_grid, params)
 
   #Initialize grid_table and result_list
   grid_table <- data.table::data.table(annotation = character(), k =
@@ -479,8 +479,8 @@ generate_result_grid <- function(musica, table_name, discovery_type = "lda",
           length(cur_annot_samples), reconstruction_error = recon_error))
     }
   }
-  result_grid@result_list <- result_list
-  result_grid@grid_table <- grid_table
+  set_grid_list(result_grid, result_list)
+  set_grid_table(result_grid, grid_table)
   return(result_grid)
 }
 
@@ -630,7 +630,7 @@ combine_predict_grid <- function(grid_list, musica, signature_res) {
 
   comb <- NULL
   for (i in seq_len(length(grid_list))) {
-    samp <- grid_list[[i]]@exposures
+    samp <- exposures(grid_list[[i]])
     missing <- sig_names[!sig_names %in% rownames(samp)]
     missing_mat <- matrix(0, length(missing), ncol(samp))
     rownames(missing_mat) <- missing
@@ -639,5 +639,5 @@ combine_predict_grid <- function(grid_list, musica, signature_res) {
     comb <- cbind(comb, samp)
   }
   grid_res <- new("musica_result", musica = musica, exposures = comb,
-                  signatures = signature_res@signatures[, sig_names])
+                  signatures = signatures(signature_res)[, sig_names])
 }

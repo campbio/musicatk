@@ -34,7 +34,8 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
     stop("No matches found, try lowering threshold.")
   }
   comparison <- data.frame(comparison, stringsAsFactors = FALSE)
-  colnames(comparison) <- c(metric_name, "x_sig_index", "y_sig_index", "x_sig_name", "y_sig_name")
+  colnames(comparison) <- c(metric_name, "x_sig_index", "y_sig_index", 
+                            "x_sig_name", "y_sig_name")
   comparison[[metric_name]] <- as.numeric(comparison[[metric_name]])
   comparison$x_sig_index <- as.numeric(comparison$x_sig_index)
   comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
@@ -62,19 +63,24 @@ compare_results <- function(result, other_result, threshold = 0.9,
                              metric = "cosine", result_name =
                               deparse(substitute(result)), other_result_name =
                               deparse(substitute(other_result))) {
-  signatures <- result@signatures
-  comparison <- sig_compare(sig1 = signatures, sig2 = other_result@signatures,
+  signatures <- signatures(result)
+  comparison <- sig_compare(sig1 = signatures, sig2 = signatures(other_result),
                             threshold = threshold, metric = metric)
   result_subset <- methods::new("musica_result",
-                                signatures = result@signatures[, comparison$x_sig_index,
-                                                               drop = FALSE], exposures =
-                                  matrix(), type = "NMF", musica = result@musica,
-                                tables = result@tables)
+                                signatures = 
+                                  signatures(result)[, comparison$x_sig_index, 
+                                                     drop = FALSE], exposures =
+                                  matrix(), type = "NMF", 
+                                musica = musica(result), 
+                                tables = table_name(result))
   other_subset <- methods::new("musica_result",
-                               signatures = other_result@signatures[, comparison$y_sig_index,
-                                                                    drop = FALSE],
+                               signatures = 
+                                 signatures(
+                                   other_result)[, comparison$y_sig_index, 
+                                                 drop = FALSE], 
                                exposures = matrix(), type = "NMF",
-                               musica = other_result@musica, tables = other_result@tables)
+                               musica = musica(other_result), 
+                               tables = table_name(other_result))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -121,20 +127,21 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   } else {
     stop("Sample type must be exome or genome")
   }
-  signatures <- result@signatures
-  comparison <- sig_compare(sig1 = signatures, sig2 = cosmic_res@signatures,
+  signatures <- signatures(result)
+  comparison <- sig_compare(sig1 = signatures, sig2 = signatures(cosmic_res),
                             threshold = threshold, metric = metric)
   result_subset <- methods::new(
-    "musica_result", signatures = result@signatures[, comparison$x_sig_index,
+    "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
                                                     drop = FALSE],
-    exposures = matrix(), type = "NMF", tables = result@tables,
-    musica = result@musica)
+    exposures = matrix(), type = "NMF", tables = table_name(result),
+    musica = musica(result))
   other_subset <- methods::new("musica_result", signatures =
-                                 cosmic_res@signatures[, comparison$y_sig_index,
-                                                       drop = FALSE],
+                                 signatures(cosmic_res)[, 
+                                                        comparison$y_sig_index, 
+                                                        drop = FALSE],
                                exposures = matrix(), type = "NMF",
-                               tables = cosmic_res@tables,
-                               musica = cosmic_res@musica)
+                               tables = table_name(cosmic_res),
+                               musica = musica(cosmic_res))
   
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -157,22 +164,25 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @export
 compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                               result_name = deparse(substitute(result))) {
-  signatures <- result@signatures
-  comparison <- sig_compare(sig1 = signatures, sig2 = cosmic_v2_sigs@signatures,
+  signatures <- signatures(result)
+  comparison <- sig_compare(sig1 = signatures, 
+                            sig2 = signatures(cosmic_v2_sigs),
                             threshold = threshold, metric = metric)
   result_subset <- methods::new("musica_result",
                                 signatures =
-                                  result@signatures[, comparison$x_sig_index, drop =
-                                                      FALSE], exposures =
-                                  matrix(), type = result@type, musica = result@musica,
-                                tables = result@tables)
+                                  signatures(result)[, comparison$x_sig_index, 
+                                                     drop = FALSE], exposures =
+                                  matrix(), type = get_result_type(result), 
+                                musica = musica(result), 
+                                tables = table_name(result))
   other_subset <- methods::new("musica_result",
-                               signatures =
-                                 cosmic_v2_sigs@signatures[, comparison$y_sig_index,
-                                                           drop = FALSE],
+                               signatures = 
+                                 signatures(
+                                   cosmic_v2_sigs)[, comparison$y_sig_index, 
+                                                   drop = FALSE],
                                exposures = matrix(), type = "NMF",
-                               musica = cosmic_v2_sigs@musica,
-                               tables = cosmic_v2_sigs@tables)
+                               musica = musica(cosmic_v2_sigs),
+                               tables = table_name(cosmic_v2_sigs))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,

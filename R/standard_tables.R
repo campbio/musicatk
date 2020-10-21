@@ -357,31 +357,31 @@ build_standard_table <- function(musica, g, table_name, strand_type = NA,
     .table_exists_warning(musica, "SBS96", overwrite)
     tab_list <- list()
     tab <- create_sbs96_table(musica, g, overwrite)
-    tab_list[[tab@name]] <- tab
-    tab_list <- c(musica@count_tables, tab_list)
+    tab_list[[get_tab_name(tab)]] <- tab
+    tab_list <- c(tables(musica), tab_list)
   } else if (table_name %in% c("SBS192", "192")) {
     .table_exists_warning(musica, "SBS192", overwrite)
     tab_list <- list()
     tab <- create_sbs192_table(musica, g, strand_type, overwrite)
-    tab_list[[tab@name]] <- tab
-    tab_list <- c(musica@count_tables, tab_list)
+    tab_list[[get_tab_name(tab)]] <- tab
+    tab_list <- c(tables(musica), tab_list)
   } else if (table_name %in% c("DBS", "doublet")) {
     .table_exists_warning(musica, "DDBS", overwrite)
     tab_list <- list()
     tab <- create_dbs_table(musica, overwrite)
-    tab_list[[tab@name]] <- tab
-    tab_list <- c(musica@count_tables, tab_list)
+    tab_list[[get_tab_name(tab)]] <- tab
+    tab_list <- c(tables(musica), tab_list)
   } else if (table_name %in% c("INDEL", "IND", "indel", "Indel")) {
     .table_exists_warning(musica, "INDEL", overwrite)
     tab_list <- list()
     tab <- create_indel_table(musica, g, overwrite)
-    tab_list[[tab@name]] <- tab
-    tab_list <- c(musica@count_tables, tab_list)
+    tab_list[[get_tab_name(tab)]] <- tab
+    tab_list <- c(tables(musica), tab_list)
   } else {
     stop(paste0("There is no standard table named: ", table_name,
                " please select from SBS96, SBS192, DBS, Indel."))
   }
-  eval.parent(substitute(musica@count_tables <- tab_list))
+  eval.parent(substitute(tables(musica) <- tab_list))
 }
 
 .table_exists_warning <- function(musica, table_name, overwrite = FALSE) {

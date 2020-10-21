@@ -10,7 +10,7 @@ predict_exposure(
   table_name,
   signature_res,
   algorithm,
-  signatures_to_use = seq_len(ncol(signature_res@signatures)),
+  signatures_to_use = seq_len(ncol(signatures(signature_res))),
   verbose = FALSE
 )
 }

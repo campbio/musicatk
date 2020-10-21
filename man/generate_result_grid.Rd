@@ -47,5 +47,6 @@ Generate result_grid from musica based on annotation and range of k
 }
 \examples{
 data(musica_sbs96)
-grid <- generate_result_grid(musica_sbs96, "SBS96", "nmf", k_start = 2, k_end = 5)
+grid <- generate_result_grid(musica_sbs96, "SBS96", "lda", k_start = 2, 
+k_end = 5)
 }

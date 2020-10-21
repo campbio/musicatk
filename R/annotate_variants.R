@@ -4,6 +4,7 @@
 #' @importFrom GenomicRanges strand
 #' @importFrom TxDb.Hsapiens.UCSC.hg38.knownGene TxDb.Hsapiens.UCSC.hg38.knownGene
 #' @importFrom TxDb.Hsapiens.UCSC.hg19.knownGene TxDb.Hsapiens.UCSC.hg19.knownGene
+#' @importFrom data.table data.table
 NULL
 
 #' Uses a genome object to find context and add it to the variant table
@@ -231,12 +232,12 @@ annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE)
   eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
     dat_musica <- methods::new("musica", variants = drop_na_variants(
-      dat, "Transcript_Strand"), count_tables = musica@count_tables,
-      sample_annotations = musica@sample_annotations)
+      dat, "Transcript_Strand"), count_tables = tables(musica),
+      sample_annotations = samp_annot(musica))
     tab <- build_custom_table(musica = dat_musica, variant_annotation =
                                   "Transcript_Strand", name =
                                   "Transcript_Strand", return_instead = TRUE)
-    eval.parent(substitute(musica@count_tables[["Transcript_Strand"]] <- tab))
+    eval.parent(substitute(tables(musica)[["Transcript_Strand"]] <- tab))
   }
 }
 

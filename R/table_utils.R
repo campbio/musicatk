@@ -167,15 +167,16 @@ subset_count_tables <- function(musica, samples) {
 #' build_custom_table(musica, "Transcript_Strand", "Transcript_Strand",
 #' data_factor = factor(c("T", "U")))
 #' @export
-build_custom_table <- function(musica, variant_annotation, name,
-                                 description = "", data_factor = NA,
+build_custom_table <- function(musica, variant_annotation, name, 
+                               description = character(), data_factor = NA,
                                annotation_df = NULL, features = NULL,
                                type = NULL, color_variable = NULL,
                                color_mapping = NULL, return_instead = FALSE,
                                overwrite = FALSE) {
   tab <- tables(musica)
   variants <- variants(musica)
-  .table_exists_warning(musica = musica, table_name = name, overwrite = overwrite)
+  .table_exists_warning(musica = musica, table_name = name, 
+                        overwrite = overwrite)
 
   #Check that variant column exists
   if (variant_annotation %in% colnames(variants)) {
@@ -239,30 +240,76 @@ build_custom_table <- function(musica, variant_annotation, name,
   }
 }
 
-combine_count_tables <- function(musica, to_comb, name, description = NA) {
+#' Combines tables into a single table that can be used for discovery/prediction
+#'
+#' @param musica A \code{\linkS4class{musica}} object.
+#' @param to_comb A vector of table names to combine. Each table must already 
+#' exist within the input musica object
+#' @param name Name of table build, must be a new name
+#' @param description Description of the new table
+#' @param color_variable Annotation column to use for coloring plotted motifs,
+#' provided by counts table from input result's musica object
+#' @param color_mapping Mapping from color_variable to color names, provided by
+#' counts table from input result's musica object
+#' @param overwrite Overwrite existing count table
+#' @return None
+#' @examples
+#' g <- select_genome("19")
+#'
+#' data(musica)
+#' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
+#'
+#' annotate_transcript_strand(musica, "19")
+#' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
+#'
+#' combine_count_tables(musica, c("SBS96", "SBS192_Trans"), "combo")
+#' @export
+combine_count_tables <- function(musica, to_comb, name, 
+                                 description = character(), 
+                                 color_variable = character(),
+                                 color_mapping = character(),
+                                 overwrite = FALSE) {
   tab <- tables(musica)
 
   #Check that table names are unique
   if (name %in% names(tab)) {
-    stop(paste("Table names must be unique. Current table names are: ",
-               paste(names(tab), collapse = ", "), sep = ""))
+    if (!overwrite) {
+      stop(paste("Table names must be unique. Current table names are: ",
+                 paste(names(tab), collapse = ", "), sep = ""))
+    }
+    
   }
 
-  if (all(to_comb %in% tab@table_name)) {
-    combo_table <- NULL
-    for (i in seq_len(to_comb)) {
-      combo_table <- rbind(combo_table, tab@table_list[[to_comb[i]]])
+  if (all(to_comb %in% names(tab))) {
+    comb_table <- NULL
+    comb_features <- NULL
+    comb_type <- NULL
+    comb_annotation <- NULL
+    for (comb in to_comb) {
+      comb_table <- rbind(comb_table, get_count_table(tab[[comb]]))
+      comb_features <- rbind(comb_features, get_count_features(tab[[comb]]))
+      comb_type <- c(comb_type, as.character(get_count_type(tab[[comb]])))
+      comb_annotation <- rbind(comb_annotation, get_annot_tab(tab[[comb]]))
     }
-    tab@table_list[[name]] <- combo_table
+    comb_type <- S4Vectors::Rle(comb_type)
+    tab[[name]] <- .create_count_table(musica = musica, 
+                                       name = name, 
+                                       count_table = comb_table, 
+                                       features = comb_features, 
+                                       type = comb_type, 
+                                       annotation = comb_annotation, 
+                                       color_variable = color_variable, 
+                                       color_mapping = color_mapping, 
+                                       description = description, 
+                                       return_table = TRUE, 
+                                       overwrite = FALSE)
   } else {
     stop(paste("User specified table: ",
-               setdiff(to_comb, tab@table_name), " does not exist, please ",
+               setdiff(to_comb, tab[[table_name]]), " does not exist, please ",
                "create prior to creating compound table. ",
-               "Current table names are: ", paste(tab@table_name,
+               "Current table names are: ", paste(tab[[table_name]],
                                                   collapse = ", "), sep = ""))
   }
-  tab@table_name[[name]] <- name
-  tab@description[[name]] <- description
   eval.parent(substitute(tables(musica) <- tab))
 }
 

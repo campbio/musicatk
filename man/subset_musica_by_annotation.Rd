@@ -26,7 +26,7 @@ data(musica_sbs96)
 annot <- read.table(system.file("extdata", "sample_annotations.txt", 
 package = "musicatk"), sep = "\t", header=TRUE)
 
-sample_annotations(musica_sbs96, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+samp_annot(musica_sbs96, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 
 musica_sbs96 <- subset_musica_by_annotation(musica_sbs96, "Tumor_Subtypes", 
 "Lung")
