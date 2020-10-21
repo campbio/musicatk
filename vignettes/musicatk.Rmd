@@ -6,12 +6,12 @@ author:
 - name: Joshua Campbell
   affiliation: *id
   email: camp@bu.edu
-#output:
-#  BiocStyle::html_document
-#vignette: >
-#  %\VignetteIndexEntry{Mutational Signature Comprehensive Analysis Toolkit}
-#  %\VignetteEngine{knitr::rmarkdown}
-#  \usepackage[utf8]{inputenc}
+output:
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Mutational Signature Comprehensive Analysis Toolkit}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE, results = "asis"}
