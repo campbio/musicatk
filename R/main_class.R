@@ -309,11 +309,3 @@ get_count_type <- function(count_table) {
 get_color_mapping <- function(count_table) {
   return(count_table@color_mapping)
 }
-
-#set_umap <- function(result, umap_list) {
-#  eval.parent(substitute(result@umap <- umap_list))
-#}
-#
-#get_umap <- function(result) {
-#  return(result@umap)
-#}
