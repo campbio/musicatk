@@ -312,7 +312,7 @@ rc <- function(dna) {
     rev_com <- as.character(Biostrings::reverseComplement(
       Biostrings::DNAString(dna)))
   } else if (is(dna, "character") && length(dna) > 1) {
-    vapply(dna, rc, FUN.VALUE = character(length(dna)))
+    vapply(dna, rc, FUN.VALUE = character(1))
     names(rev_com) <- NULL
   } else {
     stop("Must be character or character vector")
