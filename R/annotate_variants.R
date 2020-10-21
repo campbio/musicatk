@@ -4,6 +4,7 @@
 #' @importFrom GenomicRanges strand
 #' @importFrom TxDb.Hsapiens.UCSC.hg38.knownGene TxDb.Hsapiens.UCSC.hg38.knownGene
 #' @importFrom TxDb.Hsapiens.UCSC.hg19.knownGene TxDb.Hsapiens.UCSC.hg19.knownGene
+#' @importFrom data.table data.table
 NULL
 
 #' Uses a genome object to find context and add it to the variant table
@@ -33,7 +34,7 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
   output_column <- paste(direction, "flank_", abs(flank_start), "_to_",
                          abs(flank_end), sep = "")
 
-  dat <- musica@variants
+  dat <- variants(musica)
   mut_type <- paste(dat$ref, ">", dat$alt, sep = "")
   chr <- dat$chr
 
@@ -67,15 +68,15 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
 
   final_mut_context[ind] <- as.character(rev_flank)
   dat[[output_column]] <- final_mut_context
-  eval.parent(substitute(musica@variants <- dat))
+  eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
     dat_musica <- methods::new("musica", variants = dat, count_tables =
-                               musica@count_tables,
-                             sample_annotations = musica@sample_annotations)
+                               tables(musica),
+                             sample_annotations = samp_annot(musica))
     tab <- build_custom_table(dat_musica, variant_annotation = output_column,
                          name = output_column, return_instead = FALSE,
                          overwrite = overwrite)
-    eval.parent(substitute(musica@count_tables[[output_column]] <- tab))
+    eval.parent(substitute(tables(musica)[[output_column]] <- tab))
   }
 }
 
@@ -90,7 +91,7 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
 #' musica
 #' @export
 annotate_variant_length <- function(musica) {
-  dat <- musica@variants
+  dat <- variants(musica)
   var_length <- rep(NA, nrow(dat))
   var_length[which(dat$Variant_Type == "SBS")] <- 1
   var_length[which(dat$Variant_Type == "DBS")] <- 2
@@ -98,7 +99,7 @@ annotate_variant_length <- function(musica) {
   var_length[indels] <- nchar(dat$alt[indels]) -
     nchar(dat$ref[indels])
   dat[["Variant_Length"]] <- var_length
-  eval.parent(substitute(musica@variants <- dat))
+  eval.parent(substitute(variants(musica) <- dat))
 }
 
 #' Drops a column from the variant table that the user no longer needs
@@ -111,10 +112,10 @@ annotate_variant_length <- function(musica) {
 #' drop_annotation(musica, "Variant_Type")
 #' @export
 drop_annotation <- function(musica, column_name) {
-  dat <- musica@variants
+  dat <- variants(musica)
   stopifnot(column_name %in% colnames(dat))
   data.table::set(dat, j = column_name, value = NULL)
-  eval.parent(substitute(musica@variants <- dat))
+  eval.parent(substitute(variants(musica) <- dat))
 }
 
 #' Generates a variant type table
@@ -124,7 +125,7 @@ drop_annotation <- function(musica, column_name) {
 #' "INS", "DEL") added as an appended "Variant_Type" column
 #' @examples
 #' data(musica)
-#' variants <- get_variants(musica)
+#' variants <- variants(musica)
 #' musicatk:::add_variant_type(variants)
 #' @keywords internal
 add_variant_type <- function(tab) {
@@ -135,6 +136,8 @@ add_variant_type <- function(tab) {
                nchar(tab$alt) == 2)] <- "DBS"
   type[which(tab$ref == "-")] <- "INS"
   type[which(tab$alt == "-")] <- "DEL"
+  type[which(nchar(tab$ref) < nchar(tab$alt))] <- "INS"
+  type[which(nchar(tab$ref) > nchar(tab$alt))] <- "DEL"
   type[which(is.na(type))] <- "unknown"
   tab[["Variant_Type"]] <- type
   return(tab)
@@ -149,8 +152,8 @@ add_variant_type <- function(tab) {
 #' annotate_variant_type(musica)
 #' @export
 annotate_variant_type <- function(musica) {
-  type_added <- add_variant_type(musica@variants)
-  eval.parent(substitute(musica@variants <- type_added))
+  type_added <- add_variant_type(variants(musica))
+  eval.parent(substitute(variants(musica) <- type_added))
 }
 
 #' Subsets a variant table based on Variant Type
@@ -162,7 +165,7 @@ annotate_variant_type <- function(musica) {
 #' @examples
 #' data(musica)
 #' annotate_variant_type(musica)
-#' subset_variant_by_type(get_variants(musica), "SBS")
+#' subset_variant_by_type(variants(musica), "SBS")
 #' @export
 subset_variant_by_type <- function(tab, type) {
   if (!"Variant_Type" %in% colnames(tab)) {
@@ -199,7 +202,7 @@ annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE)
     stop("Please select hg19, hg38, or provde a TxDb object")
   }
 
-  dat <- musica@variants
+  dat <- variants(musica)
   sbs_index <- which(dat$Variant_Type == "SBS")
   sbs <- subset_variant_by_type(dat, "SBS")
 
@@ -226,15 +229,15 @@ annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE)
   final_strand[ind] <- ifelse(transcribed_variants[ind] == "-", "U", "T")
 
   dat[["Transcript_Strand"]] <- final_strand
-  eval.parent(substitute(musica@variants <- dat))
+  eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
     dat_musica <- methods::new("musica", variants = drop_na_variants(
-      dat, "Transcript_Strand"), count_tables = musica@count_tables,
-      sample_annotations = musica@sample_annotations)
+      dat, "Transcript_Strand"), count_tables = tables(musica),
+      sample_annotations = samp_annot(musica))
     tab <- build_custom_table(musica = dat_musica, variant_annotation =
                                   "Transcript_Strand", name =
                                   "Transcript_Strand", return_instead = TRUE)
-    eval.parent(substitute(musica@count_tables[["Transcript_Strand"]] <- tab))
+    eval.parent(substitute(tables(musica)[["Transcript_Strand"]] <- tab))
   }
 }
 
@@ -250,7 +253,7 @@ annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE)
 #' annotate_replication_strand(musica, rep_range)
 #' @export
 annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
-  dat <- musica@variants
+  dat <- variants(musica)
   sbs_index <- which(dat$Variant_Type == "SBS")
   sbs <- subset_variant_by_type(dat, "SBS")
 
@@ -266,11 +269,11 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
     GenomicRanges::elementMetadata(rep_range)@listData[[1]][
       S4Vectors::subjectHits(overlaps)]
   dat[["Replication_Strand"]] <- repl_variants
-  eval.parent(substitute(musica@variants <- dat))
+  eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
     dat_musica <- methods::new("musica", variants = drop_na_variants(
-      dat, "Replication_Strand"), count_tables = musica@count_tables,
-      sample_annotations = musica@sample_annotations)
+      dat, "Replication_Strand"), count_tables = tables(musica),
+      sample_annotations = samp_annot(musica))
     tab <- build_custom_table(dat_musica, variant_annotation =
                                 "Replication_Strand", name =
                                 "Replication_Strand", data_factor =

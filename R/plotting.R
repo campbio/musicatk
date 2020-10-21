@@ -20,7 +20,7 @@ NULL
 plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
 
   if(is.null(table_name)) {
-   table_name <- names(musica@count_tables)[1]
+   table_name <- names(tables(musica))[1]
   }  
   
   # Extract counts for specific samples
@@ -73,14 +73,14 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
                             text_size = 10, facet_size = 10,
                             show_x_labels = TRUE,
                             same_scale = TRUE) {
-  signatures <- result@signatures
+  signatures <- signatures(result)
   sig_names <- colnames(signatures)
-  table_name <- result@tables
-  tab <- result@musica@count_tables[[table_name]]
-  annot <- tab@annotation
+  table_name <- table_name(result)
+  tab <- tables(result)[[table_name]]
+  annot <- get_annot_tab(tab)
 
   if(is.null(color_mapping)) {
-    color_mapping <- tab@color_mapping
+    color_mapping <- get_color_mapping(tab)
   }
   plot_dat <- .pivot_signatures(signatures, tab,
                                 color_variable = color_variable)
@@ -99,7 +99,7 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
     ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1)) +
     ggplot2::scale_y_continuous(expand = c(0, 0)) +
     ggplot2::scale_fill_manual(values = color_mapping) +
-    ggplot2::scale_x_discrete(labels=annot$context) -> p
+    ggplot2::scale_x_discrete(labels = annot$context) -> p
 
   # Adjust theme
   p <- .gg_default_theme(p, text_size = text_size, facet_size = facet_size) +
@@ -113,7 +113,7 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
   if (!isTRUE(legend)) {
     p <- p + theme(legend.position = "none")
   } else {
-    p <- .addSmallLegend(p) + theme(legend.position="bottom",
+    p <- .addSmallLegend(p) + theme(legend.position = "bottom",
                                     legend.title = element_blank())
   }
   if (isTRUE(plotly)) {
@@ -134,8 +134,8 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
 #' @export
 plot_sample_reconstruction_error <- function(result, sample,
                                              plotly = FALSE) {
-  signatures <- .extract_count_table(result@musica, result@tables)[, sample,
-                                                              drop = FALSE]
+  signatures <- .extract_count_table(musica(result), 
+                                     table_name(result))[, sample, drop = FALSE]
   sample_name <- colnames(signatures)
   reconstructed <- reconstruct_sample(result, sample)
   sigs <- cbind(signatures, reconstructed, signatures - reconstructed)
@@ -144,161 +144,12 @@ plot_sample_reconstruction_error <- function(result, sample,
   recontruct_result <- methods::new("musica_result",
                       signatures = sigs,
                       exposures = matrix(), type = "NMF",
-                      musica = result@musica,
-                      tables = result@tables)
+                      musica = musica(result),
+                      tables = table_name(result))
   plot_signatures(recontruct_result, same_scale = FALSE) +
     ggplot2::ggtitle("Reconstruction error", subtitle = sample_name) + ylab("")
 }
 
-
-#' Create a UMAP data.frame from a result object
-#'
-#' @param result S4 Result Object
-#' @param annotation Annotation to use for umap coloring
-#' @param n_neighbors The size of local neighborhood used for views of
-#' manifold approximation. Larger values result in more global the manifold,
-#' while smaller values result in more local data being preserved. Default 30.
-#' See `?uwot::umap` for more information.
-#' @param min_dist The effective minimum distance between embedded points.
-#' Smaller values will result in a more clustered/clumped embedding where
-#' nearby points on the manifold are drawn closer together, while larger
-#' values will result on a more even dispersal of points. Default 0.2.
-#' See `?uwot::umap` for more information.
-#' @param spread The effective scale of embedded points. In combination with
-#' ‘min_dist’, this determines how clustered/clumped the embedded points are.
-#' Default 1.
-#' See `?uwot::umap` for more information.
-#' @param proportional Whether weights are normalized to sum to 1 or not
-#' @return UMAP data.frame
-#' @examples
-#' data(res_annot)
-#' create_umap(result = res_annot, annotation = "Tumor_Subtypes",
-#' n_neighbors = 5)
-#' 
-#' # Use with_seed to create a reproducible result
-#' seed <- 1
-#' withr::with_seed(seed, create_umap(result = res_annot, annotation = 
-#' "Tumor_Subtypes", n_neighbors = 5))
-#' @export
-create_umap <- function(result, annotation, n_neighbors = 30, min_dist = 0.75,
-                        spread = 1, proportional = TRUE) {
-  samples <- t(result@exposures)
-  range_limit <- function(x) {
-    (x / max(x))
-    }
-  if (proportional) {
-    samples <- sweep(samples, 2, colSums(samples), FUN = "/")
-  }
-  umap_out <- uwot::umap(samples, n_neighbors = n_neighbors, min_dist = 
-                           min_dist, spread = spread, n_threads = 1, pca = NULL,
-                         metric = "cosine")
-  x <- umap_out[, 1]
-  y <- umap_out[, 2]
-  annot <- result@musica@sample_annotations
-  samp_ind <- match(rownames(samples), annot$Samples)
-  df <- data.frame(x = x, y = y, type = annot[[annotation]][samp_ind],
-                   samp = rownames(samples))
-
-  sig_df <- NULL
-  n_sigs <- ncol(samples)
-  n_samples <- nrow(samples)
-  sig_names <- colnames(samples)
-  for (i in seq_len(n_sigs)) {
-    sig_name <- sig_names[i]
-    sig_df <- rbind(sig_df, data.frame(x = x, y = y, level =
-                                                     range_limit(
-                                                       samples[, sig_name]),
-                                                   Signatures = rep(sig_name,
-                                                                    n_samples)))
-  }
-  umaps <- list(umap_df = df, umap_df_sigs = sig_df, umap_type =
-                     ifelse(proportional, "Proportional", "Counts"))
-  eval.parent(substitute(result@umap <- umaps))
-}
-
-#' Plot a UMAP data.frame
-#'
-#' @param result Result object containing UMAP data.frame
-#' @param point_size Scatter plot point size
-#' @param legend Remove legend
-#' @param label_clusters Add annotation labels to clusters (may not work well
-#' for split or small clusters)
-#' @param label_size Size of cluster labels
-#' @param legend_size Set legend size
-#' @param text_box Place a box around cluster labels for improved readability
-#' @param plotly Create plotly version of plot
-#' @return Returns a ggplot2 plot of the created umap, if plotly = TRUE the
-#' ggplotly object is returned
-#' @examples
-#' data(res_annot)
-#' create_umap(res_annot, "Tumor_Subtypes", n_neighbors = 5)
-#' plot_umap(res_annot)
-#' @export
-plot_umap <- function(result, point_size = 0.7, legend = TRUE,
-                      label_clusters = TRUE, label_size = 3, legend_size = 3,
-                      text_box = TRUE, plotly = FALSE) {
-  umap_df <- result@umap$umap_df
-  cluster <- as.character(umap_df$type)
-  if (plotly) {
-    p <- ggplot(umap_df, aes_string(x = "x", y = "y", col = "type",
-                                    text = "samp")) +
-      geom_point(size = point_size) + ggplot2::ggtitle("UMAP")
-    p <- plotly::ggplotly(p, tooltip = c("text", "x", "y", "type"))
-  } else if (label_clusters) {
-    p <- ggplot(umap_df, aes_string(x = "x", y = "y", col = "type")) +
-      geom_point(size = point_size) + ggplot2::ggtitle("UMAP")
-    if (isTRUE(legend)) {
-      p <- p + theme(legend.position = "none")
-    }
-    centroid_list <- lapply(unique(cluster), function(x) {
-      df_sub <- umap_df[umap_df$type == x, ]
-      median_1 <- stats::median(df_sub[, "x"])
-      median_2 <- stats::median(df_sub[, "y"])
-      cbind(median_1, median_2, x)
-    })
-    centroid <- do.call(rbind, centroid_list)
-    centroid <- data.frame(
-      x = as.numeric(centroid[, 1]),
-      y = as.numeric(centroid[, 2]),
-      type = centroid[, 3]
-    )
-    p <- p + ggplot2::geom_point(data = centroid, mapping =
-                                   ggplot2::aes_string(x = "x", y = "y"),
-                                 size = 0, alpha = 0) +
-      theme(legend.position = "none")
-    if (text_box) {
-      p <- p + ggrepel::geom_label_repel(data = centroid, mapping =
-                                           ggplot2::aes_string(label = "type"),
-                                         size = label_size)
-
-    } else {
-      p <- p + ggrepel::geom_text_repel(data = centroid, mapping =
-                                          ggplot2::aes_string(label = "type"),
-                                        size = label_size)
-    }
-  }
-  return(p)
-}
-
-#' Plot a UMAP data.frame
-#'
-#' @param result Result object containing UMAP data.frame
-#' @return Returns ggplot2 plot of the created umap
-#' @examples
-#' data(res_annot)
-#' create_umap(res_annot, "Tumor_Subtypes", n_neighbors = 5)
-#' plot_umap_sigs(res_annot)
-#' @export
-plot_umap_sigs <- function(result) {
-  umap_df_sigs <- result@umap$umap_df_sigs
-  ggplot(umap_df_sigs, aes_string(x = "x", y = "y", colour = "level")) +
-    ggplot2::facet_wrap(~ Signatures, drop = TRUE, scales = "free") +
-    geom_point(aes_string(alpha = "level", size = "level")) +
-    ggplot2::scale_colour_gradientn(colours = c("grey", "red", "blue"),
-                                    breaks = c(0, 0.0001, 0.1)) +
-    ggplot2::scale_size_continuous(range = c(0.001, 1))
-
-}
 
 # Utility functions -------------------------------
 .pivot_signatures <- function(signatures, tab, sig_names = NULL,

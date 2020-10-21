@@ -18,7 +18,7 @@ Generates a variant type table
 }
 \examples{
 data(musica)
-variants <- get_variants(musica)
+variants <- variants(musica)
 musicatk:::add_variant_type(variants)
 }
 \keyword{internal}

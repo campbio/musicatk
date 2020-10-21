@@ -244,7 +244,6 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
 
 
 
-
 .pivot_exposures <- function(exposures) {
   # Convert to long data frame
   t(exposures) %>%
@@ -262,7 +261,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   if(!is.null(annotation)) {
     
     # Need to replace with S4 getter
-    sample_annot <- result@musica@sample_annotations
+    sample_annot <- samp_annot(result)
     
     if(!annotation %in% colnames(sample_annot)) {
       stop("'", annotation, "' was not found in sample annotations in the ",
@@ -278,6 +277,3 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   }
   return(plot_dat)
 }
-
-
-

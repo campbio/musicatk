@@ -6,7 +6,7 @@
 \usage{
 discover_signatures(
   musica,
-  table_name = NULL,
+  table_name,
   num_signatures,
   method = "lda",
   seed = 1,
@@ -40,5 +40,5 @@ data(musica)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 discover_signatures(musica = musica, table_name = "SBS96",
-num_signatures = 3, method = "nmf", seed = 12345, nstart = 1)
+num_signatures = 3, method = "lda", seed = 12345, nstart = 1)
 }

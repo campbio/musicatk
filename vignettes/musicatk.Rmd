@@ -192,7 +192,7 @@ compare_results(result = pred_cosmic, other_result = pred_our_sigs, threshold = 
 ```{r annotations}
 annot <- read.table(system.file("extdata", "sample_annotations.txt", 
                                 package = "musicatk"), sep = "\t", header=TRUE)
-sample_annotations(result, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+samp_annot(result, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 ```
 
 ## Standard discovery using musicatk with sample annotations

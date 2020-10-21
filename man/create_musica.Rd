@@ -17,6 +17,7 @@ create_musica(
   sample_col = "sample",
   extra_fields = NULL,
   convert_dbs = TRUE,
+  standardize_indels = TRUE,
   verbose = TRUE
 )
 }
@@ -60,7 +61,11 @@ id for each variant. Default \code{"Tumor_Sample_Barcode"}.}
 \item{extra_fields}{Which additional fields to extract and include in
 the musica object. Default \code{NULL}.}
 
-\item{convert_dbs}{Flag to convert adjacent SBS into DBS}
+\item{convert_dbs}{Flag to convert adjacent SBS into DBS (original SBS are 
+removed)}
+
+\item{standardize_indels}{Flag to convert indel style (e.g. `C > CAT` 
+becomes `- > AT` and `GCACA > G` becomes `CACA > -`)}
 
 \item{verbose}{Whether to print status messages during error checking.
 Default \code{TRUE}.}
