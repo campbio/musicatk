@@ -13,6 +13,7 @@ Importing the files
 library(TCGAbiolinks)
 lihc_maf <- GDCquery_Maf("LIHC", pipelines = "mutect")
 tgct_maf <- GDCquery_Maf("TGCT", pipelines = "mutect")
+dlbc_maf <- GDCquery_Maf("DLBC", pipelines = "mutect")
 ```
 
 Extracting variant information from maf
@@ -31,32 +32,48 @@ tgct.variants <- extract_variants_from_matrix(tgct_maf,
                                               ref_col="Tumor_Seq_Allele1", 
                                               alt_col="Tumor_Seq_Allele2", 
                                               sample_col="Tumor_Sample_Barcode")
+lymphoma.variants <- extract_variants_from_matrix(dlbc_maf, 
+                                              chromosome_col="Chromosome", 
+                                              end_col="End_Position", 
+                                              start_col="Start_Position", 
+                                              ref_col="Tumor_Seq_Allele1", 
+                                              alt_col="Tumor_Seq_Allele2", 
+                                              sample_col="Tumor_Sample_Barcode")
+g <- select_genome("hg38")
+
 ```
 Choose genome and create musica object
 ```{r build musica}
-g <- select_genome("hg38")
 lihc.musica <- create_musica(x = lihc.variants, genome = g)
 tgct.musica <- create_musica(x = tgct.variants, genome=g)
+dlbc.musica <- create_musica(x = tgct.variants, genome=g)
+
 build_standard_table(lihc.musica, g = g, table_name = "SBS96")
 build_standard_table(tgct.musica, g=g, table_name="SBS96")
+build_standard_table(dlbc.musica, g=g, table_name="SBS96")
 
 lihc.result <- discover_signatures(musica = lihc.musica, table_name = "SBS96", 
-                              num_signatures = 4, method = "lda", nstart = 10)
+                              num_signatures = 10, method = "lda", nstart = 10)
 tgct.result <- discover_signatures(musica = tgct.musica, table_name = "SBS96", 
-                              num_signatures = 4, method = "lda", nstart = 10)
+                              num_signatures = 3, method = "lda", nstart = 10)
+dlbc.result <- discover_signatures(musica = dlbc.musica, table_name = "SBS96", 
+                              num_signatures = 6, method = "lda", nstart = 10)
 ```
 Plotting signatures
 ```{r plot musica}
 plot_signatures(lihc.result)
 plot_signatures(tgct.result)
+plot_signatures(dlbc.result)
 
 plot_exposures(lihc.result, proportional = TRUE)
 plot_exposures(tgct.result, proportional = TRUE)
+plot_exposures(dlbc.result, proportional = TRUE)
 
 lihc.samples <- get_sample_names(lihc.musica)
 #plot_sample_counts(lihc.musica, sample_name = lihc.samples[c(3,4,5)], table_name = "SBS96")
 tgct.samples <- get_sample_names(tgct.musica)
 #plot_sample_counts(tgct.musica, sample_name = tgct.samples[c(3,4,5)], table_name = "SBS96")
+dlbc.samples <- get_sample_names(dlbc.musica)
 
 ```
 ```{r exposure}
@@ -65,15 +82,36 @@ cosmic_v2_subtype_map("liver")
 data("cosmic_v2_sigs")
 lihc.pred_cosmic <- predict_exposure(musica = lihc.musica, table_name = "SBS96",
                                signature_res = cosmic_v2_sigs,
-                               signatures_to_use =  c(2, 7, 10, 13),
+                               signatures_to_use =  c(1,  4,  5,  6, 12, 16, 17, 22, 23, 24),
                                algorithm = "lda")
+cosmic_v2_subtype_map("testis")
+tgct.pred_cosmic <- predict_exposure(musica = tgct.musica, table_name = "SBS96",
+                               signature_res = cosmic_v2_sigs,
+                               signatures_to_use =  c(1,  5, 25),
+                               algorithm = "lda")
+cosmic_v2_subtype_map("lymphoma")
+dlbc.pred_cosmic <- predict_exposure(musica = dlbc.musica, table_name = "SBS96",
+                               signature_res = cosmic_v2_sigs,
+                               signatures_to_use =  c(1,  2,  5,  9, 13, 17),
+                               algorithm = "lda")
+
 plot_signatures(lihc.pred_cosmic)
 plot_exposures(lihc.pred_cosmic)
+plot_signatures(tgct.pred_cosmic)
+plot_exposures(tgct.pred_cosmic)
+plot_signatures(dlbc.pred_cosmic)
+plot_exposures(dlbc.pred_cosmic)
 
 lihc.pred_our_sigs <- predict_exposure(musica = lihc.musica, table_name = "SBS96",
                                  signature_res = lihc.result, algorithm = "lda")
+tgct.pred_our_sigs <- predict_exposure(musica = tgct.musica, table_name = "SBS96",
+                                 signature_res = lihc.result, algorithm = "lda")
+dlbc.pred_our_sigs <- predict_exposure(musica = dlbc.musica, table_name = "SBS96",
+                                 signature_res = lihc.result, algorithm = "lda")
 
-compare_results(result = lihc.pred_cosmic, other_result = lihc.pred_our_sigs, threshold = 0.40)
+compare_results(result = lihc.pred_cosmic, other_result = lihc.pred_our_sigs, threshold = 0.7)
+compare_results(result = tgct.pred_cosmic, other_result = tgct.pred_our_sigs, threshold = 0.7)
+compare_results(result = dlbc.pred_cosmic, other_result = dlbc.pred_our_sigs, threshold = 0.7)
 
 ```
 Annotations:
