@@ -56,7 +56,7 @@ Variants can be extracted from various formats using the following functions:
 * The `extract_variants_from_vcf()` function extracts variants from a `CollapsedVCF` or `ExpandedVCF` object from the [VariantAnnotation](https://bioconductor.org/packages/release/bioc/html/VariantAnnotation.html) package.
 * The `extract_variants_from_maf_file()` function will extract variants from a file in [Mutation Annotation Format (MAF)](https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/) used by TCGA.
 * The `extract_variants_from_maf()` function will extract variants from a MAF object created by the [maftools](https://www.bioconductor.org/packages/release/bioc/html/maftools.html) package. 
-* The `extract_variants_from_matrix()` function will get the information from a matrix or data.frame like object that has columns for the chromosome, start position, end position, reference allele, and mutation allele. 
+* The `extract_variants_from_matrix()` function will get the information from a matrix or data.frame like object that has columns for the chromosome, start position, end position, reference allele,  mutation allele, and sample name. 
 * The `extract_variants()` function will extract variants from a list of objects. These objects can be any combination of VCF files, VariantAnnotation objects, MAF files, MAF objects, and data.frame objects.
 
 Below are some examples of extracting variants from MAF and VCF files:
@@ -103,9 +103,19 @@ build_standard_table(musica, g = g, table_name = "SBS96")
 
 Here is a list of mutation tables that can be created:
 
-* SBS96 - description
-* table2 - description
-* table3 - description
+* SBS96 - Motifs are the six possible single base pair mutation types times the 
+four possibilities each for upstream and downstream context bases (4*6*4 = 96 
+motifs)
+* SBS192_Trans - Motifs are an extension of SBS96 multiplied by the 
+transcriptional strand (translated/untranslated), can be specified with 
+`"Transcript_Strand"`
+* SBS192_Rep - Motifs are an extension of SBS96 multiplied by the 
+replication strand (leading/lagging), can be specified with 
+`"Replication_Strand"`
+* DBS - Motifs are the 78 possible double-base-pair substitutions 
+* INDEL - 83
+* Combined - description
+* Custom - description
 
 # Discover Signatures/Exposures
 Discovery and prediction result are loaded into a self-contained result object 
@@ -114,6 +124,15 @@ that includes signatures and sample exposures.
 result <- discover_signatures(musica = musica, table_name = "SBS96", 
                               num_signatures = 3, method = "lda", nstart = 10)
 ```
+
+Supported deconvolution algorithms:
+
+* Non-negative matrix factorization (NMF)
+* Latent Dirichlet Allocation (LDA)
+
+Both have built-in `seed` capabilities for reproducible results, `nstarts` for 
+multiple independant chains from which the best final result will be chosen. 
+NMF also allows for parallel processing via `par_cores`.
 
 # Plotting
 
@@ -205,6 +224,27 @@ plot_exposures(result, plot_type = "box", group_by = "signature",
                color_by = "annotation", annotation = "Tumor_Subtypes")
 ```
 
+## Creation and plotting of Uniform Manifold Approximation and Projection (UMAP)
+```{r umap}
+create_umap(result = result)
+plot_umap(result = result)
+plot_umap(result = result, color_by = "annotation", 
+          annotation = "Tumor_Subtypes", add_annotation_labels = TRUE)
+```
+
+
+# Use of Plotly in plotting
+
+plot_signatures, plot_exposures, and plot_umap, all have builty in ggplotly 
+capabilities. Simply specifying ```plotly = TRUE``` enables interactive plots 
+that allows examination of individuals sections, zooming and resizing, and 
+turning on and off annotation types and legend values.
+
+```{r plotly}
+plot_signatures(result, plotly = TRUE)
+plot_exposures(result, plotly = TRUE)
+plot_umap(result, plotly = TRUE)
+```
 
 # Note on reproducibility
 

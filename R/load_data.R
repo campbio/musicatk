@@ -540,13 +540,16 @@ extract_variants_from_maf <- function(maf, extra_fields = NULL) {
 #' library(maftools)
 #' maf <- read.maf(maf_file)
 #' variants <- extract_variants_from_maf(maf = maf)
+#' variants <- extract_variants_from_matrix(mat = variants, 
+#' chromosome_col = "chr", start_col = "start", end_col = "end", 
+#' ref_col = "ref", alt_col = "alt", sample_col = "sample")
 #' @export
-extract_variants_from_matrix <- function(mat, chromosome_col = "chr",
-                                         start_col = "start",
-                                         end_col = "end",
-                                         ref_col = "ref",
-                                         alt_col = "alt",
-                                         sample_col = "sample",
+extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
+                                         start_col = "Start_Position",
+                                         end_col = "End_Position",
+                                         ref_col = "Tumor_Seq_Allele1",
+                                         alt_col = "Tumor_Seq_Allele2",
+                                         sample_col = "Tumor_Sample_Barcode",
                                          extra_fields = NULL) {
   if (!inherits(mat, c("matrix", "data.frame"))) {
     stop("'mat' needs to inherit classes 'matrix' or 'data.frame'")
