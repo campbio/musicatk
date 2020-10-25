@@ -302,7 +302,7 @@ combine_count_tables <- function(musica, to_comb, name,
                                        color_mapping = color_mapping, 
                                        description = description, 
                                        return_table = TRUE, 
-                                       overwrite = FALSE)
+                                       overwrite = overwrite)
   } else {
     stop(paste("User specified table: ",
                setdiff(to_comb, tab[[table_name]]), " does not exist, please ",

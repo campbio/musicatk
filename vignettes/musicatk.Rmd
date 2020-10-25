@@ -116,8 +116,35 @@ replication strand (leading/lagging), can be specified with
 * INDEL - Motifs are 83 categories intended to capture different categories of 
 indels based on base-pair change, repeats, or microhomology, insertion or 
 deletion, and length.
+
+```{r combine_tables}
+data(dbs_musica)
+build_standard_table(dbs_musica, g, "SBS96")
+build_standard_table(dbs_musica, g, "DBS")
+
+#Subset SBS table to DBS samples so they cam be combined
+count_tables <- tables(dbs_musica)
+overlap_samples <- which(colnames(count_tables$SBS96@count_table) %in%
+                           colnames(count_tables$DBS@count_table))
+count_tables$SBS96@count_table <- count_tables$SBS96@count_table[, overlap_samples]
+tables(dbs_musica) <- count_tables
+
+combine_count_tables(musica = dbs_musica, to_comb = c("SBS96", "DBS"), 
+                     name = "sbs_dbs", description = "An example combined 
+                     table, combining SBS96 and DBS", overwrite = TRUE)
+```
+
 * Combined - Any number of tables can be combined to create more complex 
 motifs, but can lead to double-counting. 
+
+```{r}
+annotate_transcript_strand(musica, "19", build_table = FALSE)
+build_custom_table(musica = musica, variant_annotation = "Transcript_Strand", 
+                   name = "Transcript_Strand", 
+                   description = "A table of transcript strand of variants", 
+                   data_factor = c("T", "U"), overwrite = TRUE)
+```
+
 * Custom - Custom tables can be created from any mutation-level annotation, 
 which can then be used for deconvolution (or prediction assuming an 
 existing set of signatures has already been discovered).
