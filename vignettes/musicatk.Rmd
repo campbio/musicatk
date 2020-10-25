@@ -108,14 +108,19 @@ four possibilities each for upstream and downstream context bases (4*6*4 = 96
 motifs)
 * SBS192_Trans - Motifs are an extension of SBS96 multiplied by the 
 transcriptional strand (translated/untranslated), can be specified with 
-`"Transcript_Strand"`
+`"Transcript_Strand"`.
 * SBS192_Rep - Motifs are an extension of SBS96 multiplied by the 
 replication strand (leading/lagging), can be specified with 
-`"Replication_Strand"`
+`"Replication_Strand"`.
 * DBS - Motifs are the 78 possible double-base-pair substitutions 
-* INDEL - 83
-* Combined - description
-* Custom - description
+* INDEL - Motifs are 83 categories intended to capture different categories of 
+indels based on base-pair change, repeats, or microhomology, insertion or 
+deletion, and length.
+* Combined - Any number of tables can be combined to create more complex 
+motifs, but can lead to double-counting. 
+* Custom - Custom tables can be created from any mutation-level annotation, 
+which can then be used for deconvolution (or prediction assuming an 
+existing set of signatures has already been discovered).
 
 # Discover Signatures/Exposures
 Discovery and prediction result are loaded into a self-contained result object 
@@ -169,6 +174,11 @@ plot_sample_counts(musica, sample_names = samples[c(3,4,5)], table_name = "SBS96
 ## Comparison to external signatures (e.g. COSMIC)
 Compare to COSMIC signatures by leaving the second result as default
 
+Compare functions `compare_results(), compare_cosmic_v2(), compare_cosmic_v3()` 
+can use either cosine correlation or jensen-shannon divergence as distance 
+metrics using `metric = c("cosine", "jsd")` and the threshold for finding 
+matching signatures can be lowered by setting `threshold` below `0.9`.
+
 ```{r compare_cosmic}
 compare_cosmic_v2(result, threshold = 0.75)
 ```
@@ -203,7 +213,8 @@ pred_our_sigs <- predict_exposure(musica = musica, table_name = "SBS96",
 Different signatures in different result objects can also be compared to each other:
 
 ```{r predict_compare}
-compare_results(result = pred_cosmic, other_result = pred_our_sigs, threshold = 0.60)
+compare_results(result = pred_cosmic, other_result = pred_our_sigs, 
+                threshold = 0.60)
 ```
 
 # Use of sample annotations for advanced sample comparisons
@@ -215,6 +226,18 @@ samp_annot(result, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 ```
 
 ## Standard discovery using musicatk with sample annotations
+
+`plot_exposures` plots sample exposures to signatures in a result object. It 
+can operate in several modes, organizing by an annotation or by signatures 
+`group_by = c("annotation", "signature")` or all samples together 
+`group_by = NULL`. Samples can be sorted by name or by total counts 
+`sort_samples = "c("name", "total")` or by a specific signature (e.g. 
+`sort_samples = "c("Signature1")`). Samples can be combined by annotation using 
+`plot_type = "box"` to create cohort-level comparison plots.
+
+
+`plot_type = c("bar", box")`
+
 ```{r plot_annotations}
 plot_exposures(result, plot_type = "bar", group_by = "annotation", 
                annotation = "Tumor_Subtypes")
@@ -225,6 +248,14 @@ plot_exposures(result, plot_type = "box", group_by = "signature",
 ```
 
 ## Creation and plotting of Uniform Manifold Approximation and Projection (UMAP)
+
+`create_umap` creates a umap matrix using standard umap parameters, 
+`n_neighbors`, `min_dist`, and `spread`
+
+`plot_umap` plots the created umaps either by signatures 
+`color_by = signature` or by annotation `color_by = "annot"` with a 
+specified annotation (e.g. `annotation = "Tumor_Subtypes"`)
+
 ```{r umap}
 create_umap(result = result)
 plot_umap(result = result)
@@ -236,7 +267,7 @@ plot_umap(result = result, color_by = "annotation",
 # Use of Plotly in plotting
 
 plot_signatures, plot_exposures, and plot_umap, all have builty in ggplotly 
-capabilities. Simply specifying ```plotly = TRUE``` enables interactive plots 
+capabilities. Simply specifying `plotly = TRUE` enables interactive plots 
 that allows examination of individuals sections, zooming and resizing, and 
 turning on and off annotation types and legend values.
 
