@@ -2,7 +2,7 @@
 % Please edit documentation in R/discovery_prediction.R
 \name{discover_signatures}
 \alias{discover_signatures}
-\title{Discovers signatures and weights from a table of counts using NMF}
+\title{Discover mutational signatures}
 \usage{
 discover_signatures(
   musica,
@@ -10,30 +10,48 @@ discover_signatures(
   num_signatures,
   method = "lda",
   seed = 1,
-  nstart = 1,
+  nstart = 10,
   par_cores = FALSE
 )
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{table_name}{Name of table used for signature discovery}
+\item{table_name}{Name of the table to use for signature discovery. Needs
+to be the same name supplied to the table building functions such as
+\link{build_standard_table}.}
 
-\item{num_signatures}{Number of signatures to discover, k}
+\item{num_signatures}{Number of signatures to discover.}
 
-\item{method}{Discovery of new signatures using either LDA or NMF}
+\item{method}{Method to use for mutational signature discovery. One of 
+\code{"lda"} or \code{"nmf"}. Default \code{"lda"}.}
 
-\item{seed}{Seed for reproducible signature discovery}
+\item{seed}{Seed to be used for the random number generators in the
+signature discovery algorithms. Default \code{1}.}
 
-\item{nstart}{Number of independent runs with optimal chosen (lda only)}
+\item{nstart}{Number of independent random starts used in the mutational
+signature algorithms. Default \code{10}.}
 
-\item{par_cores}{Number of parallel cores to use (NMF only)}
+\item{par_cores}{Number of parallel cores to use. Only used if
+\code{method = "nmf"}. If set to \code{FALSE}, then no parallelization
+will be perfomred. Default \code{FALSE}.}
 }
 \value{
-Returns a result object with results and input object
+Returns a A \code{\linkS4class{musica_result}} object containing
+signatures and exposures.
 }
 \description{
-Discovers signatures and weights from a table of counts using NMF
+Mutational signatures and exposures will be discovered using
+methods such as Latent Dirichlet Allocation (lda) or Non-Negative 
+Matrix Factorization (nmf). These algorithms will deconvolute a matrix of
+counts for mutation types in each sample to two matrices: 1) a "signature"
+matrix containing the probability of each mutation type in each sample and
+2) an "exposure" matrix containing the estimated counts for each signature
+in each sample. Before mutational discovery can be performed,
+variants from samples first need to be stored in a 
+\code{\linkS4class{musica}} object using the \link{create_musica} function 
+and mutation count tables need to be created using functions such as
+\link{build_standard_table}.
 }
 \examples{
 data(musica)
