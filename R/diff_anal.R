@@ -18,3 +18,9 @@ meso.result <- discover_signatures(musica = meso.musica, table_name = "SBS96",
                                    nstart = 10)
 meso.samples <- get_sample_names(meso.musica)
 set_sample_annotations(meso.musica, data.table::data.table(meso_maf$BIOTYPE))
+
+#https://github.com/compbiomed/singleCellTK
+https://satijalab.org/seurat/
+https://github.com/satijalab/seurat
+
+https://www.sctk.science/index.html
