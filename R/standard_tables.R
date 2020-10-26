@@ -274,6 +274,12 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
   }
   mut_table <- do.call(cbind, variant_tables)
   colnames(mut_table) <- sample_names
+  
+  
+  full_tab <- matrix(data = 0, nrow = length(full_motif), 
+                     ncol = length(levels(dbs$sample)), 
+                     dimnames = list(full_motif, levels(dbs$sample)))
+  full_tab[, colnames(mut_table)] <- mut_table
 
   annotation <- data.frame(motif = full_motif, mutation =
                              unlist(lapply(strsplit(full_motif, "_"), "[[", 1)),
@@ -283,7 +289,7 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
   color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
   names(color_mapping) <- unique(annotation$mutation)
   tab <- .create_count_table(musica = musica, name = "DBS",
-                             count_table = mut_table,
+                             count_table = full_tab,
                              annotation = annotation,
                              features = data.frame(mutation = full),
                              type = as.character(dbs$Variant_Type),
