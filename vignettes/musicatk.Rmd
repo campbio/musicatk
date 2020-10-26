@@ -50,7 +50,8 @@ library(musicatk)
 # Setting up a musica object
 In order to discover or predict mutational signatures, we must first set up
 our musica object by 1) extracting variants from files or objects such as
-VCFs and MAFs, 2) selecting the appropriate reference genome 3) creating a musica object, and 4) building a count tables for our varinats of interest.
+VCFs and MAFs, 2) selecting the appropriate reference genome 3) creating a 
+musica object, and 4) building a count tables for our variants of interest.
 
 ## Extracting variants
 Variants can be extracted from various formats using the following functions:
@@ -105,7 +106,8 @@ sample.
 build_standard_table(musica, g = g, table_name = "SBS96")
 ```
 
-Here is a list of mutation tables that can be created by setting the `table_name` parameter in the `build_standard_table` function:
+Here is a list of mutation tables that can be created by setting the 
+`table_name` parameter in the `build_standard_table` function:
 
 * SBS96 - Motifs are the six possible single base pair mutation types times the 
 four possibilities each for upstream and downstream context bases (4*6*4 = 96 
@@ -150,7 +152,9 @@ build_custom_table(musica = musica, variant_annotation = "Transcript_Strand",
 
 Different count tables can be combined into one using the `combine_count_tables`
 function. For example, the SBS96 and the DBS tables could be combined and 
-mutational signature discovery could be performed across both mutations modalities. Tables with information about the same types of variants (e.g. two related SBS tables) should generally not be combined and used together.
+mutational signature discovery could be performed across both mutations 
+modalities. Tables with information about the same types of variants (e.g. 
+two related SBS tables) should generally not be combined and used together.
 
 Custom count tables can be created from user-defined mutation-level annotations
 using the `build_custom_table` function.
@@ -178,7 +182,8 @@ Both have built-in `seed` capabilities for reproducible results, `nstarts` for
 multiple independent chains from which the best final result will be chosen. 
 NMF also allows for parallel processing via `par_cores`.
 
-To get the signatures or exposures from the result object, the following functions can be used:
+To get the signatures or exposures from the result object, the following 
+functions can be used:
 
 ```{r result_accessors}
 # Extract the exposure matrix
@@ -194,13 +199,16 @@ sigs[1:3,1:3]
 # Plotting
 
 ## Signatures
-Barplots showing the probability of each mutation type in each signature can be plotted with the `plot_signatures` function:
+Barplots showing the probability of each mutation type in each signature can 
+be plotted with the `plot_signatures` function:
 
 ```{r, plot_sigs}
 plot_signatures(result)
 ```
 
-By default, the scales on the y-axis are forced to be the same across all signatures. This behavior can be turned off by setting `same_scale = FALSE`. Signatures can be re-named based on prior knowledge and displayed in the plots:
+By default, the scales on the y-axis are forced to be the same across all 
+signatures. This behavior can be turned off by setting `same_scale = FALSE`. 
+Signatures can be re-named based on prior knowledge and displayed in the plots:
 
 ```{r, name_sigs}
 name_signatures(result, c("Smoking", "APOBEC", "UV"))
@@ -210,7 +218,8 @@ plot_signatures(result)
 
 ## Exposures
 
-Barplots showing the exposures in each sample can be plotted with the `plot_exposures` function:
+Barplots showing the exposures in each sample can be plotted with the 
+`plot_exposures` function:
 
 ```{r exposures_raw}
 plot_exposures(result, plot_type = "bar")
@@ -347,7 +356,8 @@ plot_umap(result = result, color_by = "annotation",
           annotation = "Tumor_Subtypes", add_annotation_labels = TRUE)
 ```
 
-When `add_annotation_labels = TRUE`, the centroid of each group is identified using medians and the labels are plotted on top of the centroid.
+When `add_annotation_labels = TRUE`, the centroid of each group is identified 
+using medians and the labels are plotted on top of the centroid.
 
 # Use of Plotly in plotting
 

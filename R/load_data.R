@@ -598,7 +598,15 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 
 #' Creates a musica object from a variant table
 #'
-#' Add description
+#' Here we create one of the central objects used in musicatk, the musica 
+#' object. The musica object is used to store variants data and process it 
+#' so it can be deconvoluted and predicted on, which creates a musica_result 
+#' object. This musica_result also stores the musica object from which it was 
+#' created. The musica object stores variants and variant-level annotations, 
+#' sample-level annotations, and count tables. Variants must have chromosome, 
+#' start, end, reference allele, alternate allele, and sample name columns, 
+#' but the column names can be mapped from any source by setting each of their 
+#' names individually.
 #'
 #' @param x Any object that can be coerced to a data.table including a matrix
 #' or data.frame.
