@@ -2,24 +2,25 @@
 % Please edit documentation in R/plotting.R
 \name{plot_sample_counts}
 \alias{plot_sample_counts}
-\title{Return sample from musica object}
+\title{Plot distribution of sample counts}
 \usage{
 plot_sample_counts(musica, sample_names, table_name = NULL)
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{sample_names}{Names or indices of samples to plot.}
+\item{sample_names}{Names of the samples to plot.}
 
 \item{table_name}{Name of table used for plotting counts. If \code{NULL},
 then the first table in the \code{\linkS4class{musica}} object will be used.
 Default \code{NULL}.}
 }
 \value{
-Generates sample plot {no return}
+Generates a ggplot object
 }
 \description{
-Return sample from musica object
+Displays the proportion of counts for each mutation type across one
+or more samples.
 }
 \examples{
 data(musica_sbs96)

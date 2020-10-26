@@ -2,7 +2,7 @@
 % Please edit documentation in R/standard_tables.R
 \name{build_standard_table}
 \alias{build_standard_table}
-\title{Builds a standard table from user variants}
+\title{Builds count tables using various mutation type schemas}
 \usage{
 build_standard_table(
   musica,
@@ -18,18 +18,31 @@ build_standard_table(
 \item{g}{A \linkS4class{BSgenome} object indicating which genome
 reference the variants and their coordinates were derived from.}
 
-\item{table_name}{Name of standard table to build SBS96, SBS192, DBS, or
-Indel}
+\item{table_name}{Name of standard table to build. One of \code{"SBS96"},
+\code{"SBS192"}, \code{"DBS"}, or \code{"Indel"}.}
 
-\item{strand_type}{Only for SBS192 Transcript_Strand or Replication_Strand}
+\item{strand_type}{Strand type to use in SBS192 schema. One of
+\code{"Transcript_Strand"} or \code{"Replication_Strand"}.
+Only used if \code{table_name = SBS192}.}
 
-\item{overwrite}{Overwrite existing count table}
+\item{overwrite}{If \code{TRUE}, any existing count table with the same
+name will be overwritten. If \code{FALSE}, then an error will be thrown
+if a table with the same name exists within the \code{musica} object.}
 }
 \value{
-None
+No object will be returned. The count tables will be automatically
+added to the \code{musica} object.
 }
 \description{
-Builds a standard table from user variants
+Generates count tables for different mutation type schemas which can be 
+used as input to the mutational signature discovery or prediction functions.
+\code{"SBS96"} generates a table for single base substitutions following the
+standard 96 mutation types derived from the trinucleotide context.
+\code{"SBS192"} is the 96 mutation type schema with the addition of
+transcriptional strand or replication strand information added to each base.
+\code{"DBS"} generates a table for the double base substitution schema 
+used in COSMIC V3. \code{"Indel"} generates a table for insertions and 
+deletions following the schema used in COSMIC V3.
 }
 \examples{
 g <- select_genome("19")

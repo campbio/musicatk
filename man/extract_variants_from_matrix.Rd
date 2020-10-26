@@ -6,12 +6,12 @@
 \usage{
 extract_variants_from_matrix(
   mat,
-  chromosome_col = "chr",
-  start_col = "start",
-  end_col = "end",
-  ref_col = "ref",
-  alt_col = "alt",
-  sample_col = "sample",
+  chromosome_col = "Chromosome",
+  start_col = "Start_Position",
+  end_col = "End_Position",
+  ref_col = "Tumor_Seq_Allele1",
+  alt_col = "Tumor_Seq_Allele2",
+  sample_col = "Tumor_Sample_Barcode",
   extra_fields = NULL
 )
 }
@@ -53,4 +53,7 @@ package = "musicatk")
 library(maftools)
 maf <- read.maf(maf_file)
 variants <- extract_variants_from_maf(maf = maf)
+variants <- extract_variants_from_matrix(mat = variants, 
+chromosome_col = "chr", start_col = "start", end_col = "end", 
+ref_col = "ref", alt_col = "alt", sample_col = "sample")
 }

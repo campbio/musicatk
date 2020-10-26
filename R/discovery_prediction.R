@@ -1,16 +1,34 @@
 #' @importFrom NMF nmf
 NULL
 
-#' Discovers signatures and weights from a table of counts using NMF
-#'
+#' @title Discover mutational signatures
+#' @description Mutational signatures and exposures will be discovered using
+#' methods such as Latent Dirichlet Allocation (lda) or Non-Negative 
+#' Matrix Factorization (nmf). These algorithms will deconvolute a matrix of
+#' counts for mutation types in each sample to two matrices: 1) a "signature"
+#' matrix containing the probability of each mutation type in each sample and
+#' 2) an "exposure" matrix containing the estimated counts for each signature
+#' in each sample. Before mutational discovery can be performed,
+#' variants from samples first need to be stored in a 
+#' \code{\linkS4class{musica}} object using the \link{create_musica} function 
+#' and mutation count tables need to be created using functions such as
+#' \link{build_standard_table}.
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param table_name Name of table used for signature discovery
-#' @param num_signatures Number of signatures to discover, k
-#' @param method Discovery of new signatures using either LDA or NMF
-#' @param seed Seed for reproducible signature discovery
-#' @param nstart Number of independent runs with optimal chosen (lda only)
-#' @param par_cores Number of parallel cores to use (NMF only)
-#' @return Returns a result object with results and input object
+#' @param table_name Name of the table to use for signature discovery. Needs
+#' to be the same name supplied to the table building functions such as
+#' \link{build_standard_table}.
+#' @param num_signatures Number of signatures to discover. 
+#' @param method Method to use for mutational signature discovery. One of 
+#' \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.
+#' @param seed Seed to be used for the random number generators in the
+#' signature discovery algorithms. Default \code{1}.
+#' @param nstart Number of independent random starts used in the mutational
+#' signature algorithms. Default \code{10}.
+#' @param par_cores Number of parallel cores to use. Only used if
+#' \code{method = "nmf"}. If set to \code{FALSE}, then no parallelization
+#' will be perfomred. Default \code{FALSE}.
+#' @return Returns a A \code{\linkS4class{musica_result}} object containing
+#' signatures and exposures.
 #' @examples
 #' data(musica)
 #' g <- select_genome("19")
@@ -19,7 +37,7 @@ NULL
 #' num_signatures = 3, method = "lda", seed = 12345, nstart = 1)
 #' @export
 discover_signatures <- function(musica, table_name, num_signatures,
-                                method="lda", seed = 1, nstart = 1,
+                                method="lda", seed = 1, nstart = 10,
                                 par_cores = FALSE) {
   if (!methods::is(musica, "musica")) {
     stop("Input to discover_signatures must be a 'musica' object.")
@@ -86,31 +104,42 @@ discover_signatures <- function(musica, table_name, num_signatures,
   return(result)
 }
 
-#' LDA prediction of samples based on existing signatures
-#'
+#' @title Prediction of exposures in new samples using pre-existing signatures
+#' @description Exposures for samples will be predicted using an existing set
+#' of signatures stored in a \code{\linkS4class{musica_result}} object. 
+#' Algorithms available for prediction include a modify version of \code{"lda"},
+#' \code{"decompTumor2Sig"}, and \code{"deconstructSigs"}.
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from.
+#' reference the variants and their coordinates were derived from. Only used
+#' if \code{algorithm = "deconstructSigs"}
 #' @param table_name Name of table used for posterior prediction.
 #' Must match the table type used to generate the prediction signatures
-#' @param signature_res Signatures to use for prediction
-#' @param algorithm Algorithm to use for prediction. Choose from
-#' "lda_posterior", decompTumor2Sig, and deconstructSigs
-#' @param signatures_to_use Which signatures in set to use (default all)
-#' @param verbose Whether to show intermediate results
-#' @return A result object containing signatures and sample weights
+#' @param signature_res Signatures used to predict exposures for the samples
+#' \code{musica} object. Existing signatures need to stored in a
+#' \code{\linkS4class{musica_result}} object. 
+#' @param algorithm Algorithm to use for prediction of exposures. One of
+#' \code{"lda"}, \code{"decompTumor2Sig"}, or
+#' \code{"deconstructSigs"}.
+#' @param signatures_to_use Which signatures in the \code{signature_res} result
+#' object to use. Default is to use all signatures.
+#' @param verbose If \code{TRUE}, progress will be printing. Only used if
+#' \code{algorithm = "lda"}. Default \code{FALSE}.
+#' @return Returns a A \code{\linkS4class{musica_result}} object containing
+#' signatures given by the \code{signature_res} parameter and exposures
+#' predicted from these signatures.
 #' @examples
 #' data(musica)
 #' data(cosmic_v2_sigs)
 #' g <- select_genome("19")
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
-#' predict_exposure(musica = musica, table_name = "SBS96",
+#' result <- predict_exposure(musica = musica, table_name = "SBS96",
 #' signature_res = cosmic_v2_sigs, algorithm = "lda")
 #' 
-#' #Predict using seed
-#' seed <- 1
-#' withr::with_seed(seed, predict_exposure(musica = musica, 
-#' table_name = "SBS96", signature_res = cosmic_v2_sigs, algorithm = "lda"))
+#' # Predict using LDA-like algorithm with seed set to 1
+#' set.seed(1)
+#' predict_exposure(musica = musica, table_name = "SBS96",
+#' signature_res = cosmic_v2_sigs, algorithm = "lda")
 #' @export
 predict_exposure <- function(musica, g, table_name, signature_res, algorithm,
                              signatures_to_use = seq_len(ncol(

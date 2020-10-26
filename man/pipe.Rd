@@ -10,7 +10,7 @@ lhs \%>\% rhs
 NA
 }
 \description{
-See \code{magrittr::\link[magrittr]{\%>\%}} for details.
+Pipe operator
 }
 \examples{
 c(1,2) \%>\% barplot()

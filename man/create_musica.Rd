@@ -22,8 +22,8 @@ create_musica(
 )
 }
 \arguments{
-\item{x}{Any object that can be coerced to a data.table including a matrix
-or data.frame.}
+\item{x}{A data.table, matrix, or data.frame that contains columns with
+the variant information.}
 
 \item{genome}{A \linkS4class{BSgenome} object indicating which genome
 reference the variants and their coordinates were derived from.}
@@ -41,22 +41,22 @@ Default \code{TRUE}.}
 object. Default \code{TRUE}.}
 
 \item{chromosome_col}{The name of the column that contains the chromosome
-reference for each variant. Default \code{"Chromosome"}.}
+reference for each variant. Default \code{"chr"}.}
 
 \item{start_col}{The name of the column that contains the start
-position for each variant. Default \code{"Start_Position"}.}
+position for each variant. Default \code{"start"}.}
 
 \item{end_col}{The name of the column that contains the end
-position for each variant. Default \code{"End_Position"}.}
+position for each variant. Default \code{"end"}.}
 
 \item{ref_col}{The name of the column that contains the reference
-base(s) for each variant. Default \code{"Tumor_Seq_Allele1"}.}
+base(s) for each variant. Default \code{"ref"}.}
 
 \item{alt_col}{The name of the column that contains the alternative
-base(s) for each variant. Default \code{"Tumor_Seq_Allele2"}.}
+base(s) for each variant. Default \code{"alt"}.}
 
 \item{sample_col}{The name of the column that contains the sample
-id for each variant. Default \code{"Tumor_Sample_Barcode"}.}
+id for each variant. Default \code{"sample"}.}
 
 \item{extra_fields}{Which additional fields to extract and include in
 the musica object. Default \code{NULL}.}
@@ -74,7 +74,16 @@ Default \code{TRUE}.}
 Returns a musica object
 }
 \description{
-Add description
+This function creates a \linkS4class{musica} object from a variant
+table or matrix. The \linkS4class{musica} class stores variants information,
+variant-level annotations, sample-level annotations, and count tables and
+is used as input to the mutational signature discovery and prediction
+algorithms. The input variant table or matrix must have columns for
+chromosome, start position, end position, reference allele,
+alternate allele, and sample names. The column names in the variant table
+can be mapped using the \code{chromosome_col}, \code{start_col},
+\code{end_col}, \code{ref_col}, \code{alt_col}, and
+\code{sample_col parameters}.
 }
 \examples{
 maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",

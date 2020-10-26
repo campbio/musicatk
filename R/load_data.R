@@ -540,13 +540,16 @@ extract_variants_from_maf <- function(maf, extra_fields = NULL) {
 #' library(maftools)
 #' maf <- read.maf(maf_file)
 #' variants <- extract_variants_from_maf(maf = maf)
+#' variants <- extract_variants_from_matrix(mat = variants, 
+#' chromosome_col = "chr", start_col = "start", end_col = "end", 
+#' ref_col = "ref", alt_col = "alt", sample_col = "sample")
 #' @export
-extract_variants_from_matrix <- function(mat, chromosome_col = "chr",
-                                         start_col = "start",
-                                         end_col = "end",
-                                         ref_col = "ref",
-                                         alt_col = "alt",
-                                         sample_col = "sample",
+extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
+                                         start_col = "Start_Position",
+                                         end_col = "End_Position",
+                                         ref_col = "Tumor_Seq_Allele1",
+                                         alt_col = "Tumor_Seq_Allele2",
+                                         sample_col = "Tumor_Sample_Barcode",
                                          extra_fields = NULL) {
   if (!inherits(mat, c("matrix", "data.frame"))) {
     stop("'mat' needs to inherit classes 'matrix' or 'data.frame'")
@@ -595,10 +598,19 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 
 #' Creates a musica object from a variant table
 #'
-#' Add description
-#'
-#' @param x Any object that can be coerced to a data.table including a matrix
-#' or data.frame.
+#' This function creates a \linkS4class{musica} object from a variant
+#' table or matrix. The \linkS4class{musica} class stores variants information,
+#' variant-level annotations, sample-level annotations, and count tables and
+#' is used as input to the mutational signature discovery and prediction
+#' algorithms. The input variant table or matrix must have columns for
+#' chromosome, start position, end position, reference allele,
+#' alternate allele, and sample names. The column names in the variant table
+#' can be mapped using the \code{chromosome_col}, \code{start_col},
+#' \code{end_col}, \code{ref_col}, \code{alt_col}, and
+#' \code{sample_col parameters}.
+#' 
+#' @param x A data.table, matrix, or data.frame that contains columns with
+#' the variant information.
 #' @param genome A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
 #' @param check_ref_chromosomes Whether to peform a check to ensure that
@@ -612,17 +624,17 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' \code{variant} object match the reference bases in the \code{genome}
 #' object. Default \code{TRUE}.
 #' @param chromosome_col The name of the column that contains the chromosome
-#' reference for each variant. Default \code{"Chromosome"}.
+#' reference for each variant. Default \code{"chr"}.
 #' @param start_col The name of the column that contains the start
-#' position for each variant. Default \code{"Start_Position"}.
+#' position for each variant. Default \code{"start"}.
 #' @param end_col The name of the column that contains the end
-#' position for each variant. Default \code{"End_Position"}.
+#' position for each variant. Default \code{"end"}.
 #' @param ref_col The name of the column that contains the reference
-#' base(s) for each variant. Default \code{"Tumor_Seq_Allele1"}.
+#' base(s) for each variant. Default \code{"ref"}.
 #' @param alt_col The name of the column that contains the alternative
-#' base(s) for each variant. Default \code{"Tumor_Seq_Allele2"}.
+#' base(s) for each variant. Default \code{"alt"}.
 #' @param sample_col The name of the column that contains the sample
-#' id for each variant. Default \code{"Tumor_Sample_Barcode"}.
+#' id for each variant. Default \code{"sample"}.
 #' @param extra_fields Which additional fields to extract and include in
 #' the musica object. Default \code{NULL}.
 #' @param convert_dbs Flag to convert adjacent SBS into DBS (original SBS are 
