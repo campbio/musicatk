@@ -91,6 +91,10 @@ compare_samples <- function(a.result, b.result) {
   }
 }
 
+compare_sapmles <- function(a.musica, annotations) {
+  
+  
+}
 
 
 
