@@ -144,57 +144,59 @@ meso.result <- discover_signatures(musica = meso.musica,
 
 
 
-compare_samples <- function(musica_result, annotation,method="wilcox",...) {
+compare_samples <- function(musica_result, annotation, method="wilcox",...) {
   annotations <- factor(
     musica_result@musica@sample_annotations[[annotation]])
-  annotations <- 
+  annotations <- factor(
     annotations[match(musica_result@musica@sample_annotations$Samples,
-                      colnames(musica_result@exposures))]
+                      colnames(musica_result@exposures))])
   diff.out <- 0
-
+  exposures <- musica_result@exposures
+  l <- length(exposures)
+  groups <- unique(annotations)
   if (method=="wilcox" || is.null(func)) {
-    diff.out <- apply(musica_result@exposures, 1, FUN=function(y) {
-      wilcox.test(y~annotations)
-    })
-    #   apply(
-    # func <- function(y){
-    #   return(sapply(annotations, FUN=function(a){
-    #     browser()
-    #   return()
-    # }))}
+    annotations <- as.integer(annotations)
+    pairs <- combn(groups,2) %>% t()
+    header <- data.frame(y=pairs[,1], x=pairs[,2]) %>%
+      mutate(c=paste(y,"-",x,"(W)", sep=""),
+             p=paste(y,"-",x,"(p-value)", sep=""),
+             f=paste(y,"-",x,"(fdr)", sep=""))
+    diff.out <- apply(exposures, 1, FUN=function(y) {
+      out <- apply(pairs, 1, FUN=function(p) {
+        out <- wilcox.test(y[annotations==p[1]],y[annotations==p[2]],...)
+        return (c(s=out$statistic, p=out$p.value))
+      })
+      return(c(out[1,], out[2,]))
+    }) %>% t()
+    p <- p.adjust(diff.out[,(ncol(diff.out)-length(groups)+1):ncol(diff.out)], 
+             method="BH") %>% matrix(ncol=length(groups), byrow=F)
+    diff.out <- cbind(diff.out, p)
+    colnames(diff.out) <- c(header$c, header$p, header$f)
   } else if (method=="kruskal") {
-    func <- kruskal.test
+    diff.out <- apply(exposures, 1, FUN=function(y) {
+      out <- kruskal.test(y ~ annotations, ...)
+      browser()
+    })
   } else if (method=="glm") {
-    # func <- glm.nb
-    # table_header <- unique(annotations) %>% data.frame() %>%
-    #   mutate(coef=paste(.,"(coef)",sep=""),
-    #          stat=paste(.,"(z)", sep=""),
-    #          p=paste(.,"(Pr(>|z|))", sep="")) %>% as.vector()
-    # #browser()
-    # diff.out <- apply(musica_result@exposures, 1, FUN=function(y) {
-    #   out <- summary(func(y~annotations))$coefficients %>% as.numeric() %>%
-    #     as.data.frame() %>% t()
-    #   #browser()
-    #   colnames(out) <- table_header
-    #   print(out)
-    #   return (out)
-    #   })
+    header <- list(coef=c(), sd=c(), z=c(), p=c(), adj=c())
+    for (a in groups) {
+      header$coef <- append(header$coef,paste(a,"(coef)", sep=""))
+      header$sd <- append(header$sd, paste(a,"Std. Error", sep=""))
+      header$z <- append(header$z, paste(a, "(z)", sep=""))
+      header$p <- append(header$p, paste(a, "(Pr(>|z|))", sep=""))
+      header$adj <- append(header$adj, paste(a, "(p.adj)", sep=""))
+    }
+    header <- unlist(header)
+    diff.out <- apply(exposures, 1, FUN=function(y) {
+      out <- summary(MASS::glm.nb(round(y) ~ annotations))$coefficients 
+      }) %>% t()
+    p <- p.adjust(diff.out[,(ncol(diff.out)-length(groups)+1):ncol(diff.out)], 
+             method="BH") %>% matrix(ncol=length(groups), byrow=F)
+    diff.out <- cbind(diff.out, p)
+    colnames(diff.out) <- header
   } else {
-    stop("Invalid function given")
+    stop("Invalid method given.")
   }
-  # diff.out <- apply(musica_result@exposures, 1, FUN=function(y) {
-  #   out <- func(y)
-    #out <- c(w.stat=out$statistic[[1]], p.value=out[["p.value"]])
-    #out <- summary(glm.nb(y~annotations,...))$coefficients %>% data.frame()
-    #c(glm.score=out[2,"z value"], glm.pvalue=out[2,"Pr(>|z|)"])
-    # LM
-    # out <- summary(lm(y~annotations))$coefficients
-    # c(lm.score=out[2,"t value"], lm.pvalue=out[2,"Pr(>|t|)"])
-    #out[[4]] <- p.adjust(out[[4]], method="BH")
-    #browser()
-    #return (out)
-  #})
-  #browser()
   return (diff.out)
 }
 
