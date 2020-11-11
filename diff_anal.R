@@ -173,34 +173,36 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
     diff.out <- cbind(diff.out, p)
     colnames(diff.out) <- c(header$c, header$p, header$f)
   } else if (method=="kruskal") {
+    header <- data.frame(y=c('')) %>%
+      mutate(c=paste(y,"(K-W chi-squared)", sep=""),
+             df=paste(y,"(df)", sep=""),
+             p=paste(y,"(p-value)", sep=""))
     diff.out <- apply(exposures, 1, FUN=function(y) {
       out <- kruskal.test(y ~ annotations, ...)
-      browser()
-    })
+      return (c(out$statistic, out$parameter, out$p.value))
+    }) %>% t()
+    colnames(diff.out) <- c(header$c, header$df, header$p)
   } else if (method=="glm") {
-    header <- list(coef=c(), sd=c(), z=c(), p=c(), adj=c())
-    for (a in groups) {
-      header$coef <- append(header$coef,paste(a,"(coef)", sep=""))
-      header$sd <- append(header$sd, paste(a,"Std. Error", sep=""))
-      header$z <- append(header$z, paste(a, "(z)", sep=""))
-      header$p <- append(header$p, paste(a, "(Pr(>|z|))", sep=""))
-      header$adj <- append(header$adj, paste(a, "(p.adj)", sep=""))
-    }
-    header <- unlist(header)
+    header <- data.frame(y=groups) %>%
+      mutate(coef=paste(y,"(coef)", sep=""),
+             sd=paste(y,"(Std. Error)", sep=""),
+             z=paste(y,"(z)", sep=""),
+             p=paste(y, "(Pr(>|z|))", sep=""),
+             adj=paste(y, "(p.adj)", sep=""))
     diff.out <- apply(exposures, 1, FUN=function(y) {
       out <- summary(MASS::glm.nb(round(y) ~ annotations))$coefficients 
       }) %>% t()
     p <- p.adjust(diff.out[,(ncol(diff.out)-length(groups)+1):ncol(diff.out)], 
              method="BH") %>% matrix(ncol=length(groups), byrow=F)
     diff.out <- cbind(diff.out, p)
-    colnames(diff.out) <- header
+    colnames(diff.out) <- c(header$coef, header$sd, header$z, header$p, header$adj)
   } else {
     stop("Invalid method given.")
   }
   return (diff.out)
 }
 
-compare_samples(mix.result, "Tumor_Type", method="wilcox")
+compare_samples(mix.result, "Tumor_Type", method="kruskal")
 
 plot_exposures(meso.result, proportional = F)
 plot_exposures(thca.result, proportional = F)
