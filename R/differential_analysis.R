@@ -15,6 +15,7 @@
 #' musica <- readRDS(system.file("testdata", "res_annot.rds", package = "musicatk"))
 #' compare_samples(musica, "Tumor_Subtypes", method="wilcox")
 #' @export
+#' 
 compare_samples <- function(musica_result, annotation, method="wilcox",...) {
   annotations <- factor(
     musica_result@musica@sample_annotations[[annotation]])
@@ -32,28 +33,36 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
       mutate(c=paste(y,"-",x,"(W)", sep=""),
              p=paste(y,"-",x,"(p-value)", sep=""),
              f=paste(y,"-",x,"(fdr)", sep=""))
+    
     diff.out <- apply(exposures, 1, FUN=function(y) {
       out <- apply(pairs, 1, FUN=function(p) {
         out <- wilcox.test(y[annotations==p[1]],y[annotations==p[2]],...)
+        
         return (c(s=out$statistic, p=out$p.value))
       })
       return(c(out[1,], out[2,]))
     }) %>% t()
-    p <- p.adjust(diff.out[,(ncol(diff.out)-length(groups)+1):ncol(diff.out)], 
-                  method="BH") %>% matrix(ncol=length(groups), byrow=F)
-    diff.out <- cbind(diff.out, p)
-    colnames(diff.out) <- c(header$c, header$p, header$f)
+    
+    if (length(pairs)>2) {
+      p <- p.adjust(diff.out[,(ncol(diff.out)-length(groups)+1):ncol(diff.out)], 
+                    method="BH") %>% matrix(ncol=length(groups), byrow=F)
+      diff.out <- cbind(diff.out, p)
+      colnames(diff.out) <- c(header$c, header$p, header$f)
+    }
+    else {colnames(diff.out) <- c(header$c, header$p)}
   } else if (method=="kruskal") {
     header <- data.frame(y=c('')) %>%
       mutate(c=paste(y,"(K-W chi-squared)", sep=""),
              df=paste(y,"(df)", sep=""),
              p=paste(y,"(p-value)", sep=""))
+    
     diff.out <- apply(exposures, 1, FUN=function(y) {
       out <- kruskal.test(y ~ annotations, ...)
       return (c(out$statistic, out$parameter, out$p.value))
     }) %>% t()
     colnames(diff.out) <- c(header$c, header$df, header$p)
-  } else if (method=="glm") {
+    
+  } else if (method=="glm.nb") {
     header <- data.frame(y=groups) %>%
       mutate(coef=paste(y,"(coef)", sep=""),
              sd=paste(y,"(Std. Error)", sep=""),
@@ -70,6 +79,7 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
   } else {
     stop("Invalid method given.")
   }
+  
   return (diff.out)
 }
-compare_samples(res_annot, "Tumor_Subtypes", method="glm.nb")
+compare_samples(res_annot, "Tumor_Subtypes", method="kruskal")
