@@ -82,4 +82,4 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
   
   return (diff.out)
 }
-compare_samples(res_annot, "Tumor_Subtypes", method="kruskal")
+compare_samples(res_annot, "Tumor_Subtypes", method="glm.nb")

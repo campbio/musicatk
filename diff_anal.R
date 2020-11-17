@@ -173,7 +173,7 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
 
     if (length(pairs)>2) {
       p <- p.adjust(diff.out[,(ncol(diff.out)-length(groups)+1):ncol(diff.out)], 
-             method="BH") %>% matrix(ncol=length(groups), byrow=F)
+             method="BH")  %>% matrix(ncol=length(groups), byrow=F)
       diff.out <- cbind(diff.out, p)
       colnames(diff.out) <- c(header$c, header$p, header$f)
     }
