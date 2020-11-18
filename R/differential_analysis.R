@@ -1,5 +1,3 @@
-NULL
-
 #' Compare exposures from annotated samples
 #' 
 #' @importFrom magrittr %>%
@@ -27,18 +25,15 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
   if (is.null(annotations)) {
     stop(paste('"',annotation,'" does not exist in musica_result.', sep=""))
   }
-  annotations <- factor(
+  groups <- unique(annotations)
+  annotations <- 
     annotations[match(musica_result@musica@sample_annotations$Samples,
-                      colnames(musica_result@exposures))])
+                      colnames(musica_result@exposures))]
+  annotations <- factor(annotations, levels=unique(groups))
   diff.out <- 0
   exposures <- musica_result@exposures
   l <- length(exposures)
-  groups <- unique(annotations)
-  # if (length(groups) > 1) {
-  #   
-  # }
   if (method=="wilcox" || is.null(method)) {
-    annotations <- as.integer(annotations)
     pairs <- combn(groups,2) %>% t()
     header <- data.frame(y=pairs[,1], x=pairs[,2]) %>%
       dplyr::mutate(c=paste(.data$y,"-",.data$x,"(W)", sep=""),
@@ -48,7 +43,6 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
     diff.out <- apply(exposures, 1, FUN=function(y) {
       out <- apply(pairs, 1, FUN=function(p) {
         out <- wilcox.test(y[annotations==p[1]],y[annotations==p[2]],...)
-        
         return (c(s=out$statistic, p=out$p.value))
       })
       return(c(out[1,], out[2,]))
@@ -81,7 +75,8 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
              p=paste(.data$y, "(Pr(>|z|))", sep=""),
              adj=paste(.data$y, "(p.adj)", sep=""))
     diff.out <- apply(exposures, 1, FUN=function(y) {
-      out <- summary(MASS::glm.nb(round(y) ~ annotations))$coefficients 
+      out <- summary(MASS::glm.nb(round(y) ~ annotations, ...))$coefficients
+      return(out)
     }) %>% t()
     p <- p.adjust(diff.out[,(ncol(diff.out)-length(groups)+1):ncol(diff.out)], 
                   method="BH") %>% matrix(ncol=length(groups), byrow=F)
@@ -94,3 +89,10 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
   
   return (diff.out)
 }
+
+test <- mix.result@exposures %>% t() %>% as.data.frame() %>% 
+  mutate(g=mix.result@musica@sample_annotations$Tumor_Type) 
+test %>% ggplot(aes(x=g)) + geom_boxplot(aes(y=Signature2, color=g)) +
+  geom_violin(aes(y=Signature1, color=g, alpha=.2)) + 
+  geom_hline(yintercept = mean(test$Signature2))
+
