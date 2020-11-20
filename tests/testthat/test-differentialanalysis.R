@@ -10,8 +10,15 @@ test_that(desc = "Diff Anal Input validity", {
                regexp="Method is not supported")
 })
 
-# test_that(desc = "Diff Anal functionality") {
-#   result <- readRDS(system.file("testdata", "res_annot.rds", package = "musicatk"))
-#   
-# 
-# }
+test_that(desc = "Diff Anal functionality",  {
+  result <- readRDS(
+    system.file("testdata", "res_annot.rds", package = "musicatk"))
+  expect_type(compare_samples(result, "Tumor_Subtypes", method="wilcox"), 
+                  "double")
+  expect_type(compare_samples(result, "Tumor_Subtypes", method="kruskal"), 
+              "double")
+  expect_warning(compare_samples(result, "Tumor_Subtypes", method="glm.nb"), 
+                 regexp="NaNs produced")
+  suppressWarnings(expect_type(compare_samples(result, "Tumor_Subtypes", method="glm.nb"), 
+              "double"))
+})

@@ -96,3 +96,5 @@ test %>% ggplot(aes(x=g)) + geom_boxplot(aes(y=Signature2, color=g)) +
   geom_violin(aes(y=Signature1, color=g, alpha=.2)) + 
   geom_hline(yintercept = mean(test$Signature2))
 
+
+
