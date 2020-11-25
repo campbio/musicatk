@@ -29,6 +29,7 @@ Imports:
     gridExtra,
     maftools,
     MCMCprecision,
+    MASS,
     data.table,
     dplyr,
     rlang,
