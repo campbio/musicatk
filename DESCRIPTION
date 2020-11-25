@@ -54,7 +54,8 @@ Imports:
     ggrepel,
     withr,
     plotly,
-    utils
+    utils,
+    factoextra
 Suggests:
     testthat,
     BiocStyle,
