@@ -18,6 +18,6 @@ None
 Drops a column from the variant table that the user no longer needs
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 drop_annotation(musica, "Variant_Type")
 }

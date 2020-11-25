@@ -2,7 +2,7 @@
 % Please edit documentation in R/discovery_prediction.R
 \name{predict_exposure}
 \alias{predict_exposure}
-\title{LDA prediction of samples based on existing signatures}
+\title{Prediction of exposures in new samples using pre-existing signatures}
 \usage{
 predict_exposure(
   musica,
@@ -10,8 +10,7 @@ predict_exposure(
   table_name,
   signature_res,
   algorithm,
-  signatures_to_use = seq_len(ncol(signature_res@signatures)),
-  seed = 1,
+  signatures_to_use = seq_len(ncol(signatures(signature_res))),
   verbose = FALSE
 )
 }
@@ -19,32 +18,47 @@ predict_exposure(
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
 \item{g}{A \linkS4class{BSgenome} object indicating which genome
-reference the variants and their coordinates were derived from.}
+reference the variants and their coordinates were derived from. Only used
+if \code{algorithm = "deconstructSigs"}}
 
 \item{table_name}{Name of table used for posterior prediction.
 Must match the table type used to generate the prediction signatures}
 
-\item{signature_res}{Signatures to use for prediction}
+\item{signature_res}{Signatures used to predict exposures for the samples
+\code{musica} object. Existing signatures need to stored in a
+\code{\linkS4class{musica_result}} object.}
 
-\item{algorithm}{Algorithm to use for prediction. Choose from
-"lda_posterior", decompTumor2Sig, and deconstructSigs}
+\item{algorithm}{Algorithm to use for prediction of exposures. One of
+\code{"lda"}, \code{"decompTumor2Sig"}, or
+\code{"deconstructSigs"}.}
 
-\item{signatures_to_use}{Which signatures in set to use (default all)}
+\item{signatures_to_use}{Which signatures in the \code{signature_res} result
+object to use. Default is to use all signatures.}
 
-\item{seed}{Seed to use for reproducible results, set to null to disable}
-
-\item{verbose}{Whether to show intermediate results}
+\item{verbose}{If \code{TRUE}, progress will be printing. Only used if
+\code{algorithm = "lda"}. Default \code{FALSE}.}
 }
 \value{
-A result object containing signatures and sample weights
+Returns a A \code{\linkS4class{musica_result}} object containing
+signatures given by the \code{signature_res} parameter and exposures
+predicted from these signatures.
 }
 \description{
-LDA prediction of samples based on existing signatures
+Exposures for samples will be predicted using an existing set
+of signatures stored in a \code{\linkS4class{musica_result}} object. 
+Algorithms available for prediction include a modify version of \code{"lda"},
+\code{"decompTumor2Sig"}, and \code{"deconstructSigs"}.
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
+data(cosmic_v2_sigs)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
+result <- predict_exposure(musica = musica, table_name = "SBS96",
+signature_res = cosmic_v2_sigs, algorithm = "lda")
+
+# Predict using LDA-like algorithm with seed set to 1
+set.seed(1)
 predict_exposure(musica = musica, table_name = "SBS96",
 signature_res = cosmic_v2_sigs, algorithm = "lda")
 }

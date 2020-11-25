@@ -25,3 +25,4 @@ transcript strand or replication strand
 Uses a genome object to find context and generate standard SBS192 table
 using transcript strand
 }
+\keyword{internal}

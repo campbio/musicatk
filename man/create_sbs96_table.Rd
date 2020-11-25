@@ -20,3 +20,4 @@ Returns the created SBS96 count table object
 \description{
 Uses a genome object to find context and generate standard SBS96 tables
 }
+\keyword{internal}

@@ -17,3 +17,4 @@ Returns the created DBS table object
 \description{
 Creates and adds a table for standard doublet base subsitution (DBS)
 }
+\keyword{internal}

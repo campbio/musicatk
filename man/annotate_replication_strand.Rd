@@ -20,6 +20,7 @@ None
 Add replication strand annotation to SBS variants based on bedgraph file
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
+data(rep_range)
 annotate_replication_strand(musica, rep_range)
 }

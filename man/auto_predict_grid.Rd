@@ -15,8 +15,7 @@ auto_predict_grid(
   proportion_samples = 0.25,
   rare_exposure = 0.4,
   verbose = TRUE,
-  combine_res = TRUE,
-  seed = 1
+  combine_res = TRUE
 )
 }
 \arguments{
@@ -45,8 +44,6 @@ least one sample has more than this threshold proportion}
 \item{combine_res}{Automatically combines a list of annotation results
 into a single result object with zero exposure values for signatures not
 found in a given annotation's set of samples}
-
-\item{seed}{Seed to use for reproducible results, set to null to disable}
 }
 \value{
 A list of results, one per unique annotation value, if no
@@ -58,9 +55,10 @@ Automatic filtering of signatures for exposure prediction gridded across
 specific annotation
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica_annot.rds", package = "musicatk"))
-auto_predict_grid(musica = musica, table_name = "SBS96",
+data(musica_annot)
+data(cosmic_v2_sigs)
+auto_predict_grid(musica = musica_annot, table_name = "SBS96",
 signature_res = cosmic_v2_sigs, algorithm = "lda",
 sample_annotation = "Tumor_Subtypes")
-auto_predict_grid(musica, "SBS96", cosmic_v2_sigs, "lda")
+auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda")
 }

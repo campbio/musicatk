@@ -25,9 +25,10 @@ Combine prediction grid list into a result object. Exposure values are zero
 for samples in an annotation where that signature was not predicted
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica_annot.rds", package = "musicatk"))
-grid <- auto_predict_grid(musica, "SBS96", cosmic_v2_sigs, "lda",
+data(musica_annot)
+data(cosmic_v2_sigs)
+grid <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
 "Tumor_Subtypes", combine_res = FALSE)
-combined <- combine_predict_grid(grid, musica, cosmic_v2_sigs)
-plot_exposures_by_annotation(combined, "Tumor_Subtypes")
+combined <- combine_predict_grid(grid, musica_annot, cosmic_v2_sigs)
+plot_exposures(combined, group_by="annotation", annotation="Tumor_Subtypes")
 }

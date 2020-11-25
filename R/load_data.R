@@ -101,11 +101,11 @@ select_genome <- function(x) {
 #' @return Returns a data.table of variants from a vcf
 #' @examples
 #' # Get loations of two vcf files and a maf file
-#' luad_vcf_file <- system.file("testdata", "public_LUAD_TCGA-97-7938.vcf",
+#' luad_vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
 #' package = "musicatk")
-#' lusc_maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' lusc_maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
-#' melanoma_vcfs <- list.files(system.file("testdata", package = "musicatk"),
+#' melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
 #'   pattern = glob2rx("*SKCM*vcf"), full.names = TRUE)
 #'
 #' # Read all files in at once
@@ -159,7 +159,6 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
   } else {
     id <- rep(NULL, length(input_list))
   }
-
 
   pb <- utils::txtProgressBar(min = 0, max = length(input_list), initial = 0,
                                 style = 3)
@@ -249,7 +248,7 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 #' section of the VCF. Default \code{NULL}.
 #' @return Returns a data.table of variants from a vcf
 #' @examples
-#' vcf_file <- system.file("testdata", "public_LUAD_TCGA-97-7938.vcf",
+#' vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
 #'   package = "musicatk")
 #'
 #' library(VariantAnnotation)
@@ -390,7 +389,7 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 #' formatting errors.
 #' @return Returns a data.table of variants extracted from a vcf
 #' @examples
-#' vcf <- system.file("testdata", "public_LUAD_TCGA-97-7938.vcf",
+#' vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
 #'   package = "musicatk")
 #' variants <- extract_variants_from_vcf_file(vcf_file = vcf)
 #' @export
@@ -445,8 +444,9 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
                  " \nAdditional information: \n", vcf[1], sep = ""))
     }
     alt_input[, "End_Position"] <- alt_input[, "POS"]
-    alt_input <- alt_input[, colnames(alt_input)[c(1:2, ncol(alt_input),
-                                                   4:(ncol(alt_input) - 1))]]
+    alt_input <- alt_input[, colnames(alt_input)[c(seq_len(2), ncol(alt_input),
+                                                   seq(4, (ncol(alt_input) - 1))
+                                                   )]]
 
     # Needs to be changed so that it creates a VCF object which can be
     # passed to extract_variants_from_vcf
@@ -489,7 +489,7 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
 #' @return Returns a data.table of variants from a maf which can be used to
 #' create a \code{musica} object.
 #' @examples
-#' maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
 #' library(maftools)
 #' maf <- read.maf(maf_file)
@@ -535,18 +535,21 @@ extract_variants_from_maf <- function(maf, extra_fields = NULL) {
 #' @return Returns a data.table of variants from a maf which can be used to
 #' create a \code{musica} object.
 #' @examples
-#' maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
 #' library(maftools)
 #' maf <- read.maf(maf_file)
 #' variants <- extract_variants_from_maf(maf = maf)
+#' variants <- extract_variants_from_matrix(mat = variants, 
+#' chromosome_col = "chr", start_col = "start", end_col = "end", 
+#' ref_col = "ref", alt_col = "alt", sample_col = "sample")
 #' @export
-extract_variants_from_matrix <- function(mat, chromosome_col = "chr",
-                                         start_col = "start",
-                                         end_col = "end",
-                                         ref_col = "ref",
-                                         alt_col = "alt",
-                                         sample_col = "sample",
+extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
+                                         start_col = "Start_Position",
+                                         end_col = "End_Position",
+                                         ref_col = "Tumor_Seq_Allele1",
+                                         alt_col = "Tumor_Seq_Allele2",
+                                         sample_col = "Tumor_Sample_Barcode",
                                          extra_fields = NULL) {
   if (!inherits(mat, c("matrix", "data.frame"))) {
     stop("'mat' needs to inherit classes 'matrix' or 'data.frame'")
@@ -584,7 +587,7 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "chr",
 #' object. Default \code{NULL}.
 #' @return Returns a data.table of variants from a maf
 #' @examples
-#' maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
 #' maf <- extract_variants_from_maf_file(maf_file = maf_file)
 #' @export
@@ -595,10 +598,19 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 
 #' Creates a musica object from a variant table
 #'
-#' Add description
-#'
-#' @param x Any object that can be coerced to a data.table including a matrix
-#' or data.frame.
+#' This function creates a \linkS4class{musica} object from a variant
+#' table or matrix. The \linkS4class{musica} class stores variants information,
+#' variant-level annotations, sample-level annotations, and count tables and
+#' is used as input to the mutational signature discovery and prediction
+#' algorithms. The input variant table or matrix must have columns for
+#' chromosome, start position, end position, reference allele,
+#' alternate allele, and sample names. The column names in the variant table
+#' can be mapped using the \code{chromosome_col}, \code{start_col},
+#' \code{end_col}, \code{ref_col}, \code{alt_col}, and
+#' \code{sample_col parameters}.
+#' 
+#' @param x A data.table, matrix, or data.frame that contains columns with
+#' the variant information.
 #' @param genome A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
 #' @param check_ref_chromosomes Whether to peform a check to ensure that
@@ -612,24 +624,28 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' \code{variant} object match the reference bases in the \code{genome}
 #' object. Default \code{TRUE}.
 #' @param chromosome_col The name of the column that contains the chromosome
-#' reference for each variant. Default \code{"Chromosome"}.
+#' reference for each variant. Default \code{"chr"}.
 #' @param start_col The name of the column that contains the start
-#' position for each variant. Default \code{"Start_Position"}.
+#' position for each variant. Default \code{"start"}.
 #' @param end_col The name of the column that contains the end
-#' position for each variant. Default \code{"End_Position"}.
+#' position for each variant. Default \code{"end"}.
 #' @param ref_col The name of the column that contains the reference
-#' base(s) for each variant. Default \code{"Tumor_Seq_Allele1"}.
+#' base(s) for each variant. Default \code{"ref"}.
 #' @param alt_col The name of the column that contains the alternative
-#' base(s) for each variant. Default \code{"Tumor_Seq_Allele2"}.
+#' base(s) for each variant. Default \code{"alt"}.
 #' @param sample_col The name of the column that contains the sample
-#' id for each variant. Default \code{"Tumor_Sample_Barcode"}.
+#' id for each variant. Default \code{"sample"}.
 #' @param extra_fields Which additional fields to extract and include in
 #' the musica object. Default \code{NULL}.
+#' @param convert_dbs Flag to convert adjacent SBS into DBS (original SBS are 
+#' removed)
+#' @param standardize_indels Flag to convert indel style (e.g. `C > CAT` 
+#' becomes `- > AT` and `GCACA > G` becomes `CACA > -`)
 #' @param verbose Whether to print status messages during error checking.
 #' Default \code{TRUE}.
 #' @return Returns a musica object
 #' @examples
-#' maf_file <- system.file("testdata", "public_TCGA.LUSC.maf",
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #' package = "musicatk")
 #' variants <- extract_variants_from_maf_file(maf_file)
 #' g <- select_genome("38")
@@ -645,6 +661,8 @@ create_musica <- function(x, genome,
                          alt_col = "alt",
                          sample_col = "sample",
                          extra_fields = NULL,
+                         convert_dbs = TRUE,
+                         standardize_indels = TRUE,
                          verbose = TRUE) {
 
   used_fields <- c(.required_musica_headers(), extra_fields)
@@ -701,8 +719,76 @@ create_musica <- function(x, genome,
     .check_variant_ref_in_genome(dt = dt, genome = genome)
   }
 
+  if (isTRUE(convert_dbs)) {
+    if (isTRUE(verbose)) {
+      message("Converting adjacent SBS into DBS")
+    }
+    sbs <- which(dt$Variant_Type == "SBS")
+    adjacent <- which(diff(dt$start) == 1)
+    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent+1 %in% sbs & 
+                                dt$chr[adjacent] == dt$chr[adjacent+1])]
+    if (length(dbs_ind) > 0) {
+      message(length(dbs_ind), " SBS converted to DBS")
+      dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
+      dt$ref[dbs_ind] <- paste0(dt$ref[dbs_ind], dt$ref[dbs_ind + 1])
+      dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
+      dt$Variant_Type[dbs_ind] <- "DBS"
+      dt <- dt[-(dbs_ind + 1), ]
+    }
+  }
+  
+  if (isTRUE(standardize_indels)) {
+    if (isTRUE(verbose)) {
+      message("Standardizing INS/DEL style")
+    }
+    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% 
+                        c("A", "T", "G", "C"))
+    if (length(comp_ins > 0)) {
+      message("Removing ", length(comp_ins), " compound insertions")
+      dt <- dt[-comp_ins, ]
+    }
+    
+    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% 
+                        c("A", "T", "G", "C"))
+    if (length(comp_del > 0)) {
+      message("Removing ", length(comp_del), " compound deletions")
+      dt <- dt[-comp_del, ]
+    }
+    
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
+                   c("A", "T", "G", "C"))
+    if (length(ins)) {
+      message("Converting ", length(ins), " insertions")
+      dt$ref[ins] <- "-"
+      ins_alt <- dt$alt[ins]
+      dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
+    }
+    
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
+                   c("A", "T", "G", "C"))
+    if (length(ins)) {
+      message("Converting ", length(ins), " insertions")
+      dt$ref[ins] <- "-"
+      ins_alt <- dt$alt[ins]
+      dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
+    }
+    
+    del <- which(dt$Variant_Type == "DEL" & dt$alt %in% 
+                   c("A", "T", "G", "C"))
+    if (length(del)) {
+      message("Converting ", length(del), " deletions")
+      dt$alt[del] <- "-"
+      del_ref <- dt$ref[del]
+      dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
+    }
+  }
+  
   # Create and return a musica object
-  musica <- new("musica", variants = dt)
+  s <- gtools::mixedsort(unique(dt$sample))
+  annot <- data.frame(Samples = factor(s, levels = s))
+  dt$sample <- factor(dt$sample, levels = s)
+  
+  musica <- new("musica", variants = dt, sample_annotations = annot)
   return(musica)
 }
 
@@ -717,7 +803,6 @@ create_musica <- function(x, genome,
   chr_u <- unique(chr)
   genome_u <- unique(GenomeInfoDb::seqnames(genome))
   diff <- setdiff(chr_u, genome_u)
-
 
   if (length(diff) > 0) {
     # Try to use GenomeInfoDb to determine style of variants and genome
@@ -763,7 +848,7 @@ create_musica <- function(x, genome,
              "genome: ", paste(head(genome_u, 5), collapse = ", "))
       } else {
         # Attempt to map variants to genome object
-        new_chr <- chr
+        new_chr <- as.character(chr)
         map_error <- try(GenomeInfoDb::seqlevelsStyle(new_chr) <-
                            genome_style, silent = TRUE)
         if (is(map_error, "try-error")) {

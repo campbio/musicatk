@@ -22,10 +22,6 @@ the musica object the result was generated from
 
 \item{\code{musica}}{The musica object the results were generated from}
 
-\item{\code{log_lik}}{Posterior likelihood of the result (LDA only)}
-
-\item{\code{perplexity}}{Metric of goodness of model fit}
-
 \item{\code{umap}}{List of umap data.frames for plotting and analysis}
 }}
 

@@ -8,7 +8,7 @@ build_custom_table(
   musica,
   variant_annotation,
   name,
-  description = "",
+  description = character(),
   data_factor = NA,
   annotation_df = NULL,
   features = NULL,
@@ -58,7 +58,7 @@ count_tables list and nothing is returned
 Builds a custom table from specified user variants
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 annotate_transcript_strand(musica, "19", build_table = FALSE)
 build_custom_table(musica, "Transcript_Strand", "Transcript_Strand",
 data_factor = factor(c("T", "U")))
