@@ -2,7 +2,6 @@
 #' 
 #' @importFrom magrittr %>%
 #' @importFrom dplyr mutate
-#' @importFrom MASS glm
 #' @importFrom MASS glm.nb
 #' @param musica_result A \code{\linkS4class{musica_result}} object 
 #' @param annotation Column in the sample_annotations table of the 
@@ -89,12 +88,4 @@ compare_samples <- function(musica_result, annotation, method="wilcox",...) {
   
   return (diff.out)
 }
-
-test <- mix.result@exposures %>% t() %>% as.data.frame() %>% 
-  mutate(g=mix.result@musica@sample_annotations$Tumor_Type) 
-test %>% ggplot(aes(x=g)) + geom_boxplot(aes(y=Signature2, color=g)) +
-  geom_violin(aes(y=Signature1, color=g, alpha=.2)) + 
-  geom_hline(yintercept = mean(test$Signature2))
-
-
 
