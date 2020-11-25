@@ -8,11 +8,7 @@
 #' @seealso \link[stats]{kmeans}
 #' @examples 
 #' data(res_annot)
-<<<<<<< Updated upstream
-#' Kmeans(res_annot, centers = 2)
-=======
 #' k_out <- withr::with_seed(123, Kmeans(res_annot, centers = 2))
->>>>>>> Stashed changes
 #' @export
 
 Kmeans <- function(result, ...){
@@ -36,59 +32,11 @@ Kmeans <- function(result, ...){
 #' Possible options are: "signature" (columns are signatures in a grid), 
 #' "annotation" (columns are sample annotation), and "none" (a single UMAP plot). 
 #' Default is "signature".
-<<<<<<< Updated upstream
-#' @param sample_col Sample column name of the annotation table added to result 
-#' object. Only used when "group" specified as "annotation".
-=======
->>>>>>> Stashed changes
 #' @return Generate a ggplot object.
 #' @seealso \link{create_umap}
 #' @examples 
 #' data(res_annot)
 #' #Get k-means result
-<<<<<<< Updated upstream
-#' k_out <- Kmeans(res_annot, centers = 2)
-#' #generate cluster X signature plot
-#' plot_Kmeans(res_annot, k_out, group = "signature")
-#' #generate cluster X annotation plot
-#' plot_Kmeans(res_annot, k_out, group = "annotation", sample_col = "Samples")
-#' #generate a single UMAP plot
-#' plot_Kmeans(res_annot, k_out, group = "none")
-#' @export
-
-plot_Kmeans <- function(result, clusters, group = c('signature', 'annotation', 'none'), sample_col = NULL){
-  group <- match.arg(group)
-  k_toplot <- cbind(result@umap, clusters)
-  if(group == "signature"){
-    expos <- exposures(result = result)
-    expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
-    clust_by_sigs <- cbind(k_toplot, expos) %>%
-      tibble::rownames_to_column(var = "sample") %>%
-      tidyr::pivot_longer(cols = colnames(expos),
-                          names_to = "signature",
-                          values_to = "exposure",
-                          names_repair = "minimal")
-    ggplot(clust_by_sigs, aes(x = UMAP_1, y = UMAP_2, colour = exposure)) +
-      geom_point() +
-      facet_grid(cluster ~ signature) +
-      ggplot2::scale_colour_gradientn(colors = c("blue","green","yellow","orange","red"), name = "Fraction")
-  }
-  else if(group == "annotation"){
-    if(is.null(result@musica@sample_annotations)) {stop("Sample annotation not found.")}
-    else{
-      annot <- result@musica@sample_annotations %>% tibble::column_to_rownames(var = sample_col)
-      colnames(annot) <- "tumor_subtype"
-      annot$tumor_subtype <- factor(annot$tumor_subtype)
-      clust_by_annot <- cbind(k_toplot, annot)
-      ggplot(clust_by_annot, aes(x = UMAP_1, y = UMAP_2, colour = cluster)) +
-        geom_point() +
-        facet_grid(cluster ~ tumor_subtype)
-    }
-  }
-  else{
-    ggplot(k_toplot, aes(x = UMAP_1, y = UMAP_2, colour = cluster)) +
-      geom_point()
-=======
 #' k_out <- withr::with_seed(123, Kmeans(result = res_annot, centers = 2))
 #' #UMAP
 #' create_umap(result = res_annot)
@@ -137,7 +85,6 @@ plot_Kmeans <- function(result, clusters, group = c('signature', 'annotation', '
       ggplot2::ggplot(k_toplot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
         geom_point()
     }
->>>>>>> Stashed changes
   }
 }
 
@@ -154,21 +101,6 @@ plot_Kmeans <- function(result, clusters, group = c('signature', 'annotation', '
 #' @return A ggplot object.
 #' @seealso \link[factoextra]{fviz_nbclust}
 #' @examples 
-<<<<<<< Updated upstream
-#' #####withr::with_seed()
-#' set.seed(123)
-#' data(res_annot)
-#' #Make an elbow plot
-#' k_select(res_annot, method = "elbow", n = 7)
-#' #Plot average silhouette coefficient against number of clusters
-#' k_select(res_annot, method = "silhouette", n = 7)
-#' #Plot gap statistics against number of clusters
-#' k_select(res_annot, method = "gap", n =7)
-#' @export
-
-k_select <- function(result, method = c('elbow', 'silhouette', 'gap'), n = 10){
-  require(factoextra)
-=======
 #' data(res_annot)
 #' #Make an elbow plot
 #' withr::with_seed(123, k_select(res_annot, method = "elbow", n = 6))
@@ -179,20 +111,10 @@ k_select <- function(result, method = c('elbow', 'silhouette', 'gap'), n = 10){
 #' @export
 
 k_select <- function(result, method = c('elbow', 'silhouette', 'gap'), n = 10){
->>>>>>> Stashed changes
   method <- match.arg(method)
   expos <- exposures(result = result)
   expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
   if(method == "elbow"){
-<<<<<<< Updated upstream
-    fviz_nbclust(expos, kmeans, method = "wss", k.max = n)
-  }
-  else if(method == "silhouette"){
-    fviz_nbclust(expos, kmeans, method = "silhouette", k.max = n)
-  }
-  else{
-    fviz_nbclust(expos, kmeans, method = "gap_stat", k.max = n)
-=======
     factoextra::fviz_nbclust(expos, kmeans, method = "wss", k.max = n)
   }
   else if(method == "silhouette"){
@@ -200,6 +122,5 @@ k_select <- function(result, method = c('elbow', 'silhouette', 'gap'), n = 10){
   }
   else{
     factoextra::fviz_nbclust(expos, kmeans, method = "gap_stat", k.max = n)
->>>>>>> Stashed changes
   }
 }
