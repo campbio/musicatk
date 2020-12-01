@@ -2,22 +2,22 @@ context("Test Differential Analysis Functions")
 library("musicatk")
 
 test_that(desc = "Diff Anal Input validity", {
-  expect_error(compare_samples(data.frame(0)), regexp = "must be a")
+  expect_error(differential_exposure(data.frame(0)), regexp = "must be a")
   data("res_annot")
-  expect_error(compare_samples(res_annot, "dummy", method="wilcox"), 
+  expect_error(differential_exposure(res_annot, "dummy", method="wilcox"), 
                regexp="does not exist")
-  expect_error(compare_samples(res_annot, "Tumor_Subtypes", method="dummy"), 
-               regexp="Method is not supported")
+  expect_error(differential_exposure(res_annot, "Tumor_Subtypes", method="dummy"), 
+               regexp="should be one of")
 })
 
 test_that(desc = "Diff Anal functionality",  {
   data("res_annot")
-  expect_type(compare_samples(res_annot, "Tumor_Subtypes", method="wilcox"), 
+  expect_type(differential_exposure(res_annot, "Tumor_Subtypes", method="wilcox"), 
                   "double")
-  expect_type(compare_samples(res_annot, "Tumor_Subtypes", method="kruskal"), 
+  expect_type(differential_exposure(res_annot, "Tumor_Subtypes", method="kruskal"), 
               "double")
-  expect_warning(compare_samples(res_annot, "Tumor_Subtypes", method="glm.nb"), 
+  expect_warning(differential_exposure(res_annot, "Tumor_Subtypes", method="glm.nb"), 
                  regexp="NaNs produced")
-  suppressWarnings(expect_type(compare_samples(res_annot, "Tumor_Subtypes", method="glm.nb"), 
+  suppressWarnings(expect_type(differential_exposure(res_annot, "Tumor_Subtypes", method="glm.nb"), 
               "double"))
 })
