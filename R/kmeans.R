@@ -14,7 +14,7 @@
 Kmeans <- function(result, ...){
   expos <- exposures(result = result)
   expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
-  k_res <- kmeans(expos, ...)
+  k_res <- stats::kmeans(expos, ...)
   k_out <- data.frame(cluster = factor(unname(k_res$cluster)))
   rownames(k_out) <- names(k_res$cluster)
   return(k_out)
