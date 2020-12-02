@@ -11,7 +11,7 @@
 #' \code{\linkS4class{musica_result}} object
 #' @param method Any method in \code{c("wilcox", "kruskal", "glm.nb")} 
 #' used to perform differential analysis on signature exposures
-#' @param groups Paired annotations for use in Wilcox test if \code{annotation}
+#' @param pair Paired annotations for use in Wilcox test if \code{annotation}
 #' has more than 2 levels.
 #' @param ... Additional arguments to be passed to the chosen method
 #' @return A matrix containing statistics summarizing the analysis dependent
@@ -23,7 +23,7 @@
 #' 
 differential_exposure <- function(musica_result, annotation, 
                                   method=c("wilcox","kruskal", "glm.nb"),
-                                  groups=NULL,...) {
+                                  pair=NULL,...) {
   method <- match.arg(method)
   if (!methods::is(musica_result, "musica_result")) {
     stop("Input to differential_exposure must be a musica_result object.")
@@ -34,6 +34,7 @@ differential_exposure <- function(musica_result, annotation,
   if (is.null(annotations)) {
     stop(annotation," does not exist in musica_result.")
   }
+
   exposures <- exposures(musica_result)
   groups <- unique(annotations)
 
@@ -41,35 +42,32 @@ differential_exposure <- function(musica_result, annotation,
   # This is done to preserve correct order during diff anal testing.
   # Check if already a factor
   annotations <- factor(annotations, levels = unique(groups))
+  if (length(groups) < 2) {
+    stop("annotation must have at least 2 unique values")
+  }
   diff.out <- 0
   l <- length(exposures)
   #Change wilcox to only take 2 pairs
-  if (method == "wilcox" || is.null(method)) {
-    pairs <- combn(groups,2) %>% t()
-    header <- #format_differential_exposures(paste(pairs[,1],pairs[,2],sep="-"), c("(mean)","(p-value)"))
-    data.frame(y=pairs[,1], x=pairs[,2]) %>%
-      dplyr::mutate(c=paste(.data$y,"-",.data$x,"(W)", sep=""),
-             p=paste(.data$y,"-",.data$x,"(p-value)", sep=""),
-             f=paste(.data$y,"-",.data$x,"(fdr)", sep=""))
-
+  if (method == "wilcox") {
+    if (length(groups) > 2 && length(factor(pair)) != 2) {
+      stop("pair must be of length 2")
+    } else {
+      pair <- groups
+    }
+    header <- c(paste0(pair[1],"(mean)"),paste0(pair[2],"(mean)"), 
+                paste0("p-value"))
     diff.out <- apply(exposures, 1, FUN=function(y) {
-      out <- apply(pairs, 1, FUN=function(p) {
-        # Add means 
-        out <- wilcox.test(y[annotations==p[1]],y[annotations==p[2]],...)
-        return (c(s=out$statistic, p=out$p.value))
-      })
-      return(c(out[1,], out[2,]))
+      out <- wilcox.test(y[annotations == pair[1]],y[annotations == pair[2]],...)
+      m1 <- mean(y[annotations==pair[1]])
+      m2 <- mean(y[annotations==pair[2]])
+      browser()
+      return(c(m1, m2, out$p.value))
     }) %>% t()
     browser()
-    if (length(pairs)>2) {
-      p <- p.adjust(diff.out[,(ncol(diff.out)-length(groups)+1):ncol(diff.out)], 
-                    method="BH") %>% matrix(ncol=length(groups), byrow=F)
-      diff.out <- cbind(diff.out, p)
-      colnames(diff.out) <- c(header$c, header$p, header$f)
-    }
-    else {colnames(diff.out) <- c(header$c, header$p)}
+    colnames(diff.out) <- header
+      
   } else if (method=="kruskal") {
-    header <- format_differential_exposures(c(''), c("(K-W chi-squared)", "(df)", "(p-value)"))
+    header <- c("(K-W chi-squared)", "(df)", "(p-value)")
       # data.frame(y=c('')) %>%
       # dplyr::mutate(c=paste(.data$y,"(K-W chi-squared)", sep=""),
       #        df=paste(.data$y,"(df)", sep=""),
@@ -123,4 +121,3 @@ format_differential_exposures <- function(prefix, columns) {
   return (header)
 }
 
-TESTDATA <- "/Users/nathansahelijo/Documents/BostonUniversity/class/challenge/scripts/data/"
