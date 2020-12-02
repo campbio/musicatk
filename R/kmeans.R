@@ -7,11 +7,12 @@
 #' @return A one-column data frame with sample IDs as row names and cluster number for each sample.
 #' @seealso \link[stats]{kmeans}
 #' @examples 
+#' set.seed(123)
 #' data(res_annot)
-#' k_out <- withr::with_seed(123, Kmeans(res_annot, centers = 2))
+#' k_out <- cluster_kmeans(res_annot, centers = 2)
 #' @export
 
-Kmeans <- function(result, ...){
+cluster_kmeans <- function(result, ...){
   expos <- exposures(result = result)
   expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
   k_res <- stats::kmeans(expos, ...)
@@ -35,23 +36,24 @@ Kmeans <- function(result, ...){
 #' @return Generate a ggplot object.
 #' @seealso \link{create_umap}
 #' @examples 
+#' set.seed(123)
 #' data(res_annot)
 #' #Get k-means result
-#' k_out <- withr::with_seed(123, Kmeans(result = res_annot, centers = 2))
+#' k_out <- cluster_kmeans(result = res_annot, centers = 2)
 #' #UMAP
 #' create_umap(result = res_annot)
 #' #generate cluster X signature plot
-#' plot_Kmeans(result = res_annot, clusters = k_out, group = "signature")
+#' plot_kmeans(result = res_annot, clusters = k_out, group = "signature")
 #' #generate cluster X annotation plot
-#' plot_Kmeans(result = res_annot, clusters = k_out, group = "annotation")
+#' plot_kmeans(result = res_annot, clusters = k_out, group = "annotation")
 #' #generate a single UMAP plot
-#' plot_Kmeans(result = res_annot, clusters = k_out, group = "none")
+#' plot_kmeans(result = res_annot, clusters = k_out, group = "none")
 #' @export
 
-plot_Kmeans <- function(result, clusters, group = c('signature', 'annotation', 'none')){
-  group <- match.arg(group)
+plot_kmeans <- function(result, clusters, group = "signature"){
+  group <- match.arg(group, c("signature", "annotation", "none"))
   if(length(result@umap) == 0){
-    stop(paste("UMAP not found in musica_result object. Run create_umap(", deparse(substitute(result)),") first."), sep = "")
+    stop("UMAP not found in musica_result object. Run create_umap(", deparse(substitute(result)),") first.")
   }
   else{
     k_toplot <- cbind(result@umap, clusters)
@@ -70,15 +72,15 @@ plot_Kmeans <- function(result, clusters, group = c('signature', 'annotation', '
         ggplot2::scale_colour_gradientn(colors = c("blue","green","yellow","orange","red"), name = "Fraction")
     }
     else if(group == "annotation"){
-      if(ncol(result@musica@sample_annotations) == 1) {stop("Sample annotation not found.")}
+      if(ncol(samp_annot(result)) == 1) {stop("Sample annotation not found.")}
       else{
-        annot <- result@musica@sample_annotations %>% tibble::column_to_rownames(var = "Samples")
-        colnames(annot) <- "tumor_subtype"
-        annot$tumor_subtype <- factor(annot$tumor_subtype)
+        annot <- samp_annot(result) %>% tibble::column_to_rownames(var = "Samples")
+        colnames(annot) <- "annotation"
+        annot[["annotation"]] <- factor(annot[["annotation"]])
         clust_by_annot <- cbind(k_toplot, annot)
         ggplot2::ggplot(clust_by_annot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
           geom_point() +
-          facet_grid(cluster ~ tumor_subtype)
+          facet_grid(cluster ~ annotation)
       }
     }
     else{
@@ -111,7 +113,7 @@ plot_Kmeans <- function(result, clusters, group = c('signature', 'annotation', '
 #' @export
 
 k_select <- function(result, method = c('elbow', 'silhouette', 'gap'), n = 10){
-  method <- match.arg(method)
+  method <- match.arg(method, c("elbow", "silhouette", "gap"))
   expos <- exposures(result = result)
   expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
   if(method == "elbow"){
