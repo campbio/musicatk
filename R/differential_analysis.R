@@ -47,7 +47,6 @@ differential_exposure <- function(musica_result, annotation,
   }
   diff.out <- 0
   l <- length(exposures)
-  #Change wilcox to only take 2 pairs
   if (method == "wilcox") {
     if (length(groups) > 2 && length(factor(pair)) != 2) {
       stop("pair must be of length 2")
@@ -60,24 +59,17 @@ differential_exposure <- function(musica_result, annotation,
       out <- wilcox.test(y[annotations == pair[1]],y[annotations == pair[2]],...)
       m1 <- mean(y[annotations==pair[1]])
       m2 <- mean(y[annotations==pair[2]])
-      browser()
       return(c(m1, m2, out$p.value))
     }) %>% t()
-    browser()
     colnames(diff.out) <- header
-      
   } else if (method=="kruskal") {
     header <- c("(K-W chi-squared)", "(df)", "(p-value)")
-      # data.frame(y=c('')) %>%
-      # dplyr::mutate(c=paste(.data$y,"(K-W chi-squared)", sep=""),
-      #        df=paste(.data$y,"(df)", sep=""),
-      #        p=paste(.data$y,"(p-value)", sep=""))
-    
     diff.out <- apply(exposures, 1, FUN=function(y) {
       out <- kruskal.test(y ~ annotations, ...)
       return (c(out$statistic, out$parameter, out$p.value))
     }) %>% t()
-    colnames(diff.out) <- c(header[-1])#header$c, header$df, header$p)
+    browser()
+    colnames(diff.out) <- c(header)#header$c, header$df, header$p)
   } else if (method=="glm.nb") {
     header <- data.frame(y=groups) %>%
       dplyr::mutate(coef=paste(.data$y,"(coef)", sep=""),
@@ -98,7 +90,6 @@ differential_exposure <- function(musica_result, annotation,
     stop("Method is not supported. Please provide one of: 
          wilcox, kruskal, glm.nb")
   }
-  
   return (diff.out)
 }
 
