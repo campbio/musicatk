@@ -213,7 +213,7 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created DBS table object
 #' @keywords internal
-create_dbs_table <- function(musica, overwrite = overwrite) {
+create_dbs78_table <- function(musica, overwrite = overwrite) {
   dbs <- subset_variant_by_type(variants(musica), "DBS")
 
   ref <- dbs$ref
@@ -288,7 +288,7 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
                            row.names = full_motif)
   color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
   names(color_mapping) <- unique(annotation$mutation)
-  tab <- .create_count_table(musica = musica, name = "DBS",
+  tab <- .create_count_table(musica = musica, name = "DBS78",
                              count_table = full_tab,
                              annotation = annotation,
                              features = data.frame(mutation = full),
@@ -296,7 +296,8 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
                              color_variable = "mutation",
                              color_mapping = color_mapping,
                              description = paste0("Standard count table for ",
-                                                  "double base substitutions"),
+                                                  "double base substitutions", 
+                                                  "using COSMIC v3 schema"),
                              return_table = TRUE, overwrite = overwrite)
   return(tab)
 }
@@ -372,35 +373,40 @@ rc <- function(dna) {
 #' data(indel_musica)
 #' build_standard_table(indel_musica, g, table_name = "INDEL")
 #' @export
-build_standard_table <- function(musica, g, table_name, strand_type = NA,
+build_standard_table <- function(musica, g, table_name, strand_type = NULL,
                                  overwrite = FALSE) {
   if (table_name %in% c("SNV96", "SNV", "96", "SBS", "SBS96")) {
+    message("Building count table from SBS with SBS96 schema")
     .table_exists_warning(musica, "SBS96", overwrite)
     tab_list <- list()
     tab <- create_sbs96_table(musica, g, overwrite)
     tab_list[[get_tab_name(tab)]] <- tab
     tab_list <- c(tables(musica), tab_list)
   } else if (table_name %in% c("SBS192", "192")) {
+    message("Building count table from SBS and ", strand_type, 
+            " with SBS192 schema")
     .table_exists_warning(musica, "SBS192", overwrite)
     tab_list <- list()
     tab <- create_sbs192_table(musica, g, strand_type, overwrite)
     tab_list[[get_tab_name(tab)]] <- tab
     tab_list <- c(tables(musica), tab_list)
-  } else if (table_name %in% c("DBS", "doublet")) {
-    .table_exists_warning(musica, "DDBS", overwrite)
+  } else if (table_name %in% c("DBS78", "DBS", "doublet")) {
+    message("Building count table from DBS with DBS78 schema")
+    .table_exists_warning(musica, "DBS78", overwrite)
     tab_list <- list()
-    tab <- create_dbs_table(musica, overwrite)
+    tab <- create_dbs78_table(musica, overwrite)
     tab_list[[get_tab_name(tab)]] <- tab
     tab_list <- c(tables(musica), tab_list)
-  } else if (table_name %in% c("INDEL", "IND", "indel", "Indel")) {
+  } else if (table_name %in% c("INDEL83", "INDEL", "IND", "indel", "Indel")) {
+    message("Building count table from INDELs with IND83 schema")
     .table_exists_warning(musica, "INDEL", overwrite)
     tab_list <- list()
-    tab <- create_indel_table(musica, g, overwrite)
+    tab <- create_indel83_table(musica, g, overwrite)
     tab_list[[get_tab_name(tab)]] <- tab
     tab_list <- c(tables(musica), tab_list)
   } else {
     stop(paste0("There is no standard table named: ", table_name,
-               " please select from SBS96, SBS192, DBS, Indel."))
+               " please select from SBS96, SBS192, DBS78, IND83."))
   }
   eval.parent(substitute(tables(musica) <- tab_list))
 }
@@ -416,7 +422,7 @@ build_standard_table <- function(musica, g, table_name, strand_type = NA,
   }
 }
 
-create_indel_table <- function(musica, g, overwrite = FALSE) {
+create_indel83_table <- function(musica, g, overwrite = FALSE) {
   var <- variants(musica)
   all_ins <- as.data.frame(subset_variant_by_type(var, "INS"))
   all_del <- as.data.frame(subset_variant_by_type(var, "DEL"))
@@ -490,7 +496,7 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   #incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
   dummy_features <- rep(NA, length(which(var$Variant_Type %in% c("INS", "DEL"))))
 
-  tab <- .create_count_table(musica = musica, name = "INDEL",
+  tab <- .create_count_table(musica = musica, name = "IND83",
                              count_table = mut_table,
                              annotation = annotation,
                              features = data.frame(mutation = dummy_features),
@@ -663,7 +669,7 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
     next_matches = TRUE
     counts <- 1
     while(next_matches) {
-      #print(paste0("Counts: ", counts))
+      #message(paste0("Counts: ", counts))
       if(letter != substr(string, counts*len + 1, counts*len + len)) {
         return(counts)
       } else {

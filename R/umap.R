@@ -118,12 +118,19 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
                                   annotation = annotation)
     
     # Create base ggplot object
-    p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
-                                 color = "annotation"))
+    if (plotly) {
+      p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
+                                   color = "annotation", text = "sample", 
+                                   label = "annotation"))
+    } else {
+      p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
+                                   color = "annotation"))
+    }
+    
     p <- p + geom_point(size = point_size) 
     
     # Add labels for discrete annotation groups
-    if (isTRUE(add_annotation_labels)) {
+    if (isTRUE(add_annotation_labels) & !plotly) {
       centroid_list <- lapply(unique(umap$annotation), function(x) {
         df_sub <- umap[umap$annotation == x, ]
         median_1 <- stats::median(df_sub[, "UMAP_1"])
@@ -219,7 +226,11 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
   
   # Toggle plotly
   if (isTRUE(plotly)) {
-    p <- plotly::ggplotly(p)
+    if (color_by == "annotation") {
+      p <- plotly::ggplotly(p, tooltip = c("text", "x", "y", "type", "label"))
+    } else {
+      p <- plotly::ggplotly(p) 
+    }
   }
   
   # Return all other scenarios other than

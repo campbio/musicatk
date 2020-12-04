@@ -18,7 +18,7 @@ the musica object the result was generated from
 
 \item{\code{tables}}{A character vector of table names used to make the result}
 
-\item{\code{type}}{Describes how the signatures/weights were generated}
+\item{\code{algorithm}}{Describes how the signatures/weights were generated}
 
 \item{\code{musica}}{The musica object the results were generated from}
 

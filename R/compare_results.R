@@ -70,17 +70,17 @@ compare_results <- function(result, other_result, threshold = 0.9,
                                 signatures = 
                                   signatures(result)[, comparison$x_sig_index, 
                                                      drop = FALSE], exposures =
-                                  matrix(), type = "NMF", 
+                                  matrix(), algorithm = "NMF", 
                                 musica = musica(result), 
-                                tables = table_name(result))
+                                table_name = table_selected(result))
   other_subset <- methods::new("musica_result",
                                signatures = 
                                  signatures(
                                    other_result)[, comparison$y_sig_index, 
                                                  drop = FALSE], 
-                               exposures = matrix(), type = "NMF",
+                               exposures = matrix(), algorithm = "NMF",
                                musica = musica(other_result), 
-                               tables = table_name(other_result))
+                               table_name = table_selected(other_result))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -133,14 +133,14 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   result_subset <- methods::new(
     "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
                                                     drop = FALSE],
-    exposures = matrix(), type = "NMF", tables = table_name(result),
-    musica = musica(result))
+    exposures = matrix(), algorithm = "NMF", 
+    table_selected = table_selected(result), musica = musica(result))
   other_subset <- methods::new("musica_result", signatures =
                                  signatures(cosmic_res)[, 
                                                         comparison$y_sig_index, 
                                                         drop = FALSE],
-                               exposures = matrix(), type = "NMF",
-                               tables = table_name(cosmic_res),
+                               exposures = matrix(), algorithm = "NMF",
+                               table_name = table_selected(cosmic_res),
                                musica = musica(cosmic_res))
   
   .plot_compare_result_signatures(result_subset, other_subset,
@@ -172,17 +172,17 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                                 signatures =
                                   signatures(result)[, comparison$x_sig_index, 
                                                      drop = FALSE], exposures =
-                                  matrix(), type = get_result_type(result), 
+                                  matrix(), algorithm = get_result_alg(result), 
                                 musica = musica(result), 
-                                tables = table_name(result))
+                                table_name = table_selected(result))
   other_subset <- methods::new("musica_result",
                                signatures = 
                                  signatures(
                                    cosmic_v2_sigs)[, comparison$y_sig_index, 
                                                    drop = FALSE],
-                               exposures = matrix(), type = "NMF",
+                               exposures = matrix(), algorithm = "NMF",
                                musica = musica(cosmic_v2_sigs),
-                               tables = table_name(cosmic_v2_sigs))
+                               table_name = table_selected(cosmic_v2_sigs))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -224,8 +224,8 @@ cosmic_v2_subtype_map <- function(tumor_type) {
   )
   partial <- grep(tumor_type, subtypes)
   for (i in seq_len(length(partial))) {
-    print(subtypes[partial[i]])
-    print(present_sig[[partial[i]]])
+    message(subtypes[partial[i]])
+    message(present_sig[[partial[i]]])
   }
 }
 

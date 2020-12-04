@@ -9,7 +9,7 @@ predict_exposure(
   g,
   table_name,
   signature_res,
-  algorithm,
+  algorithm = c("lda", "decompTumor2Sig", "deconstructSigs"),
   signatures_to_use = seq_len(ncol(signatures(signature_res))),
   verbose = FALSE
 )

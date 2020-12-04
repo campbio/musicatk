@@ -8,7 +8,7 @@ build_standard_table(
   musica,
   g,
   table_name,
-  strand_type = NA,
+  strand_type = NULL,
   overwrite = FALSE
 )
 }

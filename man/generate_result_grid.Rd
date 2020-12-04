@@ -7,7 +7,7 @@
 generate_result_grid(
   musica,
   table_name,
-  discovery_type = "lda",
+  algorithm = "lda",
   annotation = NA,
   k_start,
   k_end,
@@ -22,7 +22,7 @@ generate_result_grid(
 
 \item{table_name}{Name of table used for signature discovery}
 
-\item{discovery_type}{Algorithm for signature discovery}
+\item{algorithm}{Algorithm for signature discovery}
 
 \item{annotation}{Sample annotation to split results into}
 

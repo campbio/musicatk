@@ -143,12 +143,14 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 
   #Subset variants
   variants(musica) <- variants(musica)[
-    which(variants(musica)$Tumor_Sample_Barcode %in% min_samples), ]
+    which(variants(musica)$sample %in% min_samples), ]
 
   #Subset sample annotations
   if (nrow(samp_annot(musica)) != 0) {
-    samp_annot(musica) <- samp_annot(musica)[which(
-      samp_annot(musica)$Samples %in% min_samples), ]
+    overwrite_samp_annot(musica, samp_annot(musica)[which(
+      samp_annot(musica)$Samples %in% min_samples), ])
+    #samp_annot(musica) <- samp_annot(musica)[which(
+    #  samp_annot(musica)$Samples %in% min_samples), ]
   }
   return(musica)
 }
@@ -199,10 +201,10 @@ drop_na_variants <- function(variants, annot_col) {
     stop(paste(annot_col, " not found in annotation columns, please review.",
                sep = ""))
   }
-  if (length(which(variants[[annot_col]] == "NA")) == 0) {
+  if (length(which(is.na(variants[[annot_col]]))) == 0) {
     return(variants)
   } else {
-    return(variants[-which(variants[[annot_col]] == "NA"), ])
+    return(variants[-which(is.na(variants[[annot_col]])), ])
   }
 }
 
@@ -214,15 +216,15 @@ drop_na_variants <- function(variants, annot_col) {
 #' @slot signatures A matrix of signatures by mutational motifs
 #' @slot exposures A matrix of samples by signature weights
 #' @slot tables A character vector of table names used to make the result
-#' @slot type Describes how the signatures/weights were generated
+#' @slot algorithm Describes how the signatures/weights were generated
 #' @slot musica The musica object the results were generated from
 #' @slot umap List of umap data.frames for plotting and analysis
 #' @export
 #' @exportClass musica_result
 setClass("musica_result", representation(signatures = "matrix", 
                                          exposures = "matrix", 
-                                         tables = "character", 
-                                         type = "character", 
+                                         table_name = "character", 
+                                         algorithm = "character", 
                                          musica = "musica", 
                                          umap = "matrix"))
 
@@ -245,8 +247,8 @@ name_signatures <- function(result, name_vector) {
   eval.parent(substitute(rownames(exposures(result)) <- name_vector))
 }
 
-get_result_type <- function(musica_result) {
-  return(musica_result@type)
+get_result_alg <- function(musica_result) {
+  return(musica_result@algorithm)
 }
 
 # Result Grid object/methods -------------------------------

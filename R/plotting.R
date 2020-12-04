@@ -44,8 +44,8 @@ plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
   
   result <- methods::new("musica_result",
                           signatures = sample_counts,exposures = matrix(),
-                          type = "sample", musica = musica,
-                          tables = table_name)
+                          algorithm = "sample", musica = musica,
+                          table_name = table_name)
   g <- plot_signatures(result) + ggplot2::ylab("Mutation Counts")
   return(g)
 }
@@ -94,7 +94,7 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
                             same_scale = TRUE) {
   signatures <- signatures(result)
   sig_names <- colnames(signatures)
-  table_name <- table_name(result)
+  table_name <- table_selected(result)
   tab <- tables(result)[[table_name]]
   annot <- get_annot_tab(tab)
 
@@ -162,7 +162,8 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
 plot_sample_reconstruction_error <- function(result, sample,
                                              plotly = FALSE) {
   signatures <- .extract_count_table(musica(result), 
-                                     table_name(result))[, sample, drop = FALSE]
+                                     table_selected(result))[, sample, 
+                                                             drop = FALSE]
   sample_name <- colnames(signatures)
   reconstructed <- reconstruct_sample(result, sample)
   sigs <- cbind(signatures, reconstructed, signatures - reconstructed)
@@ -170,9 +171,9 @@ plot_sample_reconstruction_error <- function(result, sample,
   
   recontruct_result <- methods::new("musica_result",
                       signatures = sigs,
-                      exposures = matrix(), type = "NMF",
+                      exposures = matrix(), algorithm = "NMF",
                       musica = musica(result),
-                      tables = table_name(result))
+                      table_name = table_selected(result))
   plot_signatures(recontruct_result, same_scale = FALSE) +
     ggplot2::ggtitle("Reconstruction error", subtitle = sample_name) + ylab("")
 }
