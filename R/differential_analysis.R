@@ -3,16 +3,20 @@
 #' @importFrom MASS glm.nb
 
 #' @title Compare exposures of annotated samples
-#' @description \code{exposure_differential_analysis} is used to run 
-#' differential analysis on the signature exposures of annotated samples within 
+#' @description \code{exposure_differential_analysis} is used to run
+#' differential analysis on the signature exposures of annotated samples within
 #' the \code{\linkS4class{musica_result}} object.
 #' @param musica_result A \code{\linkS4class{musica_result}} object
 #' @param annotation Column in the sample_annotations table of the
 #' \code{\linkS4class{musica_result}} object
 #' @param method Any method in \code{c("wilcox", "kruskal", "glm.nb")}
 #' used to perform differential analysis on signature exposures
-#' @param pair Paired annotations for use in Wilcox test if \code{annotation}
-#' has more than 2 levels. This pair in \code{annotation}  will be compared.
+#' @param group1 Group in annotation used in the Wilcox test if
+#' \code{annotation} has more than 2 levels. This group in \code{annotation}
+#' will be compared to \code{group2}.
+#' @param group2 Group in annotation used in the Wilcox test if
+#' \code{annotatino} has more than 2 levels. This group in \code{annotation}
+#' will be compared to \code{group1}
 #' @param ... Additional arguments to be passed to the chosen method
 #' @return A matrix containing statistics summarizing the analysis dependent
 #' on the chosen method
@@ -23,10 +27,10 @@
 #exposure_differential_analysis
 exposure_differential_analysis <- function(musica_result, annotation,
                                   method = c("wilcox", "kruskal", "glm.nb"),
-                                  pair = NULL, ...) {
+                                  group1 = NULL, group2 = NULL, ...) {
   method <- match.arg(method)
   if (!methods::is(musica_result, "musica_result")) {
-    stop("Input to exposure_differential_analysis must be a musica_result 
+    stop("Input to exposure_differential_analysis must be a musica_result
          object.")
   }
   annotations <- samp_annot(musica_result)[[annotation]]
@@ -34,24 +38,31 @@ exposure_differential_analysis <- function(musica_result, annotation,
     stop(annotation, " does not exist in musica_result.")
   }
   exposures <- exposures(musica_result)
-  groups <- unique(annotations)
-  # Set order of levels by the order specified in the user input.
-  # This is done to preserve correct order during diff anal testing.
-  # Check if already a factor
-  annotations <- factor(annotations, levels = unique(groups))
+  groups <- unique(annotations) %>% sort()
+  annotations <- factor(annotations)
   if (length(groups) < 2) {
     stop("annotation must have at least 2 unique values")
   }
   diff.out <- 0
   if (method == "wilcox") {
     if (length(groups) > 2) {
-      if (is.null(pair)) {
-        stop("Parameter 'pair' must be provided for annotations consisting of 
-          more than 2 unique elements")
+      if (is.null(group1) || is.null(group2)) {
+        stop("Parameters 'group1' and 'group2' must be provided for annotations
+        containing more than 2 unique elements")
       }
-      if (length(factor(pair)) != 2) {
-        stop("Parameter 'pair' must be of length 2")
+      if (!is.character(group1) || !is.character(group2)) {
+        stop("Parameter 'group1' and 'group2' must be of class character")
       }
+      if (group1 == group2) {
+        stop("'group1' and 'group2' must be unique")
+      }
+      if (!group1 %in% annotations) {
+        stop("'group1' does not exist in annotations")
+      }
+      if (!group2 %in% annotations) {
+        stop("'group2' does not exist in annotations")
+      }
+      pair <- c(group1, group2) %>% sort()
     } else {
       pair <- groups
     }
