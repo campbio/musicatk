@@ -59,7 +59,7 @@ plot_heatmap <- function(result,
   
   
   annot <- sample_annotations(result) #Extracting annotations from musicatk object
-  heatmap = NULL #initilaizing empty annotation object
+  
  
   
    #checking if annotation argument correct
@@ -68,7 +68,7 @@ plot_heatmap <- function(result,
       stop("The given annotations are not present in the data") 
     }
     annot <- annot[,..annotation]
-    heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
+    
   }
   
   if(!is.null(subset_signatures)){
@@ -91,49 +91,21 @@ plot_heatmap <- function(result,
     
     annot <- annot$Tumor_Subtypes
     annot <- annot[annot == subset_tumor]
-    heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
+    
   }
   
- #If/else conditions to check if annotation object avaialble
-  if(isTRUE(show_column_names) & isTRUE(show_row_names)){
+ #If/else conditions to check if annotation object available
+  heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
     
     if(is.null(heatmap) ){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",show_column_names = TRUE,show_row_names = TRUE,...)
+      ComplexHeatmap::Heatmap(exp,name = "exposures",show_column_names = show_column_names,show_row_names = show_row_names,...)
     }
     else if(!is.null(heatmap)){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",top_annotation = heatmap,show_column_names = TRUE,show_row_names = TRUE,...)
+      ComplexHeatmap::Heatmap(exp,name = "exposures",top_annotation = heatmap,show_column_names = show_column_names,show_row_names = show_row_names,...)
     }
-  } 
   
-  else if(!isTRUE(show_column_names) & !isTRUE(show_row_names)){
-    
-    if(is.null(heatmap) ){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",show_column_names = FALSE,show_row_names = FALSE,...)
-    }
-    else if(!is.null(heatmap)){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",top_annotation = heatmap,show_column_names = FALSE,show_row_names = FALSE,...)
-    }
-  }
-  else if(isTRUE(show_column_names) & !isTRUE(show_row_names)){
-      
-    if(is.null(heatmap) ){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",show_column_names = TRUE,show_row_names = FALSE,...)
-    }
-    else if(!is.null(heatmap)){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",top_annotation = heatmap,show_column_names = TRUE,show_row_names = FALSE,...)
-    }
-  }
-  else if(!isTRUE(show_column_names) & isTRUE(show_row_names)){
-      
-    if(is.null(heatmap) ){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",show_column_names = FALSE,show_row_names = TRUE,...)
-    }
-    else if(!is.null(heatmap)){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",top_annotation = heatmap,show_column_names = FALSE,show_row_names = TRUE,...)
-    }
-  }
-    
   
+ 
   
   
   
