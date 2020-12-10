@@ -57,18 +57,16 @@ plot_heatmap <- function(result,
     exp <- scale(exp)
   }
   
-  
   annot <- sample_annotations(result) #Extracting annotations from musicatk object
+  heatmap <- NULL #initializing an empty heatmap annotation variable
   
- 
-  
-   #checking if annotation argument correct
+  #checking if annotation argument correct
   if(!is.null(annotation)){
     if(any(!annotation %in% colnames(annot))) { 
       stop("The given annotations are not present in the data") 
     }
     annot <- annot[,..annotation]
-    
+    heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   
   if(!is.null(subset_signatures)){
@@ -91,24 +89,16 @@ plot_heatmap <- function(result,
     
     annot <- annot$Tumor_Subtypes
     annot <- annot[annot == subset_tumor]
-    
+    heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   
  #If/else conditions to check if annotation object available
-  heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
-    
-    if(is.null(heatmap) ){
+  if(is.null(heatmap) ){
       ComplexHeatmap::Heatmap(exp,name = "exposures",show_column_names = show_column_names,show_row_names = show_row_names,...)
     }
     else if(!is.null(heatmap)){
       ComplexHeatmap::Heatmap(exp,name = "exposures",top_annotation = heatmap,show_column_names = show_column_names,show_row_names = show_row_names,...)
     }
-  
-  
- 
-  
-  
-  
 }
  
   
