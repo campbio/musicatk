@@ -31,6 +31,7 @@ Imports:
     maftools,
     MCMCprecision,
     MASS,
+    matrixTests,
     data.table,
     dplyr,
     rlang,
