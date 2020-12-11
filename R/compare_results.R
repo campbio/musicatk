@@ -112,19 +112,19 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
                               result_name = deparse(substitute(result))) {
   if (sample_type == "exome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      cosmic_res <- cosmic_v3_sbs_sigs_exome
+      cosmic_res <- musicatk::cosmic_v3_sbs_sigs_exome
     } else {
       stop(paste("Only SBS class is available for whole-exome, please choose",
                  " `genome` for DBS or Indel", sep = ""))
     }
   } else if (sample_type == "genome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      cosmic_res <- cosmic_v3_sbs_sigs
+      cosmic_res <- musicatk::cosmic_v3_sbs_sigs
     } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
-      cosmic_res <- cosmic_v3_dbs_sigs
+      cosmic_res <- musicatk::cosmic_v3_dbs_sigs
     } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
                                     "ID")) {
-      cosmic_res <- cosmic_v3_indel_sigs
+      cosmic_res <- musicatk::cosmic_v3_indel_sigs
     } else {
       stop("Only SBS, DBS, and Indel classes are supported")
     }
@@ -168,8 +168,6 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @export
 compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                               result_name = deparse(substitute(result))) {
-  cosmic_v2_sigs <- NULL
-  data("cosmic_v2_sigs")
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, 
                             sig2 = signatures(cosmic_v2_sigs),
@@ -184,10 +182,10 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
   other_subset <- new("musica_result",
                                signatures = 
                                  signatures(
-                                   cosmic_v2_sigs)[, comparison$y_sig_index, 
+                                   musicatk::cosmic_v2_sigs)[, comparison$y_sig_index, 
                                                    drop = FALSE],
                                exposures = matrix(), algorithm = "NMF",
-                               musica = musica(cosmic_v2_sigs),
+                               musica = musica(musicatk::cosmic_v2_sigs),
                                table_name = table_selected(cosmic_v2_sigs))
 
   .plot_compare_result_signatures(result_subset, other_subset,
