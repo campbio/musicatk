@@ -55,7 +55,6 @@ test_that(desc = "Diff Anal Input validity", {
                                               group1 = c("A", "B"),
                                               group2 = c("t", "C")),
                regexp = "does not exist in annotations")
-
 })
 
 test_that(desc = "Diff Anal functionality",  {
