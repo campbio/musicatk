@@ -170,7 +170,7 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                               result_name = deparse(substitute(result))) {
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, 
-                            sig2 = signatures(cosmic_v2_sigs),
+                            sig2 = signatures(musicatk::cosmic_v2_sigs),
                             threshold = threshold, metric = metric)
   result_subset <- new("musica_result",
                                 signatures =
@@ -181,12 +181,13 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                                 table_name = table_selected(result))
   other_subset <- new("musica_result",
                                signatures = 
-                                 signatures(
-                                   musicatk::cosmic_v2_sigs)[, comparison$y_sig_index, 
+                        signatures(
+                          musicatk::cosmic_v2_sigs)[, comparison$y_sig_index, 
                                                    drop = FALSE],
                                exposures = matrix(), algorithm = "NMF",
                                musica = musica(musicatk::cosmic_v2_sigs),
-                               table_name = table_selected(cosmic_v2_sigs))
+                               table_name = 
+                        table_selected(musicatk::cosmic_v2_sigs))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
