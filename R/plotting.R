@@ -161,7 +161,7 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
 #' @export
 plot_sample_reconstruction_error <- function(result, sample,
                                              plotly = FALSE) {
-  signatures <- .extract_count_table(musica(result), 
+  signatures <- .extract_count_table(get_musica(result), 
                                      table_selected(result))[, sample, 
                                                              drop = FALSE]
   sample_name <- colnames(signatures)
@@ -172,7 +172,7 @@ plot_sample_reconstruction_error <- function(result, sample,
   recontruct_result <- methods::new("musica_result",
                       signatures = sigs,
                       exposures = matrix(), algorithm = "NMF",
-                      musica = musica(result),
+                      musica = get_musica(result),
                       table_name = table_selected(result))
   plot_signatures(recontruct_result, same_scale = FALSE) +
     ggplot2::ggtitle("Reconstruction error", subtitle = sample_name) + ylab("")

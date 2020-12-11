@@ -75,7 +75,7 @@ compare_results <- function(result, other_result, threshold = 0.9,
                                   signatures(result)[, comparison$x_sig_index, 
                                                      drop = FALSE], exposures =
                                   matrix(), algorithm = "NMF", 
-                                musica = musica(result), 
+                                musica = get_musica(result), 
                                 table_name = table_selected(result))
   other_subset <- methods::new("musica_result",
                                signatures = 
@@ -83,7 +83,7 @@ compare_results <- function(result, other_result, threshold = 0.9,
                                    other_result)[, comparison$y_sig_index, 
                                                  drop = FALSE], 
                                exposures = matrix(), algorithm = "NMF",
-                               musica = musica(other_result), 
+                               musica = get_musica(other_result), 
                                table_name = table_selected(other_result))
 
   .plot_compare_result_signatures(result_subset, other_subset,
@@ -138,14 +138,14 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
     "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
                                                     drop = FALSE],
     exposures = matrix(), algorithm = "NMF", 
-    table_name = table_selected(result), musica = musica(result))
+    table_name = table_selected(result), musica = get_musica(result))
   other_subset <- methods::new("musica_result", signatures =
                                  signatures(cosmic_res)[, 
                                                         comparison$y_sig_index, 
                                                         drop = FALSE],
                                exposures = matrix(), algorithm = "NMF",
                                table_name = table_selected(cosmic_res),
-                               musica = musica(cosmic_res))
+                               musica = get_musica(cosmic_res))
   
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -177,7 +177,7 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                                   signatures(result)[, comparison$x_sig_index, 
                                                      drop = FALSE], exposures =
                                   matrix(), algorithm = get_result_alg(result), 
-                                musica = musica(result), 
+                                musica = get_musica(result), 
                                 table_name = table_selected(result))
   other_subset <- new("musica_result",
                                signatures = 
@@ -185,7 +185,7 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                           musicatk::cosmic_v2_sigs)[, comparison$y_sig_index, 
                                                    drop = FALSE],
                                exposures = matrix(), algorithm = "NMF",
-                               musica = musica(musicatk::cosmic_v2_sigs),
+                               musica = get_musica(musicatk::cosmic_v2_sigs),
                                table_name = 
                         table_selected(musicatk::cosmic_v2_sigs))
 
