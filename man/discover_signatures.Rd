@@ -5,7 +5,7 @@
 \title{Discover mutational signatures}
 \usage{
 discover_signatures(
-  musica_name,
+  musica,
   table_name,
   num_signatures,
   algorithm = "lda",
@@ -15,6 +15,8 @@ discover_signatures(
 )
 }
 \arguments{
+\item{musica}{A \code{\linkS4class{musica}} object.}
+
 \item{table_name}{Name of the table to use for signature discovery. Needs
 to be the same name supplied to the table building functions such as
 \link{build_standard_table}.}
@@ -32,8 +34,6 @@ signature algorithms. Default \code{10}.}
 
 \item{par_cores}{Number of parallel cores to use. Only used if
 \code{method = "nmf"}. Default \code{1}.}
-
-\item{musica}{A \code{\linkS4class{musica}} object.}
 }
 \value{
 Returns a A \code{\linkS4class{musica_result}} object containing

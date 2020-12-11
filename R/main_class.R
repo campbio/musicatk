@@ -186,9 +186,9 @@ subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
   }
   overwrite_samp_annot(musica, samp_annot(musica)[annotation_index, ])
   annotation_samples <- samp_annot(musica)$"Samples"
-  tables(musica) <- subset_count_tables(musica, annotation_samples)
+  tables(musica) <- subset_count_tables(musica, samples = annotation_samples)
   variants(musica) <- variants(musica)[
-    which(variants(musica)$Tumor_Sample_Barcode %in% annotation_samples), ]
+    which(variants(musica)$sample %in% annotation_samples), ]
   return(musica)
 }
 
@@ -215,7 +215,7 @@ drop_na_variants <- function(variants, annot_col) {
 #'
 #' @slot signatures A matrix of signatures by mutational motifs
 #' @slot exposures A matrix of samples by signature weights
-#' @slot tables A character vector of table names used to make the result
+#' @slot table_name A character vector of table names used to make the result
 #' @slot algorithm Describes how the signatures/weights were generated
 #' @slot musica The musica object the results were generated from
 #' @slot umap List of umap data.frames for plotting and analysis

@@ -1,3 +1,7 @@
+#' @importFrom methods new
+NULL
+
+
 sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
                         threshold=0.9) {
   metric <- match.arg(metric)
@@ -134,7 +138,7 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
     "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
                                                     drop = FALSE],
     exposures = matrix(), algorithm = "NMF", 
-    table_selected = table_selected(result), musica = musica(result))
+    table_name = table_selected(result), musica = musica(result))
   other_subset <- methods::new("musica_result", signatures =
                                  signatures(cosmic_res)[, 
                                                         comparison$y_sig_index, 
@@ -164,18 +168,20 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @export
 compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                               result_name = deparse(substitute(result))) {
+  cosmic_v2_sigs <- NULL
+  data("cosmic_v2_sigs")
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, 
                             sig2 = signatures(cosmic_v2_sigs),
                             threshold = threshold, metric = metric)
-  result_subset <- methods::new("musica_result",
+  result_subset <- new("musica_result",
                                 signatures =
                                   signatures(result)[, comparison$x_sig_index, 
                                                      drop = FALSE], exposures =
                                   matrix(), algorithm = get_result_alg(result), 
                                 musica = musica(result), 
                                 table_name = table_selected(result))
-  other_subset <- methods::new("musica_result",
+  other_subset <- new("musica_result",
                                signatures = 
                                  signatures(
                                    cosmic_v2_sigs)[, comparison$y_sig_index, 

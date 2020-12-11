@@ -16,7 +16,7 @@ the musica object the result was generated from
 
 \item{\code{exposures}}{A matrix of samples by signature weights}
 
-\item{\code{tables}}{A character vector of table names used to make the result}
+\item{\code{table_name}}{A character vector of table names used to make the result}
 
 \item{\code{algorithm}}{Describes how the signatures/weights were generated}
 

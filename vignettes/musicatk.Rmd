@@ -126,7 +126,7 @@ deletion, and length.
 ```{r combine_tables}
 data(dbs_musica)
 build_standard_table(dbs_musica, g, "SBS96", overwrite = TRUE)
-build_standard_table(dbs_musica, g, "DBS", overwrite = TRUE)
+build_standard_table(dbs_musica, g, "DBS78", overwrite = TRUE)
 
 #Subset SBS table to DBS samples so they cam be combined
 count_tables <- tables(dbs_musica)
@@ -169,7 +169,7 @@ signature in each sample. Discovery and prediction results are save in a
 
 ```{r discover_sigs}
 result <- discover_signatures(musica = musica, table_name = "SBS96", 
-                              num_signatures = 3, algorithm = "lda", 
+                              num_signatures = 3, algorithm = "nmf", 
                               nstart = 10)
 ```
 

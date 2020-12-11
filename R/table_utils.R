@@ -305,10 +305,11 @@ combine_count_tables <- function(musica, to_comb, name,
                                        overwrite = overwrite)
   } else {
     stop(paste("User specified table: ",
-               setdiff(to_comb, tab[[table_name]]), " does not exist, please ",
-               "create prior to creating compound table. ",
-               "Current table names are: ", paste(tab[[table_name]],
-                                                  collapse = ", "), sep = ""))
+               setdiff(to_comb[which(!to_comb %in% names(tab))]), 
+               " does not exist, please create prior to creating compound ",
+               "table. Current table names are: ", paste(names(tab), 
+                                                         collapse = ", "), 
+               sep = ""))
   }
   eval.parent(substitute(tables(musica) <- tab))
 }

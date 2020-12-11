@@ -368,7 +368,7 @@ rc <- function(dna) {
 #' build_standard_table(musica, g, "SBS192", "Replication_Strand")
 #'
 #' data(dbs_musica)
-#' build_standard_table(dbs_musica, g, "DBS")
+#' build_standard_table(dbs_musica, g, "DBS", overwrite = TRUE)
 #'
 #' data(indel_musica)
 #' build_standard_table(indel_musica, g, table_name = "INDEL")

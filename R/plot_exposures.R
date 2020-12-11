@@ -260,7 +260,6 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   # Add sample annotation to data frame if supplied
   if(!is.null(annotation)) {
     
-    # Need to replace with S4 getter
     sample_annot <- samp_annot(result)
     
     if(!annotation %in% colnames(sample_annot)) {
