@@ -72,7 +72,7 @@ subset_count_tables <- function(musica, samples) {
   for (name in table_names) {
     sub_tab <- tables[[name]]
     sub_tab@count_table <- sub_tab@count_table[, which(colnames(
-      sub_tab@count_table) %in% samples)]
+      sub_tab@count_table) %in% samples), drop = FALSE]
     tables[[name]] <- sub_tab
   }
   return(tables)

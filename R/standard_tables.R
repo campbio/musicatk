@@ -397,7 +397,8 @@ build_standard_table <- function(musica, g, table_name, strand_type = NULL,
     tab <- create_dbs78_table(musica, overwrite)
     tab_list[[get_tab_name(tab)]] <- tab
     tab_list <- c(tables(musica), tab_list)
-  } else if (table_name %in% c("INDEL83", "INDEL", "IND", "indel", "Indel")) {
+  } else if (table_name %in% c("IND83", "INDEL83", "INDEL", "IND", "indel", 
+                               "Indel")) {
     message("Building count table from INDELs with IND83 schema")
     .table_exists_warning(musica, "INDEL", overwrite)
     tab_list <- list()
@@ -435,7 +436,8 @@ create_indel83_table <- function(musica, g, overwrite = FALSE) {
                                 .get_indel_motifs("ins", NA, NA),
                                 .get_indel_motifs("micro", NA, NA)),
                   column_names = all_samples)
-  mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), dimnames = dimlist)
+  mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), 
+                      dimnames = dimlist)
   for(sample in all_samples) {
     ins <- all_ins[which(all_ins$sample == sample), ]
     del <- all_del[which(all_del$sample == sample), ]
@@ -494,7 +496,8 @@ create_indel83_table <- function(musica, g, overwrite = FALSE) {
 
   #TODO error in counting, we're missing some
   #incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
-  dummy_features <- rep(NA, length(which(var$Variant_Type %in% c("INS", "DEL"))))
+  dummy_features <- rep(NA, length(which(var$Variant_Type %in% c("INS", 
+                                                                 "DEL"))))
 
   tab <- .create_count_table(musica = musica, name = "IND83",
                              count_table = mut_table,

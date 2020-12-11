@@ -149,7 +149,7 @@ predict_exposure <- function(musica, g, table_name, signature_res,
   signature <- signatures(signature_res)[, signatures_to_use]
   counts_table <- .extract_count_table(musica, table_name)
   present_samples <- which(colSums(counts_table) > 0)
-  counts_table <- counts_table[, present_samples]
+  counts_table <- counts_table[, present_samples, drop = FALSE]
 
   if (algorithm %in% c("lda_posterior", "lda", "lda_post")) {
      lda_res <- lda_posterior(counts_table = counts_table, signature = 
@@ -665,7 +665,7 @@ combine_predict_grid <- function(grid_list, musica, signature_res) {
     missing_mat <- matrix(0, length(missing), ncol(samp))
     rownames(missing_mat) <- missing
     samp <- rbind(samp, missing_mat)
-    samp <- samp[order(rownames(samp)), ]
+    samp <- samp[order(rownames(samp)), , drop = FALSE]
     comb <- cbind(comb, samp)
   }
   grid_res <- new("musica_result", musica = musica, exposures = comb,
