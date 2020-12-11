@@ -74,18 +74,18 @@ exposure_differential_analysis <- function(musica_result, annotation,
         stop("'group2' does not exist in annotations.")
       }
     } else {
-      group1 = groups[1]
-      group2 = groups[2]
+      group1 <- groups[1]
+      group2 <- groups[2]
     }
     header <- data.frame(x = group1, y = group2) %>%
       dplyr::mutate(p = paste0(.data$x, "-", .data$y, "(Pr(>|z|))"),
                     adj = paste0(.data$x, "-", .data$y, "(fdr)"))
-    diff.out <- sapply(1:length(group1), FUN = function(i) {
+    diff.out <- sapply(seq_len(length(group1)), FUN = function(i) {
       x <- exposures[, annotations == group1[i]] %>% as.matrix()
       y <- exposures[, annotations == group2[i]] %>% as.matrix()
       out <- matrixTests::row_wilcoxon_twosample(x, y, ...)$pvalue
       return(out)
-      }) 
+      })
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(group1) + 1):ncol(diff.out)],
       method = "BH") %>% matrix(ncol = length(group1), byrow = F)
