@@ -33,7 +33,7 @@ table_96 <- function(sample_df) {
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @return List of count tables objects
-#' @examples 
+#' @examples
 #' data(musica)
 #' extract_count_tables(musica)
 #' @export
@@ -94,28 +94,28 @@ subset_count_tables <- function(musica, samples) {
   if (!inherits(count_table, "array")) {
     stop("The count table must be a matrix or array.")
   }
-  if(!is.null(features) & is.null(type)) {
+  if (!is.null(features) & is.null(type)) {
     stop("'type' must be supplied when including 'features.'")
   }
   if (!is.null(type)) {
-    if(length(type) != nrow(features)) {
+    if (length(type) != nrow(features)) {
       stop("'type' must be the same length as the number of rows in 'features'")
     }
-    type.rle = S4Vectors::Rle(type)
+    type.rle <- S4Vectors::Rle(type)
   } else {
-    type.rle = NULL
+    type.rle <- NULL
   }
-  if(!is.null(color_mapping)) {
-    if(is.null(annotation)) {
+  if (!is.null(color_mapping)) {
+    if (is.null(annotation)) {
       stop("In order to set 'color_mapping', the 'annotation' data ",
            "frame must be supplied.")
     }
     # checks for color_variable
   }
-  if(!is.null(color_mapping) & !is.null(color_variable) &
+  if (!is.null(color_mapping) & !is.null(color_variable) &
      !is.null(annotation)) {
-    no_match = setdiff(names(color_mapping), annotation[,color_variable])
-    if(length(no_match) > 0) {
+    no_match <- setdiff(names(color_mapping), annotation[, color_variable])
+    if (length(no_match) > 0) {
       #warning()
     }
   }
@@ -167,7 +167,7 @@ subset_count_tables <- function(musica, samples) {
 #' build_custom_table(musica, "Transcript_Strand", "Transcript_Strand",
 #' data_factor = factor(c("T", "U")))
 #' @export
-build_custom_table <- function(musica, variant_annotation, name, 
+build_custom_table <- function(musica, variant_annotation, name,
                                description = character(), data_factor = NA,
                                annotation_df = NULL, features = NULL,
                                type = NULL, color_variable = NULL,
@@ -175,7 +175,7 @@ build_custom_table <- function(musica, variant_annotation, name,
                                overwrite = FALSE) {
   tab <- tables(musica)
   variants <- variants(musica)
-  .table_exists_warning(musica = musica, table_name = name, 
+  .table_exists_warning(musica = musica, table_name = name,
                         overwrite = overwrite)
 
   #Check that variant column exists

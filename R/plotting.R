@@ -22,18 +22,18 @@ NULL
 #' @export
 plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
 
-  if(is.null(table_name)) {
+  if (is.null(table_name)) {
    table_name <- names(tables(musica))[1]
   }  
   
   # Extract counts for specific samples
   tab <- .extract_count_table(musica, table_name)
   ix <- match(sample_names, colnames(tab))
-  if(all(is.na(ix))) {
+  if (all(is.na(ix))) {
     stop("The values in 'sample_names' did not match any sample IDs in table '",
          table_name, "'.")
   }
-  else if(anyNA(ix)) {
+  else if (anyNA(ix)) {
     warning("The following samples in 'sample_names' were not found  in ",
             "table '", table_name, 
             "' and will ", "be exlcuded from the plot: ",
@@ -43,7 +43,7 @@ plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
   sample_counts <- tab[, ix, drop = FALSE]
   
   result <- methods::new("musica_result",
-                          signatures = sample_counts,exposures = matrix(),
+                          signatures = sample_counts, exposures = matrix(),
                           algorithm = "sample", musica = musica,
                           table_name = table_name)
   g <- plot_signatures(result) + ggplot2::ylab("Mutation Counts")
@@ -98,7 +98,7 @@ plot_signatures <- function(result, legend = TRUE, plotly = FALSE,
   tab <- tables(result)[[table_name]]
   annot <- get_annot_tab(tab)
 
-  if(is.null(color_mapping)) {
+  if (is.null(color_mapping)) {
     color_mapping <- get_color_mapping(tab)
   }
   plot_dat <- .pivot_signatures(signatures, tab,
@@ -182,7 +182,7 @@ plot_sample_reconstruction_error <- function(result, sample,
 # Utility functions -------------------------------
 .pivot_signatures <- function(signatures, tab, sig_names = NULL,
                               color_variable = NULL) {
-  if(is.null(sig_names)) {
+  if (is.null(sig_names)) {
     sig_names <- colnames(signatures)  
   }
   annot <- tab@annotation
@@ -205,13 +205,13 @@ plot_sample_reconstruction_error <- function(result, sample,
   
   # Check for mutation color variable in annot table
   final_color_variable <- NULL
-  if(is.null(color_variable) && !is.null(tab@color_variable)) {
+  if (is.null(color_variable) && !is.null(tab@color_variable)) {
     color_variable <- tab@color_variable
   }
   
   # Set up color variable if supplied as vector or the name of a column in
   # the table annotation
-  if(length(color_variable) == 1 && color_variable %in% colnames(annot)) {
+  if (length(color_variable) == 1 && color_variable %in% colnames(annot)) {
     final_color_variable <- annot[df$motif,tab@color_variable]
   } else if (length(color_variable) == nrow(signatures)) {
     final_color_variable <- color_variable
@@ -223,13 +223,12 @@ plot_sample_reconstruction_error <- function(result, sample,
   }
   
   # Save color variable to df if it was specified
-  if(!is.null(final_color_variable)) {
+  if (!is.null(final_color_variable)) {
     df <- cbind(df, mutation_color = final_color_variable)
   }
 
   # Make sure signature order is preserved using factor
   df$signature <- factor(df$signature, levels = names(sig_names))
-  
   return(list(df = df, names = sig_names))
 }
 
@@ -244,7 +243,7 @@ plot_sample_reconstruction_error <- function(result, sample,
             legend.text  = element_text(size = textSize),
             legend.key.size = ggplot2::unit(spaceLegend, "lines"),
             legend.box.background = ggplot2::element_rect(colour = "black"),
-            legend.spacing.x = ggplot2::unit(0.25, 'cm'))
+            legend.spacing.x = ggplot2::unit(0.25, "cm"))
 }
 
 .gg_default_theme <- function(p, text_size = 10, facet_size = 10) {
@@ -261,4 +260,3 @@ plot_sample_reconstruction_error <- function(result, sample,
   colors <- grDevices::hcl(h = hues, l = 65, c = 100)[seq_len(n)]
   return(colors)
 }
-

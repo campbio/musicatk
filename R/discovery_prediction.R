@@ -17,7 +17,7 @@ NULL
 #' @param table_name Name of the table to use for signature discovery. Needs
 #' to be the same name supplied to the table building functions such as
 #' \link{build_standard_table}.
-#' @param num_signatures Number of signatures to discover. 
+#' @param num_signatures Number of signatures to discover.
 #' @param algorithm Method to use for mutational signature discovery. One of 
 #' \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.
 #' @param seed Seed to be used for the random number generators in the
@@ -116,7 +116,7 @@ discover_signatures <- function(musica, table_name, num_signatures,
 #' Must match the table type used to generate the prediction signatures
 #' @param signature_res Signatures used to predict exposures for the samples
 #' \code{musica} object. Existing signatures need to stored in a
-#' \code{\linkS4class{musica_result}} object. 
+#' \code{\linkS4class{musica_result}} object.
 #' @param algorithm Algorithm to use for prediction of exposures. One of
 #' \code{"lda"}, \code{"decompTumor2Sig"}, or
 #' \code{"deconstructSigs"}.

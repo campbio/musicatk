@@ -11,12 +11,12 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   if (nrow(sig1) != nrow(sig2)) {
     stop("Signatures must have the same number of motifs.")
   }
-  if(!is.null(rownames(sig1)) && !is.null(rownames(sig2)) &&
+  if (!is.null(rownames(sig1)) && !is.null(rownames(sig2)) &&
      !all(rownames(sig1) == rownames(sig2))) {
     warning("The names of the motifs in signature matrix one do not equal the ",
     "names of the motifs in signature matrix two.")
   }
-  if(metric == "jsd") {
+  if (metric == "jsd") {
     matches <- .jsd(sig1, sig2)
     metric_name <- "1_minus_jsd"
   } else {
@@ -43,8 +43,8 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   comparison[[metric_name]] <- as.numeric(comparison[[metric_name]])
   comparison$x_sig_index <- as.numeric(comparison$x_sig_index)
   comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
-  comparison <- comparison[order(comparison[[metric_name]], decreasing = TRUE),]
-  
+  comparison <- comparison[order(comparison[[metric_name]], decreasing = TRUE), 
+                           ]
   return(comparison)
 }
 
@@ -210,9 +210,9 @@ cosmic_v2_subtype_map <- function(tumor_type) {
                 "lymphoma hodgkin", "medulloblastoma", "melanoma", "myeloma",
                 "nasopharyngeal carcinoma", "neuroblastoma", "oesophagus",
                 "oral gingivo-buccal squamous", "osteosarcoma", "ovary",
-                "pancreas", "paraganglioma", "pilocytic astrocytoma", "prostate",
-                "stomach", "thyroid", "urothelial carcinoma", "uterine carcinoma"
-                , "uterine carcinosarcoma", "uveal melanoma")
+                "pancreas", "paraganglioma", "pilocytic astrocytoma", 
+                "prostate", "stomach", "thyroid", "urothelial carcinoma", 
+                "uterine carcinoma", "uterine carcinosarcoma", "uveal melanoma")
   present_sig <- list(
     c(1, 2, 4, 5, 6, 13, 18), c(1, 2, 5, 13), c(1, 5), c(1, 2, 5, 10, 13),
     c(1, 2, 3, 5, 6, 8, 10, 13, 17, 18, 20, 26, 30), c(1, 2, 5, 6, 10, 13, 26),
@@ -238,7 +238,7 @@ cosmic_v2_subtype_map <- function(tumor_type) {
 .plot_compare_result_signatures <- function(res1, res2,
                                             res1_name = "", res2_name = "") {
   res1_plot <- plot_signatures(res1, legend = TRUE) +
-    ggplot2::ggtitle(res1_name) 
+    ggplot2::ggtitle(res1_name)
   legend <- cowplot::get_legend(res1_plot)
   res1_plot <- res1_plot + theme(legend.position = "none")
   
@@ -246,7 +246,7 @@ cosmic_v2_subtype_map <- function(tumor_type) {
     ggplot2::ggtitle(res2_name)
   
   layout <- matrix(seq(2), ncol = 2, nrow = 9, byrow = TRUE)
-  layout <- rbind(layout, c(3,3))
+  layout <- rbind(layout, c(3, 3))
   g <- gridExtra::grid.arrange(res1_plot, res2_plot, legend,
                           layout_matrix = layout, ncol = 3,
                           widths = c(0.45, 0.45, 0.1))

@@ -1,5 +1,4 @@
 #' @title Display sample exposures with bar, box, or violin plots
-#' 
 #' @description The distributions of mutational signatures can be viewed 
 #' with barplots or box/violin plots. Barplots are most useful for viewing
 #' the proportion of signatures within and across samples. The box/violin plots
@@ -84,7 +83,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   color_by <- match.arg(color_by)
   plot_type <- match.arg(plot_type)
   
-  if(is.null(annotation) & (color_by == "annotation" | 
+  if (is.null(annotation) & (color_by == "annotation" | 
                             group_by == "annotation")) {
     stop("If parameters 'group_by' or 'color_by' are set to 'annotation', ",
          "then the 'annotation' parameter must be supplied.")
@@ -112,7 +111,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   
   # Apply threshold to signatures if supplied
   if (!is.null(threshold)) {
-    if(!is.numeric(threshold) || !length(threshold) == 1 ||
+    if (!is.numeric(threshold) || !length(threshold) == 1 ||
        threshold < 0) {
       stop("The 'threshold' parameter must be a number greater than 0.")
     }
@@ -138,7 +137,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
     # Convert to data.frame and recursively order based on each signature
     temp_exposures <- exposures
     temp_exposures[temp_exposures < threshold] <- 0
-    a <- as.data.frame(t(temp_exposures[sort_samples,,drop = FALSE]))
+    a <- as.data.frame(t(temp_exposures[sort_samples, , drop = FALSE]))
     ix <- do.call(order, c(a, list(decreasing = TRUE)))
     o <- colnames(temp_exposures)[ix]
     
@@ -149,8 +148,8 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   }
   
   # Get top N samples from ordering
-  if(!is.null(num_samples)) {
-    if(!is.numeric(num_samples) || length(num_samples) != 1 ||
+  if (!is.null(num_samples)) {
+    if (!is.numeric(num_samples) || length(num_samples) != 1 ||
        num_samples < 1 || num_samples > ncol(exposures)) {
       stop("The parameter 'num_samples', needs to be an integer between 1 ",
            "and the total number of samples in the result: ", ncol(exposures))
@@ -163,26 +162,26 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   plot_dat$sample <- factor(plot_dat$sample, levels = o)
   
   # Select color for fill
-  if(color_by == "annotation") {
+  if (color_by == "annotation") {
     plot_dat$color <- plot_dat$annotation
   } else {
     plot_dat$color <- plot_dat$signature
   }
   
   # Create base ggplot object
-  if(plot_type == "box" & group_by == "annotation") {
+  if (plot_type == "box" & group_by == "annotation") {
     p <- ggplot(plot_dat,
                 aes_string(x = "signature", y = "exposure", fill = "color"))
     p <- p +  ggplot2::geom_boxplot() + ggplot2::xlab("")  
-  } else if(plot_type == "box" & group_by == "signature") {
+  } else if (plot_type == "box" & group_by == "signature") {
     p <- ggplot(plot_dat,
                 aes_string(x = "annotation", y = "exposure", fill = "color"))
     p <- p +  ggplot2::geom_boxplot() + ggplot2::xlab("")  
-  } else if(plot_type == "violin" & group_by == "annotation") {
+  } else if (plot_type == "violin" & group_by == "annotation") {
     p <- ggplot(plot_dat,
                 aes_string(x = "signature", y = "exposure", fill = "color"))
     p <- p +  ggplot2::geom_violin(alpha = 0.75) + ggplot2::xlab("")  
-  } else if(plot_type == "violin" & group_by == "signature") {
+  } else if (plot_type == "violin" & group_by == "signature") {
     p <- ggplot(plot_dat,
                 aes_string(x = "annotation", y = "exposure", fill = "color"))
     p <- p +  ggplot2::geom_violin(alpha = 0.75) + ggplot2::xlab("")  
@@ -194,7 +193,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   
   # Add the ability to create a permanent color palette that is the same
   # no matter what the order of the signatures are
-  if(color_by == "signature") {
+  if (color_by == "signature") {
     sig_color <- .discrete_colors(nrow(exposures))
     names(sig_color) <- rownames(exposures)
     p <- p + ggplot2::scale_discrete_manual("fill", values = sig_color)
@@ -204,9 +203,9 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   scales <- ifelse(isTRUE(same_scale), "free_x", "free")
   
   # Set facet_wrap based on 'group_by' variable
-  if(group_by == "annotation") {
+  if (group_by == "annotation") {
     p <- p + ggplot2::facet_wrap(~ annotation, drop = TRUE, scales = scales)
-  } else if(group_by == "signature") {
+  } else if (group_by == "signature") {
     p <- p + ggplot2::facet_wrap(~ signature, drop = TRUE, scales = scales)
   }
   
@@ -224,8 +223,8 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   }
   
   # Toggle points if the plot is box/violin
-  if(plot_type %in% c("box", "violin") & isTRUE(add_points)) {
-    if(!is.numeric(point_size) | length(point_size) != 1) {
+  if (plot_type %in% c("box", "violin") & isTRUE(add_points)) {
+    if (!is.numeric(point_size) | length(point_size) != 1) {
       stop("The parameter 'point_size' needs to be a integer.")
     }
     p <- p + ggplot2::geom_point(pch = 21, size = point_size,
@@ -258,11 +257,11 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
 
 .add_annotation_to_df <- function(result, plot_dat, annotation = NULL) {
   # Add sample annotation to data frame if supplied
-  if(!is.null(annotation)) {
+  if (!is.null(annotation)) {
     
     sample_annot <- samp_annot(result)
     
-    if(!annotation %in% colnames(sample_annot)) {
+    if (!annotation %in% colnames(sample_annot)) {
       stop("'", annotation, "' was not found in sample annotations in the ",
            "'musica' object. Current annotations are: ",
            paste(colnames(sample_annot), collapse = ", "))
