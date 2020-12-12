@@ -32,7 +32,7 @@ create_umap <- function(result, n_neighbors = 30,
   samples <- sweep(samples, 2, colSums(samples), FUN = "/")
   
   # n_neighbors cannot be bigger than the total number of samples
-  if(n_neighbors > ncol(samples)) {
+  if (n_neighbors > ncol(samples)) {
     n_neighbors <- ncol(samples)
     message("The parameter 'n_neighbors' cannot be bigger than the total ",
             "number of samples. Setting 'n_neighbors' to ", n_neighbors, ".")
@@ -104,8 +104,8 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
   umap <- umap(result)
   color_by <- match.arg(color_by)
   
-  if(color_by == "annotation") {
-    if(is.null(annotation)) {
+  if (color_by == "annotation") {
+    if (is.null(annotation)) {
       stop("If pthe arameter or 'color_by' are is to 'annotation', ",
            "then the 'annotation' parameter must be supplied.")
     }
@@ -118,12 +118,19 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
                                   annotation = annotation)
     
     # Create base ggplot object
-    p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
-                                 color = "annotation"))
+    if (plotly) {
+      p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
+                                   color = "annotation", text = "sample", 
+                                   label = "annotation"))
+    } else {
+      p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
+                                   color = "annotation"))
+    }
+    
     p <- p + geom_point(size = point_size) 
     
     # Add labels for discrete annotation groups
-    if (isTRUE(add_annotation_labels)) {
+    if (isTRUE(add_annotation_labels) & !plotly) {
       centroid_list <- lapply(unique(umap$annotation), function(x) {
         df_sub <- umap[umap$annotation == x, ]
         median_1 <- stats::median(df_sub[, "UMAP_1"])
@@ -158,7 +165,7 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
     p <- p + ggplot2::scale_color_discrete(name = annotation)
     
   } else if (color_by == "signatures") {
-    cols <- c("blue","green","yellow","orange","red")
+    cols <- c("blue", "green", "yellow", "orange", "red")
 
     # Create df in long format with signatures and UMAP coords
     exposures <- exposures(result)
@@ -181,11 +188,12 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
     df$signature <- factor(df$signature, levels = rownames(exposures))
     
     # Create base ggplot object for "signatures"
-    if(isTRUE(same_scale)) {
+    if (isTRUE(same_scale)) {
       # Uses facet_grid to plot all signatures 
       breaks <- signif(seq(0, max(df$exposure), length.out = 5), 2)
       limits <- c(0, max(breaks))
-      p <- ggplot(df, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "exposure")) +
+      p <- ggplot(df, aes_string(x = "UMAP_1", y = "UMAP_2", 
+                                 colour = "exposure")) +
         ggplot2::facet_wrap(~ signature, drop = TRUE, scales = "free") +
         geom_point() +
         ggplot2::scale_colour_gradientn(colors = cols, name = color_lab,
@@ -219,11 +227,14 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
   
   # Toggle plotly
   if (isTRUE(plotly)) {
-    p <- plotly::ggplotly(p)
+    if (color_by == "annotation") {
+      p <- plotly::ggplotly(p, tooltip = c("text", "x", "y", "type", "label"))
+    } else {
+      p <- plotly::ggplotly(p) 
+    }
   }
   
   # Return all other scenarios other than
   # color_by = "signatures" & same_scale = TRUE
   return(p)
 }
-

@@ -1,3 +1,7 @@
+#' @importFrom methods new
+NULL
+
+
 sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
                         threshold=0.9) {
   metric <- match.arg(metric)
@@ -7,12 +11,12 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   if (nrow(sig1) != nrow(sig2)) {
     stop("Signatures must have the same number of motifs.")
   }
-  if(!is.null(rownames(sig1)) && !is.null(rownames(sig2)) &&
+  if (!is.null(rownames(sig1)) && !is.null(rownames(sig2)) &&
      !all(rownames(sig1) == rownames(sig2))) {
     warning("The names of the motifs in signature matrix one do not equal the ",
     "names of the motifs in signature matrix two.")
   }
-  if(metric == "jsd") {
+  if (metric == "jsd") {
     matches <- .jsd(sig1, sig2)
     metric_name <- "1_minus_jsd"
   } else {
@@ -39,8 +43,8 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   comparison[[metric_name]] <- as.numeric(comparison[[metric_name]])
   comparison$x_sig_index <- as.numeric(comparison$x_sig_index)
   comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
-  comparison <- comparison[order(comparison[[metric_name]], decreasing = TRUE),]
-  
+  comparison <- comparison[order(comparison[[metric_name]], decreasing = TRUE), 
+                           ]
   return(comparison)
 }
 
@@ -70,17 +74,17 @@ compare_results <- function(result, other_result, threshold = 0.9,
                                 signatures = 
                                   signatures(result)[, comparison$x_sig_index, 
                                                      drop = FALSE], exposures =
-                                  matrix(), type = "NMF", 
-                                musica = musica(result), 
-                                tables = table_name(result))
+                                  matrix(), algorithm = "NMF", 
+                                musica = get_musica(result), 
+                                table_name = table_selected(result))
   other_subset <- methods::new("musica_result",
                                signatures = 
                                  signatures(
                                    other_result)[, comparison$y_sig_index, 
                                                  drop = FALSE], 
-                               exposures = matrix(), type = "NMF",
-                               musica = musica(other_result), 
-                               tables = table_name(other_result))
+                               exposures = matrix(), algorithm = "NMF",
+                               musica = get_musica(other_result), 
+                               table_name = table_selected(other_result))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -108,19 +112,19 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
                               result_name = deparse(substitute(result))) {
   if (sample_type == "exome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      cosmic_res <- cosmic_v3_sbs_sigs_exome
+      cosmic_res <- musicatk::cosmic_v3_sbs_sigs_exome
     } else {
       stop(paste("Only SBS class is available for whole-exome, please choose",
                  " `genome` for DBS or Indel", sep = ""))
     }
   } else if (sample_type == "genome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      cosmic_res <- cosmic_v3_sbs_sigs
+      cosmic_res <- musicatk::cosmic_v3_sbs_sigs
     } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
-      cosmic_res <- cosmic_v3_dbs_sigs
+      cosmic_res <- musicatk::cosmic_v3_dbs_sigs
     } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
                                     "ID")) {
-      cosmic_res <- cosmic_v3_indel_sigs
+      cosmic_res <- musicatk::cosmic_v3_indel_sigs
     } else {
       stop("Only SBS, DBS, and Indel classes are supported")
     }
@@ -133,15 +137,15 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   result_subset <- methods::new(
     "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
                                                     drop = FALSE],
-    exposures = matrix(), type = "NMF", tables = table_name(result),
-    musica = musica(result))
+    exposures = matrix(), algorithm = "NMF", 
+    table_name = table_selected(result), musica = get_musica(result))
   other_subset <- methods::new("musica_result", signatures =
                                  signatures(cosmic_res)[, 
                                                         comparison$y_sig_index, 
                                                         drop = FALSE],
-                               exposures = matrix(), type = "NMF",
-                               tables = table_name(cosmic_res),
-                               musica = musica(cosmic_res))
+                               exposures = matrix(), algorithm = "NMF",
+                               table_name = table_selected(cosmic_res),
+                               musica = get_musica(cosmic_res))
   
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -166,23 +170,24 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                               result_name = deparse(substitute(result))) {
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, 
-                            sig2 = signatures(cosmic_v2_sigs),
+                            sig2 = signatures(musicatk::cosmic_v2_sigs),
                             threshold = threshold, metric = metric)
-  result_subset <- methods::new("musica_result",
+  result_subset <- new("musica_result",
                                 signatures =
                                   signatures(result)[, comparison$x_sig_index, 
                                                      drop = FALSE], exposures =
-                                  matrix(), type = get_result_type(result), 
-                                musica = musica(result), 
-                                tables = table_name(result))
-  other_subset <- methods::new("musica_result",
+                                  matrix(), algorithm = get_result_alg(result), 
+                                musica = get_musica(result), 
+                                table_name = table_selected(result))
+  other_subset <- new("musica_result",
                                signatures = 
-                                 signatures(
-                                   cosmic_v2_sigs)[, comparison$y_sig_index, 
+                        signatures(
+                          musicatk::cosmic_v2_sigs)[, comparison$y_sig_index, 
                                                    drop = FALSE],
-                               exposures = matrix(), type = "NMF",
-                               musica = musica(cosmic_v2_sigs),
-                               tables = table_name(cosmic_v2_sigs))
+                               exposures = matrix(), algorithm = "NMF",
+                               musica = get_musica(musicatk::cosmic_v2_sigs),
+                               table_name = 
+                        table_selected(musicatk::cosmic_v2_sigs))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -205,9 +210,9 @@ cosmic_v2_subtype_map <- function(tumor_type) {
                 "lymphoma hodgkin", "medulloblastoma", "melanoma", "myeloma",
                 "nasopharyngeal carcinoma", "neuroblastoma", "oesophagus",
                 "oral gingivo-buccal squamous", "osteosarcoma", "ovary",
-                "pancreas", "paraganglioma", "pilocytic astrocytoma", "prostate",
-                "stomach", "thyroid", "urothelial carcinoma", "uterine carcinoma"
-                , "uterine carcinosarcoma", "uveal melanoma")
+                "pancreas", "paraganglioma", "pilocytic astrocytoma", 
+                "prostate", "stomach", "thyroid", "urothelial carcinoma", 
+                "uterine carcinoma", "uterine carcinosarcoma", "uveal melanoma")
   present_sig <- list(
     c(1, 2, 4, 5, 6, 13, 18), c(1, 2, 5, 13), c(1, 5), c(1, 2, 5, 10, 13),
     c(1, 2, 3, 5, 6, 8, 10, 13, 17, 18, 20, 26, 30), c(1, 2, 5, 6, 10, 13, 26),
@@ -224,8 +229,8 @@ cosmic_v2_subtype_map <- function(tumor_type) {
   )
   partial <- grep(tumor_type, subtypes)
   for (i in seq_len(length(partial))) {
-    print(subtypes[partial[i]])
-    print(present_sig[[partial[i]]])
+    message(subtypes[partial[i]])
+    message(present_sig[[partial[i]]])
   }
 }
 
@@ -233,7 +238,7 @@ cosmic_v2_subtype_map <- function(tumor_type) {
 .plot_compare_result_signatures <- function(res1, res2,
                                             res1_name = "", res2_name = "") {
   res1_plot <- plot_signatures(res1, legend = TRUE) +
-    ggplot2::ggtitle(res1_name) 
+    ggplot2::ggtitle(res1_name)
   legend <- cowplot::get_legend(res1_plot)
   res1_plot <- res1_plot + theme(legend.position = "none")
   
@@ -241,7 +246,7 @@ cosmic_v2_subtype_map <- function(tumor_type) {
     ggplot2::ggtitle(res2_name)
   
   layout <- matrix(seq(2), ncol = 2, nrow = 9, byrow = TRUE)
-  layout <- rbind(layout, c(3,3))
+  layout <- rbind(layout, c(3, 3))
   g <- gridExtra::grid.arrange(res1_plot, res2_plot, legend,
                           layout_matrix = layout, ncol = 3,
                           widths = c(0.45, 0.45, 0.1))

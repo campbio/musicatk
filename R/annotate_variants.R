@@ -189,7 +189,8 @@ subset_variant_by_type <- function(tab, type) {
 #' data(musica)
 #' annotate_transcript_strand(musica, 19)
 #' @export
-annotate_transcript_strand <- function(musica, genome_build, build_table = TRUE) {
+annotate_transcript_strand <- function(musica, genome_build, 
+                                       build_table = TRUE) {
   if (genome_build %in% c("19", "hg19")) {
     genes <- genes(
       TxDb.Hsapiens.UCSC.hg19.knownGene)
