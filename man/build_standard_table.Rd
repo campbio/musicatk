@@ -8,7 +8,7 @@ build_standard_table(
   musica,
   g,
   table_name,
-  strand_type = NA,
+  strand_type = NULL,
   overwrite = FALSE
 )
 }
@@ -60,7 +60,7 @@ annotate_replication_strand(musica, rep_range)
 build_standard_table(musica, g, "SBS192", "Replication_Strand")
 
 data(dbs_musica)
-build_standard_table(dbs_musica, g, "DBS")
+build_standard_table(dbs_musica, g, "DBS", overwrite = TRUE)
 
 data(indel_musica)
 build_standard_table(indel_musica, g, table_name = "INDEL")

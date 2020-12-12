@@ -7,7 +7,7 @@ Description: Mutational signatures are carcinogenic exposures or aberrant cellul
 License: LGPL-3
 BugReports: https://github.com/campbio/musicatk/issues
 Encoding: UTF-8
-LazyData: FALSE
+LazyData: TRUE
 biocViews:
     Software,
     BiologicalQuestion,

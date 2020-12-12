@@ -8,10 +8,10 @@ discover_signatures(
   musica,
   table_name,
   num_signatures,
-  method = "lda",
+  algorithm = "lda",
   seed = 1,
   nstart = 10,
-  par_cores = FALSE
+  par_cores = 1
 )
 }
 \arguments{
@@ -23,7 +23,7 @@ to be the same name supplied to the table building functions such as
 
 \item{num_signatures}{Number of signatures to discover.}
 
-\item{method}{Method to use for mutational signature discovery. One of 
+\item{algorithm}{Method to use for mutational signature discovery. One of 
 \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.}
 
 \item{seed}{Seed to be used for the random number generators in the
@@ -33,8 +33,7 @@ signature discovery algorithms. Default \code{1}.}
 signature algorithms. Default \code{10}.}
 
 \item{par_cores}{Number of parallel cores to use. Only used if
-\code{method = "nmf"}. If set to \code{FALSE}, then no parallelization
-will be perfomred. Default \code{FALSE}.}
+\code{method = "nmf"}. Default \code{1}.}
 }
 \value{
 Returns a A \code{\linkS4class{musica_result}} object containing
@@ -58,5 +57,5 @@ data(musica)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 discover_signatures(musica = musica, table_name = "SBS96",
-num_signatures = 3, method = "lda", seed = 12345, nstart = 1)
+num_signatures = 3, algorithm = "lda", seed = 12345, nstart = 1)
 }
