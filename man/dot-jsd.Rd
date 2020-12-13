@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_functions.R
 \name{.jsd}
 \alias{.jsd}
-\title{Calculates 1 - Jensen-Shannon Divergences between all pairs of columns 
+\title{Calculates 1 - Jensen-Shannon Divergences between all pairs of columns
 between two matrices}
 \usage{
 .jsd(p, q, epsilon = 1e-07)
@@ -18,7 +18,7 @@ between two matrices}
 Returns matrix of 1 - Jensen-Shannon Divergences
 }
 \description{
-Calculates 1 - Jensen-Shannon Divergences between all pairs of columns 
+Calculates 1 - Jensen-Shannon Divergences between all pairs of columns
 between two matrices
 }
 \keyword{internal}
