@@ -28,7 +28,8 @@
 #' @param subset_signatures Users can specify certain signatures on which they want to subset the exposure matrix 
 #' plotting the heatmap.
 #' @return Generates a heatmap for using the exposure matrix.
-#' @examples data(res_annot)
+#' @examples 
+#' data(res_annot)
 #' exp <- exposures(res_annot)
 #' ComplexHeatmap::Heatmap(exp)
 #' @export
