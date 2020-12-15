@@ -52,7 +52,8 @@ Imports:
     ggrepel,
     withr,
     plotly,
-    utils
+    utils,
+    ComplexHeatmap
 Suggests:
     testthat,
     BiocStyle,
