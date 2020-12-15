@@ -14,10 +14,6 @@ test_that(desc = "Testing Exposures Heatmap Plotting", {
   p <- plot_heatmap(result, show_row_names = TRUE)
   expect_true(!is.null(p))
   p <- plot_heatmap(result, show_column_names = TRUE, show_row_names = TRUE)
-  #p <- plot_heatmap(result, annotation = c("Tumor_Subtypes"))
-  #expect_true(!is.null(p))
-  #p <- plot_heatmap(result, subset_signatures = c("Signature1","Signature2"))
-  #expect_true(!is.null(p))
   p <- plot_heatmap(result, subset_tumor = "Lung")
   expect_true(!is.null(p))
   

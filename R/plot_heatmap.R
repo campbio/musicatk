@@ -49,55 +49,56 @@ plot_heatmap <- function(result,
   
   exp <- exposures(result) #extracting the exposures matrix
   
-  if(isTRUE(proportional)){
+  if (isTRUE(proportional)){
     exp <- sweep(exp, 2, colSums(exp), FUN = "/") #normalizing 
   }
   
-  if(isTRUE(scale)){
+  if (isTRUE(scale)){
     exp <- scale(exp)
   }
   
-  annot <- sample_annotations(result) #Extracting annotations from musicatk object
+  annot <- samp_annot(result) #Extracting annotations from musicatk object
   heatmap <- NULL #initializing an empty heatmap annotation variable
   
   #checking if annotation argument correct
-  if(!is.null(annotation)){
-    if(any(!annotation %in% colnames(annot))) { 
+  if (!is.null(annotation)){
+    if (any(!annotation %in% colnames(annot))) { 
       stop("The given annotations are not present in the data") 
     }
     annot <- annot[,..annotation]
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   
-  if(!is.null(subset_signatures)){
-    if(any(!subset_signatures %in% rownames(exp))) { 
+  if (!is.null(subset_signatures)){
+    if (any(!subset_signatures %in% rownames(exp))) { 
       stop("The given signatures are not present in the data") 
     }
     exp <- as.data.frame(exp)
-    exp <- subset(exp,rownames(exp) %in% subset_signatures)
+    exp <- subset(exp, rownames(exp) %in% subset_signatures)
     exp <- as.matrix(exp)
   }
   
-  if(!is.null(subset_tumor)){
-    annot <- sample_annotations(result)
-    samps <-  subset(annot, Tumor_Subtypes == subset_tumor)
+  if (!is.null(subset_tumor)){
+    annot <- samp_annot(result)
+    samps <- annot %>% filter_all(any_vars(grepl(subset_tumor,.)))
     samps <- as.character(samps$Samples)
     
     exp <- as.data.frame(exp)
-    exp <- dplyr::select(exp,samps) #Selecting columns that match tumor subtype
+    exp <- dplyr::select(exp, samps) #Selecting columns that match tumor subtype
     exp <- as.matrix(exp)
     
-    annot <- annot$Tumor_Subtypes
+    names <- names(annot)[which(annot == subset_tumor, arr.ind=T)[, "col"]]
+    annot <- annot[[names[1]]]
     annot <- annot[annot == subset_tumor]
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   
  #If/else conditions to check if annotation object available
-  if(is.null(heatmap) ){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",show_column_names = show_column_names,show_row_names = show_row_names,...)
+  if (is.null(heatmap)){
+      ComplexHeatmap::Heatmap(exp,name = "exposures", show_column_names = show_column_names, show_row_names = show_row_names,...)
     }
-    else if(!is.null(heatmap)){
-      ComplexHeatmap::Heatmap(exp,name = "exposures",top_annotation = heatmap,show_column_names = show_column_names,show_row_names = show_row_names,...)
+    else if (!is.null(heatmap)){
+      ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap, show_column_names = show_column_names, show_row_names = show_row_names,...)
     }
 }
  
