@@ -2,7 +2,7 @@ context("Test Heatmap plotting function")
 library("musicatk")
 
 test_that(desc = "Testing Exposures Heatmap Plotting", {
-  result <- readRDS(system.file("testdata", "res_annot.rda", package = "musicatk"))
+  result <- data(res_annot)
   p <- plot_heatmap(result)
   expect_true(!is.null(p))
   p <- plot_heatmap(result, proportional = TRUE)

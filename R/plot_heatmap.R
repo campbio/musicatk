@@ -28,8 +28,7 @@
 #' @param subset_signatures Users can specify certain signatures on which they want to subset the exposure matrix 
 #' plotting the heatmap.
 #' @return Generates a heatmap for using the exposure matrix.
-#' @examples result <- readRDS(system.file("testdata", "res_annot.rds",
-#' package = "musicatk"))
+#' @examples result <- data(res_annot)
 #' exp <- exposures(result)
 #' ComplexHeatmap::Heatmap(exp)
 #' @export
