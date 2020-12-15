@@ -2,7 +2,7 @@ context("Test Heatmap plotting function")
 library("musicatk")
 
 test_that(desc = "Testing Exposures Heatmap Plotting", {
-  result <- data(res_annot)
+  data(res_annot)
   p <- plot_heatmap(res_annot)
   expect_true(!is.null(p))
   p <- plot_heatmap(res_annot, proportional = TRUE)
