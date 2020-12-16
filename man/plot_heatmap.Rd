@@ -42,7 +42,7 @@ plotting the heatmap.}
 \item{annotation}{Users have the option of plotting the exposure matrix based on their given annotation like
 Tumor_Subtypes or age. Error given if the user given annotation doesn't exist in the res_annot annotation object.}
 
-\item{annotations}{Column annotations extracted from the musicatk object}
+\item{...}{Ellipsis used for passing any arguments directly to the ComplexHeatmap's heatmap function.}
 }
 \value{
 Generates a heatmap for using the exposure matrix.

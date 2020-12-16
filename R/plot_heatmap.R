@@ -14,7 +14,7 @@
 #' @param proportional If \code{TRUE}, then the exposures will be normalized
 #' to between 0 and 1 by dividing by the total number of counts for each sample.
 #' Default \code{FALSE}.
-#' @param annotations Column annotations extracted from the musicatk object 
+#' @param annotation Column annotations extracted from the musicatk object 
 #' @param show_column_names Boolean check. If \code{True}, column names are shown. Otherwise, they aren't. 
 #' Default \code{FALSE}
 #' @param show_row_names Boolean check. If \code{True}, row names are shown. Otherwise, they aren't. 
@@ -27,6 +27,7 @@
 #' plotting the heatmap. 
 #' @param subset_signatures Users can specify certain signatures on which they want to subset the exposure matrix 
 #' plotting the heatmap.
+#' @param ... Ellipsis used for passing any arguments directly to the ComplexHeatmap's heatmap function.
 #' @return Generates a heatmap for using the exposure matrix.
 #' @examples 
 #' data(res_annot)
@@ -61,15 +62,15 @@ plot_heatmap <- function(res_annot,
   heatmap <- NULL #initializing an empty heatmap annotation variable
   
   #checking if annotation argument correct
-  if (!is.null(annotation)){
+  if (!is.null(annotation)) {
     if (any(!annotation %in% colnames(annot))) { 
       stop("The given annotations are not present in the data") 
     }
-    annot <- annot[,..annotation]
+    annot <- annot[, ..annotation]
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   
-  if (!is.null(subset_signatures)){
+  if (!is.null(subset_signatures)) {
     if (any(!subset_signatures %in% rownames(exp))) { 
       stop("The given signatures are not present in the data") 
     }
@@ -78,9 +79,9 @@ plot_heatmap <- function(res_annot,
     exp <- as.matrix(exp)
   }
   
-  if (!is.null(subset_tumor)){
+  if (!is.null(subset_tumor)) {
     annot <- samp_annot(res_annot)
-    samps <- annot %>% filter_all(any_vars(grepl(subset_tumor,.)))
+    samps <- annot %>% dplyr::filter_all(dplyr::any_vars(grepl(subset_tumor, .)))
     samps <- as.character(samps$Samples)
     
     exp <- as.data.frame(exp)
@@ -94,11 +95,11 @@ plot_heatmap <- function(res_annot,
   }
   
  #If/else conditions to check if annotation object available
-  if (is.null(heatmap)){
-      ComplexHeatmap::Heatmap(exp,name = "exposures", show_column_names = show_column_names, show_row_names = show_row_names,...)
+  if (is.null(heatmap)) {
+      ComplexHeatmap::Heatmap(exp, name = "exposures", show_column_names = show_column_names, show_row_names = show_row_names, ...)
     }
-    else if (!is.null(heatmap)){
-      ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap, show_column_names = show_column_names, show_row_names = show_row_names,...)
+    else if (!is.null(heatmap)) {
+      ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap, show_column_names = show_column_names, show_row_names = show_row_names, ...)
     }
 }
  
