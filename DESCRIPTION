@@ -58,7 +58,8 @@ Imports:
     plotly,
     utils,
     factoextra,
-    cluster
+    cluster,
+    ComplexHeatmap
 Suggests:
     testthat,
     BiocStyle,
