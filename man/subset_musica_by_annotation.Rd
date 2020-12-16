@@ -22,11 +22,12 @@ type
 Creates a new musica object subsetted to only one value of a sample annotation
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-annot <- read.table(system.file("testdata",
-"sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
+data(musica_sbs96)
+annot <- read.table(system.file("extdata", "sample_annotations.txt", 
+package = "musicatk"), sep = "\t", header=TRUE)
 
-sample_annotations(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+samp_annot(musica_sbs96, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 
-musica <- subset_musica_by_annotation(musica, "Tumor_Subtypes", "Lung")
+musica_sbs96 <- subset_musica_by_annotation(musica_sbs96, "Tumor_Subtypes", 
+"Lung")
 }

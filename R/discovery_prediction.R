@@ -1,42 +1,62 @@
 #' @importFrom NMF nmf
 NULL
 
-#' Discovers signatures and weights from a table of counts using NMF
-#'
+#' @title Discover mutational signatures
+#' @description Mutational signatures and exposures will be discovered using
+#' methods such as Latent Dirichlet Allocation (lda) or Non-Negative 
+#' Matrix Factorization (nmf). These algorithms will deconvolute a matrix of
+#' counts for mutation types in each sample to two matrices: 1) a "signature"
+#' matrix containing the probability of each mutation type in each sample and
+#' 2) an "exposure" matrix containing the estimated counts for each signature
+#' in each sample. Before mutational discovery can be performed,
+#' variants from samples first need to be stored in a 
+#' \code{\linkS4class{musica}} object using the \link{create_musica} function 
+#' and mutation count tables need to be created using functions such as
+#' \link{build_standard_table}.
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param table_name Name of table used for signature discovery
-#' @param num_signatures Number of signatures to discover, k
-#' @param method Discovery of new signatures using either LDA or NMF
-#' @param seed Seed for reproducible signature discovery
-#' @param nstart Number of independent runs with optimal chosen (lda only)
-#' @param par_cores Number of parallel cores to use (NMF only)
-#' @return Returns a result object with results and input object
+#' @param table_name Name of the table to use for signature discovery. Needs
+#' to be the same name supplied to the table building functions such as
+#' \link{build_standard_table}.
+#' @param num_signatures Number of signatures to discover.
+#' @param algorithm Method to use for mutational signature discovery. One of 
+#' \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.
+#' @param seed Seed to be used for the random number generators in the
+#' signature discovery algorithms. Default \code{1}.
+#' @param nstart Number of independent random starts used in the mutational
+#' signature algorithms. Default \code{10}.
+#' @param par_cores Number of parallel cores to use. Only used if
+#' \code{method = "nmf"}. Default \code{1}.
+#' @return Returns a A \code{\linkS4class{musica_result}} object containing
+#' signatures and exposures.
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' g <- select_genome("19")
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #' discover_signatures(musica = musica, table_name = "SBS96",
-#' num_signatures = 3, method = "nmf", seed = 12345, nstart = 1)
+#' num_signatures = 3, algorithm = "lda", seed = 12345, nstart = 1)
 #' @export
-discover_signatures <- function(musica, table_name = NULL, num_signatures,
-                                method="lda", seed = 1, nstart = 1,
-                                par_cores = FALSE) {
+discover_signatures <- function(musica, table_name, num_signatures,
+                                algorithm = "lda", seed = 1, nstart = 10,
+                                par_cores = 1) {
   if (!methods::is(musica, "musica")) {
     stop("Input to discover_signatures must be a 'musica' object.")
   }
+  algorithm <- match.arg(algorithm, c("lda", "nmf"))
   counts_table <- .extract_count_table(musica, table_name)
   present_samples <- which(colSums(counts_table) > 0)
   counts_table <- counts_table[, present_samples]
 
-  if (method == "lda") {
+  if (algorithm  == "lda") {
     lda_counts_table <- t(counts_table)
     if (is.null(seed)) {
       control <- list(nstart = nstart)
     } else {
       control <- list(seed = (seq_len(nstart) - 1) + seed, nstart = nstart)
     }
+    
     lda_out <- topicmodels::LDA(lda_counts_table, num_signatures,
                                 control = control)
+    
     lda_sigs <- exp(t(lda_out@beta))
     rownames(lda_sigs) <- colnames(lda_counts_table)
     colnames(lda_sigs) <- paste0("Signature", seq_len(num_signatures))
@@ -46,34 +66,30 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
     colnames(weights) <- rownames(lda_counts_table)
 
     result <- methods::new("musica_result", signatures = lda_sigs,
-                               tables = table_name,
-                               exposures = weights, type = "LDA", musica = musica,
-                               log_lik = stats::median(lda_out@loglikelihood),
-                               perplexity = topicmodels::perplexity(lda_out))
-    result@exposures <- sweep(result@exposures, 2, colSums(result@exposures),
+                               table_name = table_name,
+                               exposures = weights, algorithm = "LDA", 
+                           musica = musica)
+    exposures(result) <- sweep(exposures(result), 2, colSums(exposures(result)),
                               FUN = "/")
-  } else if (method == "nmf") {
+  } else if (algorithm  == "nmf") {
     #Needed to prevent error with entirely zero rows
     epsilon <- 0.00000001
-    if (par_cores) {
-      decomp <- NMF::nmf(counts_table + epsilon, num_signatures, seed = seed,
-                         nrun = nstart, .options = paste("p", par_cores,
-                                                         sep = ""))
-    } else {
-      decomp <- NMF::nmf(counts_table + epsilon, num_signatures, seed = seed,
-                         nrun = nstart)
-    }
+
+    decomp <- NMF::nmf(counts_table + epsilon, num_signatures, seed = seed,
+                       nrun = nstart, .options = paste("p", par_cores,
+                                                       sep = ""))
+    
     rownames(decomp@fit@H) <- paste("Signature", seq_len(num_signatures),
                                  sep = "")
     colnames(decomp@fit@W) <- paste("Signature", seq_len(num_signatures),
                                     sep = "")
     result <- methods::new("musica_result", signatures = decomp@fit@W,
-                               tables = table_name,
-                               exposures = decomp@fit@H, type = "NMF",
-                               musica = musica, log_lik = decomp@residuals)
-    result@signatures <- sweep(result@signatures, 2, colSums(result@signatures),
-                               FUN = "/")
-    result@exposures <- sweep(result@exposures, 2, colSums(result@exposures),
+                               table_name = table_name,
+                               exposures = decomp@fit@H, algorithm = "NMF",
+                               musica = musica)
+    signatures(result) <- sweep(signatures(result), 2, 
+                                colSums(signatures(result)), FUN = "/")
+    exposures(result) <- sweep(exposures(result), 2, colSums(exposures(result)),
                               FUN = "/")
   } else{
     stop("That method is not supported. Please select 'lda' or 'nmf' ",
@@ -82,78 +98,74 @@ discover_signatures <- function(musica, table_name = NULL, num_signatures,
   # Multiply Weights by sample counts
   sample_counts <- colSums(counts_table)
   matched <- match(colnames(counts_table), names(sample_counts))
-  result@exposures <- sweep(result@exposures, 2, sample_counts[matched],
+  exposures(result) <- sweep(exposures(result), 2, sample_counts[matched],
                             FUN = "*")
   return(result)
 }
 
-#' LDA prediction of samples based on existing signatures
-#'
+#' @title Prediction of exposures in new samples using pre-existing signatures
+#' @description Exposures for samples will be predicted using an existing set
+#' of signatures stored in a \code{\linkS4class{musica_result}} object. 
+#' Algorithms available for prediction include a modify version of \code{"lda"},
+#' \code{"decompTumor2Sig"}, and \code{"deconstructSigs"}.
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from.
+#' reference the variants and their coordinates were derived from. Only used
+#' if \code{algorithm = "deconstructSigs"}
 #' @param table_name Name of table used for posterior prediction.
 #' Must match the table type used to generate the prediction signatures
-#' @param signature_res Signatures to use for prediction
-#' @param algorithm Algorithm to use for prediction. Choose from
-#' "lda_posterior", decompTumor2Sig, and deconstructSigs
-#' @param signatures_to_use Which signatures in set to use (default all)
-#' @param seed Seed to use for reproducible results, set to null to disable
-#' @param verbose Whether to show intermediate results
-#' @return A result object containing signatures and sample weights
+#' @param signature_res Signatures used to predict exposures for the samples
+#' \code{musica} object. Existing signatures need to stored in a
+#' \code{\linkS4class{musica_result}} object.
+#' @param algorithm Algorithm to use for prediction of exposures. One of
+#' \code{"lda"}, \code{"decompTumor2Sig"}, or
+#' \code{"deconstructSigs"}.
+#' @param signatures_to_use Which signatures in the \code{signature_res} result
+#' object to use. Default is to use all signatures.
+#' @param verbose If \code{TRUE}, progress will be printing. Only used if
+#' \code{algorithm = "lda"}. Default \code{FALSE}.
+#' @return Returns a A \code{\linkS4class{musica_result}} object containing
+#' signatures given by the \code{signature_res} parameter and exposures
+#' predicted from these signatures.
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
+#' data(cosmic_v2_sigs)
 #' g <- select_genome("19")
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
+#' result <- predict_exposure(musica = musica, table_name = "SBS96",
+#' signature_res = cosmic_v2_sigs, algorithm = "lda")
+#' 
+#' # Predict using LDA-like algorithm with seed set to 1
+#' set.seed(1)
 #' predict_exposure(musica = musica, table_name = "SBS96",
 #' signature_res = cosmic_v2_sigs, algorithm = "lda")
 #' @export
-predict_exposure <- function(musica, g, table_name, signature_res, algorithm,
+predict_exposure <- function(musica, g, table_name, signature_res, 
+                             algorithm = c("lda", "decompTumor2Sig", 
+                                           "deconstructSigs"),
                              signatures_to_use = seq_len(ncol(
-                               signature_res@signatures)), seed = 1,
-                             verbose = FALSE) {
-  signature <- signature_res@signatures[, signatures_to_use]
+                               signatures(signature_res))), verbose = FALSE) {
+  algorithm <- match.arg(algorithm)
+  signature <- signatures(signature_res)[, signatures_to_use]
   counts_table <- .extract_count_table(musica, table_name)
   present_samples <- which(colSums(counts_table) > 0)
-  counts_table <- counts_table[, present_samples]
+  counts_table <- counts_table[, present_samples, drop = FALSE]
 
   if (algorithm %in% c("lda_posterior", "lda", "lda_post")) {
-    ifelse(is.null(seed),
-           lda_res <- lda_posterior(counts_table = counts_table,
-                                    signature = signature, max.iter = 100,
-                                    verbose = verbose),
-           lda_res <- withr::with_seed(1, lda_posterior(
-                        counts_table = counts_table, signature = signature,
-                        max.iter = 100, verbose = verbose)))
+     lda_res <- lda_posterior(counts_table = counts_table, signature = 
+                                signature, max.iter = 100, verbose = verbose)
     exposures <- t(lda_res$samp_sig_prob_mat)
-    type_name <- "posterior_LDA"
+    algorithm_name <- "posterior_LDA"
   }else if (algorithm %in% c("decomp", "decompTumor2Sig")) {
-    ifelse(is.null(seed),
-           decomp_res <- predict_decompTumor2Sig(counts_table, signature),
-           decomp_res <- withr::with_seed(seed, predict_decompTumor2Sig(
-                           counts_table, signature)))
+    decomp_res <- predict_decompTumor2Sig(counts_table, signature)
     exposures <- t(do.call(rbind, decomp_res))
     colnames(exposures) <- colnames(counts_table)
     rownames(exposures) <- colnames(signature)
-    type_name <- "decompTumor2Sig"
+    algorithm_name <- "decompTumor2Sig"
   }else if (algorithm %in% c("ds", "deconstruct", "deconstructSigs")) {
-    ifelse(is.null(seed),
-           sigs.input <- deconstructSigs::mut.to.sigs.input(mut.ref =
-                                                               musica@variants,
-                                      sample.id = "sample",
-                                      chr = "chr",
-                                      pos = "start",
-                                      ref = "ref",
-                                      alt = "alt",
-                                      bsg = g),
-           sigs.input <- withr::with_seed(seed,
-             deconstructSigs::mut.to.sigs.input(mut.ref = musica@variants,
-                                             sample.id = "sample",
-                                             chr = "chr",
-                                             pos = "start",
-                                             ref = "ref",
-                                             alt = "alt",
-                                             bsg = g)))
+    sigs.input <- deconstructSigs::mut.to.sigs.input(mut.ref = variants(musica),
+                              sample.id = "sample", chr = "chr", pos = "start", 
+                              ref = "ref", alt = "alt", bsg = g)
     sig_all <- t(signature)
     middle <- unlist(lapply(strsplit(colnames(sig_all), "_"), "[", 1))
     context <- lapply(strsplit(colnames(sig_all), "_"), "[", 2)
@@ -162,31 +174,30 @@ predict_exposure <- function(musica, g, table_name, signature_res, algorithm,
     new_cols <- paste(first, "[", middle, "]", last, sep = "")
     colnames(sig_all) <- new_cols
 
-    ds_res <- sapply(rownames(sigs.input), function(x) {
+    ds_res <- vapply(rownames(sigs.input), function(x) {
       ds_result <- whichSignatures(tumor_ref = sigs.input,
                                    contexts_needed = TRUE,
                                    signatures_limit = ncol(signature),
                                    tri_counts_method = "default",
                                    sample_id = x, signatures_ref = sig_all)
       return(as.matrix(ds_result$weights))
-    })
+    }, FUN.VALUE = rep(0, ncol(signature)))
     exposures <- ds_res
     colnames(exposures) <- colnames(counts_table)
     rownames(exposures) <- colnames(signature)
-    type_name <- "deconstructSigs"
+    algorithm_name <- "deconstructSigs"
   } else {
     stop("Type must be lda or decomp")
   }
-  result <- methods::new("musica_result", signatures = signature,
-                                       exposures = exposures,
-                                       type = type_name, musica = musica,
-                         tables = table_name)
+  result <- methods::new("musica_result", signatures = signature, 
+                         exposures = exposures, algorithm = algorithm_name, 
+                         musica = musica, table_name = table_name)
 
   # Multiply Weights by sample counts
   sample_counts <- colSums(counts_table)
   matched <- match(colnames(counts_table), names(sample_counts))
-  result@exposures <- sweep(result@exposures, 2, sample_counts[matched],
-                            FUN = "*")
+  exposures(result) <- sweep(exposures(result), 2, sample_counts[matched], 
+                             FUN = "*")
   return(result)
 }
 
@@ -216,7 +227,7 @@ lda_posterior <- function(counts_table, signature, max.iter = 100,
 
   # Update signature proportion matrix
   if (verbose) {
-    print("Calculating Signature Proportions")
+    message("Calculating Signature Proportions")
   }
   for (i in seq_len(max.iter)) {
     for (s in seq_len(num_samples)) {
@@ -241,7 +252,7 @@ lda_posterior <- function(counts_table, signature, max.iter = 100,
     # Update theta
     theta <- MCMCprecision::fit_dirichlet(x = samp_sig_prob_mat)$alpha
     if (verbose) {
-      print(theta)
+      message(theta)
     }
   }
   return(list(samp_sig_prob_mat = samp_sig_prob_mat, theta.poster = theta))
@@ -273,14 +284,13 @@ predict_decompTumor2Sig <- function(sample_mat, signature_mat) {
 
 #placeholder
 .multi_modal_discovery <- function(musica, num_signatures, motif96_name,
-                                  rflank_name, lflank_name, max.iter=125,
-                                  seed=123) {
+                                  rflank_name, lflank_name, max.iter = 125) {
   motif96 <- .extract_count_table(musica, motif96_name)
   rflank <- .extract_count_table(musica, rflank_name)
   lflank <- .extract_count_table(musica, lflank_name)
-  print(dim(motif96))
-  print(dim(rflank))
-  print(dim(lflank))
+  message(dim(motif96))
+  message(dim(rflank))
+  message(dim(lflank))
 }
 
 whichSignatures <- function(tumor_ref = NA,
@@ -292,7 +302,8 @@ whichSignatures <- function(tumor_ref = NA,
                            contexts_needed = FALSE,
                            tri_counts_method = "default") {
   if (is(tumor_ref, 'matrix')) {
-    stop(paste("Input tumor.ref needs to be a data frame or location of input text file", sep = ""))
+    stop(paste("Input tumor.ref needs to be a data frame or location of ", 
+               "input text file", sep = ""))
   }
 
   if (exists("tumor.ref", mode = "list") | is(tumor_ref, "data.frame")) {
@@ -312,7 +323,7 @@ whichSignatures <- function(tumor_ref = NA,
                                                           tri_counts_method)
       }
     } else {
-      print("tumor.ref is neither a file nor a loaded data frame")
+      message("tumor.ref is neither a file nor a loaded data frame")
     }
   }
 
@@ -326,7 +337,8 @@ whichSignatures <- function(tumor_ref = NA,
   }
   tumor <- subset(tumor, rownames(tumor) == sample_id)
   if (round(rowSums(tumor), digits = 1) != 1) {
-    stop(paste("Sample: ", sample_id, " is not normalized\n", 'Consider using "contexts.needed = TRUE"', sep = " "))
+    stop(paste0("Sample: ", sample_id, " is not normalized. Consider using ", 
+    "contexts.needed = TRUE", sep = " "))
   }
   signatures <- signatures_ref
 
@@ -334,9 +346,11 @@ whichSignatures <- function(tumor_ref = NA,
   original_sigs <- signatures
 
   # Check column names are formatted correctly
-  if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < length(colnames(signatures))) {
+  if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < 
+      length(colnames(signatures))) {
     colnames(tumor) <- deconstructSigs::changeColumnNames(colnames(tumor))
-    if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < length(colnames(signatures))) {
+    if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < 
+        length(colnames(signatures))) {
       stop("Check column names on input file")
     }
   }
@@ -368,7 +382,7 @@ whichSignatures <- function(tumor_ref = NA,
   num <- 0
   while (error_diff > error_threshold) {
     num        <- num + 1
-    #print(num)
+    #message(num)
     error_pre  <- deconstructSigs::getError(tumor, signatures, w)
     if (error_pre == 0) {
       break
@@ -405,7 +419,7 @@ whichSignatures <- function(tumor_ref = NA,
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param table_name Name of table used for signature discovery
-#' @param discovery_type Algorithm for signature discovery
+#' @param algorithm Algorithm for signature discovery
 #' @param annotation Sample annotation to split results into
 #' @param k_start Lower range of number of signatures for discovery
 #' @param k_end Upper range of number of signatures for discovery
@@ -416,23 +430,24 @@ whichSignatures <- function(tumor_ref = NA,
 #' @param verbose Whether to output loop iterations
 #' @return A result object containing signatures and sample weights
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' grid <- generate_result_grid(musica, "SBS96", "nmf", k_start = 2, k_end = 5)
+#' data(musica_sbs96)
+#' grid <- generate_result_grid(musica_sbs96, "SBS96", "lda", k_start = 2, 
+#' k_end = 5)
 #' @export
-generate_result_grid <- function(musica, table_name, discovery_type = "lda",
+generate_result_grid <- function(musica, table_name, algorithm = "lda",
                                  annotation = NA, k_start, k_end, n_start = 1,
                                  seed = NULL, par_cores = FALSE,
                                  verbose = FALSE) {
   result_grid <- methods::new("musica_result_grid")
 
   #Set Parameters
-  params <- data.table::data.table("discovery_type" = discovery_type,
+  params <- data.table::data.table("discovery_type" = algorithm,
                                    "annotation_used" = annotation, "k_start" =
                                      k_start, "k_end" = k_end,
                                    "total_num_samples" =
-                                     nrow(musica@sample_annotations),
+                                     nrow(samp_annot(musica)),
                                    "nstart" = n_start, seed = seed)
-  result_grid@grid_params <- params
+  set_grid_params(result_grid, params)
 
   #Initialize grid_table and result_list
   grid_table <- data.table::data.table(annotation = character(), k =
@@ -443,8 +458,8 @@ generate_result_grid <- function(musica, table_name, discovery_type = "lda",
 
   #Generate and set result_list
   if (!is.na(annotation)) {
-    annot_samples <- musica@sample_annotations$Samples
-    annot <- musica@sample_annotations$Tumor_Type
+    annot_samples <- samp_annot(musica)$Samples
+    annot <- samp_annot(musica)$Tumor_Type
     annot_names <- unique(annot)
     num_annotation <- length(annot_names)
   } else {
@@ -453,24 +468,24 @@ generate_result_grid <- function(musica, table_name, discovery_type = "lda",
   }
 
   #Define new musicas
-  for (i in 1:num_annotation) {
+  for (i in seq_len(num_annotation)) {
     if (!is.na(annotation)) {
       if (verbose) {
         cat(paste("Current Annotation: ", annot_names[i], "\n", sep = ""))
       }
       cur_ind <- which(annot == annot_names[i])
       cur_annot_samples <- annot_samples[cur_ind]
-      cur_annot_variants <- musica@variants[which(
-        musica@variants$sample %in% cur_annot_samples), ]
+      cur_annot_variants <- variants(musica)[which(
+        variants(musica)$sample %in% cur_annot_samples), ]
 
       cur_musica <- methods::new("musica", variants = cur_annot_variants,
                        sample_annotations =
-                         musica@sample_annotations[cur_ind, ],
+                         samp_annot(musica)[cur_ind, ],
                        count_tables = subset_count_tables(musica,
                                                           cur_annot_samples))
     } else {
       cur_musica <- musica
-      cur_annot_samples <- unique(musica@variants$sample)
+      cur_annot_samples <- unique(variants(musica)$sample)
     }
     #Used for reconstruction error
     cur_counts <- .extract_count_table(cur_musica, table_name)
@@ -479,32 +494,33 @@ generate_result_grid <- function(musica, table_name, discovery_type = "lda",
     for (cur_k in k_start:k_end) {
       cur_result <- discover_signatures(musica = cur_musica, table_name =
                                           table_name, num_signatures = cur_k,
-                                        method = discovery_type, nstart =
+                                        algorithm = algorithm, nstart =
                                           n_start, seed = seed, par_cores =
                                           par_cores)
       result_list[[list_elem]] <- cur_result
       list_elem <- list_elem + 1
 
-      recon_error <- mean(sapply(seq_len(ncol(cur_counts)), function(x)
+      recon_error <- mean(vapply(seq_len(ncol(cur_counts)), function(x)
         mean((cur_counts[, x, drop = FALSE] -
-                reconstruct_sample(cur_result, x))^2))^2)
+                reconstruct_sample(cur_result, x))^2), FUN.VALUE = 0)^2)
 
       grid_table <- rbind(grid_table, data.table::data.table(
         annotation = annot_names[i], k = cur_k, num_samples =
           length(cur_annot_samples), reconstruction_error = recon_error))
     }
   }
-  result_grid@result_list <- result_list
-  result_grid@grid_table <- grid_table
+  set_grid_list(result_grid, result_list)
+  set_grid_table(result_grid, grid_table)
   return(result_grid)
 }
 
 reconstruct_sample <- function(result, sample_number) {
-  reconstruction <- matrix(apply(sweep(result@signatures, 2,
-                                       result@exposures[, sample_number,
+  reconstruction <- matrix(apply(sweep(signatures(result), 2,
+                                       exposures(result)[, sample_number,
                                                       drop = FALSE], FUN = "*"),
-                                 1, sum), dimnames =
-                             list(rownames(result@signatures), "Reconstructed"))
+                                 1, sum), dimnames = list(
+                                   rownames(signatures(result)), 
+                                   "Reconstructed"))
   return(reconstruction)
 }
 
@@ -527,21 +543,21 @@ reconstruct_sample <- function(result, sample_number) {
 #' @param combine_res Automatically combines a list of annotation results
 #' into a single result object with zero exposure values for signatures not
 #' found in a given annotation's set of samples
-#' @param seed Seed to use for reproducible results, set to null to disable
 #' @return A list of results, one per unique annotation value, if no
 #' annotation value is given, returns a single result for all samples, or
 #' combines into a single result if combines_res = TRUE
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica_annot.rds", package = "musicatk"))
-#' auto_predict_grid(musica = musica, table_name = "SBS96",
+#' data(musica_annot)
+#' data(cosmic_v2_sigs)
+#' auto_predict_grid(musica = musica_annot, table_name = "SBS96",
 #' signature_res = cosmic_v2_sigs, algorithm = "lda",
 #' sample_annotation = "Tumor_Subtypes")
-#' auto_predict_grid(musica, "SBS96", cosmic_v2_sigs, "lda")
+#' auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda")
 #' @export
 auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
                               sample_annotation = NULL, min_exists = 0.05,
                               proportion_samples = 0.25, rare_exposure = 0.4,
-                              verbose = TRUE, combine_res = TRUE, seed = 1) {
+                              verbose = TRUE, combine_res = TRUE) {
   if (is.null(sample_annotation)) {
     combine_res <- FALSE
     result <- auto_subset_sigs(musica = musica, table_name =
@@ -549,19 +565,19 @@ auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
                        signature_res, algorithm = algorithm,
                        min_exists = min_exists, proportion_samples =
                        proportion_samples, rare_exposure =
-                       rare_exposure, seed = seed)
+                       rare_exposure)
   } else {
-    available_annotations <- setdiff(colnames(musica@sample_annotations),
+    available_annotations <- setdiff(colnames(samp_annot(musica)),
                                      "Samples")
     if (!sample_annotation %in% available_annotations) {
       stop(paste0("Sample annotation ", sample_annotation, " not found, ",
                  "available annotations: ", available_annotations))
     }
-    annot <- unique(musica@sample_annotations[[sample_annotation]])
+    annot <- unique(samp_annot(musica)[[sample_annotation]])
     result <- list()
     for (i in seq_along(annot)) {
       if (verbose) {
-        print(as.character(annot[i]))
+        message(as.character(annot[i]))
       }
       current_musica <- subset_musica_by_annotation(musica = musica, annot_col =
                                                     sample_annotation,
@@ -572,7 +588,7 @@ auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
                                               min_exists, proportion_samples =
                                               proportion_samples,
                                             rare_exposure = rare_exposure,
-                                            algorithm = algorithm, seed = seed)
+                                            algorithm = algorithm)
       result[[as.character(annot[i])]] <- current_predicted
     }
   }
@@ -594,16 +610,16 @@ auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
 #' active in the cohort
 #' @param rare_exposure A sample will be considered active in the cohort if at
 #' least one sample has more than this threshold proportion
-#' @param seed Seed to use for reproducible results, set to null to disable
 #' @return A result object containing automatically subset signatures
 #' and corresponding sample weights
+#' @keywords internal
 auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
                              min_exists = 0.05, proportion_samples = 0.25,
-                             rare_exposure = 0.4, seed = 1) {
+                             rare_exposure = 0.4) {
   test_predicted <- predict_exposure(musica = musica, table_name = table_name,
                                     signature_res = signature_res,
                                     algorithm = algorithm)
-  exposures <- test_predicted@exposures
+  exposures <- exposures(test_predicted)
   num_samples <- ncol(exposures)
   exposures <- sweep(exposures, 2, colSums(exposures), "/")
   to_use <- as.numeric(which(apply(exposures, 1, function(x)
@@ -612,7 +628,7 @@ auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
   final_inferred <- predict_exposure(musica = musica, table_name = table_name,
                                      signature_res = signature_res,
                                      signatures_to_use = to_use,
-                                     algorithm = algorithm, seed = seed)
+                                     algorithm = algorithm)
   return(final_inferred)
 }
 
@@ -627,10 +643,11 @@ auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
 #' prediction grid. Samples have zero exposure value for signatures not found
 #' in that annotation type.
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica_annot.rds", package = "musicatk"))
-#' grid <- auto_predict_grid(musica, "SBS96", cosmic_v2_sigs, "lda",
+#' data(musica_annot)
+#' data(cosmic_v2_sigs)
+#' grid <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
 #' "Tumor_Subtypes", combine_res = FALSE)
-#' combined <- combine_predict_grid(grid, musica, cosmic_v2_sigs)
+#' combined <- combine_predict_grid(grid, musica_annot, cosmic_v2_sigs)
 #' plot_exposures(combined, group_by="annotation", annotation="Tumor_Subtypes")
 #' @export
 combine_predict_grid <- function(grid_list, musica, signature_res) {
@@ -643,14 +660,14 @@ combine_predict_grid <- function(grid_list, musica, signature_res) {
 
   comb <- NULL
   for (i in seq_len(length(grid_list))) {
-    samp <- grid_list[[i]]@exposures
+    samp <- exposures(grid_list[[i]])
     missing <- sig_names[!sig_names %in% rownames(samp)]
     missing_mat <- matrix(0, length(missing), ncol(samp))
     rownames(missing_mat) <- missing
     samp <- rbind(samp, missing_mat)
-    samp <- samp[order(rownames(samp)), ]
+    samp <- samp[order(rownames(samp)), , drop = FALSE]
     comb <- cbind(comb, samp)
   }
   grid_res <- new("musica_result", musica = musica, exposures = comb,
-                  signatures = signature_res@signatures[, sig_names])
+                  signatures = signatures(signature_res)[, sig_names])
 }

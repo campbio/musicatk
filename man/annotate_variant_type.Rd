@@ -16,6 +16,6 @@ None
 Annotate variants with variant type ("SBS", "INS", "DEl", "DBS")
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+data(musica)
 annotate_variant_type(musica)
 }

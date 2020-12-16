@@ -7,7 +7,7 @@
 generate_result_grid(
   musica,
   table_name,
-  discovery_type = "lda",
+  algorithm = "lda",
   annotation = NA,
   k_start,
   k_end,
@@ -22,7 +22,7 @@ generate_result_grid(
 
 \item{table_name}{Name of table used for signature discovery}
 
-\item{discovery_type}{Algorithm for signature discovery}
+\item{algorithm}{Algorithm for signature discovery}
 
 \item{annotation}{Sample annotation to split results into}
 
@@ -46,6 +46,7 @@ A result object containing signatures and sample weights
 Generate result_grid from musica based on annotation and range of k
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-grid <- generate_result_grid(musica, "SBS96", "nmf", k_start = 2, k_end = 5)
+data(musica_sbs96)
+grid <- generate_result_grid(musica_sbs96, "SBS96", "lda", k_start = 2, 
+k_end = 5)
 }

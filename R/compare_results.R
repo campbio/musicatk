@@ -1,15 +1,29 @@
-sig_compare <- function(sig1, sig2, threshold=0.9) {
+#' @importFrom methods new
+NULL
+
+
+sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
+                        threshold=0.9) {
+  metric <- match.arg(metric)
+  
   sig1_names <- colnames(sig1)
   sig2_names <- colnames(sig2)
   if (nrow(sig1) != nrow(sig2)) {
-    stop("Signatures must have the same motifs")
+    stop("Signatures must have the same number of motifs.")
   }
-  matches <- matrix(nrow = ncol(sig1), ncol = ncol(sig2))
-  for (i in seq_len(ncol(sig1))) {
-    for (j in seq_len(ncol(sig2))) {
-      matches[i, j] <- 1 - jsd(sig1[, i], sig2[, j])
-    }
+  if (!is.null(rownames(sig1)) && !is.null(rownames(sig2)) &&
+     !all(rownames(sig1) == rownames(sig2))) {
+    warning("The names of the motifs in signature matrix one do not equal the ",
+    "names of the motifs in signature matrix two.")
   }
+  if (metric == "jsd") {
+    matches <- .jsd(sig1, sig2)
+    metric_name <- "1_minus_jsd"
+  } else {
+    matches <- .cosine(sig1, sig2)
+    metric_name <- "cosine"
+  }
+  
   comparison <- NULL
   for (row in seq_len(nrow(matches))) {
     line <- which(matches[row, ] > threshold)
@@ -24,10 +38,13 @@ sig_compare <- function(sig1, sig2, threshold=0.9) {
     stop("No matches found, try lowering threshold.")
   }
   comparison <- data.frame(comparison, stringsAsFactors = FALSE)
-  colnames(comparison) <- c("cor", "xindex", "yindex", "xcol", "ycol")
-  comparison$cor <- as.numeric(comparison$cor)
-  comparison$xindex <- as.numeric(comparison$xindex)
-  comparison$yindex <- as.numeric(comparison$yindex)
+  colnames(comparison) <- c(metric_name, "x_sig_index", "y_sig_index", 
+                            "x_sig_name", "y_sig_name")
+  comparison[[metric_name]] <- as.numeric(comparison[[metric_name]])
+  comparison$x_sig_index <- as.numeric(comparison$x_sig_index)
+  comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
+  comparison <- comparison[order(comparison[[metric_name]], decreasing = TRUE), 
+                           ]
   return(comparison)
 }
 
@@ -37,29 +54,37 @@ sig_compare <- function(sig1, sig2, threshold=0.9) {
 #' @param result A \code{\linkS4class{musica_result}} object.
 #' @param other_result A second \code{\linkS4class{musica_result}} object.
 #' @param threshold threshold for similarity
+#' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+#' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot of first result signatures
 #' @param other_result_name title for plot of second result signatures
 #' @return Returns the comparisons
 #' @examples
-#' res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+#' data(res)
 #' compare_results(res, res, threshold = 0.8)
 #' @export
-compare_results <- function(result, other_result,
-                            threshold = 0.9, result_name =
+compare_results <- function(result, other_result, threshold = 0.9,
+                             metric = "cosine", result_name =
                               deparse(substitute(result)), other_result_name =
                               deparse(substitute(other_result))) {
-  signatures <- result@signatures
-  comparison <- sig_compare(signatures, other_result@signatures, threshold)
+  signatures <- signatures(result)
+  comparison <- sig_compare(sig1 = signatures, sig2 = signatures(other_result),
+                            threshold = threshold, metric = metric)
   result_subset <- methods::new("musica_result",
-                                signatures = result@signatures[, comparison$xindex,
-                                                               drop = FALSE], exposures =
-                                  matrix(), type = "NMF", musica = result@musica,
-                                tables = result@tables)
+                                signatures = 
+                                  signatures(result)[, comparison$x_sig_index, 
+                                                     drop = FALSE], exposures =
+                                  matrix(), algorithm = "NMF", 
+                                musica = get_musica(result), 
+                                table_name = table_selected(result))
   other_subset <- methods::new("musica_result",
-                               signatures = other_result@signatures[, comparison$yindex,
-                                                                    drop = FALSE],
-                               exposures = matrix(), type = "NMF",
-                               musica = other_result@musica, tables = other_result@tables)
+                               signatures = 
+                                 signatures(
+                                   other_result)[, comparison$y_sig_index, 
+                                                 drop = FALSE], 
+                               exposures = matrix(), algorithm = "NMF",
+                               musica = get_musica(other_result), 
+                               table_name = table_selected(other_result))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -74,49 +99,53 @@ compare_results <- function(result, other_result,
 #' @param variant_class Compare to SBS, DBS, or Indel
 #' @param sample_type exome (SBS only) or genome
 #' @param threshold threshold for similarity
+#' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+#' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot user result signatures
 #' @return Returns the comparisons
 #' @examples
-#' res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+#' data(res)
 #' compare_cosmic_v3(res, "SBS", "genome", threshold = 0.8)
 #' @export
-compare_cosmic_v3 <- function(result, variant_class, sample_type,
-                              threshold = 0.9, result_name =
-                                deparse(substitute(result))) {
+compare_cosmic_v3 <- function(result, variant_class, sample_type, 
+                              metric = "cosine", threshold = 0.9,
+                              result_name = deparse(substitute(result))) {
   if (sample_type == "exome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      cosmic_res <- cosmic_v3_sbs_sigs_exome
+      cosmic_res <- musicatk::cosmic_v3_sbs_sigs_exome
     } else {
       stop(paste("Only SBS class is available for whole-exome, please choose",
                  " `genome` for DBS or Indel", sep = ""))
     }
   } else if (sample_type == "genome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      cosmic_res <- cosmic_v3_sbs_sigs
+      cosmic_res <- musicatk::cosmic_v3_sbs_sigs
     } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
-      cosmic_res <- cosmic_v3_dbs_sigs
+      cosmic_res <- musicatk::cosmic_v3_dbs_sigs
     } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
                                     "ID")) {
-      cosmic_res <- cosmic_v3_indel_sigs
+      cosmic_res <- musicatk::cosmic_v3_indel_sigs
     } else {
       stop("Only SBS, DBS, and Indel classes are supported")
     }
   } else {
     stop("Sample type must be exome or genome")
   }
-  signatures <- result@signatures
-  comparison <- sig_compare(signatures, cosmic_res@signatures, threshold)
+  signatures <- signatures(result)
+  comparison <- sig_compare(sig1 = signatures, sig2 = signatures(cosmic_res),
+                            threshold = threshold, metric = metric)
   result_subset <- methods::new(
-    "musica_result", signatures = result@signatures[, comparison$xindex,
+    "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
                                                     drop = FALSE],
-    exposures = matrix(), type = "NMF", tables = result@tables,
-    musica = result@musica)
+    exposures = matrix(), algorithm = "NMF", 
+    table_name = table_selected(result), musica = get_musica(result))
   other_subset <- methods::new("musica_result", signatures =
-                                 cosmic_res@signatures[, comparison$yindex,
-                                                       drop = FALSE],
-                               exposures = matrix(), type = "NMF",
-                               tables = cosmic_res@tables,
-                               musica = cosmic_res@musica)
+                                 signatures(cosmic_res)[, 
+                                                        comparison$y_sig_index, 
+                                                        drop = FALSE],
+                               exposures = matrix(), algorithm = "NMF",
+                               table_name = table_selected(cosmic_res),
+                               musica = get_musica(cosmic_res))
   
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -129,29 +158,36 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #'
 #' @param result A \code{\linkS4class{musica_result}} object.
 #' @param threshold threshold for similarity
+#' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+#' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot user result signatures
 #' @return Returns the comparisons
 #' @examples
-#' res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+#' data(res)
 #' compare_cosmic_v2(res, threshold = 0.7)
 #' @export
-compare_cosmic_v2 <- function(result, threshold = 0.9, result_name =
-                                deparse(substitute(result))) {
-  signatures <- result@signatures
-  comparison <- sig_compare(signatures, cosmic_v2_sigs@signatures, threshold)
-  result_subset <- methods::new("musica_result",
+compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
+                              result_name = deparse(substitute(result))) {
+  signatures <- signatures(result)
+  comparison <- sig_compare(sig1 = signatures, 
+                            sig2 = signatures(musicatk::cosmic_v2_sigs),
+                            threshold = threshold, metric = metric)
+  result_subset <- new("musica_result",
                                 signatures =
-                                  result@signatures[, comparison$xindex, drop =
-                                                      FALSE], exposures =
-                                  matrix(), type = result@type, musica = result@musica,
-                                tables = result@tables)
-  other_subset <- methods::new("musica_result",
-                               signatures =
-                                 cosmic_v2_sigs@signatures[, comparison$yindex,
-                                                           drop = FALSE],
-                               exposures = matrix(), type = "NMF",
-                               musica = cosmic_v2_sigs@musica,
-                               tables = cosmic_v2_sigs@tables)
+                                  signatures(result)[, comparison$x_sig_index, 
+                                                     drop = FALSE], exposures =
+                                  matrix(), algorithm = get_result_alg(result), 
+                                musica = get_musica(result), 
+                                table_name = table_selected(result))
+  other_subset <- new("musica_result",
+                               signatures = 
+                        signatures(
+                          musicatk::cosmic_v2_sigs)[, comparison$y_sig_index, 
+                                                   drop = FALSE],
+                               exposures = matrix(), algorithm = "NMF",
+                               musica = get_musica(musicatk::cosmic_v2_sigs),
+                               table_name = 
+                        table_selected(musicatk::cosmic_v2_sigs))
 
   .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
@@ -174,9 +210,9 @@ cosmic_v2_subtype_map <- function(tumor_type) {
                 "lymphoma hodgkin", "medulloblastoma", "melanoma", "myeloma",
                 "nasopharyngeal carcinoma", "neuroblastoma", "oesophagus",
                 "oral gingivo-buccal squamous", "osteosarcoma", "ovary",
-                "pancreas", "paraganglioma", "pilocytic astrocytoma", "prostate",
-                "stomach", "thyroid", "urothelial carcinoma", "uterine carcinoma"
-                , "uterine carcinosarcoma", "uveal melanoma")
+                "pancreas", "paraganglioma", "pilocytic astrocytoma", 
+                "prostate", "stomach", "thyroid", "urothelial carcinoma", 
+                "uterine carcinoma", "uterine carcinosarcoma", "uveal melanoma")
   present_sig <- list(
     c(1, 2, 4, 5, 6, 13, 18), c(1, 2, 5, 13), c(1, 5), c(1, 2, 5, 10, 13),
     c(1, 2, 3, 5, 6, 8, 10, 13, 17, 18, 20, 26, 30), c(1, 2, 5, 6, 10, 13, 26),
@@ -193,8 +229,8 @@ cosmic_v2_subtype_map <- function(tumor_type) {
   )
   partial <- grep(tumor_type, subtypes)
   for (i in seq_len(length(partial))) {
-    print(subtypes[partial[i]])
-    print(present_sig[[partial[i]]])
+    message(subtypes[partial[i]])
+    message(present_sig[[partial[i]]])
   }
 }
 
@@ -202,7 +238,7 @@ cosmic_v2_subtype_map <- function(tumor_type) {
 .plot_compare_result_signatures <- function(res1, res2,
                                             res1_name = "", res2_name = "") {
   res1_plot <- plot_signatures(res1, legend = TRUE) +
-    ggplot2::ggtitle(res1_name) 
+    ggplot2::ggtitle(res1_name)
   legend <- cowplot::get_legend(res1_plot)
   res1_plot <- res1_plot + theme(legend.position = "none")
   
@@ -210,7 +246,7 @@ cosmic_v2_subtype_map <- function(tumor_type) {
     ggplot2::ggtitle(res2_name)
   
   layout <- matrix(seq(2), ncol = 2, nrow = 9, byrow = TRUE)
-  layout <- rbind(layout, c(3,3))
+  layout <- rbind(layout, c(3, 3))
   g <- gridExtra::grid.arrange(res1_plot, res2_plot, legend,
                           layout_matrix = layout, ncol = 3,
                           widths = c(0.45, 0.45, 0.1))

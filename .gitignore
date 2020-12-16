@@ -7,3 +7,6 @@ R/.DS_Store
 validation/
 inst/doc
 musicatk.Rproj
+.Rprofile
+renv/
+renv.lock

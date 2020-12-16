@@ -9,6 +9,7 @@ compare_cosmic_v3(
   result,
   variant_class,
   sample_type,
+  metric = "cosine",
   threshold = 0.9,
   result_name = deparse(substitute(result))
 )
@@ -19,6 +20,9 @@ compare_cosmic_v3(
 \item{variant_class}{Compare to SBS, DBS, or Indel}
 
 \item{sample_type}{exome (SBS only) or genome}
+
+\item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 
 \item{threshold}{threshold for similarity}
 
@@ -32,6 +36,6 @@ Compare a result object to COSMIC V3 Signatures; Select exome or genome for
 SBS and only genome for DBS or Indel classes
 }
 \examples{
-res <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
+data(res)
 compare_cosmic_v3(res, "SBS", "genome", threshold = 0.8)
 }

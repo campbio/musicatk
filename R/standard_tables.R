@@ -5,8 +5,9 @@
 #' reference the variants and their coordinates were derived from.
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created SBS96 count table object
+#' @keywords internal
 create_sbs96_table <- function(musica, g, overwrite = FALSE) {
-  dat <- subset_variant_by_type(musica@variants, type = "SBS")
+  dat <- subset_variant_by_type(variants(musica), type = "SBS")
   ref <- as.character(dat$ref)
   alt <- as.character(dat$alt)
   mut_type <- paste(ref, ">", alt, sep = "")
@@ -45,7 +46,7 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
 
   ###### Now we separate into samples
   ## Define all mutation types for 96 substitution scheme
-  b1 <- rep(rep(c("A", "C", "G", "T"), each=4), 6)
+  b1 <- rep(rep(c("A", "C", "G", "T"), each = 4), 6)
   b2 <- rep(c("C", "T"), each = 48)
   b3 <- rep(c("A", "C", "G", "T"), 24)
   mut_trinuc <- apply(cbind(b1, b2, b3), 1, paste, collapse = "")
@@ -103,11 +104,12 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created SBS192 count table object built using either
 #' transcript strand or replication strand
+#' @keywords internal
 create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
   if (!strand_type %in% c("Transcript_Strand", "Replication_Strand")) {
     stop("Please select either Transcript_Strand or Replication_Strand")
   }
-  dat <- musica@variants
+  dat <- variants(musica)
   dat <- subset_variant_by_type(dat, "SBS")
   dat <- drop_na_variants(dat, strand_type)
 
@@ -210,8 +212,9 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created DBS table object
-create_dbs_table <- function(musica, overwrite = overwrite) {
-  dbs <- subset_variant_by_type(musica@variants, "DBS")
+#' @keywords internal
+create_dbs78_table <- function(musica, overwrite = overwrite) {
+  dbs <- subset_variant_by_type(variants(musica), "DBS")
 
   ref <- dbs$ref
   alt <- dbs$alt
@@ -257,12 +260,12 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
             paste0("TT>NN", "_", c("AA", "AC", "AG", "CA", "CC", "CG", "GA",
                                    "GC", "GG")))
 
-  sample_names <-sample_names(musica)
+  sample_names <- sample_names(musica)
   num_samples <- length(sample_names)
   variant_tables <- vector("list", length = num_samples)
   for (i in seq_len(num_samples)) {
     sample_index <- which(dbs$sample == sample_names[i])
-    if(length(sample_index) > 0) {
+    if (length(sample_index) > 0) {
       variant_tables[[i]] <- table(factor(full[sample_index],
                                           levels = full_motif))
     } else {
@@ -271,6 +274,11 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
   }
   mut_table <- do.call(cbind, variant_tables)
   colnames(mut_table) <- sample_names
+  
+  full_tab <- matrix(data = 0, nrow = length(full_motif), 
+                     ncol = length(levels(dbs$sample)), 
+                     dimnames = list(full_motif, levels(dbs$sample)))
+  full_tab[, colnames(mut_table)] <- mut_table
 
   annotation <- data.frame(motif = full_motif, mutation =
                              unlist(lapply(strsplit(full_motif, "_"), "[[", 1)),
@@ -279,22 +287,23 @@ create_dbs_table <- function(musica, overwrite = overwrite) {
                            row.names = full_motif)
   color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
   names(color_mapping) <- unique(annotation$mutation)
-  tab <- .create_count_table(musica = musica, name = "DBS",
-                             count_table = mut_table,
+  tab <- .create_count_table(musica = musica, name = "DBS78",
+                             count_table = full_tab,
                              annotation = annotation,
                              features = data.frame(mutation = full),
                              type = as.character(dbs$Variant_Type),
                              color_variable = "mutation",
                              color_mapping = color_mapping,
                              description = paste0("Standard count table for ",
-                                                  "double base substitutions"),
+                                                  "double base substitutions", 
+                                                  "using COSMIC v3 schema"),
                              return_table = TRUE, overwrite = overwrite)
   return(tab)
 }
 
 .gg_color_hue <- function(n) {
-  hues = base::seq(15, 375, length = n + 1)
-  return(grDevices::hcl(h = hues, l = 65, c = 100)[1:n])
+  hues <- base::seq(15, 375, length = n + 1)
+  return(grDevices::hcl(h = hues, l = 65, c = 100)[seq_len(n)])
 }
 
 #' Reverse complement of a string using biostrings
@@ -309,7 +318,7 @@ rc <- function(dna) {
     rev_com <- as.character(Biostrings::reverseComplement(
       Biostrings::DNAString(dna)))
   } else if (is(dna, "character") && length(dna) > 1) {
-    rev_com <- sapply(dna, rc)
+    rev_com <- vapply(dna, rc, FUN.VALUE = character(1))
     names(rev_com) <- NULL
   } else {
     stop("Must be character or character vector")
@@ -317,68 +326,89 @@ rc <- function(dna) {
   return(rev_com)
 }
 
-#' Builds a standard table from user variants
+#' Builds count tables using various mutation type schemas
+#' 
+#' Generates count tables for different mutation type schemas which can be 
+#' used as input to the mutational signature discovery or prediction functions.
+#' \code{"SBS96"} generates a table for single base substitutions following the
+#' standard 96 mutation types derived from the trinucleotide context.
+#' \code{"SBS192"} is the 96 mutation type schema with the addition of
+#' transcriptional strand or replication strand information added to each base.
+#' \code{"DBS"} generates a table for the double base substitution schema 
+#' used in COSMIC V3. \code{"Indel"} generates a table for insertions and 
+#' deletions following the schema used in COSMIC V3.
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
-#' @param table_name Name of standard table to build SBS96, SBS192, DBS, or
-#' Indel
-#' @param strand_type Only for SBS192 Transcript_Strand or Replication_Strand
-#' @param overwrite Overwrite existing count table
-#' @return None
+#' @param table_name Name of standard table to build. One of \code{"SBS96"},
+#' \code{"SBS192"}, \code{"DBS"}, or \code{"Indel"}.
+#' @param strand_type Strand type to use in SBS192 schema. One of
+#' \code{"Transcript_Strand"} or \code{"Replication_Strand"}.
+#' Only used if \code{table_name = SBS192}.  
+#' @param overwrite If \code{TRUE}, any existing count table with the same
+#' name will be overwritten. If \code{FALSE}, then an error will be thrown
+#' if a table with the same name exists within the \code{musica} object.
+#' @return No object will be returned. The count tables will be automatically
+#' added to the \code{musica} object. 
 #' @examples
 #' g <- select_genome("19")
 #'
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #'
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' annotate_transcript_strand(musica, "19")
 #' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 #'
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
+#' data(rep_range)
 #' annotate_replication_strand(musica, rep_range)
 #' build_standard_table(musica, g, "SBS192", "Replication_Strand")
 #'
-#' musica <- readRDS(system.file("testdata", "dbs_musica.rds",
-#' package = "musicatk"))
-#' build_standard_table(musica, g, "DBS")
+#' data(dbs_musica)
+#' build_standard_table(dbs_musica, g, "DBS", overwrite = TRUE)
 #'
-#' musica <- readRDS(system.file("testdata", "indel_musica.rds", package = "musicatk"))
-#' build_standard_table(musica, g, table_name = "INDEL")
+#' data(indel_musica)
+#' build_standard_table(indel_musica, g, table_name = "INDEL")
 #' @export
-build_standard_table <- function(musica, g, table_name, strand_type = NA,
+build_standard_table <- function(musica, g, table_name, strand_type = NULL,
                                  overwrite = FALSE) {
   if (table_name %in% c("SNV96", "SNV", "96", "SBS", "SBS96")) {
+    message("Building count table from SBS with SBS96 schema")
     .table_exists_warning(musica, "SBS96", overwrite)
     tab_list <- list()
     tab <- create_sbs96_table(musica, g, overwrite)
-    tab_list[[tab@name]] <- tab
-    tab_list <- c(musica@count_tables, tab_list)
+    tab_list[[get_tab_name(tab)]] <- tab
+    tab_list <- c(tables(musica), tab_list)
   } else if (table_name %in% c("SBS192", "192")) {
+    message("Building count table from SBS and ", strand_type, 
+            " with SBS192 schema")
     .table_exists_warning(musica, "SBS192", overwrite)
     tab_list <- list()
     tab <- create_sbs192_table(musica, g, strand_type, overwrite)
-    tab_list[[tab@name]] <- tab
-    tab_list <- c(musica@count_tables, tab_list)
-  } else if (table_name %in% c("DBS", "doublet")) {
-    .table_exists_warning(musica, "DDBS", overwrite)
+    tab_list[[get_tab_name(tab)]] <- tab
+    tab_list <- c(tables(musica), tab_list)
+  } else if (table_name %in% c("DBS78", "DBS", "doublet")) {
+    message("Building count table from DBS with DBS78 schema")
+    .table_exists_warning(musica, "DBS78", overwrite)
     tab_list <- list()
-    tab <- create_dbs_table(musica, overwrite)
-    tab_list[[tab@name]] <- tab
-    tab_list <- c(musica@count_tables, tab_list)
-  } else if (table_name %in% c("INDEL", "IND", "indel", "Indel")) {
+    tab <- create_dbs78_table(musica, overwrite)
+    tab_list[[get_tab_name(tab)]] <- tab
+    tab_list <- c(tables(musica), tab_list)
+  } else if (table_name %in% c("IND83", "INDEL83", "INDEL", "IND", "indel", 
+                               "Indel")) {
+    message("Building count table from INDELs with IND83 schema")
     .table_exists_warning(musica, "INDEL", overwrite)
     tab_list <- list()
-    tab <- create_indel_table(musica, g, overwrite)
-    tab_list[[tab@name]] <- tab
-    tab_list <- c(musica@count_tables, tab_list)
+    tab <- create_indel83_table(musica, g, overwrite)
+    tab_list[[get_tab_name(tab)]] <- tab
+    tab_list <- c(tables(musica), tab_list)
   } else {
     stop(paste0("There is no standard table named: ", table_name,
-               " please select from SBS96, SBS192, DBS, Indel."))
+               " please select from SBS96, SBS192, DBS78, IND83."))
   }
-  eval.parent(substitute(musica@count_tables <- tab_list))
+  eval.parent(substitute(tables(musica) <- tab_list))
 }
 
 .table_exists_warning <- function(musica, table_name, overwrite = FALSE) {
@@ -392,12 +422,12 @@ build_standard_table <- function(musica, g, table_name, strand_type = NA,
   }
 }
 
-create_indel_table <- function(musica, g, overwrite = FALSE) {
-  var <- musica@variants
+create_indel83_table <- function(musica, g, overwrite = FALSE) {
+  var <- variants(musica)
   all_ins <- as.data.frame(subset_variant_by_type(var, "INS"))
   all_del <- as.data.frame(subset_variant_by_type(var, "DEL"))
-  samples <- unique(c(as.character(all_ins$sample),
-                      as.character(all_del$sample)))
+  #samples <- unique(c(as.character(all_ins$sample),
+  #                    as.character(all_del$sample)))
   all_samples <- sample_names(musica)
   dimlist <- list(row_names = c(.get_indel_motifs("bp1", 0, 0),
                                 .get_indel_motifs("bp1", 1, 0),
@@ -405,56 +435,57 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
                                 .get_indel_motifs("ins", NA, NA),
                                 .get_indel_motifs("micro", NA, NA)),
                   column_names = all_samples)
-  mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), dimnames = dimlist)
-  for(sample in samples) {
+  mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), 
+                      dimnames = dimlist)
+  for (sample in all_samples) {
     ins <- all_ins[which(all_ins$sample == sample), ]
     del <- all_del[which(all_del$sample == sample), ]
 
-    ins_len = nchar(ins$alt)
-    del_len = nchar(del$ref)
-    ins1 = ins[which(ins_len == 1), ]
-    ins2 = ins[which(ins_len > 1), ]
+    ins_len <- nchar(ins$alt)
+    del_len <- nchar(del$ref)
+    ins1 <- ins[which(ins_len == 1), ]
+    ins2 <- ins[which(ins_len > 1), ]
 
-    del1 = del[which(del_len == 1), ]
-    del2 = del[which(del_len > 1), ]
+    del1 <- del[which(del_len == 1), ]
+    del2 <- del[which(del_len > 1), ]
 
-    if(nrow(del1) == 0) {
+    if (nrow(del1) == 0) {
       del1_counts <- setNames(rep(0, 12), .get_indel_motifs("bp1", 0, 0))
     } else {
       del1_counts <- .count1(del1, del1$ref, ins = FALSE, g = g)
     }
 
-    if(nrow(ins1) == 0) {
+    if (nrow(ins1) == 0) {
       ins1_counts <- setNames(rep(0, 12), .get_indel_motifs("bp1", 1, 0))
     } else {
       ins1_counts <- .count1(mut = ins1, type = ins1$alt, ins = TRUE, g = g)
     }
 
-    if(nrow(ins2) == 0) {
+    if (nrow(ins2) == 0) {
       ins2_counts <- setNames(rep(0, 24), .get_indel_motifs("ins", NA, NA))
     } else {
       ins2_counts <- .count2_ins(mut = ins2, type = ins2$alt, g = g)
     }
 
-    if(nrow(del2) == 0) {
+    if (nrow(del2) == 0) {
       del2_counts <- list(del = setNames(rep(0, 24),
                                          .get_indel_motifs("del", NA, NA)),
                           micro = setNames(rep(0, 11),
                                            .get_indel_motifs("micro", NA, NA)))
     } else {
-      del2_counts = .count2_del(mut = del2, type = del2$ref, g)
+      del2_counts <- .count2_del(mut = del2, type = del2$ref, g)
     }
     mut_table[, sample] <- c(del1_counts, ins1_counts, del2_counts$del,
                              ins2_counts, del2_counts$micro)
   }
 
   motif <- rownames(mut_table)
-  mutation <- c(substr(motif[1:24], 1, 5),
+  mutation <- c(substr(motif[seq_len(24)], 1, 5),
                 paste(unlist(lapply(strsplit(motif[25:83], "_"), "[[", 1)),
                       unlist(lapply(strsplit(motif[25:83], "_"), "[[", 2)),
                       unlist(lapply(strsplit(motif[25:83], "_"), "[[", 3)),
                       sep = "_"))
-  context <- c(substr(motif[1:24], 7, 9),
+  context <- c(substr(motif[seq_len(24)], 7, 9),
                unlist(lapply(strsplit(motif[25:83], "_"), "[[", 3)))
   annotation <- data.frame(motif = motif, mutation = mutation,
                            context = context)
@@ -463,14 +494,16 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   names(color_mapping) <- unique(annotation$mutation)
 
   #TODO error in counting, we're missing some
-  incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
-  dummy_features <- rep(NA, length(var$Variant_Type))
+  #incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
+  dummy_features <- rep(NA, length(which(var$Variant_Type %in% c("INS", 
+                                                                 "DEL"))))
 
-  tab <- .create_count_table(musica = musica, name = "INDEL",
+  tab <- .create_count_table(musica = musica, name = "IND83",
                              count_table = mut_table,
                              annotation = annotation,
                              features = data.frame(mutation = dummy_features),
-                             type = Rle(rep("INDEL", length(var$Variant_Type))),
+                             type = Rle(rep("INDEL", length(which(
+                               var$Variant_Type %in% c("INS", "DEL"))))),
                              color_variable = "mutation",
                              color_mapping = color_mapping,
                              description = paste0("Standard count table for ",
@@ -481,24 +514,24 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
 }
 
 .get_indel_motifs <- function(indel, ins, plus) {
-  if(indel == "bp1") {
+  if (indel == "bp1") {
     return(paste(ifelse(ins, "INS", "DEL"), c("C", "C", "C", "C", "C", "C", "T",
                                               "T", "T", "T", "T", "T"), 1,
                  c(c(0, 1, 2, 3, 4, paste0(5 + plus, "+"), 0, 1, 2, 3, 4,
                      paste0(5 + plus, "+"))), sep = "_"))
-  } else if(indel == "ins") {
+  } else if (indel == "ins") {
     return(paste(paste("INS_repeats", c("2", "2", "2", "2", "2", "2", "3", "3", "3", "3",
                                         "3", "3", "4", "4", "4", "4", "4", "4", "5+",
                                         "5+", "5+", "5+", "5+", "5+"),
                        c("0", "1", "2", "3", "4", "5+", "0", "1", "2", "3", "4",
                          "5+", "0", "1", "2", "3", "4", "5+", "0", "1", "2", "3",
                          "4", "5+"), sep = "_")))
-  } else if(indel == "micro") {
+  } else if (indel == "micro") {
     return(paste("DEL_MH",  c("2", "3", "3", "4", "4", "4", "5+", "5+",
                               "5+", "5+", "5+"),
                  c("1", "1", "2", "1", "2", "3", "1", "2",
                    "3", "4", "5+"), sep = "_"))
-  } else if(indel == "del") {
+  } else if (indel == "del") {
     return(paste("DEL_repeats", c("2", "2", "2", "2", "2", "2", "3", "3", "3", "3",
                                   "3", "3", "4", "4", "4", "4", "4", "4", "5+",
                                   "5+", "5+", "5+", "5+", "5+"),
@@ -529,10 +562,10 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
     Biostrings::reverseComplement() %>%
     as.character()
   final_type <- type
-  final_type[ind] <- final_type[ind] %>% Biostrings::DNAStringSet() %>%
+  final_type[ind] <- final_type[ind] %>% Biostrings::DNAStringSet() %>% 
     Biostrings::reverseComplement() %>% as.character()
-  repeats = rep(NA, length(final_type))
-  for(i in 1:length(type)) {
+  repeats <- rep(NA, length(final_type))
+  for (i in seq_len(length(type))) {
     repeats[i] <- .count_repeat(final_type[i], rflank[i]) +
       .count_repeat(final_type[i], rev(lflank[i])) + plus
   }
@@ -550,8 +583,8 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
                                       as.character = TRUE)
   rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1, range_end + 10,
                                       as.character = TRUE)
-  repeats = rep(NA, length(type))
-  for(i in 1:length(type)) {
+  repeats <- rep(NA, length(type))
+  for (i in seq_len(length(type))) {
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
       .count_repeat(type[i], rev(lflank[i]))
   }
@@ -577,13 +610,13 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   maybe_micro <- which(!has_repeat)
 
   micro <- rep(NA, length(type))
-  for(i in 1:length(type)) {
+  for (i in seq_len(length(type))) {
     micro[i] <- max(.micro_left(type[i], lflank[i]),
                     .micro_right(type[i], rflank[i]))
   }
 
-  repeats = rep(NA, length(type))
-  for(i in 1:length(type)) {
+  repeats <- rep(NA, length(type))
+  for (i in seq_len(length(type))) {
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
       .count_repeat(type[i], rev(lflank[i])) + 1
   }
@@ -608,7 +641,7 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   len <- nchar(letter)
   elem <- len - 1
   while(elem > 0) {
-    if(substr(letter, 1, elem) == substr(string, 1, elem)) {
+    if (substr(letter, 1, elem) == substr(string, 1, elem)) {
       return(elem)
     } else {
       elem <- elem - 1
@@ -621,7 +654,7 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
   len <- nchar(letter)
   elem <- 1
   while(elem < len) {
-    if(substr(letter, elem, len) == substr(string, elem, len)) {
+    if (substr(letter, elem, len) == substr(string, elem, len)) {
       return(elem)
     } else {
       elem <- elem + 1
@@ -632,14 +665,14 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
 
 .count_repeat <- function(letter, string) {
   len <- nchar(letter)
-  if(letter != substr(string, 1, len)) {
+  if (letter != substr(string, 1, len)) {
     return(0)
   } else {
-    next_matches = TRUE
+    next_matches <- TRUE
     counts <- 1
     while(next_matches) {
-      #print(paste0("Counts: ", counts))
-      if(letter != substr(string, counts*len + 1, counts*len + len)) {
+      #message(paste0("Counts: ", counts))
+      if (letter != substr(string, counts * len + 1, counts * len + len)) {
         return(counts)
       } else {
         counts <- counts + 1
@@ -647,4 +680,3 @@ create_indel_table <- function(musica, g, overwrite = FALSE) {
     }
   }
 }
-

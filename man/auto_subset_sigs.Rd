@@ -11,8 +11,7 @@ auto_subset_sigs(
   algorithm,
   min_exists = 0.05,
   proportion_samples = 0.25,
-  rare_exposure = 0.4,
-  seed = 1
+  rare_exposure = 0.4
 )
 }
 \arguments{
@@ -32,8 +31,6 @@ active in the cohort}
 
 \item{rare_exposure}{A sample will be considered active in the cohort if at
 least one sample has more than this threshold proportion}
-
-\item{seed}{Seed to use for reproducible results, set to null to disable}
 }
 \value{
 A result object containing automatically subset signatures
@@ -42,3 +39,4 @@ and corresponding sample weights
 \description{
 Automatic filtering of inactive signatures
 }
+\keyword{internal}

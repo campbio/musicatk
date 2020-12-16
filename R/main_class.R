@@ -113,27 +113,15 @@ setClass("musica", slots = c(variants = "data.table",
 #' @param sample_name Sample name to subset by
 #' @return Returns sample data.frame subset to a single sample
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-#' subset_variants_by_samples(musica, "public_LUAD_TCGA-97-7938.vcf")
+#' data(musica)
+#' subset_variants_by_samples(musica, "TCGA-94-7557-01A-11D-2122-08")
 #' @export
 subset_variants_by_samples <- function(musica, sample_name) {
-  return(musica@variants[which(musica@variants$sample == sample_name),
-                      ])
+  return(variants(musica)[
+    which(variants(musica)$sample == sample_name), ])
 }
 
 # Sample-Level object/methods -------------------------------
-
-#' Return variants for musica object
-#'
-#' @param musica A \code{\linkS4class{musica}} object.
-#' @return Returns variants in musica object
-#' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
-#' get_variants(musica)
-#' @export
-get_variants <- function(musica) {
-  return(musica@variants)
-}
 
 #' Creates a new musica subsetted to only samples with enough variants
 #'
@@ -144,23 +132,25 @@ get_variants <- function(musica) {
 #' and variants subsetted to only contains samples with the specified minimum
 #' number of counts (column sums) in the specified table
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' subset_musica_by_counts(musica, "SBS96", 20)
+#' data(musica_sbs96)
+#' subset_musica_by_counts(musica_sbs96, "SBS96", 20)
 #' @export
 subset_musica_by_counts <- function(musica, table_name, num_counts) {
   tab <- .extract_count_table(musica, table_name)
   min_samples <- colnames(tab)[which(colSums(tab) >= num_counts)]
 
-  musica@count_tables <- subset_count_tables(musica, min_samples)
+  tables(musica) <- subset_count_tables(musica, min_samples)
 
   #Subset variants
-  musica@variants <- musica@variants[which(musica@variants$Tumor_Sample_Barcode %in%
-                                      min_samples), ]
+  variants(musica) <- variants(musica)[
+    which(variants(musica)$sample %in% min_samples), ]
 
   #Subset sample annotations
-  if (nrow(musica@sample_annotations) != 0) {
-    musica@sample_annotations <- musica@sample_annotations[which(
-      musica@sample_annotations$Samples %in% min_samples), ]
+  if (nrow(samp_annot(musica)) != 0) {
+    overwrite_samp_annot(musica, samp_annot(musica)[which(
+      samp_annot(musica)$Samples %in% min_samples), ])
+    #samp_annot(musica) <- samp_annot(musica)[which(
+    #  samp_annot(musica)$Samples %in% min_samples), ]
   }
   return(musica)
 }
@@ -174,31 +164,36 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 #' and variants subsetted to only contains samples of the specified annotation
 #' type
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-#' annot <- read.table(system.file("testdata",
-#' "sample_annotations.txt", package = "musicatk"), sep = "\t", header=TRUE)
+#' data(musica_sbs96)
+#' annot <- read.table(system.file("extdata", "sample_annotations.txt", 
+#' package = "musicatk"), sep = "\t", header=TRUE)
 #'
-#' sample_annotations(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+#' samp_annot(musica_sbs96, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 #'
-#' musica <- subset_musica_by_annotation(musica, "Tumor_Subtypes", "Lung")
+#' musica_sbs96 <- subset_musica_by_annotation(musica_sbs96, "Tumor_Subtypes", 
+#' "Lung")
 #' @export
 subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
-  if (!all(annot_col %in% colnames(musica@sample_annotations))) {
+  if (!all(annot_col %in% colnames(samp_annot(musica)))) {
     stop(paste(annot_col, " not found in annotation columns, please review.",
                sep = ""))
   }
-  annotation_index <- which(musica@sample_annotations[[which(colnames(
-    musica@sample_annotations) %in% annot_col)]] %in% annot_names)
+  annotation_index <- which(samp_annot(musica)[[which(colnames(
+    samp_annot(musica)) %in% annot_col)]] %in% annot_names)
   if (length(annotation_index) == 0) {
     stop(paste(annot_names, " not present in ", annot_col,
                " column, please review.", sep = "", collapse = TRUE))
   }
-  musica@sample_annotations <- musica@sample_annotations[annotation_index, ]
-  annotation_samples <- musica@sample_annotations$"Samples"
-  musica@count_tables <- subset_count_tables(musica, annotation_samples)
-  musica@variants <- musica@variants[which(musica@variants$Tumor_Sample_Barcode %in%
-                                      annotation_samples), ]
+  overwrite_samp_annot(musica, samp_annot(musica)[annotation_index, ])
+  annotation_samples <- samp_annot(musica)$"Samples"
+  tables(musica) <- subset_count_tables(musica, samples = annotation_samples)
+  variants(musica) <- variants(musica)[
+    which(variants(musica)$sample %in% annotation_samples), ]
   return(musica)
+}
+
+overwrite_samp_annot <- function(musica, new_annot) {
+  eval.parent(substitute(musica@sample_annotations <- new_annot))
 }
 
 drop_na_variants <- function(variants, annot_col) {
@@ -206,10 +201,10 @@ drop_na_variants <- function(variants, annot_col) {
     stop(paste(annot_col, " not found in annotation columns, please review.",
                sep = ""))
   }
-  if (length(which(variants[[annot_col]] == "NA")) == 0) {
+  if (length(which(is.na(variants[[annot_col]]))) == 0) {
     return(variants)
   } else {
-    return(variants[-which(variants[[annot_col]] == "NA"), ])
+    return(variants[-which(is.na(variants[[annot_col]])), ])
   }
 }
 
@@ -220,19 +215,18 @@ drop_na_variants <- function(variants, annot_col) {
 #'
 #' @slot signatures A matrix of signatures by mutational motifs
 #' @slot exposures A matrix of samples by signature weights
-#' @slot tables A character vector of table names used to make the result
-#' @slot type Describes how the signatures/weights were generated
+#' @slot table_name A character vector of table names used to make the result
+#' @slot algorithm Describes how the signatures/weights were generated
 #' @slot musica The musica object the results were generated from
-#' @slot log_lik Posterior likelihood of the result (LDA only)
-#' @slot perplexity Metric of goodness of model fit
 #' @slot umap List of umap data.frames for plotting and analysis
 #' @export
 #' @exportClass musica_result
-setClass("musica_result", representation(signatures = "matrix", exposures = "matrix",
-                                  tables = "character",
-                                  type = "character", musica = "musica",
-                                  log_lik = "numeric", perplexity = "numeric",
-                                  umap = "list"))
+setClass("musica_result", representation(signatures = "matrix", 
+                                         exposures = "matrix", 
+                                         table_name = "character", 
+                                         algorithm = "character", 
+                                         musica = "musica", 
+                                         umap = "matrix"))
 
 #' Return sample from musica object
 #'
@@ -240,17 +234,21 @@ setClass("musica_result", representation(signatures = "matrix", exposures = "mat
 #' @param name_vector Vector of user-defined signature names
 #' @return Result object with user-defined signatures names
 #' @examples
-#' result <- readRDS(system.file("testdata", "res.rds", package = "musicatk"))
-#' name_signatures(result, c("smoking", "apobec", "unknown"))
+#' data(res)
+#' name_signatures(res, c("smoking", "apobec", "unknown"))
 #' @export
 name_signatures <- function(result, name_vector) {
-  num_sigs <- length(colnames(result@signatures))
+  num_sigs <- length(colnames(signatures(result)))
   if (length(name_vector) != num_sigs) {
-    stop(paste("Please provide a full list of signatures names (length = ",
-               num_sigs, ")", sep = ""))
+    stop("Please provide a full list of signatures names (length = ",
+               num_sigs, ").")
   }
-  eval.parent(substitute(colnames(result@signatures) <- name_vector))
-  eval.parent(substitute(rownames(result@exposures) <- name_vector))
+  eval.parent(substitute(colnames(signatures(result)) <- name_vector))
+  eval.parent(substitute(rownames(exposures(result)) <- name_vector))
+}
+
+get_result_alg <- function(musica_result) {
+  return(musica_result@algorithm)
 }
 
 # Result Grid object/methods -------------------------------
@@ -265,3 +263,51 @@ name_signatures <- function(result, name_vector) {
 setClass("musica_result_grid", representation(grid_params = "data.table",
                                        result_list = "list",
                                        grid_table = "data.table"))
+
+get_grid_params <- function(result_grid) {
+  return(result_grid@grid_params)
+}
+
+get_grid_list <- function(result_grid) {
+  return(result_grid@result_list)
+}
+
+get_grid_table <- function(result_grid) {
+  return(result_grid@grid_table)
+}
+
+set_grid_params <- function(result_grid, params) {
+  eval.parent(substitute(result_grid@grid_params <- params))
+}
+
+set_grid_list <- function(result_grid, list) {
+  eval.parent(substitute(result_grid@result_list <- list))
+}
+
+set_grid_table <- function(result_grid, table) {
+  eval.parent(substitute(result_grid@grid_table <- table))
+}
+
+get_tab_name <- function(count_table) {
+  return(count_table@name)
+}
+
+get_count_table <- function(count_table) {
+  return(count_table@count_table)
+}
+
+get_annot_tab <- function(count_table) {
+  return(count_table@annotation)
+}
+
+get_count_features <- function(count_table) {
+  return(count_table@features)
+}
+
+get_count_type <- function(count_table) {
+  return(count_table@type)
+}
+
+get_color_mapping <- function(count_table) {
+  return(count_table@color_mapping)
+}

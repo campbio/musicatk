@@ -16,15 +16,11 @@ the musica object the result was generated from
 
 \item{\code{exposures}}{A matrix of samples by signature weights}
 
-\item{\code{tables}}{A character vector of table names used to make the result}
+\item{\code{table_name}}{A character vector of table names used to make the result}
 
-\item{\code{type}}{Describes how the signatures/weights were generated}
+\item{\code{algorithm}}{Describes how the signatures/weights were generated}
 
 \item{\code{musica}}{The musica object the results were generated from}
-
-\item{\code{log_lik}}{Posterior likelihood of the result (LDA only)}
-
-\item{\code{perplexity}}{Metric of goodness of model fit}
 
 \item{\code{umap}}{List of umap data.frames for plotting and analysis}
 }}

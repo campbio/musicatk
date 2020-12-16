@@ -2,6 +2,7 @@
 #'
 #' @param sample_df Input counts table
 #' @return Returns a 96 motif summary table
+#' @keywords internal
 table_96 <- function(sample_df) {
   motif <- names(sample_df)
   expanded <- rep(motif, sample_df)
@@ -32,6 +33,9 @@ table_96 <- function(sample_df) {
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @return List of count tables objects
+#' @examples
+#' data(musica)
+#' extract_count_tables(musica)
 #' @export
 extract_count_tables <- function(musica) {
   #Check that object is a musica
@@ -40,35 +44,35 @@ extract_count_tables <- function(musica) {
     'musica' object, please use 'create_musica' to create one."))
   }
 
-  counts_table <- musica@count_tables
+  counts_table <- tables(musica)
   return(counts_table)
 }
 
 .extract_count_table <- function(musica, table_name) {
   #Check that at least one table exists
-  if (length(musica@count_tables) == 0) {
+  if (length(tables(musica)) == 0) {
     stop(strwrap(prefix = " ", initial = "", "The counts table is either
     missing or malformed, please run create tables e.g. [build_standard_table]
     prior to this function."))
   }
 
   #Check that table exists within this musica
-  if (!table_name %in% names(musica@count_tables)) {
+  if (!table_name %in% names(tables(musica))) {
     stop(paste0("The table '", table_name, "' does not exist. ",
                "Tables in the 'musica' object include: ",
-                paste(names(musica@count_tables), collapse = ", ")))
+                paste(names(tables(musica)), collapse = ", ")))
   }
 
   return(extract_count_tables(musica)[[table_name]]@count_table)
 }
 
 subset_count_tables <- function(musica, samples) {
-  tables <- musica@count_tables
+  tables <- tables(musica)
   table_names <- names(tables)
   for (name in table_names) {
     sub_tab <- tables[[name]]
     sub_tab@count_table <- sub_tab@count_table[, which(colnames(
-      sub_tab@count_table) %in% samples)]
+      sub_tab@count_table) %in% samples), drop = FALSE]
     tables[[name]] <- sub_tab
   }
   return(tables)
@@ -81,37 +85,37 @@ subset_count_tables <- function(musica, samples) {
                                return_table = FALSE, overwrite = FALSE) {
 
   # Check that table name is unique compared to existing tables
-  if (name %in% names(musica@count_tables) & !overwrite) {
+  if (name %in% names(tables(musica)) & !overwrite) {
     stop(paste("Table names must be unique. Current table names are: ",
-               paste(names(musica@count_tables), collapse = ", "), sep = ""))
+               paste(names(tables(musica)), collapse = ", "), sep = ""))
   }
 
   # Error checking of variables
   if (!inherits(count_table, "array")) {
     stop("The count table must be a matrix or array.")
   }
-  if(!is.null(features) & is.null(type)) {
+  if (!is.null(features) & is.null(type)) {
     stop("'type' must be supplied when including 'features.'")
   }
   if (!is.null(type)) {
-    if(length(type) != nrow(features)) {
+    if (length(type) != nrow(features)) {
       stop("'type' must be the same length as the number of rows in 'features'")
     }
-    type.rle = S4Vectors::Rle(type)
+    type.rle <- S4Vectors::Rle(type)
   } else {
-    type.rle = NULL
+    type.rle <- NULL
   }
-  if(!is.null(color_mapping)) {
-    if(is.null(annotation)) {
+  if (!is.null(color_mapping)) {
+    if (is.null(annotation)) {
       stop("In order to set 'color_mapping', the 'annotation' data ",
            "frame must be supplied.")
     }
     # checks for color_variable
   }
-  if(!is.null(color_mapping) & !is.null(color_variable) &
+  if (!is.null(color_mapping) & !is.null(color_variable) &
      !is.null(annotation)) {
-    no_match = setdiff(names(color_mapping), annotation[,color_variable])
-    if(length(no_match) > 0) {
+    no_match <- setdiff(names(color_mapping), annotation[, color_variable])
+    if (length(no_match) > 0) {
       #warning()
     }
   }
@@ -127,10 +131,10 @@ subset_count_tables <- function(musica, samples) {
   } else {
     tab <- list(tab)
     names(tab) <- name
-    #musica@count_tables <- c(musica@count_tables, tab)
+    #musica@count_tables <- c(tables(musica), tab)
     .table_exists_warning(musica, name, overwrite)
-    eval.parent(substitute(musica@count_tables[[name]] <- tab))
-    #musica@count_tables[[name]] <- tab
+    eval.parent(substitute(tables(musica)[[name]] <- tab))
+    #tables(musica)[[name]] <- tab
     #return(musica)
   }
 }
@@ -158,20 +162,21 @@ subset_count_tables <- function(musica, samples) {
 #' otherwise the table object is automatically added to the musica's
 #' count_tables list and nothing is returned
 #' @examples
-#' musica <- readRDS(system.file("testdata", "musica.rds", package = "musicatk"))
+#' data(musica)
 #' annotate_transcript_strand(musica, "19", build_table = FALSE)
 #' build_custom_table(musica, "Transcript_Strand", "Transcript_Strand",
 #' data_factor = factor(c("T", "U")))
 #' @export
 build_custom_table <- function(musica, variant_annotation, name,
-                                 description = "", data_factor = NA,
+                               description = character(), data_factor = NA,
                                annotation_df = NULL, features = NULL,
                                type = NULL, color_variable = NULL,
                                color_mapping = NULL, return_instead = FALSE,
                                overwrite = FALSE) {
-  tab <- musica@count_tables
-  variants <- musica@variants
-  .table_exists_warning(musica = musica, table_name = name, overwrite = overwrite)
+  tab <- tables(musica)
+  variants <- variants(musica)
+  .table_exists_warning(musica = musica, table_name = name,
+                        overwrite = overwrite)
 
   #Check that variant column exists
   if (variant_annotation %in% colnames(variants)) {
@@ -231,43 +236,90 @@ build_custom_table <- function(musica, variant_annotation, name,
   if (return_instead) {
     return(built_table)
   } else {
-    eval.parent(substitute(musica@count_tables[[name]] <- built_table))
+    eval.parent(substitute(tables(musica)[[name]] <- built_table))
   }
 }
 
-combine_count_tables <- function(musica, to_comb, name, description = NA) {
-  tab <- musica@count_tables
+#' Combines tables into a single table that can be used for discovery/prediction
+#'
+#' @param musica A \code{\linkS4class{musica}} object.
+#' @param to_comb A vector of table names to combine. Each table must already 
+#' exist within the input musica object
+#' @param name Name of table build, must be a new name
+#' @param description Description of the new table
+#' @param color_variable Annotation column to use for coloring plotted motifs,
+#' provided by counts table from input result's musica object
+#' @param color_mapping Mapping from color_variable to color names, provided by
+#' counts table from input result's musica object
+#' @param overwrite Overwrite existing count table
+#' @return None
+#' @examples
+#' g <- select_genome("19")
+#'
+#' data(musica)
+#' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
+#'
+#' annotate_transcript_strand(musica, "19")
+#' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
+#'
+#' combine_count_tables(musica, c("SBS96", "SBS192_Trans"), "combo")
+#' @export
+combine_count_tables <- function(musica, to_comb, name, 
+                                 description = character(), 
+                                 color_variable = character(),
+                                 color_mapping = character(),
+                                 overwrite = FALSE) {
+  tab <- tables(musica)
 
   #Check that table names are unique
   if (name %in% names(tab)) {
-    stop(paste("Table names must be unique. Current table names are: ",
-               paste(names(tab), collapse = ", "), sep = ""))
+    if (!overwrite) {
+      stop(paste("Table names must be unique. Current table names are: ",
+                 paste(names(tab), collapse = ", "), sep = ""))
+    }
+    
   }
 
-  if (all(to_comb %in% tab@table_name)) {
-    combo_table <- NULL
-    for (i in seq_len(to_comb)) {
-      combo_table <- rbind(combo_table, tab@table_list[[to_comb[i]]])
+  if (all(to_comb %in% names(tab))) {
+    comb_table <- NULL
+    comb_features <- NULL
+    comb_type <- NULL
+    comb_annotation <- NULL
+    for (comb in to_comb) {
+      comb_table <- rbind(comb_table, get_count_table(tab[[comb]]))
+      comb_features <- rbind(comb_features, get_count_features(tab[[comb]]))
+      comb_type <- c(comb_type, as.character(get_count_type(tab[[comb]])))
+      comb_annotation <- rbind(comb_annotation, get_annot_tab(tab[[comb]]))
     }
-    tab@table_list[[name]] <- combo_table
+    comb_type <- S4Vectors::Rle(comb_type)
+    tab[[name]] <- .create_count_table(musica = musica, 
+                                       name = name, 
+                                       count_table = comb_table, 
+                                       features = comb_features, 
+                                       type = comb_type, 
+                                       annotation = comb_annotation, 
+                                       color_variable = color_variable, 
+                                       color_mapping = color_mapping, 
+                                       description = description, 
+                                       return_table = TRUE, 
+                                       overwrite = overwrite)
   } else {
     stop(paste("User specified table: ",
-               setdiff(to_comb, tab@table_name), " does not exist, please ",
-               "create prior to creating compound table. ",
-               "Current table names are: ", paste(tab@table_name,
-                                                  collapse = ", "), sep = ""))
+               setdiff(to_comb[which(!to_comb %in% names(tab))]), 
+               " does not exist, please create prior to creating compound ",
+               "table. Current table names are: ", paste(names(tab), 
+                                                         collapse = ", "), 
+               sep = ""))
   }
-  tab@table_name[[name]] <- name
-  tab@description[[name]] <- description
-  eval.parent(substitute(musica@count_tables <- tab))
+  eval.parent(substitute(tables(musica) <- tab))
 }
 
 drop_count_table <- function(musica, table_name) {
-  tab <- musica@count_tables
+  tab <- tables(musica)
   if (!table_name %in% names(tab)) {
     stop(paste(table_name, " does not exist. Current table names are: ",
                names(tab), sep = ""))
   }
   tab[[table_name]] <- NULL
-  eval.parent(substitute(musica@count_tables <- tab))
+  eval.parent(substitute(tables(musica) <- tab))
 }

@@ -22,6 +22,6 @@ number of counts (column sums) in the specified table
 Creates a new musica subsetted to only samples with enough variants
 }
 \examples{
-musica <- readRDS(system.file("testdata", "musica_sbs96.rds", package = "musicatk"))
-subset_musica_by_counts(musica, "SBS96", 20)
+data(musica_sbs96)
+subset_musica_by_counts(musica_sbs96, "SBS96", 20)
 }
