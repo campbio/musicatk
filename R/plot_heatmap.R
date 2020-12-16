@@ -1,6 +1,8 @@
 #' @importFrom ComplexHeatmap Heatmap 
 #' @importFrom ComplexHeatmap HeatmapAnnotation
 #' @importFrom dplyr select
+#' @importFrom dplyr filter_all
+#' @importFrom dplyr any_vars
 #' 
 #' @title Plot heatmaps using the exposures matrix
 #' 
@@ -81,7 +83,7 @@ plot_heatmap <- function(res_annot,
   
   if (!is.null(subset_tumor)) {
     annot <- samp_annot(res_annot)
-    samps <- annot %>% filter_all(dplyr::any_vars(grepl(subset_tumor,.)))
+    samps <- annot %>% dplyr::filter_all(dplyr::any_vars(grepl(subset_tumor,.)))
     samps <- as.character(samps$Samples)
     
     exp <- as.data.frame(exp)
