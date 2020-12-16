@@ -81,7 +81,7 @@ plot_heatmap <- function(res_annot,
   
   if (!is.null(subset_tumor)) {
     annot <- samp_annot(res_annot)
-    samps <- annot %>% dplyr::filter_all(dplyr::any_vars(grepl(subset_tumor, .)))
+    samps <- annot %>% filter_all(dplyr::any_vars(grepl(subset_tumor,.)))
     samps <- as.character(samps$Samples)
     
     exp <- as.data.frame(exp)
