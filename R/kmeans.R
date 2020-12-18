@@ -34,6 +34,9 @@ cluster_exposure <- function(result, nclust, proportional = TRUE, method = "kmea
   if(isTRUE(proportional)){
     expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
   }
+  else{
+    expos <- t(expos)
+  }
   #Calculate dissimilarity matrix
   diss <- philentropy::distance(x = expos, method = dis.method, use.row.names = TRUE, as.dist.obj = TRUE)
   #Perform clustering
@@ -173,6 +176,9 @@ k_select <- function(result, method = "wss", clust.method = "kmeans", n = 10, pr
   expos <- exposures(result = result)
   if(isTRUE(proportional)){
     expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
+  }
+  else{
+    expos <- t(expos)
   }
   if(clust.method == "kmeans"){
     factoextra::fviz_nbclust(expos, stats::kmeans, method = method, k.max = n)
