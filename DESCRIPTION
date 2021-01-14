@@ -56,7 +56,10 @@ Imports:
     ggrepel,
     withr,
     plotly,
-    utils
+    utils,
+    factoextra,
+    cluster,
+    ComplexHeatmap
 Suggests:
     testthat,
     BiocStyle,
