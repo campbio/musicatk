@@ -39,7 +39,8 @@ plotting the heatmap.}
 \item{subset_signatures}{Users can specify certain signatures on which they want to subset the exposure matrix 
 plotting the heatmap.}
 
-\item{annotation}{Column annotations extracted from the musicatk object}
+\item{annotation}{Users have the option of plotting the exposure matrix based on their given annotation like
+Tumor_Subtypes or age. Error given if the user given annotation doesn't exist in the res_annot annotation object.}
 
 \item{...}{Ellipsis used for passing any arguments directly to the ComplexHeatmap's heatmap function.}
 }
@@ -55,6 +56,6 @@ Column annotations can also be seen by passing the \code{col_annot} argument.
 }
 \examples{
 data(res_annot)
-exp <- exposures(res_annot)
-ComplexHeatmap::Heatmap(exp)
+plot_heatmap(res_annot = res_annot, proportional = TRUE, scale = TRUE, 
+annotation = "Tumor_Subtypes")
 }
