@@ -146,7 +146,7 @@ predict_exposure <- function(musica, g, table_name, signature_res,
                              signatures_to_use = seq_len(ncol(
                                signatures(signature_res))), verbose = FALSE) {
   algorithm <- match.arg(algorithm)
-  signature <- signatures(signature_res)[, signatures_to_use]
+  signature <- signatures(signature_res)[, signatures_to_use, drop = FALSE]
   counts_table <- .extract_count_table(musica, table_name)
   present_samples <- which(colSums(counts_table) > 0)
   counts_table <- counts_table[, present_samples, drop = FALSE]
@@ -250,7 +250,11 @@ lda_posterior <- function(counts_table, signature, max.iter = 100,
       samp_sig_prob_mat[s, ] <- (sig_mut_counts[s, ]) / (sample_count_sums[s])
     }
     # Update theta
-    theta <- MCMCprecision::fit_dirichlet(x = samp_sig_prob_mat)$alpha
+    theta <- MCMCprecision::fit_dirichlet(x = samp_sig_prob_mat + 
+                                            .Machine$double.eps)$alpha
+    #if(any(is.nan(theta))){
+    #  browser()
+    #}
     if (verbose) {
       message(theta)
     }
@@ -593,7 +597,7 @@ auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
     }
   }
   if (combine_res) {
-    result <- combine_predict_grid(result, musica, signature_res)
+    result <- combine_predict_grid(result, musica, table_name, signature_res)
   }
   return(result)
 }
@@ -638,6 +642,7 @@ auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
 #' @param grid_list A list of result objects from the prediction grid to
 #' combine into a single result
 #' @param musica A \code{\linkS4class{musica}} object.
+#' @param table_name Table name used for prediction
 #' @param signature_res Signatures to automatically subset from for prediction
 #' @return A result object combining all samples and signatures from a
 #' prediction grid. Samples have zero exposure value for signatures not found
@@ -647,10 +652,11 @@ auto_subset_sigs <- function(musica, table_name, signature_res, algorithm,
 #' data(cosmic_v2_sigs)
 #' grid <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
 #' "Tumor_Subtypes", combine_res = FALSE)
-#' combined <- combine_predict_grid(grid, musica_annot, cosmic_v2_sigs)
-#' plot_exposures(combined, group_by="annotation", annotation="Tumor_Subtypes")
+#' combined <- combine_predict_grid(grid, musica_annot, "SBS96", cosmic_v2_sigs)
+#' plot_exposures(combined, group_by = "annotation", 
+#' annotation="Tumor_Subtypes")
 #' @export
-combine_predict_grid <- function(grid_list, musica, signature_res) {
+combine_predict_grid <- function(grid_list, musica, table_name, signature_res) {
   sig_names <- NULL
   for (i in seq_len(length(grid_list))) {
     sig_names <- c(sig_names, rownames(grid_list[[i]]@exposures))
@@ -660,6 +666,10 @@ combine_predict_grid <- function(grid_list, musica, signature_res) {
 
   comb <- NULL
   for (i in seq_len(length(grid_list))) {
+    if (!table_selected(grid_list[[i]]) %in% table_name) {
+      stop("Result number: ", i, " was not in selected table_name: ", 
+           table_name)
+    }
     samp <- exposures(grid_list[[i]])
     missing <- sig_names[!sig_names %in% rownames(samp)]
     missing_mat <- matrix(0, length(missing), ncol(samp))
@@ -669,5 +679,6 @@ combine_predict_grid <- function(grid_list, musica, signature_res) {
     comb <- cbind(comb, samp)
   }
   grid_res <- new("musica_result", musica = musica, exposures = comb,
-                  signatures = signatures(signature_res)[, sig_names])
+                  signatures = signatures(signature_res)[, sig_names], 
+                  table_name = table_name)
 }

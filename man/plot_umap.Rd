@@ -14,7 +14,10 @@ plot_umap(
   add_annotation_labels = FALSE,
   annotation_label_size = 3,
   annotation_text_box = TRUE,
-  plotly = FALSE
+  plotly = FALSE,
+  clust = NULL,
+  legend = TRUE,
+  strip_axes = FALSE
 )
 }
 \arguments{
@@ -62,6 +65,12 @@ to improve readability. Only used if code{color_by = "annotation"} and
 \item{plotly}{If \code{TRUE}, the the plot will be made interactive
 using \code{\link[plotly]{plotly}}. Not used if \code{color_by = "signature"}
 and \code{same_scale = FALSE}. Default \code{FALSE}.}
+
+\item{clust}{Add cluster labels as annotation}
+
+\item{legend}{Plot legend}
+
+\item{strip_axes}{Remove axes labels for cleaner looking plots}
 }
 \value{
 Generates a ggplot or plotly object

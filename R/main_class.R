@@ -147,8 +147,11 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 
   #Subset sample annotations
   if (nrow(samp_annot(musica)) != 0) {
-    overwrite_samp_annot(musica, samp_annot(musica)[which(
-      samp_annot(musica)$Samples %in% min_samples), ])
+    overwrite_samp_annot(musica = musica, 
+                         new_annot = 
+                           samp_annot(musica)[which(samp_annot(musica)$Samples 
+                                                 %in% min_samples), , 
+                                              drop = FALSE])
     #samp_annot(musica) <- samp_annot(musica)[which(
     #  samp_annot(musica)$Samples %in% min_samples), ]
   }
