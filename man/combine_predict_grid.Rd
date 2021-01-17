@@ -5,13 +5,15 @@
 \title{Combine prediction grid list into a result object. Exposure values are zero
 for samples in an annotation where that signature was not predicted}
 \usage{
-combine_predict_grid(grid_list, musica, signature_res)
+combine_predict_grid(grid_list, musica, table_name, signature_res)
 }
 \arguments{
 \item{grid_list}{A list of result objects from the prediction grid to
 combine into a single result}
 
 \item{musica}{A \code{\linkS4class{musica}} object.}
+
+\item{table_name}{Table name used for prediction}
 
 \item{signature_res}{Signatures to automatically subset from for prediction}
 }
@@ -29,6 +31,7 @@ data(musica_annot)
 data(cosmic_v2_sigs)
 grid <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
 "Tumor_Subtypes", combine_res = FALSE)
-combined <- combine_predict_grid(grid, musica_annot, cosmic_v2_sigs)
-plot_exposures(combined, group_by="annotation", annotation="Tumor_Subtypes")
+combined <- combine_predict_grid(grid, musica_annot, "SBS96", cosmic_v2_sigs)
+plot_exposures(combined, group_by = "annotation", 
+annotation="Tumor_Subtypes")
 }

@@ -86,6 +86,9 @@ create_umap <- function(result, n_neighbors = 30,
 #' @param plotly If \code{TRUE}, the the plot will be made interactive
 #' using \code{\link[plotly]{plotly}}. Not used if \code{color_by = "signature"}
 #' and \code{same_scale = FALSE}. Default \code{FALSE}.
+#' @param clust Add cluster labels as annotation
+#' @param legend Plot legend
+#' @param strip_axes Remove axes labels for cleaner looking plots
 #' @return Generates a ggplot or plotly object
 #' @seealso See \link{create_umap} to generate a UMAP in a musica result.
 #' @examples
@@ -98,24 +101,33 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
                       point_size = 0.7, same_scale = TRUE,
                       add_annotation_labels = FALSE,
                       annotation_label_size = 3,
-                      annotation_text_box = TRUE, plotly = FALSE) {
+                      annotation_text_box = TRUE, plotly = FALSE,
+                      clust = NULL,
+                      legend = TRUE,
+                      strip_axes = FALSE) {
   
-  # TODO: Make S4 getter/setter for UMAP
   umap <- umap(result)
   color_by <- match.arg(color_by)
   
   if (color_by == "annotation") {
     if (is.null(annotation)) {
-      stop("If pthe arameter or 'color_by' are is to 'annotation', ",
+      stop("If the parameter or 'color_by' are is to 'annotation', ",
            "then the 'annotation' parameter must be supplied.")
     }
     
     # Add annotation to data.frame
     annot <- samp_annot(result)
+    
+    # Manually override annotations with cluster labels
+    if (!is.null(clust)) {
+      annot <- clust
+      annotation <- "cluster"
+    }
+    
     umap <- umap %>% as.data.frame %>%
       tibble::rownames_to_column(var = "sample")
     umap <- .add_annotation_to_df(result, plot_dat = umap,
-                                  annotation = annotation)
+                                  annotation = annotation, clust = clust)
     
     # Create base ggplot object
     if (plotly) {
@@ -223,6 +235,19 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
     p <- ggplot(as.data.frame(umap), aes_string(x = "UMAP_1", y = "UMAP_2")) +
       geom_point(size = point_size)
     p <- .gg_default_theme(p)
+  }
+  
+  if (!isTRUE(legend)) {
+    p <- p + theme(legend.position = "none")
+  }
+  
+  if (isTRUE(strip_axes)) {
+    p <- p + theme(axis.title.x=element_blank(), 
+                   axis.text.x=element_blank(), 
+                   axis.ticks.x=element_blank(), 
+                   axis.title.y=element_blank(), 
+                   axis.text.y=element_blank(), 
+                   axis.ticks.y=element_blank())
   }
   
   # Toggle plotly
