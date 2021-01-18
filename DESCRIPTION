@@ -59,7 +59,8 @@ Imports:
     utils,
     factoextra,
     cluster,
-    ComplexHeatmap
+    ComplexHeatmap,
+    shinydashboard
 Suggests:
     testthat,
     BiocStyle,
