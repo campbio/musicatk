@@ -20,7 +20,8 @@ ui <- fluidPage(
                          c("MAF file" = "maf",
                            "VCF file" = "vcf",
                            "Example Data" = "exp")),
-            actionButton("get_musica", "Get Musica Data"))
+            actionButton("get_musica", "Get Musica Data"),
+            actionButton("MusicaResults","Get Musica Result Object"))
           
           
         ),
