@@ -56,6 +56,6 @@ Column annotations can also be seen by passing the \code{col_annot} argument.
 }
 \examples{
 data(res_annot)
-exp <- exposures(res_annot)
-ComplexHeatmap::Heatmap(exp)
+plot_heatmap(res_annot = res_annot, proportional = TRUE, scale = TRUE, 
+annotation = "Tumor_Subtypes")
 }

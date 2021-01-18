@@ -60,6 +60,7 @@ Imports:
     factoextra,
     cluster,
     ComplexHeatmap,
+    philentropy,
     shinydashboard
 Suggests:
     testthat,

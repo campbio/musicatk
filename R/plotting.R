@@ -186,6 +186,7 @@ plot_sample_reconstruction_error <- function(result, sample,
     sig_names <- colnames(signatures)  
   }
   annot <- tab@annotation
+  rownames(annot) <- annot$motif
   
   # Ensure signature colnames are unique
   # They can not be unique in the sig_compare function if one signature
@@ -212,7 +213,7 @@ plot_sample_reconstruction_error <- function(result, sample,
   # Set up color variable if supplied as vector or the name of a column in
   # the table annotation
   if (length(color_variable) == 1 && color_variable %in% colnames(annot)) {
-    final_color_variable <- annot[df$motif,tab@color_variable]
+    final_color_variable <- annot[df$motif, tab@color_variable]
   } else if (length(color_variable) == nrow(signatures)) {
     final_color_variable <- color_variable
   } else {

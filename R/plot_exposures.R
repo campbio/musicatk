@@ -255,12 +255,19 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   return(temp)
 }
 
-.add_annotation_to_df <- function(result, plot_dat, annotation = NULL) {
+.add_annotation_to_df <- function(result, plot_dat, annotation = NULL, 
+                                  clust = NULL) {
   # Add sample annotation to data frame if supplied
   if (!is.null(annotation)) {
     
     sample_annot <- samp_annot(result)
     
+    # Manually override annotations with cluster labels
+    if (!is.null(clust)) {
+      sample_annot <- clust
+      sample_annot$Samples <- rownames(clust)
+    }
+    head(sample_annot)
     if (!annotation %in% colnames(sample_annot)) {
       stop("'", annotation, "' was not found in sample annotations in the ",
            "'musica' object. Current annotations are: ",
