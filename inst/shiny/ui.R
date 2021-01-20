@@ -21,10 +21,22 @@ ui <- fluidPage(
                            "VCF file" = "vcf",
                            "Example Data" = "exp")),
             actionButton("get_musica", "Get Musica Data"),
-            actionButton("MusicaResults","Get Musica Result Object"))
+            actionButton("MusicaResults","Get Musica Result Object"),
+            fileInput("file_vcf", "VCF File",
+                      multiple = TRUE,
+                      accept = ".vcf"),
+            fileInput("file_maf", "MAF File",
+                      multiple = TRUE,
+                      accept = ".maf"),
+            mainPanel(
+              
+              # Output: Data file ----
+              tableOutput("contents")
+              
+            )
           
           
-        ),
+        )),
         tabItem(tabName = "signatures", h2("Signatures and Exposures"),
             box(
               selectInput("SelectTable", h3("Select Count Table"),

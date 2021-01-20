@@ -61,7 +61,9 @@ Imports:
     cluster,
     ComplexHeatmap,
     philentropy,
-    shinydashboard
+    shinydashboard,
+    vcfR,
+    maftools
 Suggests:
     testthat,
     BiocStyle,
