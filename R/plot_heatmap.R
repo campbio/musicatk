@@ -65,7 +65,7 @@ plot_heatmap <- function(res_annot,
     if (any(!annotation %in% colnames(annot))) { 
       stop("The given annotations are not present in the data") 
     }
-    annot <- annot[[annotation]]
+    annot <- annot[, ..annotation]
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   
@@ -96,7 +96,8 @@ plot_heatmap <- function(res_annot,
  #If/else conditions to check if annotation object available
   if (is.null(heatmap)) {
       ComplexHeatmap::Heatmap(exp, name = "exposures", show_column_names = show_column_names, show_row_names = show_row_names, ...)
-  }else {
+    }
+    else if (!is.null(heatmap)) {
       ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap, show_column_names = show_column_names, show_row_names = show_row_names, ...)
   }
 }

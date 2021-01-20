@@ -60,7 +60,8 @@ Imports:
     factoextra,
     cluster,
     ComplexHeatmap,
-    philentropy
+    philentropy,
+    shinydashboard
 Suggests:
     testthat,
     BiocStyle,
