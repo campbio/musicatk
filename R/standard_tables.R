@@ -373,7 +373,7 @@ rc <- function(dna) {
 #' build_standard_table(indel_musica, g, table_name = "INDEL")
 #' @export
 build_standard_table <- function(musica, g, table_name, strand_type = NULL,
-                                 overwrite = FALSE) {
+                                 overwrite = FALSE, verbose = FALSE) {
   if (table_name %in% c("SNV96", "SNV", "96", "SBS", "SBS96")) {
     message("Building count table from SBS with SBS96 schema")
     .table_exists_warning(musica, "SBS96", overwrite)
@@ -400,10 +400,15 @@ build_standard_table <- function(musica, g, table_name, strand_type = NULL,
                                "Indel")) {
     message("Building count table from INDELs with IND83 schema")
     .table_exists_warning(musica, "INDEL", overwrite)
-    tab_list <- list()
-    tab <- create_indel83_table(musica, g, overwrite)
-    tab_list[[get_tab_name(tab)]] <- tab
-    tab_list <- c(tables(musica), tab_list)
+    tab <- create_indel83_table(musica, g, overwrite, verbose)
+    if ("IND83" %in% names(musica@count_tables)) {
+      tab_list <- tables(musica)
+      tab_list[[get_tab_name(tab)]] <- tab
+    } else {
+      tab_list <- list()
+      tab_list[[get_tab_name(tab)]] <- tab
+      tab_list <- c(tables(musica), tab_list)
+    }
   } else {
     stop(paste0("There is no standard table named: ", table_name,
                " please select from SBS96, SBS192, DBS78, IND83."))
@@ -422,7 +427,8 @@ build_standard_table <- function(musica, g, table_name, strand_type = NULL,
   }
 }
 
-create_indel83_table <- function(musica, g, overwrite = FALSE) {
+create_indel83_table <- function(musica, g, overwrite = FALSE, 
+                                 verbose = FALSE) {
   var <- variants(musica)
   all_ins <- as.data.frame(subset_variant_by_type(var, "INS"))
   all_del <- as.data.frame(subset_variant_by_type(var, "DEL"))
@@ -437,6 +443,12 @@ create_indel83_table <- function(musica, g, overwrite = FALSE) {
                   column_names = all_samples)
   mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), 
                       dimnames = dimlist)
+  if (isTRUE(verbose)) {
+    pb <- utils::txtProgressBar(min = 0, max = length(all_samples), initial = 0,
+                                style = 3)
+    i <- 0
+    
+  }
   for (sample in all_samples) {
     ins <- all_ins[which(all_ins$sample == sample), ]
     del <- all_del[which(all_del$sample == sample), ]
@@ -477,6 +489,10 @@ create_indel83_table <- function(musica, g, overwrite = FALSE) {
     }
     mut_table[, sample] <- c(del1_counts, ins1_counts, del2_counts$del,
                              ins2_counts, del2_counts$micro)
+    if (isTRUE(verbose)) {
+      i <- i + 1
+      utils::setTxtProgressBar(pb, i)
+    }
   }
 
   motif <- rownames(mut_table)
@@ -607,7 +623,7 @@ create_indel83_table <- function(musica, g, overwrite = FALSE) {
   rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1,
                                       range_end + len, as.character = TRUE)
   has_repeat <- type == lflank | type == rflank
-  maybe_micro <- which(!has_repeat)
+  #maybe_micro <- which(!has_repeat) #doesn't get used from some reason #TODO
 
   micro <- rep(NA, length(type))
   for (i in seq_len(length(type))) {
@@ -617,13 +633,18 @@ create_indel83_table <- function(musica, g, overwrite = FALSE) {
 
   repeats <- rep(NA, length(type))
   for (i in seq_len(length(type))) {
+    #TEST removing the +1 for dels to bring it in line with Alexandrov counting
+    #repeats[i] <- .count_repeat(type[i], rflank[i]) +
+    #  .count_repeat(type[i], rev(lflank[i]))
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
       .count_repeat(type[i], rev(lflank[i])) + 1
   }
+  #micro_ind <- which(repeats == 0 & micro > 0)
   micro_ind <- which(repeats == 1 & micro > 0)
-  repeat_ind <- which(micro == 0)
+  repeat_ind <- which(micro == 0 | repeats > 1)
   final_micro <- micro[micro_ind]
   final_repeats <- repeats[repeat_ind]
+  #final_repeats[final_repeats >= 5] <- paste0(5, "+")
   final_repeats[final_repeats >= 6] <- paste0(6, "+")
   final_len <- len
   final_len[which(final_len >= 5)] <- "5+"
