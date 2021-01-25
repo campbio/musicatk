@@ -1,5 +1,7 @@
 library(musicatk)
 
+source("Tables.R", local = T)
+
 server <- function(input, output) {
   observeEvent(input$get_musica, {
     maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
@@ -26,6 +28,17 @@ server <- function(input, output) {
     
   })
   
+###################### Nathan's Code ##########################################
+  observeEvent(input$overwriteTable, { 
+    overwrite <- T
+  })
+  observeEvent(input$keepTable, { 
+    overwrite <- F 
+  })
+  observeEvent(input$AddTable, {
+    add_tables(input)
+  })
+
   # Test when musica code has been generated
   # observeEvent(input$MusicaResults, {
   #   musica_result <- discover_signatures(
@@ -35,4 +48,6 @@ server <- function(input, output) {
   #     seed = input$Seed,
   #     nstart = input$nStart)
   # })
+###############################################################################
+  
 }
