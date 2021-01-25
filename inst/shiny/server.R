@@ -4,7 +4,7 @@ server <- function(input, output) {
   observeEvent(input$get_musica, {
     maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
   })
-  observeEvent(input$get_musica_result,{
+  observeEvent(input$MusicaResults,{
     data(res_annot)
     
   })
