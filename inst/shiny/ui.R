@@ -26,7 +26,7 @@ ui <- fluidPage(
                            "VCF file" = "vcf",
                            "Example Data" = "exp")),
             actionButton("get_musica", "Get Musica Data"),
-            actionButton("MusicaResults","Get Musica Result Object"),
+            actionButton("get_musica_result","Get Musica Result Object"),
             fileInput("file_vcf", "VCF File",
                       multiple = TRUE,
                       accept = ".vcf"),

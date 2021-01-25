@@ -1,11 +1,13 @@
 library(musicatk)
 
+source("Tables.R", local = T)
+
 server <- function(input, output) {
   observeEvent(input$get_musica, {
     maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
   })
   observeEvent(input$get_musica_result,{
-    musica <- data(res_annot)
+    data(res_annot)
     
   })
   output$contents <- renderTable({
@@ -34,29 +36,7 @@ server <- function(input, output) {
     overwrite <- F 
   })
   observeEvent(input$AddTable, {
-    # Currenly only using seelct genomes.
-    g <- select_genome(input$Genome)
-    overwrite = F
-    if (input$SelectTable != "Custom") {
-      # Check if table already exists
-      if(input$SelectTable %in% names(extract_count_tables(musica))) {
-        print(input$SelectTable)
-        print(input$Genome)
-        req(shinyalert::shinyalert(text = "Table already exists. 
-                                   Do you want to overwrite the existing table?", 
-                                   showCancelButton = T,
-        callbackR = function(x) { if (x == T) {
-          # build_standard_table(musica, g = g, 
-          #                      table_name =input$SelectTable,
-          #                      overwrite = T)}
-          overwrite = T}}))
-      }
-      print(overwrite)
-      build_standard_table(musica, g = g, table_name = input$SelectTable,
-                           overwrite = overwrite)
-      # print(names(extract_count_tables(musica)))
-      # View(extract_count_tables(musica))
-    }
+    add_tables(input)
   })
 
   # Test when musica code has been generated
