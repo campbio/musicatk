@@ -2,6 +2,7 @@ library(shinydashboard)
 
 source("ui_discover.R", local = T)
 source("ui_tables.R", local = T)
+source("ui_03_resultvisualization.R", local = TRUE)
 
 ui <- fluidPage(
   shinyalert::useShinyalert(),
@@ -16,16 +17,17 @@ ui <- fluidPage(
       menuItem("Help", tabName = "widgets", icon = icon("th")))),
     
     dashboardBody(
-        tabItems(
-          tabItem(tabName = "import"),
+      tabItems(
+        tabItem(tabName = "import"),
         
 ###################### Nathan's Code ##########################################
-          tabItem(tabName = "tables", h2("Create Tables"), shinyPanelTables),
-          tabItem(tabName = "signatures", h2("Signatures and Exposures"), 
-                shinyPanelDiscover)
-      )
+        tabItem(tabName = "tables", h2("Create Tables"), shinyPanelTables),
+        tabItem(tabName = "signatures", h2("Signatures and Exposures"), 
+                shinyPanelDiscover),
 ###############################################################################
-
-
+        
+        tabItem(tabName = "visualization",
+                musicaresultvisualization)
+      )
     )
   ))

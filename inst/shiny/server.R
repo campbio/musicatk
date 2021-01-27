@@ -2,14 +2,13 @@ library(musicatk)
 
 source("Tables.R", local = T)
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   observeEvent(input$get_musica, {
     maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
   })
-  observeEvent(input$get_musica_result,{
-    data(res_annot)
+
+  data(res_annot)
     
-  })
   output$contents <- renderTable({
     
     # input$file1 will be NULL initially. After the user selects
@@ -49,5 +48,41 @@ server <- function(input, output) {
   #     nstart = input$nStart)
   # })
 ###############################################################################
+ 
+##################Visualization#################   
+  observeEvent(input$rename,{
+    n <- ncol(res_annot@signatures)
+    for(i in 1:n){
+      id <- paste0("sig", i)
+      if(input$rename == TRUE){
+        insertUI(
+          selector = '#signame',
+          ui = textInput(inputId = id, paste0("Signature", i))
+        )
+      }
+      else{
+        removeUI(selector = paste0("div:has(> #", id, ")"))
+      }
+    }
+  }, ignoreInit = TRUE)
   
+  observeEvent(input$get_plot1,{
+    if(input$rename){
+      ids <- vector()
+      for(i in 1:ncol(res_annot@signatures)){
+        ids <- c(ids, input[[paste0("sig", i)]])
+      }
+      name_signatures(result = res_annot, ids)
+    }
+    output$sigplot <- renderPlot({
+      plot_signatures(result = res_annot)
+    })
+  })
+  observeEvent(input$get_plot2,{
+    prop <- input$proportional
+    output$expplot <- renderPlot(
+      plot_exposures(result = res_annot, plot_type = "bar", proportional = prop)
+    )
+  })
+################################################
 }
