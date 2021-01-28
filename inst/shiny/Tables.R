@@ -1,6 +1,4 @@
 add_tables <- function (input) { 
-  # Currenly only using select genomes.
-  g <- select_genome(input$Genome)
   strand_type <- input$StrandType
   # Check it table already exists
   if(input$SelectTable %in% names(extract_count_tables(musica)) &&
@@ -18,7 +16,6 @@ add_tables <- function (input) {
         return ()
       } else if (strand_type == "Transcript_Strand") {
         annotate_transcript_strand(musica, input$Genome)
-        
       }
     }
     print(input$OverwriteTable)

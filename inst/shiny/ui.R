@@ -1,11 +1,13 @@
 library(shinydashboard)
+library(shinyjs)
 
 source("ui_discover.R", local = T)
 source("ui_tables.R", local = T)
 
 ui <- fluidPage(
   shinyalert::useShinyalert(),
-  
+  useShinyjs(),
+  # extendShinyjs(text = jscode),
   dashboardPage(
     dashboardHeader(title = "Musicatk"),
     dashboardSidebar(sidebarMenu(

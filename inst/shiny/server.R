@@ -6,10 +6,6 @@ server <- function(input, output) {
   observeEvent(input$get_musica, {
     maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
   })
-  observeEvent(input$get_musica_result,{
-    data(res_annot)
-    
-  })
   output$contents <- renderTable({
     
     # input$file1 will be NULL initially. After the user selects
@@ -29,16 +25,16 @@ server <- function(input, output) {
   })
   
 ###################### Nathan's Code ##########################################
-  observeEvent(input$overwriteTable, { 
-    overwrite <- T
-  })
-  observeEvent(input$keepTable, { 
-    overwrite <- F 
-  })
   observeEvent(input$AddTable, {
     add_tables(input)
   })
-
+  observeEvent(input$SelectTable, {
+    if (input$SelectTable == "SBS192") {
+      show(id = "StrandType")
+    } else {
+      hide(id = "StrandType")
+    }
+  })
   # Test when musica code has been generated
   # observeEvent(input$MusicaResults, {
   #   musica_result <- discover_signatures(
