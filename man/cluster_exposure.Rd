@@ -2,14 +2,17 @@
 % Please edit documentation in R/kmeans.R
 \name{cluster_exposure}
 \alias{cluster_exposure}
-\title{Perform k-means clustering from a musica result object}
+\title{Perform clustering analysis from a musica result object}
 \usage{
 cluster_exposure(
   result,
   nclust,
+  proportional = TRUE,
   method = "kmeans",
-  iter.max = 10,
-  clara.samples = 5
+  dis.method = "euclidean",
+  hc.method = "ward.D",
+  clara.samples = 5,
+  iter.max = 10
 )
 }
 \arguments{
@@ -18,13 +21,21 @@ a mutational discovery or prediction tool.}
 
 \item{nclust}{Pre-defined number of clusters.}
 
+\item{proportional}{Logical, indicating if proportional exposure (default) will be used for clustering.}
+
 \item{method}{Clustering algorithms. Options are "kmeans" (K-means), "hkmeans" (hybrid of hierarchical 
 K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).}
 
-\item{iter.max}{Maximum number of iterations. Default is 10.}
+\item{dis.method}{Methods to calculate dissimilarity matrix. Options are "euclidean" (default), "manhattan", 
+"jaccard", "cosine", and "canberra".}
+
+\item{hc.method}{Methods to perform hierarchical clustering. Options are "ward.D" (default), "ward.D2", 
+"single", "complete", "average", "mcquitty", "median", and "centroid".}
 
 \item{clara.samples}{Number of samples to be drawn from dataset. Only used when "clara" is selected. 
 Default is 5.}
+
+\item{iter.max}{Maximum number of iterations for k-means clustering.}
 }
 \value{
 A one-column data frame with sample IDs as row names and cluster number for each sample.
