@@ -349,6 +349,7 @@ rc <- function(dna) {
 #' @param overwrite If \code{TRUE}, any existing count table with the same
 #' name will be overwritten. If \code{FALSE}, then an error will be thrown
 #' if a table with the same name exists within the \code{musica} object.
+#' @param verbose Show progress bar for processed samples
 #' @return No object will be returned. The count tables will be automatically
 #' added to the \code{musica} object. 
 #' @examples
@@ -464,7 +465,7 @@ create_indel83_table <- function(musica, g, overwrite = FALSE,
     if (nrow(del1) == 0) {
       del1_counts <- setNames(rep(0, 12), .get_indel_motifs("bp1", 0, 0))
     } else {
-      del1_counts <- .count1(del1, del1$ref, ins = FALSE, g = g)
+      del1_counts <- .count1(mut = del1, type = del1$ref, ins = FALSE, g = g)
     }
 
     if (nrow(ins1) == 0) {
@@ -560,20 +561,23 @@ create_indel83_table <- function(musica, g, overwrite = FALSE,
 }
 
 .count1 <- function(mut, type, ins, g) {
+  #ifelse(ins, plus <- 0, plus <- 0)
   ifelse(ins, plus <- 0, plus <- 0)
   chr <- mut$chr
   range_start <- mut$start
   range_end <- mut$end
-  lflank <- VariantAnnotation::getSeq(g, chr, range_start - 10, range_start - 1,
+  lflank <- VariantAnnotation::getSeq(g, chr, range_start - 7, range_start - 1,
                                       as.character = TRUE)
-  rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1, range_end + 10,
+  rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1, range_end + 7,
                                       as.character = TRUE)
+  final_lflank <- lflank
+  final_rflank <- rflank
   ind <- which(type %in% c("A", "G"))
-  lflank[ind] <- lflank[ind] %>%
+  final_lflank[ind] <- rflank[ind] %>%
     Biostrings::DNAStringSet() %>%
     Biostrings::reverseComplement() %>%
     as.character()
-  rflank[ind] <- rflank[ind] %>%
+  final_rflank[ind] <- lflank[ind] %>%
     Biostrings::DNAStringSet() %>%
     Biostrings::reverseComplement() %>%
     as.character()
@@ -582,8 +586,8 @@ create_indel83_table <- function(musica, g, overwrite = FALSE,
     Biostrings::reverseComplement() %>% as.character()
   repeats <- rep(NA, length(final_type))
   for (i in seq_len(length(type))) {
-    repeats[i] <- .count_repeat(final_type[i], rflank[i]) +
-      .count_repeat(final_type[i], rev(lflank[i])) + plus
+    repeats[i] <- .count_repeat(letter = final_type[i], string = final_rflank[i]) +
+      .count_repeat(final_type[i], stringi::stri_reverse(final_lflank[i])) + plus
   }
   repeats[repeats >= 5 + plus] <- paste0(5 + plus, "+")
   bp1_motif <- .get_indel_motifs("bp1", ins, plus)
@@ -602,7 +606,7 @@ create_indel83_table <- function(musica, g, overwrite = FALSE,
   repeats <- rep(NA, length(type))
   for (i in seq_len(length(type))) {
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
-      .count_repeat(type[i], rev(lflank[i]))
+      .count_repeat(type[i], stringi::stri_reverse(lflank[i]))
   }
   repeats[repeats >= 5] <- paste0(5, "+")
   len <- nchar(type)
@@ -618,11 +622,11 @@ create_indel83_table <- function(musica, g, overwrite = FALSE,
   range_end <- mut$end
 
   len <- nchar(type)
-  lflank <- VariantAnnotation::getSeq(g, chr, range_start - len,
+  lflank <- VariantAnnotation::getSeq(g, chr, range_start - len * 5,
                                       range_start - 1, as.character = TRUE)
   rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1,
-                                      range_end + len, as.character = TRUE)
-  has_repeat <- type == lflank | type == rflank
+                                      range_end + len * 5, as.character = TRUE)
+  #has_repeat <- type == lflank | type == rflank #could be used for a speedup
   #maybe_micro <- which(!has_repeat) #doesn't get used from some reason #TODO
 
   micro <- rep(NA, length(type))
@@ -637,15 +641,15 @@ create_indel83_table <- function(musica, g, overwrite = FALSE,
     #repeats[i] <- .count_repeat(type[i], rflank[i]) +
     #  .count_repeat(type[i], rev(lflank[i]))
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
-      .count_repeat(type[i], rev(lflank[i])) + 1
+      .count_repeat(type[i], stringi::stri_reverse(lflank[i]))
   }
   #micro_ind <- which(repeats == 0 & micro > 0)
-  micro_ind <- which(repeats == 1 & micro > 0)
-  repeat_ind <- which(micro == 0 | repeats > 1)
+  micro_ind <- which(repeats == 0 & micro > 0)
+  repeat_ind <- which(repeats > 0 | (repeats == 0 & micro == 0))
   final_micro <- micro[micro_ind]
   final_repeats <- repeats[repeat_ind]
   #final_repeats[final_repeats >= 5] <- paste0(5, "+")
-  final_repeats[final_repeats >= 6] <- paste0(6, "+")
+  final_repeats[final_repeats >= 5] <- paste0(5, "+")
   final_len <- len
   final_len[which(final_len >= 5)] <- "5+"
   final_micro[which(final_micro >= 5)] <- "5+"

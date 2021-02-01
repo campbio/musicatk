@@ -59,7 +59,8 @@ Imports:
     utils,
     factoextra,
     cluster,
-    ComplexHeatmap
+    ComplexHeatmap,
+    stringi
 Suggests:
     testthat,
     BiocStyle,
