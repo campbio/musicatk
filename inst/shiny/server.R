@@ -1,8 +1,9 @@
 library(musicatk)
 
-source("Tables.R", local = T)
+source("server_tables.R", local = T)
+source("server_discover.R", local = T)
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   observeEvent(input$get_musica, {
     maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
   })
@@ -25,25 +26,53 @@ server <- function(input, output) {
   })
   
 ###################### Nathan's Code ##########################################
-  observeEvent(input$AddTable, {
-    add_tables(input)
+  # Create dynamic table
+  output$DiscoverTable <- renderUI({
+    tagList(
+      selectInput("SelectDiscoverTable", h3("Select Count Table"),
+                  choices = names(extract_count_tables(musica)))
+    )
   })
+  observeEvent(input$AddTable, {
+    musica <- add_tables(input)
+    choices <- names(extract_count_tables(musica))
+    updateSelectInput(session, "SelectDiscoverTable", choices = choices)
+  })
+  # Initially hidden additional required option for SBS192 and Custom
+  # table creation
   observeEvent(input$SelectTable, {
     if (input$SelectTable == "SBS192") {
       show(id = "StrandType")
-    } else {
+      hide(id = "GetTableName")
+    } else if (input$SelectTable == 5) {
       hide(id = "StrandType")
+      hide(id = "GRangeFile")
+      show(id = "GetTableName")
+    } else {
+      hide(id = "GetTableName")
+      hide(id = "StrandType")
+      hide(id = "GRangeFile")
     }
   })
+
+  observeEvent(input$StrandType, {
+    if (input$StrandType == "Replication_Strand") {
+      show(id = "GRangeFile")
+    } else {
+      hide(id = "GRangeFile")
+    }
+  })
+  
+
   # Test when musica code has been generated
-  # observeEvent(input$MusicaResults, {
-  #   musica_result <- discover_signatures(
-  #     output$musica, table_name = input$SelectTable, 
-  #     num_signatures = input$NumberOfSignatures,
-  #     method = input$Methods,
-  #     seed = input$Seed,
-  #     nstart = input$nStart)
-  # })
+  observeEvent(input$MusicaResults, {
+    musica_result <- discover_signatures(
+      musica, table_name = input$SelectDiscoverTable,
+      num_signatures = as.numeric(input$NumberOfSignatures),
+      method = input$Method,
+      #seed = input$Seed,
+      nstart = as.numeric(input$nStart))
+  })
 ###############################################################################
   
 }

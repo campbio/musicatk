@@ -25,9 +25,8 @@ ui <- fluidPage(
           tabItem(tabName = "tables", h2("Create Tables"), shinyPanelTables),
           tabItem(tabName = "signatures", h2("Signatures and Exposures"), 
                 shinyPanelDiscover)
-      )
 ###############################################################################
 
-
+      )
     )
   ))
