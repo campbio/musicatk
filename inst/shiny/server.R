@@ -27,17 +27,41 @@ server <- function(input, output, session) {
   
 ###################### Nathan's Code ##########################################
   # Create dynamic table
+  vals <- reactiveValues(
+    musica = musica,
+    musica_result = NULL
+  ) 
+  
   output$DiscoverTable <- renderUI({
     tagList(
       selectInput("SelectDiscoverTable", h3("Select Count Table"),
-                  choices = names(extract_count_tables(musica)))
+                  choices = names(extract_count_tables(vals$musica)))
     )
   })
   observeEvent(input$AddTable, {
-    musica <- add_tables(input)
-    choices <- names(extract_count_tables(musica))
-    updateSelectInput(session, "SelectDiscoverTable", choices = choices)
+    if(input$SelectTable %in% names(extract_count_tables(vals$musica))) {
+      showModal(modalDialog(
+        title = "Existing Table.",
+        "Do you want to overwrite the existing table?",
+        easyClose = TRUE,
+        footer = list(
+          actionButton("confirmOverwrite", "OK"),
+          modalButton("Cancel"))
+        ))
+    } else{
+      vals$musica <- add_tables(input)
+      #choices <- names(extract_count_tables(vals$musica))
+      #updateSelectInput(session, "SelectDiscoverTable", choices = choices)
+    }})
+  
+  observeEvent(input$confirmOverwrite, {
+    removeModal()
+    vals$musica <- add_tables(input)
+    #choices <- names(extract_count_tables(vals$musica))
+    #updateSelectInput(session, "SelectDiscoverTable", choices = choices)
   })
+  
+  
   # Initially hidden additional required option for SBS192 and Custom
   # table creation
   observeEvent(input$SelectTable, {
@@ -66,8 +90,8 @@ server <- function(input, output, session) {
 
   # Test when musica code has been generated
   observeEvent(input$MusicaResults, {
-    musica_result <- discover_signatures(
-      musica, table_name = input$SelectDiscoverTable,
+    vals$musica_result <- discover_signatures(
+      vals$musica, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
       method = input$Method,
       #seed = input$Seed,

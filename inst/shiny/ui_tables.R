@@ -9,8 +9,8 @@ shinyPanelTables <- fluidPage(
                   choices = list("", "Transcript_Strand", "Replication_Strand"),
                   selected = NULL)),
     hidden(fileInput("GRangeFile", h3("Upload GRanges Object"))),
-    checkboxInput("OverwriteTable", "Overwrite Existing Tables", 
-                 F),
+    # checkboxInput("OverwriteTable", "Overwrite Existing Tables", 
+    #              F),
     #textInput("TableName", h3("Table Name")),
     actionButton("AddTable", h3("Add Table"))
   )
