@@ -60,6 +60,7 @@ Imports:
     factoextra,
     cluster,
     ComplexHeatmap,
+    stringi,
     philentropy
 Suggests:
     testthat,

@@ -9,7 +9,8 @@ build_standard_table(
   g,
   table_name,
   strand_type = NULL,
-  overwrite = FALSE
+  overwrite = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ Only used if \code{table_name = SBS192}.}
 \item{overwrite}{If \code{TRUE}, any existing count table with the same
 name will be overwritten. If \code{FALSE}, then an error will be thrown
 if a table with the same name exists within the \code{musica} object.}
+
+\item{verbose}{Show progress bar for processed samples}
 }
 \value{
 No object will be returned. The count tables will be automatically
