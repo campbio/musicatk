@@ -49,16 +49,24 @@ server <- function(input, output, session) {
           modalButton("Cancel"))
         ))
     } else{
-      vals$musica <- add_tables(input)
-      #choices <- names(extract_count_tables(vals$musica))
-      #updateSelectInput(session, "SelectDiscoverTable", choices = choices)
+      add_tables(input, vals)
     }})
+  
+  sigFun <- renderPrint({
+    cosmic_v2_subtype_map(input$CosmicV2Signatures)
+  })
+  # observeEvent(input$CosmicV2Signatures, {
+    output$CosmicSignatures <- renderUI({
+      tagList(
+      textInput("CosmicSignatures", h3("Select Cosmic signatures to predict."),
+                  value = sigFun)
+    )
+    })
+    # })
   
   observeEvent(input$confirmOverwrite, {
     removeModal()
-    vals$musica <- add_tables(input)
-    #choices <- names(extract_count_tables(vals$musica))
-    #updateSelectInput(session, "SelectDiscoverTable", choices = choices)
+    add_tables(input, vals)
   })
   
   

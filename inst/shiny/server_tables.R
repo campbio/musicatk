@@ -1,4 +1,4 @@
-add_tables <- function (input) { 
+add_tables <- function (input, vals) { 
   strand_type <- input$StrandType
   # Check it table already exists
   print("hello")
@@ -8,20 +8,26 @@ add_tables <- function (input) {
       if (strand_type == "") {
         shinyalert::shinyalert(title = "Oops", 
                                text = "You must select strand type for table SBS192.")
-        return (musica)
       } else if (strand_type == "Transcript_Strand") {
-        annotate_transcript_strand(musica, "19")
-        return (musica)
+        annotate_transcript_strand(vals$musica, "19")
+        return ()
       } else {
-        annotate_replication_strand(musica, "19")
-        return(musica)
+        annotate_replication_strand(vals$musica, "19")
+        return ()
       }
     }
-    build_standard_table(musica, select_genome("19"),
+    tryCatch( {
+      build_standard_table(vals$musica, select_genome("19"),
                          table_name = input$SelectTable, 
-                         #strand_type = strand_type,
+                         strand_type = strand_type,
                          overwrite = T)
-    return(musica)
+    },error = function(cond) {
+      shinyalert::shinyalert(title = "Error", text = cond$message)
+    }, warning = function(cond) {
+      print(cond$message)
+    }
+    )
+    return()
   }
   shinyalert::shinyalert(title = "Oops",
                          text = "Custom tables are not yet supported.")

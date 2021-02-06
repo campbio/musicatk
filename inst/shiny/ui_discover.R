@@ -9,7 +9,7 @@ shinyPanelDiscover <- fluidPage(
     textInput("NumberOfSignatures", h3("Number of signatures")),
     radioButtons("Method", h3("Method"),
                  choices = list("lda", "nmf")),
-    textInput("Seed", h3("Seed")),
+    #textInput("Seed", h3("Seed")),
     textInput("nStart", h3("Number of random starts")),
     actionButton("MusicaResults", h3("Discover Signatures"))
   )
