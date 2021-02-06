@@ -1,30 +1,65 @@
 library(musicatk)
 
+
+options(shiny.maxRequestSize = 100*1024^2)
 source("server_tables.R", local = T)
 source("server_discover.R", local = T)
 
-server <- function(input, output, session) {
+###################### Zainab's Code ##########################################
+server <- function(input, output) {
   observeEvent(input$get_musica, {
     maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
   })
-  output$contents <- renderTable({
-    
-    # input$file1 will be NULL initially. After the user selects
-    # and uploads a file, head of that data file by default,
-    # or all rows if selected, will be shown.
-    req(input$file_vcf)
-    req(input$file_maf)
-    if(!is.NULL(input$file_vcf)){
-      df <- read.vcfR(input$file_vcf$datapath)
-    }
-    else if(!is.NULL(input$file_maf)){
-      df <- read.maf(input$file_maf$datapath)
-    }
-    return(df)
-
-    
+  
+  observeEvent(input$MusicaResults,{
+    data(res_annot)
   })
   
+  variants <- reactive({
+    req(input$file)
+    file_name <- input$file$datapath
+    var <- extract_variants_from_maf_file(maf_file = file_name)
+    return(var)
+  })
+  genome <- reactive({
+    gen <- input$GenomeSelect
+    gen <- select_genome(gen)
+    return(gen)
+  })
+  output$genome_select <- renderText({
+    paste("Genome selected:", input$GenomeSelect)
+  })
+  musica_contents <- eventReactive(input$get_musica_object,{
+    musica <- create_musica(x = variants(), genome = genome())
+    return(musica)
+  })
+  
+  
+  output$musica_contents <- renderTable({
+    return(head(musica_contents()@variants))
+    shinyjs::show(id="musica_contents")
+    js$enableTabs();
+  })
+  output$download_musica <- downloadHandler(
+    filename = function() {
+      paste("musica_variants", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(musica_contents()@variants, file, row.names = FALSE)
+    }
+  )
+  
+    
+
+  
+  
+  
+        
+  
+    
+###############################################################################  
+    
+    
 ###################### Nathan's Code ##########################################
   # Create dynamic table
   vals <- reactiveValues(
