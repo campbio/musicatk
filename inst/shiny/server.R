@@ -18,6 +18,15 @@ server <- function(input, output) {
     var <- extract_variants_from_maf_file(maf_file = file_name)
     return(var)
   })
+  output$genome_list <- renderUI({
+    g <- BSgenome::available.genomes()
+    g <-strsplit(g,",")
+    gg <- gsub("^.*?\\.","", g)
+    selectInput("GenomeSelect", "Step 2: Choose genome:",
+                list( "Common genomes" = gg, 
+                      width ='100%')
+    )
+  })
   genome <- reactive({
     gen <- input$GenomeSelect
     gen <- select_genome(gen)
