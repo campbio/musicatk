@@ -257,26 +257,26 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
 
 .add_annotation_to_df <- function(result, plot_dat, annotation = NULL, 
                                   clust = NULL) {
-  # Add sample annotation to data frame if supplied
-  if (!is.null(annotation)) {
-    
-    sample_annot <- samp_annot(result)
-    
-    # Manually override annotations with cluster labels
-    if (!is.null(clust)) {
+  if (annotation != "none") {
+    # Add sample annotation to data frame if supplied
+    if (annotation == "cluster") {
+      # Manually override annotations with cluster labels
       sample_annot <- clust
       sample_annot$Samples <- rownames(clust)
+    } else {
+      sample_annot <- samp_annot(result)
+      if (!annotation %in% colnames(sample_annot)) {
+        stop("'", annotation, "' was not found in sample annotations in the ",
+             "'musica' object. Current annotations are: ",
+             paste(colnames(sample_annot), collapse = ", "))
+      }
     }
     head(sample_annot)
-    if (!annotation %in% colnames(sample_annot)) {
-      stop("'", annotation, "' was not found in sample annotations in the ",
-           "'musica' object. Current annotations are: ",
-           paste(colnames(sample_annot), collapse = ", "))
-    }
+    
     selected_annot <- sample_annot[[annotation]]
     
     names(selected_annot) <- sample_annot$Samples
-    plot_dat$annotation <- selected_annot[plot_dat$sample]
+    plot_dat$annotation <- as.character(selected_annot[plot_dat$sample])
   } else {
     plot_dat$annotation <- "none"
   }

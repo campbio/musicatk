@@ -123,3 +123,15 @@ exposure_differential_analysis <- function(musica_result, annotation,
   rownames(diff.out) <- rownames(exposures)
   return(diff.out)
 }
+
+plot_differential_analysis <- function(analysis, analysis_type, samp_num) {
+  if (analysis_type == "glm") {
+    dt <- melt(data.table::setDT(analysis[, seq_len(samp_num)], 
+                                 keep.rownames = TRUE), "rn")
+    dt$signif <- ifelse(dt$value < 0.01,1,0)
+    p <- ggplot2::ggplot(dt, aes(fill = rn, y = value, x = variable)) + 
+      geom_bar(position="dodge", stat="identity")
+    p <- .gg_default_theme(p)
+    p <- p + theme(legend.title = element_blank())
+  }
+}
