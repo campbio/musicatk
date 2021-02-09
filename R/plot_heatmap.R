@@ -87,7 +87,7 @@ plot_heatmap <- function(res_annot,
     exp <- dplyr::select(exp, samps) #Selecting columns that match tumor subtype
     exp <- as.matrix(exp)
     
-    names <- names(annot)[which(annot == subset_tumor, arr.ind=T)[, "col"]]
+    names <- names(annot)[which(annot == subset_tumor, arr.ind = T)[, "col"]]
     annot <- annot[[names[1]]]
     annot <- annot[annot == subset_tumor]
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
@@ -95,9 +95,13 @@ plot_heatmap <- function(res_annot,
   
  #If/else conditions to check if annotation object available
   if (is.null(heatmap)) {
-      ComplexHeatmap::Heatmap(exp, name = "exposures", show_column_names = show_column_names, show_row_names = show_row_names, ...)
+      ComplexHeatmap::Heatmap(exp, name = "exposures", 
+                              show_column_names = show_column_names, 
+                              show_row_names = show_row_names, ...)
   }else {
-      ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap, show_column_names = show_column_names, show_row_names = show_row_names, ...)
+      ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap,
+                              show_column_names = show_column_names, 
+                              show_row_names = show_row_names, ...)
   }
 }
  

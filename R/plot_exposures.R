@@ -66,7 +66,7 @@
 #' @export
 plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
                           proportional = FALSE,
-                          group_by = c("none", "annotation", "signature"),
+                          group_by = "none",
                           color_by = c("signature", "annotation"),
                           annotation = NULL,
                           num_samples = NULL,
@@ -79,7 +79,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
                           legend = TRUE, 
                           plotly = FALSE) {
   
-  group_by <- match.arg(group_by)
+  group_by <- match.arg(group_by, c("none", "annotation", "signature"))
   color_by <- match.arg(color_by)
   plot_type <- match.arg(plot_type)
   
@@ -257,7 +257,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
 
 .add_annotation_to_df <- function(result, plot_dat, annotation = NULL, 
                                   clust = NULL) {
-  if (annotation != "none") {
+  if (!is.null(annotation)) {
     # Add sample annotation to data frame if supplied
     if (annotation == "cluster") {
       # Manually override annotations with cluster labels

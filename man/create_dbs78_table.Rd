@@ -4,7 +4,7 @@
 \alias{create_dbs78_table}
 \title{Creates and adds a table for standard doublet base subsitution (DBS)}
 \usage{
-create_dbs78_table(musica, overwrite = overwrite)
+create_dbs78_table(musica, overwrite = overwrite, verbose)
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
