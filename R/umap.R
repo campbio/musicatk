@@ -96,7 +96,8 @@ create_umap <- function(result, n_neighbors = 30,
 #' create_umap(res_annot, "Tumor_Subtypes")
 #' plot_umap(res_annot, "none")
 #' @export
-plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
+plot_umap <- function(result, color_by = c("signatures", "annotation", 
+                                           "cluster", "none"),
                       proportional = TRUE, annotation = NULL,
                       point_size = 0.7, same_scale = TRUE,
                       add_annotation_labels = FALSE,
@@ -109,7 +110,7 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
   umap <- umap(result)
   color_by <- match.arg(color_by)
   
-  if (color_by == "annotation") {
+  if (color_by %in% c("annotation", "cluster")) {
     if (is.null(annotation)) {
       stop("If the parameter or 'color_by' are is to 'annotation', ",
            "then the 'annotation' parameter must be supplied.")
@@ -119,7 +120,7 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
     annot <- samp_annot(result)
     
     # Manually override annotations with cluster labels
-    if (!is.null(clust)) {
+    if (color_by == "cluster") {
       annot <- clust
       annotation <- "cluster"
     }
@@ -127,7 +128,8 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
     umap <- umap %>% as.data.frame %>%
       tibble::rownames_to_column(var = "sample")
     umap <- .add_annotation_to_df(result, plot_dat = umap,
-                                  annotation = annotation, clust = clust)
+                                  annotation = annotation, 
+                                  clust = clust)
     
     # Create base ggplot object
     if (plotly) {
@@ -138,7 +140,6 @@ plot_umap <- function(result, color_by = c("signatures", "annotation", "none"),
       p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
                                    color = "annotation"))
     }
-    
     p <- p + geom_point(size = point_size) 
     
     # Add labels for discrete annotation groups

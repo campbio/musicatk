@@ -485,8 +485,8 @@ generate_result_grid <- function(musica, table_name, algorithm = "lda",
       cur_musica <- methods::new("musica", variants = cur_annot_variants,
                        sample_annotations =
                          samp_annot(musica)[cur_ind, ],
-                       count_tables = subset_count_tables(musica,
-                                                          cur_annot_samples))
+                       count_tables = .subset_count_tables(musica, 
+                                                           cur_annot_samples))
     } else {
       cur_musica <- musica
       cur_annot_samples <- unique(variants(musica)$sample)
