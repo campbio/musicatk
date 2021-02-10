@@ -11,6 +11,7 @@ shinyPanelDiscover <- fluidPage(
                  choices = list("lda", "nmf")),
     #textInput("Seed", h3("Seed")),
     textInput("nStart", h3("Number of random starts")),
-    actionButton("MusicaResults", h3("Discover Signatures"))
+    actionButton("DiscoverSignatures", h3("Discover Signatures"))
+    
   )
 )

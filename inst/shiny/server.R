@@ -3,7 +3,6 @@ library(musicatk)
 
 options(shiny.maxRequestSize = 100*1024^2)
 source("server_tables.R", local = T)
-source("server_discover.R", local = T)
 
 ###################### Zainab's Code ##########################################
 server <- function(input, output) {
@@ -11,9 +10,9 @@ server <- function(input, output) {
     maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
   })
   
-  observeEvent(input$MusicaResults,{
-    data(res_annot)
-  })
+  # observeEvent(input$MusicaResults,{
+  #   data(res_annot)
+  # })
   
   variants <- reactive({
     req(input$file)
@@ -64,7 +63,8 @@ server <- function(input, output) {
   # Create dynamic table
   vals <- reactiveValues(
     musica = musica,
-    musica_result = NULL
+    musica_result = NULL,
+    pred_result = NULL
   ) 
   
   output$DiscoverTable <- renderUI({
@@ -73,6 +73,7 @@ server <- function(input, output) {
                   choices = names(extract_count_tables(vals$musica)))
     )
   })
+  
   observeEvent(input$AddTable, {
     if(input$SelectTable %in% names(extract_count_tables(vals$musica))) {
       showModal(modalDialog(
@@ -87,24 +88,97 @@ server <- function(input, output) {
       add_tables(input, vals)
     }})
   
-  sigFun <- renderPrint({
-    cosmic_v2_subtype_map(input$CosmicV2Signatures)
-  })
-  # observeEvent(input$CosmicV2Signatures, {
-    output$CosmicSignatures <- renderUI({
-      tagList(
-      textInput("CosmicSignatures", h3("Select Cosmic signatures to predict."),
-                  value = sigFun)
-    )
-    })
-    # })
+  cosmic <- data("cosmic_v2_sigs")
+  cosmic_dbs <- data("cosmic_v3_dbs_sigs")
+  cosmic_indel <- data("cosmic_v3_indel_sigs")
   
+  observeEvent(input$DiscoverSignatures, {
+    vals$musica_result <- discover_signatures(
+      vals$musica, table_name = input$SelectDiscoverTable,
+      num_signatures = as.numeric(input$NumberOfSignatures),
+      method = input$Method,
+      #seed = input$Seed,
+      nstart = as.numeric(input$nStart))
+  })
+  
+  output$PredictTable <- renderUI({
+    tagList(
+      selectInput("SelectPredTable", "Select Counts Table",
+                  choices = names(tables(vals$musica)))
+    )
+  })
+  
+  observeEvent(input$CosmicCountTable, {
+    if (input$CosmicCountTable == "SBS") {
+      show(id = "CosmicSBSSigs")
+      hide(id = "CosmicDBSSigs")
+      hide(id = "CosmicINDELSigs")
+    } else if (input$CosmicCountTable == "DBS") {
+      hide(id = "CosmicSBSSigs")
+      show(id = "CosmicDBSSigs")
+      hide(id = "CosmicINDELSigs")
+    } else {
+      hide(id = "CosmicSBSSigs")
+      hide(id = "CosmicDBSSigs")
+      show(id = "CosmicINDELSigs")
+    }
+  })
+  
+  observeEvent(input$PredictCosmic, {
+    if (input$CosmicCountTable == "SBS") {
+      sigs <- input$CosmicSBSSigs
+      res <- cosmic_v2_sigs
+    } else if (input$CosmicCountTable == "DBS") {
+      sigs <- input$CosmicDBSSigs
+      res <- cosmic_v3_dbs_sigs
+    } else {
+      sigs <- input$CosmicINDELSigs
+      res <- cosmic_v3_indel_sigs
+    }
+    vals$pred_res <- predict_exposure(vals$musica, g = genome, 
+                     table_name = input$SelectPredTable,
+                     signature_res = res,
+                     algorithm = input$PredictAlgorithm,
+                     signatures_to_use = as.numeric(sigs))
+    # if (!is.null(vals$pred_res)) {
+    #   show(id = "Threshold")
+    #   show(id = "Compare")
+    # } else {
+    #   hide(id = "Threshold")
+    #   hide(id = "Compare")
+    # }
+  })
+  
+  observeEvent(input$Compare, {
+    tryCatch( {
+     output$ComparePlot <- renderPlot({comparisons <- compare_results(vals$musica_result,
+                    vals$pred_res,
+                    threshold = input$Threshold)})
+     }, error = function(cond) {
+       shinyalert::shinyalert(title = "Error", text = cond$message)
+       return()
+     }
+    )
+  })
+  # output$CosmicSignatures <- renderUI({
+  #   sigsDBS <- toString(ncol(signatures(cosmic_v3_dbs_sigs)))
+  #   #sigsDBS <- 1:ncol(signatures(cosmic_v3_dbs_sigs))
+  #   browser()
+  #   tagList(
+  #     # textInput("CosmicSignatures", h3("Select Cosmic signatures to predict."),
+  #     #             value = sigs)
+  #     checkboxInput("CosmicDBSSigs", "Cosmic V3 DBS Signatures",
+  #                   value = list(sigsDBS)),
+  #     
+  #     )
+  # })
+
   observeEvent(input$confirmOverwrite, {
     removeModal()
     add_tables(input, vals)
   })
   
-  
+
   # Initially hidden additional required option for SBS192 and Custom
   # table creation
   observeEvent(input$SelectTable, {
@@ -129,17 +203,8 @@ server <- function(input, output) {
       hide(id = "GRangeFile")
     }
   })
-  
 
-  # Test when musica code has been generated
-  observeEvent(input$MusicaResults, {
-    vals$musica_result <- discover_signatures(
-      vals$musica, table_name = input$SelectDiscoverTable,
-      num_signatures = as.numeric(input$NumberOfSignatures),
-      method = input$Method,
-      #seed = input$Seed,
-      nstart = as.numeric(input$nStart))
-  })
+
 ###############################################################################
   
 }

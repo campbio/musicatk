@@ -17,7 +17,7 @@ add_tables <- function (input, vals) {
       }
     }
     tryCatch( {
-      build_standard_table(vals$musica, select_genome("19"),
+      build_standard_table(vals$musica, genome,
                          table_name = input$SelectTable, 
                          strand_type = strand_type,
                          overwrite = T)

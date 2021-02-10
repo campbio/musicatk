@@ -29,7 +29,7 @@ ui <- fluidPage(
     dashboardBody(
         tabItems(
           tabItem(tabName = "import", h2("Import Data", shinyPanelImport)),
-          tabItem(tabName = "genome",  shinyPanelGenome),
+          tabItem(tabName = "genome", shinyPanelGenome),
           tabItem(tabName = "musica", shinyPanelMusica),
         
 ###################### Nathan's Code ##########################################
