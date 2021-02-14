@@ -71,8 +71,7 @@ server <- function(input, output) {
 ###################### Nathan's Code ##########################################
   # Create dynamic table
   vals <- reactiveValues(
-    musica = musica,
-    musica_result = NULL,
+    musica_objects = list("musica" = musica),
     pred_result = NULL,
     vals_annotatios = NULL
   ) 
@@ -80,12 +79,13 @@ server <- function(input, output) {
   output$DiscoverTable <- renderUI({
     tagList(
       selectInput("SelectDiscoverTable", h3("Select Count Table"),
-                  choices = names(extract_count_tables(vals$musica)))
+                  choices = names(extract_count_tables(vals$musica_objects[["musica"]])))
     )
   })
   
   observeEvent(input$AddTable, {
-    if(input$SelectTable %in% names(extract_count_tables(vals$musica))) {
+    if(input$SelectTable %in% names(
+      extract_count_tables(vals$musica_objects[["musica"]]))) {
       showModal(modalDialog(
         title = "Existing Table.",
         "Do you want to overwrite the existing table?",
@@ -103,10 +103,15 @@ server <- function(input, output) {
   cosmic_indel <- data("cosmic_v3_indel_sigs")
   
   observeEvent(input$DiscoverSignatures, {
-    vals$musica_result <- discover_signatures(
-      vals$musica, table_name = input$SelectDiscoverTable,
+    # validate(need(input$NumberOfSignatures != "", 
+    #               "Must provide at least 1 signature."),
+    #          need(input$nStart != "", "Must provide at least 1 start."),
+    #          need(input$MusicaResultName != "", "Must provide a name for the
+    #               result object"))
+    vals$musica_objects[[input$MusicaResultName]] <- discover_signatures(
+      vals$musica_objects[["musica"]], table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
-      method = input$Method,
+      algorithm = input$Method,
       #seed = input$Seed,
       nstart = as.numeric(input$nStart))
   })
@@ -114,7 +119,28 @@ server <- function(input, output) {
   output$PredictTable <- renderUI({
     tagList(
       selectInput("SelectPredTable", "Select Counts Table",
-                  choices = names(tables(vals$musica)))
+                  choices = names(tables(vals$musica_objects[["musica"]])))
+    )
+  })
+  
+  output$TableMusicaList <- renderUI({
+    tagList(
+      selectInput("TableMusicaList", "Select Musica Object",
+                  choices = c(names(vals$musica_objects)))
+    )
+  })
+  
+  output$AnnotationMusicaList <- renderUI({
+    tagList(
+      selectInput("AnnotationMusicaList", "Select Musica Object",
+                  choices = c(names(vals$musica_objects)))
+    )
+  })
+  
+  output$PredictMusicaList <- renderUI({
+    tagList(
+      selectInput("PredictMusicaList", "Select Musica Object",
+                  choices = c(names(vals$musica_objects)))
     )
   })
   
@@ -145,23 +171,17 @@ server <- function(input, output) {
       sigs <- input$CosmicINDELSigs
       res <- cosmic_v3_indel_sigs
     }
-    vals$pred_res <- predict_exposure(vals$musica, g = genome, 
+    vals$pred_res <- predict_exposure(vals$musica_objects[["musica"]], g = genome, 
                      table_name = input$SelectPredTable,
                      signature_res = res,
                      algorithm = input$PredictAlgorithm,
                      signatures_to_use = as.numeric(sigs))
-    # if (!is.null(vals$pred_res)) {
-    #   show(id = "Threshold")
-    #   show(id = "Compare")
-    # } else {
-    #   hide(id = "Threshold")
-    #   hide(id = "Compare")
-    # }
   })
   
   observeEvent(input$Compare, {
     tryCatch( {
-     output$ComparePlot <- renderPlot({comparisons <- compare_results(vals$musica_result,
+     output$ComparePlot <- renderPlot({comparisons <- 
+       compare_results(vals$musica_objects,
                     vals$pred_res,
                     threshold = input$Threshold)})
      }, error = function(cond) {
@@ -187,7 +207,6 @@ server <- function(input, output) {
     removeModal()
     add_tables(input, vals)
   })
-  
 
   # Initially hidden additional required option for SBS192 and Custom
   # table creation
@@ -225,7 +244,8 @@ server <- function(input, output) {
   
   #Add Annotations to Musica object
   observeEvent(input$AddAnnotation, {
-    samp_annot(vals$musica, names(vals$annotations)) <- vals$annotations[,1]
+    samp_annot(vals$musica_objects[[input$AnnotationMusicaList]], 
+               names(vals$annotations)) <- vals$annotations[,1]
   })
 
 ###############################################################################

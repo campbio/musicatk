@@ -4,7 +4,7 @@ shinyPanelAnnotations <- fluidPage(
     #        h3("Upload Sample Annotations"),
     #        actionButton("AddAnnotation", "Import an annotation text file.")
     # ),
-  
+    uiOutput("AnnotationMusicaList"),
     wellPanel(id = "musica_data",
             h3("Upload Sample Annotations"),
             fileInput("AnnotationsFile", "Annotations file:",

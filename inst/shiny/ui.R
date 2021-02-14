@@ -12,7 +12,6 @@ source("ui_annotations.R", local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   useShinyjs(),
-  # extendShinyjs(text = jscode),
   dashboardPage(
     dashboardHeader(title = "Musicatk"),
     dashboardSidebar(sidebarMenu(
