@@ -73,7 +73,8 @@ server <- function(input, output) {
   vals <- reactiveValues(
     musica = musica,
     musica_result = NULL,
-    pred_result = NULL
+    pred_result = NULL,
+    vals_annotatios = NULL
   ) 
   
   output$DiscoverTable <- renderUI({
@@ -213,6 +214,19 @@ server <- function(input, output) {
     }
   })
 
+  output$annotations <- renderTable({
+    file <- input$AnnotationsFile
+    ext <- tools::file_ext(file$datapath)
+    req(file)
+    validate(need(ext %in% c("txt", "csv"), "Please upload a txt file"))
+    vals$annotations <- read.csv(file$datapath, header = input$AnnotationHeader)
+    vals$annotations
+  })
+  
+  #Add Annotations to Musica object
+  observeEvent(input$AddAnnotation, {
+    samp_annot(vals$musica, names(vals$annotations)) <- vals$annotations[,1]
+  })
 
 ###############################################################################
   

@@ -7,6 +7,7 @@ source("ui_musica.R",local = T)
 source("ui_discover.R", local = T)
 source("ui_tables.R", local = T)
 source("ui_predict.R", local = T)
+source("ui_annotations.R", local = T)
 
 ui <- fluidPage(
   shinyalert::useShinyalert(),
@@ -34,6 +35,8 @@ ui <- fluidPage(
         
 ###################### Nathan's Code ##########################################
           tabItem(tabName = "tables", h2("Create Tables"), shinyPanelTables),
+          tabItem(tabName = "annotations", h2("Add Sample Annotations"), 
+                  shinyPanelAnnotations),
           tabItem(tabName = "discover", h2("Discover Signatures and Exposures"), 
                 shinyPanelDiscover),
           tabItem(tabName = "predict", h2("Predict Known Signatures"),
