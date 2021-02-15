@@ -13,6 +13,7 @@
 #' @param clara.samples Number of samples to be drawn from dataset. Only used when "clara" is selected. 
 #' Default is 5.
 #' @param iter.max Maximum number of iterations for k-means clustering.
+#' @param tol Tolerance level for kmeans clustering level iterations
 #' @return A one-column data frame with sample IDs as row names and cluster number for each sample.
 #' @seealso \link[stats]{kmeans}
 #' @examples 
@@ -20,7 +21,6 @@
 #' data(res_annot)
 #' clust_out <- cluster_exposure(res_annot, nclust = 2)
 #' @export
-
 cluster_exposure <- function(result, nclust, proportional = TRUE, method = "kmeans", dis.method = "euclidean", 
                              hc.method = "ward.D", clara.samples = 5, iter.max = 10, tol = 1e-15){
   method <- match.arg(method, c("kmeans", "hkmeans", "hclust", 
