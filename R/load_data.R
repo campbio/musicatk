@@ -724,14 +724,14 @@ create_musica <- function(x, genome,
       message("Standardizing INS/DEL style")
     }
     comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% 
-                        c("A", "T", "G", "C"))
+                        c("A", "T", "G", "C", "-"))
     if (length(comp_ins > 0)) {
       message("Removing ", length(comp_ins), " compound insertions")
       dt <- dt[-comp_ins, ]
     }
     
     comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% 
-                        c("A", "T", "G", "C"))
+                        c("A", "T", "G", "C", "-"))
     if (length(comp_del > 0)) {
       message("Removing ", length(comp_del), " compound deletions")
       dt <- dt[-comp_del, ]
