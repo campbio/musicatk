@@ -1,9 +1,9 @@
 shinyPanelPredict <- fluidPage(
   box( 
-    uiOutput("PredictMusicaList"),
-    radioButtons("CosmicCountTable", "Cosmic Count Table", 
+    #uiOutput("PredictMusicaList"),
+    selectInput("CosmicCountTable", "Cosmic Count Tables", 
                  choices = list("SBS", "DBS", "INDEL")),
-    hidden(checkboxGroupInput("CosmicSBSSigs", 
+    hidden(checkboxGroupInput("CosmicSBSSigs",
                               "Cosmic V2 SBS Signatures",
                               inline = T,
                               choices = list("1", "2", "3", "4", "5", "6",
@@ -25,14 +25,13 @@ shinyPanelPredict <- fluidPage(
                                              "13", "14", "15"))),                 
     uiOutput("PredictTable"),
     radioButtons("PredictAlgorithm", h3("Algorithm"),
-                 choices = list("lda", 
+                 choices = list("Latent Dirichlet Allocatino (lda)" = "lda", 
                                 "decompTumor2Sig",
                                 "deconstructSigs")),
+    textInput("PredictResultName", h3("Name for musica result object")),
     # textInput("ChooseCosmicSignatures", 
     #           label = "Choose specific signatures (comma separated), or leave the field empty to select all signatures."),
-    actionButton("PredictCosmic", "Predict Signatures"),
-    #hidden(textInput("Threshold", "Threshold", value = "0.9")),
-    # hidden(actionButton("Compare", "Compare")),
-    # plotOutput("ComparePlot")
+    actionButton("PredictCosmic", "Predict Signature Exposures"),
+
   )
 )

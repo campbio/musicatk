@@ -37,7 +37,7 @@ server <- function(input, output) {
   output$genome_select <- renderText({
     paste("Genome selected:", input$GenomeSelect)
   })
-  musica_contents <- eventReactive(input$get_musica_object,{
+  musica_contents <- eventReactive(input$get_result_object,{
     musica <- create_musica(x = variants(), genome = genome())
     return(musica)
   })
@@ -71,21 +71,36 @@ server <- function(input, output) {
 ###################### Nathan's Code ##########################################
   # Create dynamic table
   vals <- reactiveValues(
-    musica_objects = list("musica" = musica),
-    pred_result = NULL,
+    musica = NULL,
+    result_objects = list(),
     vals_annotatios = NULL
   ) 
+  
+  # rep_range needed for SBS192 replication strand
+  data(rep_range)
+  # needed to predict cosmic sigs
+  data("cosmic_v2_sigs")
+  data("cosmic_v3_dbs_sigs")
+  data("cosmic_v3_indel_sigs")
+  cosmic_objects <- list("cosmic_v2_sigs" = cosmic_v2_sigs, 
+                      "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
+                      "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs)
   
   output$DiscoverTable <- renderUI({
     tagList(
       selectInput("SelectDiscoverTable", h3("Select Count Table"),
-                  choices = names(extract_count_tables(vals$musica_objects[["musica"]])))
+                  choices = names(
+                    extract_count_tables(
+                      vals$musica)))
     )
   })
   
   observeEvent(input$AddTable, {
-    if(input$SelectTable %in% names(
-      extract_count_tables(vals$musica_objects[["musica"]]))) {
+    table_name = input$SelectTable
+    if (table_name == "SBS192") {
+      table_name = input$StrandType
+    }
+    if(table_name %in% names(extract_count_tables(vals$musica))) {
       showModal(modalDialog(
         title = "Existing Table.",
         "Do you want to overwrite the existing table?",
@@ -96,22 +111,14 @@ server <- function(input, output) {
         ))
     } else{
       add_tables(input, vals)
-    }})
-  
-  cosmic <- data("cosmic_v2_sigs")
-  cosmic_dbs <- data("cosmic_v3_dbs_sigs")
-  cosmic_indel <- data("cosmic_v3_indel_sigs")
+    }
+  })
   
   observeEvent(input$DiscoverSignatures, {
-    # validate(need(input$NumberOfSignatures != "", 
-    #               "Must provide at least 1 signature."),
-    #          need(input$nStart != "", "Must provide at least 1 start."),
-    #          need(input$MusicaResultName != "", "Must provide a name for the
-    #               result object"))
-    vals$musica_objects[[input$MusicaResultName]] <- discover_signatures(
-      vals$musica_objects[["musica"]], table_name = input$SelectDiscoverTable,
+    vals$result_objects[[input$MusicaResultName]] <- discover_signatures(
+      vals$musica, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
-      algorithm = input$Method,
+      method = input$Method,
       #seed = input$Seed,
       nstart = as.numeric(input$nStart))
   })
@@ -119,28 +126,22 @@ server <- function(input, output) {
   output$PredictTable <- renderUI({
     tagList(
       selectInput("SelectPredTable", "Select Counts Table",
-                  choices = names(tables(vals$musica_objects[["musica"]])))
-    )
-  })
-  
-  output$TableMusicaList <- renderUI({
-    tagList(
-      selectInput("TableMusicaList", "Select Musica Object",
-                  choices = c(names(vals$musica_objects)))
+                  choices = names(tables(vals$musica)))
     )
   })
   
   output$AnnotationMusicaList <- renderUI({
     tagList(
-      selectInput("AnnotationMusicaList", "Select Musica Object",
-                  choices = c(names(vals$musica_objects)))
+      selectInput("AnnotationMusicaList", h3("Select Musica Object"),
+                  choices = c("musica", names(vals$result_objects),
+                  names(vals$result_objects)))
     )
   })
   
-  output$PredictMusicaList <- renderUI({
+  output$DiscoverMusicaList <- renderUI({
     tagList(
-      selectInput("PredictMusicaList", "Select Musica Object",
-                  choices = c(names(vals$musica_objects)))
+      selectInput("DiscoverMusicaList", h3("Select Musica Object"),
+                  choices = names(vals$result_objects))
     )
   })
   
@@ -171,7 +172,9 @@ server <- function(input, output) {
       sigs <- input$CosmicINDELSigs
       res <- cosmic_v3_indel_sigs
     }
-    vals$pred_res <- predict_exposure(vals$musica_objects[["musica"]], g = genome, 
+    
+    vals$result_objects[[input$PredictResultName]] <-
+      predict_exposure(vals$musica, g = genome, 
                      table_name = input$SelectPredTable,
                      signature_res = res,
                      algorithm = input$PredictAlgorithm,
@@ -181,7 +184,7 @@ server <- function(input, output) {
   observeEvent(input$Compare, {
     tryCatch( {
      output$ComparePlot <- renderPlot({comparisons <- 
-       compare_results(vals$musica_objects,
+       compare_results(vals$result_objects,
                     vals$pred_res,
                     threshold = input$Threshold)})
      }, error = function(cond) {
@@ -190,6 +193,7 @@ server <- function(input, output) {
      }
     )
   })
+  
   # output$CosmicSignatures <- renderUI({
   #   sigsDBS <- toString(ncol(signatures(cosmic_v3_dbs_sigs)))
   #   #sigsDBS <- 1:ncol(signatures(cosmic_v3_dbs_sigs))
@@ -216,20 +220,10 @@ server <- function(input, output) {
       hide(id = "GetTableName")
     } else if (input$SelectTable == 5) {
       hide(id = "StrandType")
-      hide(id = "GRangeFile")
       show(id = "GetTableName")
     } else {
       hide(id = "GetTableName")
       hide(id = "StrandType")
-      hide(id = "GRangeFile")
-    }
-  })
-
-  observeEvent(input$StrandType, {
-    if (input$StrandType == "Replication_Strand") {
-      show(id = "GRangeFile")
-    } else {
-      hide(id = "GRangeFile")
     }
   })
 
@@ -244,10 +238,62 @@ server <- function(input, output) {
   
   #Add Annotations to Musica object
   observeEvent(input$AddAnnotation, {
-    samp_annot(vals$musica_objects[[input$AnnotationMusicaList]], 
-               names(vals$annotations)) <- vals$annotations[,1]
+    if (!is.null(vals$musica)) {
+      tryCatch( {
+      sapply(names(vals$annotations), FUN = function(a) {
+          samp_annot(vals$musica, a) <- vals$annotations[[a]]
+        })}, error = function(cond) {
+          shinyalert::shinyalert(title = "Error", text = cond$message)
+          return()
+        })
+    } else if (!is.null(vals$result_objects[[input$AnnotationMusicaList]])) {
+      tryCatch( {
+        sapply(names(vals$annotations), FUN = function(a) {
+          samp_annot(vals$result_objects[[input$AnnotationMusicaList]], a) <- 
+          vals$annotations[[a]]
+        })}, error = function(cond) {
+          shinyalert::shinyalert(title = "Error", text = cond$message)
+          return()
+        })
+    } else {
+      print("Error: selected object does not exist")
+    }
   })
 
+  output$CompareResultA <- renderUI({
+    tagList(
+      selectInput("SelectResultA", h3("Select result object"),
+                  choices = c(names(vals$result_objects)))
+    )
+  })
+  
+  output$CompareResultB <- renderUI({
+    tagList(
+      selectInput("SelectResultB", h3("Select comparison result object"),
+                  choices = c("cosmic_v2_sigs", "cosmic_v3_dbs_sigs", 
+                              "cosmic_v3_indel_sigs", 
+                              names(vals$result_objects)))
+    )
+  })
+  
+  observeEvent(input$CompareResults, {
+    validate(
+      need(input$SelectResultA != "", 
+           'Please select a result object to compare')
+    )
+    if(input$SelectResultB %in% names(cosmic_objects)) {
+      other <- cosmic_objects[[input$SelectResultB]]
+    } else {
+      other <- vals$result_objects[[input$SelectResultB]]
+    }
+    compare_results(vals$result_objects[[input$SelectResultA]],
+                    other,
+                    threshold = input$Threshold,
+                    metric = input$CompareMetric,
+                    result_name = paste(input$CompareResultA, "Signatures"),
+                    other_result_name = 
+                      paste(input$CompareResultB, "Signatures"))
+  })
 ###############################################################################
   
 }

@@ -8,17 +8,16 @@ add_tables <- function (input, vals) {
         shinyalert::shinyalert(title = "Oops", 
                                text = "You must select strand type for table SBS192.")
       } else if (strand_type == "Transcript_Strand") {
-        annotate_transcript_strand(vals$musica_objects[[input$TableMusicaList]], "19")
-        return ()
+        annotate_transcript_strand(vals$musica, "19", build_table = T)
+        return()
       } else {
-        annotate_replication_strand(vals$musica_objects[[input$TableMusicaList]], "19")
-        return ()
+        annotate_replication_strand(vals$musica, rep_range, build_table = T)
+        return()
       }
     }
     tryCatch( {
-      build_standard_table(vals$musica_objects[[input$TableMusicaList]], genome,
+      build_standard_table(vals$musica, genome,
                          table_name = input$SelectTable, 
-                         strand_type = strand_type,
                          overwrite = T)
     },error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
@@ -26,6 +25,7 @@ add_tables <- function (input, vals) {
       print(cond$message)
     }
     )
+    browser()
     return()
   }
   shinyalert::shinyalert(title = "Oops",
