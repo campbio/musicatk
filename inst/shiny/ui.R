@@ -46,8 +46,9 @@ ui <- fluidPage(
           tabItem(tabName = "compare", h2("Compare Signatures"), 
                   shinyPanelCompare),
 ###############################################################################
-		  tabItem(tabName = "visualization",
+		      tabItem(tabName = "visualization",
                   musicaresultvisualization)
       )
     )
-  ))
+  )
+)

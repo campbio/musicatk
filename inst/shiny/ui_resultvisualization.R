@@ -1,4 +1,5 @@
 musicaresultvisualization <- fluidPage(
+  uiOutput(outputId = "select_res"),
   h2("Visualize Signatures & Exposures"),
   actionButton(inputId = "get_res", label = "Get Results"),
   fluidRow(

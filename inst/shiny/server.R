@@ -47,7 +47,7 @@ server <- function(input, output) {
   output$musica_contents <- renderTable({
     return(head(musica_contents()@variants))
     shinyjs::show(id="musica_contents")
-    js$enableTabs();
+    js$enableTabs()
   })
   output$download_musica <- downloadHandler(
     filename = function() {
@@ -75,7 +75,10 @@ server <- function(input, output) {
   vals <- reactiveValues(
     musica = NULL,
     result_objects = list(),
-    vals_annotatios = NULL
+    vals_annotatios = NULL,
+    data = NULL,
+    point_ind = 0,
+    annot = NULL
   ) 
   
   # rep_range needed for SBS192 replication strand
@@ -149,17 +152,17 @@ server <- function(input, output) {
   
   observeEvent(input$CosmicCountTable, {
     if (input$CosmicCountTable == "SBS") {
-      show(id = "CosmicSBSSigs")
-      hide(id = "CosmicDBSSigs")
-      hide(id = "CosmicINDELSigs")
+      shinyjs::show(id = "CosmicSBSSigs")
+      shinyjs::hide(id = "CosmicDBSSigs")
+      shinyjs::hide(id = "CosmicINDELSigs")
     } else if (input$CosmicCountTable == "DBS") {
-      hide(id = "CosmicSBSSigs")
-      show(id = "CosmicDBSSigs")
-      hide(id = "CosmicINDELSigs")
+      shinyjs::hide(id = "CosmicSBSSigs")
+      shinyjs::show(id = "CosmicDBSSigs")
+      shinyjs::hide(id = "CosmicINDELSigs")
     } else {
-      hide(id = "CosmicSBSSigs")
-      hide(id = "CosmicDBSSigs")
-      show(id = "CosmicINDELSigs")
+      shinyjs::hide(id = "CosmicSBSSigs")
+      shinyjs::hide(id = "CosmicDBSSigs")
+      shinyjs::show(id = "CosmicINDELSigs")
     }
   })
   
@@ -218,14 +221,14 @@ server <- function(input, output) {
   # table creation
   observeEvent(input$SelectTable, {
     if (input$SelectTable == "SBS192") {
-      show(id = "StrandType")
-      hide(id = "GetTableName")
+      shinyjs::show(id = "StrandType")
+      shinyjs::hide(id = "GetTableName")
     } else if (input$SelectTable == 5) {
-      hide(id = "StrandType")
-      show(id = "GetTableName")
+      shinyjs::hide(id = "StrandType")
+      shinyjs::show(id = "GetTableName")
     } else {
-      hide(id = "GetTableName")
-      hide(id = "StrandType")
+      shinyjs::hide(id = "GetTableName")
+      shinyjs::hide(id = "StrandType")
     }
   })
 
@@ -299,22 +302,28 @@ server <- function(input, output) {
 ###############################################################################
  
 ##################Visualization#################   
-  v <- reactiveValues(
-    data = NULL,
-    entry_id = NULL,
-    j = 0,
-    del_ind = 0,
-    sig_list = NULL,
-    point_ind = 0,
-    annot = NULL
-  )
+  output$select_res <- renderUI({
+    tagList(
+      h2("Select One Result Object"),
+      selectInput(
+        inputId = "selected_res",
+        label = NULL,
+        choices = c(names(vals$result_objects))
+      ),
+      actionButton(inputId = "select_button", label = "Select")
+    )
+  })
+  
+  observeEvent(input$select_button, {
+    vals$data <- input$selected_res
+  })
   
   observeEvent(input$get_res,{
-    v$data <- res_annot
+    vals$data <- res_annot
   })
   
   observeEvent(input$rename,{
-    n <- ncol(v$data@signatures)
+    n <- ncol(vals$data@signatures)
     for(i in 1:n){
       id <- paste0("sig", i)
       if(input$rename){
@@ -330,13 +339,13 @@ server <- function(input, output) {
   }, ignoreInit = TRUE)
   
   get_sig_option <- function(input){
-    n <- ncol(v$data@signatures)
+    n <- ncol(vals$data@signatures)
     if(input$rename){
       ids <- vector()
       for(i in 1:n){
         ids <- c(ids, input[[paste0("sig", i)]])
       }
-      name_signatures(result = v$data, ids)
+      name_signatures(result = vals$data, ids)
     }
     legend <- input$legend1
     text_size <- input$textsize1
@@ -358,7 +367,7 @@ server <- function(input, output) {
       )
       output$sigplot_plotly <- renderPlotly(
         plot_signatures(
-          result = v$data, 
+          result = vals$data, 
           legend = options[[1]],
           plotly = options[[6]],
           text_size = options[[2]],
@@ -376,7 +385,7 @@ server <- function(input, output) {
       )
       output$sigplot_plot <- renderPlot(
         plot_signatures(
-          result = v$data, 
+          result = vals$data, 
           legend = options[[1]],
           plotly = options[[6]],
           text_size = options[[2]],
@@ -389,7 +398,7 @@ server <- function(input, output) {
   })
   
   observeEvent(input$plottype, {
-    if(input$plottype %in% c("box", "violin") & v$point_ind == 0){
+    if(input$plottype %in% c("box", "violin") & vals$point_ind == 0){
       insertUI(
         selector = "#points",
         ui = tags$div(
@@ -410,7 +419,7 @@ server <- function(input, output) {
           selected = "signature"
         )
       )
-      v$point_ind <- 1
+      vals$point_ind <- 1
     }
     else if(input$plottype == "bar"){
       removeUI(selector = "#point_opt")
@@ -426,7 +435,7 @@ server <- function(input, output) {
           selected = "none"
         )
       )
-      v$point_ind <- 0
+      vals$point_ind <- 0
     }
     else{
       return(NULL)
@@ -435,14 +444,14 @@ server <- function(input, output) {
   
   observeEvent(input$group1,{
     if(input$group1 == "annotation" & input$color != "annotation"){
-      v$annot <- as.list(colnames(samp_annot(v$data))[-1])
-      names(v$annot) <- colnames(samp_annot(v$data))[-1]
+      vals$annot <- as.list(colnames(samp_annot(vals$data))[-1])
+      names(vals$annot) <- colnames(samp_annot(vals$data))[-1]
       insertUI(
         selector = "#insertannot",
         ui = selectInput(
           inputId = "annotation",
           label = "Annotation",
-          choices = v$annot
+          choices = vals$annot
         )
       )
     }
@@ -460,7 +469,7 @@ server <- function(input, output) {
         ui = selectInput(
           inputId = "annotation",
           label = "Annotation",
-          choices = v$annot
+          choices = vals$annot
         )
       )
     }
@@ -482,12 +491,12 @@ server <- function(input, output) {
             group_name = "bucket",
             orientation = "horizontal",
             add_rank_list(
-              text = "From:",
-              labels = as.list(colnames(v$data@signatures)),
+              text = "Available Signatures:",
+              labels = as.list(colnames(vals$data@signatures)),
               input_id = "sig_from"
             ),
             add_rank_list(
-              text = "To:",
+              text = "Selected Signatures:",
               labels = NULL,
               input_id = "sig_to"
             )
@@ -558,7 +567,7 @@ server <- function(input, output) {
       )
       output$expplot_plotly <- renderPlotly(
         plot_exposures(
-          result = v$data, 
+          result = vals$data, 
           plot_type = options[[1]], 
           proportional = options[[2]],
           group_by = options[[3]],
@@ -584,7 +593,7 @@ server <- function(input, output) {
       )
       output$expplot_plot <- renderPlot(
         plot_exposures(
-          result = v$data, 
+          result = vals$data, 
           plot_type = options[[1]], 
           proportional = options[[2]],
           group_by = options[[3]],
