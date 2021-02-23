@@ -7,6 +7,19 @@ source("server_tables.R", local = T)
 
 ###################### Zainab's Code ##########################################
 server <- function(input, output) {
+  # Create dynamic table
+  vals <- reactiveValues(
+    var = NULL,
+    genome = NULL,
+    musica_contents = NULL,
+    musica_upload = NULL,
+    result_objects = list(),
+    vals_annotatios = NULL,
+    data = NULL,
+    point_ind = 0,
+    annot = NULL
+  )
+  
   #observeEvent(input$get_musica, {
    # maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
   #})
@@ -69,10 +82,9 @@ server <- function(input, output) {
     stand_indels <- input$stand_indels
     return(stand_indels)
   })
-
-  })
   
   observeEvent(input$get_musica_object,{
+    vals$genome <- genome()
     vals$musica_contents <- create_musica(x = vals$var, genome = genome(),check_ref_chromosomes = check_chr(),check_ref_bases = check_bases(),
                             convert_dbs = convert_dbs(),standardize_indels = stand_indels())
     
@@ -139,15 +151,8 @@ server <- function(input, output) {
     
     
 ###################### Nathan's Code ##########################################
-  # Create dynamic table
-  vals <- reactiveValues(
-    musica = NULL,
-    result_objects = list(),
-    vals_annotatios = NULL,
-    data = NULL,
-    point_ind = 0,
-    annot = NULL
-  ) 
+  
+  #Changed all vals$musica to vals$musica_contents
   
   # rep_range needed for SBS192 replication strand
   data(rep_range)
@@ -159,21 +164,49 @@ server <- function(input, output) {
                       "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
                       "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs)
   
+  # output$DiscoverTable <- renderUI({
+  #   tagList(
+  #     selectInput("SelectDiscoverTable", h3("Select Count Table"),
+  #                 choices = names(
+  #                   extract_count_tables(
+  #                     vals$musica)))
+  #   )
+  # })
+  
   output$DiscoverTable <- renderUI({
     tagList(
       selectInput("SelectDiscoverTable", h3("Select Count Table"),
                   choices = names(
                     extract_count_tables(
-                      vals$musica)))
+                      vals$musica_contents)))
     )
   })
+  
+  # observeEvent(input$AddTable, {
+  #   table_name = input$SelectTable
+  #   if (table_name == "SBS192") {
+  #     table_name = input$StrandType
+  #   }
+  #   if(table_name %in% names(extract_count_tables(vals$musica))) {
+  #     showModal(modalDialog(
+  #       title = "Existing Table.",
+  #       "Do you want to overwrite the existing table?",
+  #       easyClose = TRUE,
+  #       footer = list(
+  #         actionButton("confirmOverwrite", "OK"),
+  #         modalButton("Cancel"))
+  #       ))
+  #   } else{
+  #     add_tables(input, vals)
+  #   }
+  # })
   
   observeEvent(input$AddTable, {
     table_name = input$SelectTable
     if (table_name == "SBS192") {
       table_name = input$StrandType
     }
-    if(table_name %in% names(extract_count_tables(vals$musica))) {
+    if(table_name %in% names(extract_count_tables(vals$musica_contents))) {
       showModal(modalDialog(
         title = "Existing Table.",
         "Do you want to overwrite the existing table?",
@@ -181,25 +214,42 @@ server <- function(input, output) {
         footer = list(
           actionButton("confirmOverwrite", "OK"),
           modalButton("Cancel"))
-        ))
+      ))
     } else{
       add_tables(input, vals)
     }
   })
   
+  # observeEvent(input$DiscoverSignatures, {
+  #   vals$result_objects[[input$MusicaResultName]] <- discover_signatures(
+  #     vals$musica, table_name = input$SelectDiscoverTable,
+  #     num_signatures = as.numeric(input$NumberOfSignatures),
+  #     method = input$Method,
+  #     #seed = input$Seed,
+  #     nstart = as.numeric(input$nStart))
+  # })
+  
+  #The latest argument for method in discover_signatures() is "algorithm"
   observeEvent(input$DiscoverSignatures, {
     vals$result_objects[[input$MusicaResultName]] <- discover_signatures(
-      vals$musica, table_name = input$SelectDiscoverTable,
+      vals$musica_contents, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
-      method = input$Method,
+      algorithm = input$Method,
       #seed = input$Seed,
       nstart = as.numeric(input$nStart))
   })
   
+  # output$PredictTable <- renderUI({
+  #   tagList(
+  #     selectInput("SelectPredTable", "Select Counts Table",
+  #                 choices = names(tables(vals$musica)))
+  #   )
+  # })
+  
   output$PredictTable <- renderUI({
     tagList(
       selectInput("SelectPredTable", "Select Counts Table",
-                  choices = names(tables(vals$musica)))
+                  choices = names(tables(vals$musica_contents)))
     )
   })
   
@@ -254,18 +304,18 @@ server <- function(input, output) {
                      signatures_to_use = as.numeric(sigs))
   })
   
-  observeEvent(input$Compare, {
-    tryCatch( {
-     output$ComparePlot <- renderPlot({comparisons <- 
-       compare_results(vals$result_objects,
-                    vals$pred_res,
-                    threshold = input$Threshold)})
-     }, error = function(cond) {
-       shinyalert::shinyalert(title = "Error", text = cond$message)
-       return()
-     }
-    )
-  })
+  # observeEvent(input$Compare, {
+  #   tryCatch( {
+  #    output$ComparePlot <- renderPlot({comparisons <- 
+  #      compare_results(vals$result_objects,
+  #                   vals$pred_res,
+  #                   threshold = input$Threshold)})
+  #    }, error = function(cond) {
+  #      shinyalert::shinyalert(title = "Error", text = cond$message)
+  #      return()
+  #    }
+  #   )
+  # })
   
   # output$CosmicSignatures <- renderUI({
   #   sigsDBS <- toString(ncol(signatures(cosmic_v3_dbs_sigs)))
@@ -311,7 +361,7 @@ server <- function(input, output) {
   
   #Add Annotations to Musica object
   observeEvent(input$AddAnnotation, {
-    if (!is.null(vals$musica)) {
+    if (!is.null(vals$musica_contents)) {
       tryCatch( {
       sapply(names(vals$annotations), FUN = function(a) {
           samp_annot(vals$musica, a) <- vals$annotations[[a]]
@@ -383,7 +433,7 @@ server <- function(input, output) {
   })
   
   observeEvent(input$select_button, {
-    vals$data <- input$selected_res
+    vals$data <- vals$result_objects[[input$selected_res]]
   })
   
   observeEvent(input$get_res,{
