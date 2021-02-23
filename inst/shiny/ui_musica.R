@@ -1,15 +1,16 @@
 shinyPanelMusica <- fluidPage(
   fluidRow(
+    uiOutput("genome_list"),
+    textOutput("genome_select"),
     column(width = 12,
-            h3("Step 3: Create Musica Object"),
-           actionButton("get_musica_object", "Get Musica Object")
+           h3("Step 3: Create Musica Object"),
+           checkboxInput("ref_chr", "Check Reference Chromosomes", TRUE),
+           checkboxInput("ref_bases", "Check Reference Bases", TRUE),
+           checkboxInput("convert_dbs", "Convert DBS", TRUE),
+           checkboxInput("stand_indels", "Standardize Indels", TRUE),
+           actionButton("get_musica_object", "Get Musica Object"),
+           helpText("Please find your uploaded object summary on the Import tab.")
     )),
     
-    wellPanel(id = "musica_data",
-            h3("Musica Object Summary"),
-            fileInput("musica_file", "Upload Musica Object:",
-                      multiple = TRUE,
-                      accept = ".rda"),
-            downloadButton("download_musica", "Download Musica Variants"),
-            tableOutput("musica_contents"))
+    
 )

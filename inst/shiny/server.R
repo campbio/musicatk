@@ -7,13 +7,27 @@ source("server_tables.R", local = T)
 
 ###################### Zainab's Code ##########################################
 server <- function(input, output) {
-  observeEvent(input$get_musica, {
-    maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
+  #observeEvent(input$get_musica, {
+   # maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
+  #})
+  
+  #observeEvent(input$MusicaResults,{
+   # data(res_annot)
+ # })
+  # variants <- eventReactive(input$import,{
+  #   req(input$file)
+  #   file_name <- input$file$datapath
+  #   var <- extract_variants(c(file_name))
+  #   removeUI(selector = "div#file_id")
+  #   return(var)
+  # })
+  observeEvent(input$import,{
+    req(input$file)
+    file_name <- input$file$datapath
+    vals$var <- extract_variants(c(file_name))
+    removeUI(selector = "div#file_id")
   })
   
-  # observeEvent(input$MusicaResults,{
-  #   data(res_annot)
-  # })
   
   variants <- reactive({
     req(input$file)
@@ -26,10 +40,10 @@ server <- function(input, output) {
     g <-strsplit(g,",")
     gg <- gsub("^.*?\\.","", g)
     selectInput("GenomeSelect", "Step 2: Choose genome:",
-                list( "Common genomes" = gg, 
+                list( "Common genomes" = list("hg18","hg19","hg38","mm9","mm10"),
+                "Genomes" = gg), 
                       width ='100%')
-    )
-  })
+    })
   genome <- reactive({
     gen <- input$GenomeSelect
     gen <- select_genome(gen)
@@ -38,23 +52,77 @@ server <- function(input, output) {
   output$genome_select <- renderText({
     paste("Genome selected:", input$GenomeSelect)
   })
-  musica_contents <- eventReactive(input$get_result_object,{
-    musica <- create_musica(x = variants(), genome = genome())
-    return(musica)
+  
+  check_chr <- reactive({ 
+    chr <- input$ref_chr
+    return(chr)
+  })
+  check_bases <- reactive({
+    bases <- input$ref_bases
+    return(bases)
+  })
+   convert_dbs <- reactive({
+    conv_dbs <- input$convert_dbs
+    return(conv_dbs)
+  })
+  stand_indels <- reactive({
+    stand_indels <- input$stand_indels
+    return(stand_indels)
+  })
+
+  })
+  
+  observeEvent(input$get_musica_object,{
+    vals$musica_contents <- create_musica(x = vals$var, genome = genome(),check_ref_chromosomes = check_chr(),check_ref_bases = check_bases(),
+                            convert_dbs = convert_dbs(),standardize_indels = stand_indels())
+    
   })
   
   
-  output$musica_contents <- renderTable({
-    return(head(musica_contents()@variants))
+  
+  output$musica_contents <- renderDataTable({
+    req(vals$musica_contents)
+    return(head(vals$musica_contents@variants))
     shinyjs::show(id="musica_contents")
     js$enableTabs()
   })
+  
+  output$musica_contents_summary <- renderText({
+    req(vals$musica_contents)
+    vt <- unique(vals$musica_contents@variants$Variant_Type) #variant types
+    nvt<- table(vals$musica_contents@variants$Variant_Type)
+    ns <- length(vals$musica_contents@variants$sample) #sample length
+    mylist <- c("No. of Samples:\n",ns,"\n","Variant types",vt,"\n",nvt)
+    return(mylist)
+    shinyjs::show(id="musica_contents_summary")
+    js$enableTabs();
+  })
+  
+  observeEvent(input$reset, {
+    removeUI("#musica_contents")
+    removeUI("#musica_contents_summary")
+  })
+  
+  observeEvent(input$musica_file,{
+    req(input$musica_file)
+    vals$musica_upload <- load(input$musica_file$datapath,.GlobalEnv)
+    print(input$musica_file$datapath)
+    
+  })
+  
+  output$musica_upload <- renderTable({
+    req(vals$musica_upload)
+    return(head(vals$musica_upload@musica@variants))
+    shinyjs::show(id="musica_upload")
+    js$enableTabs();
+  },striped = TRUE)
+  
   output$download_musica <- downloadHandler(
     filename = function() {
       paste("musica_variants", ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(musica_contents()@variants, file, row.names = FALSE)
+      write.csv(vals$musica_contents@variants, file, row.names = FALSE)
     }
   )  
 
