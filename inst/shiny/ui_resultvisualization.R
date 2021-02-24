@@ -1,5 +1,4 @@
 musicaresultvisualization <- fluidPage(
-  uiOutput(outputId = "select_res"),
   h2("Visualize Signatures & Exposures"),
   actionButton(inputId = "get_res", label = "Get Results"),
   fluidRow(
@@ -9,6 +8,7 @@ musicaresultvisualization <- fluidPage(
       tabPanel(
         title = "Signatures",
         h3("Settings"),
+        uiOutput(outputId = "select_res1"),
         checkboxInput(inputId = "rename", label = "Rename Signatures", value = FALSE),
         tags$div(id = "signame"),
         numericInput(inputId = "textsize1", label = "Text Size", value = 10),
@@ -24,6 +24,7 @@ musicaresultvisualization <- fluidPage(
                fluidRow(
                  box(
                    h3("General Settings"),
+                   uiOutput(outputId = "select_res2"),
                    radioButtons(
                      inputId = "plottype",
                      label = "Plot Type",

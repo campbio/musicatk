@@ -509,28 +509,36 @@ parseDeleteEvent <- function(idstr) {
 ###############################################################################
  
 ##################Visualization#################   
-  output$select_res <- renderUI({
+  output$select_res1 <- renderUI({
     tagList(
-      h2("Select One Result Object"),
       selectInput(
-        inputId = "selected_res",
-        label = NULL,
+        inputId = "selected_res1",
+        label = "Select Result",
         choices = c(names(vals$result_objects))
-      ),
-      actionButton(inputId = "select_button", label = "Select")
+      )
     )
   })
   
-  observeEvent(input$select_button, {
-    vals$data <- vals$result_objects[[input$selected_res]]
+  output$select_res2 <- renderUI({
+    tagList(
+      selectInput(
+        inputId = "selected_res2",
+        label = "Select Result",
+        choices = c(names(vals$result_objects))
+      )
+    )
   })
+  
+  # observeEvent(input$select_button, {
+  #   vals$data <- vals$result_objects[[input$selected_res]]
+  # })
   
   observeEvent(input$get_res,{
     vals$data <- res_annot
   })
   
   observeEvent(input$rename,{
-    n <- ncol(vals$data@signatures)
+    n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     for(i in 1:n){
       id <- paste0("sig", i)
       if(input$rename){
@@ -546,13 +554,13 @@ parseDeleteEvent <- function(idstr) {
   }, ignoreInit = TRUE)
   
   get_sig_option <- function(input){
-    n <- ncol(vals$data@signatures)
+    n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     if(input$rename){
       ids <- vector()
       for(i in 1:n){
         ids <- c(ids, input[[paste0("sig", i)]])
       }
-      name_signatures(result = vals$data, ids)
+      name_signatures(result = vals$result_objects[[input$selected_res1]], ids)
     }
     legend <- input$legend1
     text_size <- input$textsize1
@@ -574,7 +582,7 @@ parseDeleteEvent <- function(idstr) {
       )
       output$sigplot_plotly <- renderPlotly(
         plot_signatures(
-          result = vals$data, 
+          result = vals$result_objects[[input$selected_res1]], 
           legend = options[[1]],
           plotly = options[[6]],
           text_size = options[[2]],
@@ -592,7 +600,7 @@ parseDeleteEvent <- function(idstr) {
       )
       output$sigplot_plot <- renderPlot(
         plot_signatures(
-          result = vals$data, 
+          result = vals$result_objects[[input$selected_res1]], 
           legend = options[[1]],
           plotly = options[[6]],
           text_size = options[[2]],
@@ -651,8 +659,8 @@ parseDeleteEvent <- function(idstr) {
   
   observeEvent(input$group1,{
     if(input$group1 == "annotation" & input$color != "annotation"){
-      vals$annot <- as.list(colnames(samp_annot(vals$data))[-1])
-      names(vals$annot) <- colnames(samp_annot(vals$data))[-1]
+      vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1])
+      names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1]
       insertUI(
         selector = "#insertannot",
         ui = selectInput(
@@ -699,7 +707,7 @@ parseDeleteEvent <- function(idstr) {
             orientation = "horizontal",
             add_rank_list(
               text = "Available Signatures:",
-              labels = as.list(colnames(vals$data@signatures)),
+              labels = as.list(colnames(vals$result_objects[[input$selected_res2]]@signatures)),
               input_id = "sig_from"
             ),
             add_rank_list(
@@ -774,7 +782,7 @@ parseDeleteEvent <- function(idstr) {
       )
       output$expplot_plotly <- renderPlotly(
         plot_exposures(
-          result = vals$data, 
+          result = vals$result_objects[[input$selected_res2]], 
           plot_type = options[[1]], 
           proportional = options[[2]],
           group_by = options[[3]],
@@ -800,7 +808,7 @@ parseDeleteEvent <- function(idstr) {
       )
       output$expplot_plot <- renderPlot(
         plot_exposures(
-          result = vals$data, 
+          result = vals$result_objects[[input$selected_res2]], 
           plot_type = options[[1]], 
           proportional = options[[2]],
           group_by = options[[3]],
