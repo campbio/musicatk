@@ -5,7 +5,7 @@ source("ui_import.R",local = T)
 source("ui_import_musica.R",local = T)
 #source("ui_genome.R", local = T)
 source("ui_musica.R",local = T)
-source("ui_test.R",local = T)
+#source("ui_test.R",local = T)
 source("ui_discover.R", local = T)
 source("ui_tables.R", local = T)
 source("ui_resultvisualization.R", local = T)
@@ -31,7 +31,7 @@ ui <- fluidPage(
                menuSubItem("Predict Signature Exposures", "predict"),
                menuSubItem("Compare Signatures", "compare")),
       menuItem("Data Visualization", tabName = "visualization", icon = icon("th")),
-      menuItem("Test", tabName = "test", icon = icon("th")),
+      #menuItem("Test", tabName = "test", icon = icon("th")),
       menuItem("Help", tabName = "widgets", icon = icon("th")))),
     
     dashboardBody(
@@ -40,7 +40,7 @@ ui <- fluidPage(
           tabItem(tabName = "musica_result",shinyPanelResult),
           #tabItem(tabName = "genome",  shinyPanelGenome),
           tabItem(tabName = "musica", shinyPanelMusica),
-          tabItem(tabName = "test", shinyPaneltest),
+          #tabItem(tabName = "test", shinyPaneltest),
         
 ###################### Nathan's Code ##########################################
           tabItem(tabName = "tables", h2("Create Tables"), shinyPanelTables),
