@@ -288,49 +288,21 @@ parseDeleteEvent <- function(idstr) {
                       "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
                       "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs)
   
-  # output$DiscoverTable <- renderUI({
-  #   tagList(
-  #     selectInput("SelectDiscoverTable", h3("Select Count Table"),
-  #                 choices = names(
-  #                   extract_count_tables(
-  #                     vals$musica)))
-  #   )
-  # })
-  
   output$DiscoverTable <- renderUI({
     tagList(
       selectInput("SelectDiscoverTable", h3("Select Count Table"),
                   choices = names(
                     extract_count_tables(
-                      vals$musica_contents)))
+                      vals$musica)))
     )
   })
-  
-  # observeEvent(input$AddTable, {
-  #   table_name = input$SelectTable
-  #   if (table_name == "SBS192") {
-  #     table_name = input$StrandType
-  #   }
-  #   if(table_name %in% names(extract_count_tables(vals$musica))) {
-  #     showModal(modalDialog(
-  #       title = "Existing Table.",
-  #       "Do you want to overwrite the existing table?",
-  #       easyClose = TRUE,
-  #       footer = list(
-  #         actionButton("confirmOverwrite", "OK"),
-  #         modalButton("Cancel"))
-  #       ))
-  #   } else{
-  #     add_tables(input, vals)
-  #   }
-  # })
   
   observeEvent(input$AddTable, {
     table_name = input$SelectTable
     if (table_name == "SBS192") {
       table_name = input$StrandType
     }
-    if(table_name %in% names(extract_count_tables(vals$musica_contents))) {
+    if(table_name %in% names(extract_count_tables(vals$musica))) {
       showModal(modalDialog(
         title = "Existing Table.",
         "Do you want to overwrite the existing table?",
@@ -338,7 +310,7 @@ parseDeleteEvent <- function(idstr) {
         footer = list(
           actionButton("confirmOverwrite", "OK"),
           modalButton("Cancel"))
-      ))
+        ))
     } else{
       add_tables(input, vals)
     }
@@ -356,24 +328,17 @@ parseDeleteEvent <- function(idstr) {
   #The latest argument for method in discover_signatures() is "algorithm"
   observeEvent(input$DiscoverSignatures, {
     vals$result_objects[[input$MusicaResultName]] <- discover_signatures(
-      vals$musica_contents, table_name = input$SelectDiscoverTable,
+      vals$musica, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
       algorithm = input$Method,
       #seed = input$Seed,
       nstart = as.numeric(input$nStart))
   })
   
-  # output$PredictTable <- renderUI({
-  #   tagList(
-  #     selectInput("SelectPredTable", "Select Counts Table",
-  #                 choices = names(tables(vals$musica)))
-  #   )
-  # })
-  
   output$PredictTable <- renderUI({
     tagList(
       selectInput("SelectPredTable", "Select Counts Table",
-                  choices = names(tables(vals$musica_contents)))
+                  choices = names(tables(vals$musica)))
     )
   })
   
@@ -485,7 +450,7 @@ parseDeleteEvent <- function(idstr) {
   
   #Add Annotations to Musica object
   observeEvent(input$AddAnnotation, {
-    if (!is.null(vals$musica_contents)) {
+    if (!is.null(vals$musica)) {
       tryCatch( {
       sapply(names(vals$annotations), FUN = function(a) {
           samp_annot(vals$musica, a) <- vals$annotations[[a]]
