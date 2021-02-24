@@ -8,28 +8,21 @@ shinyPanelImport <- fluidPage(
           fileInput("file", "File:",
                   multiple = TRUE,
                   accept = c(".maf",".vcf")),
+          actionButton("upload", "Upload"),
           h3("Samples"),
-          #dataTableOutput("deletable"),
-          tags$div(id = "file_id",dataTableOutput("my_file_name"),style =  "font-size:40%"),
+          #tags$div(id = "file_id",dataTableOutput("my_file_name"),style =  "font-size:40%"),
+          uiOutput('undoUI'),
+          tags$div(id = "file_id",DT::dataTableOutput("dtable")),
+          
+          hr(),
           actionButton("import", "Import"),
           uiOutput("spinner"),
+          
+          
+          downloadButton("download_musica", "Download Musica Variants"),
+          actionButton(inputId = "reset", label = "Clear Musica Summary"),
+          div(textOutput("musica_contents_summary")),
           hr(),
-          
-          wellPanel(id = "musica_data",
-                    #h1("Musica Object Summary"),
-                    fileInput("musica_file", "Upload Musica Object:",
-                              multiple = TRUE,
-                              accept = c(".rda","rds")),
-                    hr(),
-                    downloadButton("download_musica", "Download Musica Variants"),
-                    actionButton(inputId = "reset", label = "Clear Musica Summary"),
-                    div(textOutput("musica_contents_summary"))),
-                    hr(),
-                    div(dataTableOutput("musica_contents")),
-                    div(tableOutput("musica_upload"))
-          
-          #actionButton("get_musica", "Get Musica Data"),
-          #actionButton("MusicaResults","Get Musica Result Object")
-          
-        
+          div(dataTableOutput("musica_contents"))
 )
+          
