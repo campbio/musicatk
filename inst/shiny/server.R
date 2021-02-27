@@ -71,9 +71,10 @@ server <- function(input, output) {
 ###################### Nathan's Code ##########################################
   # Create dynamic table
   vals <- reactiveValues(
-    musica = NULL,
+    musica = musica,
     result_objects = list(),
-    vals_annotatios = NULL
+    annotations = NULL,
+    comparison = NULL
   ) 
   
   # rep_range needed for SBS192 replication strand
@@ -90,9 +91,17 @@ server <- function(input, output) {
     tagList(
       selectInput("SelectDiscoverTable", h3("Select Count Table"),
                   choices = names(
-                    extract_count_tables(
-                      vals$musica)))
+                    extract_count_tables(vals$musica)))
     )
+  })
+  
+  output$AllowTable <- renderUI({
+    if (!is.null(vals$musica)) {
+      actionButton("AddTable", h3("Add Table"))
+    } else {
+      helpText("You must first create or upload a musica object to generate
+               count tables.")
+    }
   })
   
   observeEvent(input$AddTable, {
@@ -111,16 +120,55 @@ server <- function(input, output) {
         ))
     } else{
       add_tables(input, vals)
+      showNotification("Table creation was successful.")
     }
   })
   
   observeEvent(input$DiscoverSignatures, {
+    if (input$MusicaResultName == "" |
+        input$NumberOfSignatures == "" |
+        input$nStart == "") {
+      output$DiscoverWarning <- renderText({
+        validate(
+          need(input$MusicaResultName != "",
+               'You must provide a name for the new result object.'),
+          need(input$NumberOfSignatures != "",
+               'You must specify the number of expected signatures.'),
+          need(input$nStart != "",
+               "Please specify the number of random starts.")
+        )
+      })
+      return ()
+    }
+    if(input$MusicaResultName %in% names(vals$result_objects)) {
+      showModal(modalDialog(
+        title = "Existing Result Object.",
+        "Do you want to overwrite the existing result object?",
+        easyClose = TRUE,
+        footer = list(
+          actionButton("confirmResultOverwrite", "OK"),
+          modalButton("Cancel"))
+      ))
+    } else {
+      getResult(input, vals)
+      showNotification(paste0("Musica Result object, ", input$MusicaResultName,
+                            ", was successfully generated"))
+    }
+  })
+  
+  getResult <- function(input, vals) {
     vals$result_objects[[input$MusicaResultName]] <- discover_signatures(
       vals$musica, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
       method = input$Method,
       #seed = input$Seed,
       nstart = as.numeric(input$nStart))
+  }
+  
+  observeEvent(input$confirmResultOverwrite, {
+    removeModal()
+    getResult(input, vals)
+    showNotification("Existing result object overwritten.")
   })
   
   output$PredictTable <- renderUI({
@@ -172,26 +220,26 @@ server <- function(input, output) {
       sigs <- input$CosmicINDELSigs
       res <- cosmic_v3_indel_sigs
     }
-    
+    if (input$PredictResultName == "" | is.null(sigs)) {
+      output$PredictWarning <- renderText({
+        validate(
+          need(input$PredictResultName != "",
+               'You must provide a name for the new result object.'),
+          need(!is.null(sigs), 
+               'Please select signatures to predict.')
+        )
+      })
+      return ()
+    }
+    browser()
     vals$result_objects[[input$PredictResultName]] <-
       predict_exposure(vals$musica, g = genome, 
                      table_name = input$SelectPredTable,
                      signature_res = res,
                      algorithm = input$PredictAlgorithm,
                      signatures_to_use = as.numeric(sigs))
-  })
-  
-  observeEvent(input$Compare, {
-    tryCatch( {
-     output$ComparePlot <- renderPlot({comparisons <- 
-       compare_results(vals$result_objects,
-                    vals$pred_res,
-                    threshold = input$Threshold)})
-     }, error = function(cond) {
-       shinyalert::shinyalert(title = "Error", text = cond$message)
-       return()
-     }
-    )
+    showNotification(paste0("New result object, ", input$PredictResultName,
+                            "was created."))
   })
   
   # output$CosmicSignatures <- renderUI({
@@ -210,6 +258,7 @@ server <- function(input, output) {
   observeEvent(input$confirmOverwrite, {
     removeModal()
     add_tables(input, vals)
+    showNotification("Existing table overwritten.")
   })
 
   # Initially hidden additional required option for SBS192 and Custom
@@ -275,25 +324,51 @@ server <- function(input, output) {
                               names(vals$result_objects)))
     )
   })
-  
+
+  # observeEvent(input$CompareResults, {
+  #   output$warning <- renderText({
+  #     validate(
+  #       need(input$SelectResultA != "", 
+  #            'Please select a result object to compare')
+  #     )
+  #   })
+  #   if(input$SelectResultB %in% names(cosmic_objects)) {
+  #     other <- cosmic_objects[[input$SelectResultB]]
+  #   } else {
+  #     other <- vals$result_objects[[input$SelectResultB]]
+  #   }
+  #   vals$ComparisonTable <- compare_results(vals$result_objects[[input$SelectResultA]],
+  #                   other,
+  #                   threshold = input$Threshold,
+  #                   metric = input$CompareMetric,
+  #                   result_name = paste(input$CompareResultA, "Signatures"),
+  #                   other_result_name = 
+  #                     paste(input$CompareResultB, "Signatures"))
+  # 
+  #   })
   observeEvent(input$CompareResults, {
-    validate(
-      need(input$SelectResultA != "", 
-           'Please select a result object to compare')
-    )
     if(input$SelectResultB %in% names(cosmic_objects)) {
       other <- cosmic_objects[[input$SelectResultB]]
     } else {
       other <- vals$result_objects[[input$SelectResultB]]
     }
-    compare_results(vals$result_objects[[input$SelectResultA]],
-                    other,
-                    threshold = input$Threshold,
-                    metric = input$CompareMetric,
-                    result_name = paste(input$CompareResultA, "Signatures"),
-                    other_result_name = 
-                      paste(input$CompareResultB, "Signatures"))
+    output$ComparePlot <- renderPlot({
+      #vals$comparisonTable <-
+        compare_results(vals$result_objects[[input$SelectResultA]],
+                                              other, threshold = input$Threshold,
+                                              result_name = paste(input$CompareResultA, "Signatures"),
+                                              other_result_name =
+                                                paste(input$CompareResultB, "Signatures"))
+    })
+    # output$CompareTable <- renderTable({
+    #   vals$comparisonTable <- compare_results(vals$result_objects[[input$SelectResultA]],
+    #                   other, threshold = input$Threshold,
+    #                   result_name = paste(input$CompareResultA, "Signatures"),
+    #                   other_result_name =
+    #                     paste(input$CompareResultB, "Signatures"))
+    # })
   })
+
 ###############################################################################
   
 }

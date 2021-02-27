@@ -29,6 +29,7 @@ shinyPanelPredict <- fluidPage(
                                 "decompTumor2Sig",
                                 "deconstructSigs")),
     textInput("PredictResultName", h3("Name for musica result object")),
+    textOutput("PredictWarning"),
     # textInput("ChooseCosmicSignatures", 
     #           label = "Choose specific signatures (comma separated), or leave the field empty to select all signatures."),
     actionButton("PredictCosmic", "Predict Signature Exposures"),

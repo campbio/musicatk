@@ -1,5 +1,5 @@
 shinyPanelCompare <- fluidPage(
-  box( 
+  box( width = 12,
     uiOutput("CompareResultA"),
     uiOutput("CompareResultB"),
     # textInput("Threshold", "Threshold", value = "0.9"),
@@ -7,7 +7,10 @@ shinyPanelCompare <- fluidPage(
     radioButtons("CompareMetric", h2("Similarity Metric"), 
                  choices = c("Cosine" = "cosine", 
                              "Jensen-Shannon Divergence (jsd)" = "jsd")),
-    actionButton("CompareResults", "CompareResults")
-    # plotOutput("ComparePlot")
+    actionButton("CompareResults", "CompareResults"),
+    #uiOutput("ComparisonTable")
+    # uiOutput("warning"),
+    #plotOutput("ComparePlot")
+    uiOutput("CompareTable")
   )
 )
