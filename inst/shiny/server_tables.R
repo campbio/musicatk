@@ -1,19 +1,13 @@
 add_tables <- function (input, vals) { 
-  strand_type <- input$StrandType
-  # Check it table already exists
   if (input$SelectTable != "Custom") {
     # Check inputs for SBS192
-    if (input$SelectTable == "SBS192") {
-      if (strand_type == "") {
-        shinyalert::shinyalert(title = "Oops", 
-                               text = "You must select strand type for table SBS192.")
-      } else if (strand_type == "Transcript_Strand") {
+    if (input$SelectTable == "SBS192 - Transcript_Strand") {
         annotate_transcript_strand(vals$musica, "19", build_table = T)
         return()
-      } else {
+    }
+    if (input$SelectTable == "SBS192 - Replication_Strand") {
         annotate_replication_strand(vals$musica, rep_range, build_table = T)
         return()
-      }
     }
     tryCatch( {
       build_standard_table(vals$musica, genome,

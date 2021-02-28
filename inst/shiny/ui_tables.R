@@ -2,14 +2,9 @@ shinyPanelTables <- fluidPage(
   box(
     # uiOutput("TableMusicaList"),
     selectInput("SelectTable", h3("Select Count Table"),
-                choices = list("SBS96", "SBS192",
-                               "DBS", "Indel",
-                               "Custom"),
+                choices = list("SBS96", "SBS192 - Transcript_Strand", 
+                "SBS192 - Replication_Strand", "DBS", "Indel"),
                 selected = 1),
-    hidden(selectInput("StrandType", h3("Strand Type"), 
-                  choices = list("", "Transcript_Strand", "Replication_Strand"),
-                  selected = NULL)),
-    hidden(fileInput("GRangeFile", h3("Upload GRanges Object"))),
     uiOutput("AllowTable")
     )
 )

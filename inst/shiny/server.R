@@ -1,6 +1,5 @@
 library(musicatk)
 
-
 options(shiny.maxRequestSize = 100*1024^2)
 source("server_tables.R", local = T)
 
@@ -97,7 +96,7 @@ server <- function(input, output) {
   
   output$AllowTable <- renderUI({
     if (!is.null(vals$musica)) {
-      actionButton("AddTable", h3("Add Table"))
+      actionButton("AddTable", h3("Create Table"))
     } else {
       helpText("You must first create or upload a musica object to generate
                count tables.")
@@ -105,11 +104,7 @@ server <- function(input, output) {
   })
   
   observeEvent(input$AddTable, {
-    table_name = input$SelectTable
-    if (table_name == "SBS192") {
-      table_name = input$StrandType
-    }
-    if(table_name %in% names(extract_count_tables(vals$musica))) {
+    if(input$SelectTable %in% names(extract_count_tables(vals$musica))) {
       showModal(modalDialog(
         title = "Existing Table.",
         "Do you want to overwrite the existing table?",
@@ -120,7 +115,7 @@ server <- function(input, output) {
         ))
     } else{
       add_tables(input, vals)
-      showNotification("Table creation was successful.")
+      showNotification("Table created.")
     }
   })
   
@@ -261,21 +256,6 @@ server <- function(input, output) {
     showNotification("Existing table overwritten.")
   })
 
-  # Initially hidden additional required option for SBS192 and Custom
-  # table creation
-  observeEvent(input$SelectTable, {
-    if (input$SelectTable == "SBS192") {
-      show(id = "StrandType")
-      hide(id = "GetTableName")
-    } else if (input$SelectTable == 5) {
-      hide(id = "StrandType")
-      show(id = "GetTableName")
-    } else {
-      hide(id = "GetTableName")
-      hide(id = "StrandType")
-    }
-  })
-
   output$annotations <- renderTable({
     file <- input$AnnotationsFile
     ext <- tools::file_ext(file$datapath)
@@ -325,41 +305,39 @@ server <- function(input, output) {
     )
   })
 
-  # observeEvent(input$CompareResults, {
-  #   output$warning <- renderText({
-  #     validate(
-  #       need(input$SelectResultA != "", 
-  #            'Please select a result object to compare')
-  #     )
-  #   })
-  #   if(input$SelectResultB %in% names(cosmic_objects)) {
-  #     other <- cosmic_objects[[input$SelectResultB]]
-  #   } else {
-  #     other <- vals$result_objects[[input$SelectResultB]]
-  #   }
-  #   vals$ComparisonTable <- compare_results(vals$result_objects[[input$SelectResultA]],
-  #                   other,
-  #                   threshold = input$Threshold,
-  #                   metric = input$CompareMetric,
-  #                   result_name = paste(input$CompareResultA, "Signatures"),
-  #                   other_result_name = 
-  #                     paste(input$CompareResultB, "Signatures"))
-  # 
-  #   })
   observeEvent(input$CompareResults, {
+    if (is.null(input$SelectResultA) | input$SelectResultA == "" | 
+        input$Threshold == "") {
+      browser()
+      output$CompareValidate <- renderText({
+        validate(
+          need(input$SelectResultA != "",
+               'Please select a result object to compare.'),
+          need(input$Threshold == "",
+               'Please provide a similarity threshold from 0 to 1.')
+        )
+      })
+      return()
+    }
     if(input$SelectResultB %in% names(cosmic_objects)) {
       other <- cosmic_objects[[input$SelectResultB]]
     } else {
-      other <- vals$result_objects[[input$SelectResultB]]
+      other <- isolate(vals$result_objects[[input$SelectResultB]])
     }
+    tryCatch( {
     output$ComparePlot <- renderPlot({
-      #vals$comparisonTable <-
-        compare_results(vals$result_objects[[input$SelectResultA]],
-                                              other, threshold = input$Threshold,
-                                              result_name = paste(input$CompareResultA, "Signatures"),
-                                              other_result_name =
-                                                paste(input$CompareResultB, "Signatures"))
+    #vals$comparisonTable <-
+      browser()
+      compare_results(isolate(vals$result_objects[[input$SelectResultA]]),
+                                            other, threshold = input$Threshold,
+                                            result_name = paste(input$CompareResultA, "Signatures"),
+                                            other_result_name =
+                                              paste(input$CompareResultB, "Signatures"))
+  })
+    }, error = function(cond) {
+      shinyalert::shinyalert(title = "Error", text = cond$message)
     })
+  
     # output$CompareTable <- renderTable({
     #   vals$comparisonTable <- compare_results(vals$result_objects[[input$SelectResultA]],
     #                   other, threshold = input$Threshold,
