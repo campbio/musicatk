@@ -10,7 +10,8 @@ shinyPanelCompare <- fluidPage(
     uiOutput("CompareValidate"),
     actionButton("CompareResults", "CompareResults"),
     #uiOutput("ComparisonTable")
-    plotOutput("ComparePlot")
-    #uiOutput("CompareTable")
+    shinybusy::use_busy_spinner(spin = "fading-circle"),
+    #plotOutput(outputId = "ComparePlot")
+    uiOutput("CompareTable")
   )
 )

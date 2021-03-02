@@ -25,7 +25,7 @@ shinyPanelPredict <- fluidPage(
                                              "13", "14", "15"))),                 
     uiOutput("PredictTable"),
     radioButtons("PredictAlgorithm", h3("Algorithm"),
-                 choices = list("Latent Dirichlet Allocatino (lda)" = "lda", 
+                 choices = list("Latent Dirichlet Allocation (lda)" = "lda", 
                                 "decompTumor2Sig",
                                 "deconstructSigs")),
     textInput("PredictResultName", h3("Name for musica result object")),

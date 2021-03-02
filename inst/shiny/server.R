@@ -12,13 +12,14 @@ server <- function(input, output) {
     musica = musica,
     files = list(),
     result_objects = list(),
+    cSigs = NULL, #cosmic sig
+    cRes = NULL, #cosmic result object
     vals_annotatios = NULL,
     df = NULL,
     musica_contents = NULL,
     musica_upload = NULL,
     var = NULL,
-    genome = musica,
-    musica = NULL,
+    genome = genome,
     musica_upload = NULL,
     result_objects = list(),
     vals_annotatios = NULL,
@@ -413,49 +414,58 @@ parseDeleteEvent <- function(idstr) {
   
   observeEvent(input$PredictCosmic, {
     if (input$CosmicCountTable == "SBS") {
-      sigs <- input$CosmicSBSSigs
-      res <- cosmic_v2_sigs
+      vals$cSigs <- "CosmicSBSSigs"
+      vals$cRes <- cosmic_v2_sigs
     } else if (input$CosmicCountTable == "DBS") {
-      sigs <- input$CosmicDBSSigs
-      res <- cosmic_v3_dbs_sigs
-    } else {
-      sigs <- input$CosmicINDELSigs
-      res <- cosmic_v3_indel_sigs
+      vals$cSigs <- "CosmicDBSSigs"
+      vals$cRes <- cosmic_v3_dbs_sigs
+      } else {
+      vals$cSigs <- "CosmicINDELSigs"
+      vals$cRes <- cosmic_v3_indel_sigs
     }
-    if (input$PredictResultName == "" | is.null(sigs)) {
+    if (input$PredictResultName == "" | length(input[[vals$cSigs]]) < 2) {
       output$PredictWarning <- renderText({
         validate(
           need(input$PredictResultName != "",
                'You must provide a name for the new result object.'),
-          need(!is.null(sigs), 
-               'Please select signatures to predict.')
+          need(length(c(input[[vals$cSigs]])) >= 2,
+               'You must select two or more signatures to predict.')
         )
       })
       return ()
     }
-    browser()
-    vals$result_objects[[input$PredictResultName]] <-
-      predict_exposure(vals$musica, g = genome, 
-                     table_name = input$SelectPredTable,
-                     signature_res = res,
-                     algorithm = input$PredictAlgorithm,
-                     signatures_to_use = as.numeric(sigs))
-    showNotification(paste0("New result object, ", input$PredictResultName,
-                            "was created."))
-  })
-  # output$CosmicSignatures <- renderUI({
-  #   sigsDBS <- toString(ncol(signatures(cosmic_v3_dbs_sigs)))
-  #   #sigsDBS <- 1:ncol(signatures(cosmic_v3_dbs_sigs))
-  #   browser()
-  #   tagList(
-  #     # textInput("CosmicSignatures", h3("Select Cosmic signatures to predict."),
-  #     #             value = sigs)
-  #     checkboxInput("CosmicDBSSigs", "Cosmic V3 DBS Signatures",
-  #                   value = list(sigsDBS)),
-  #     
-  #     )
-  # })
+    if(input$PredictResultName %in% names(vals$result_objects)) {
+      showModal(modalDialog(
+        title = "Existing Result Object.",
+        "Do you want to overwrite the existing result object?",
+        easyClose = TRUE,
+        footer = list(
+          actionButton("confirmPredictOverwrite", "OK"),
+          modalButton("Cancel"))
+      ))
+    } else {
+      getPredict(input, vals)
+      showNotification(paste0("Musica result object, ", input$PredictResultName,
+                              ", was created"))
+    }
 
+  })
+
+  getPredict <- function(inputs, vals) {
+    vals$result_objects[[input$PredictResultName]] <-
+      predict_exposure(vals$musica, g = vals$genome, 
+                       table_name = input$SelectPredTable,
+                       signature_res = vals$cRes,
+                       algorithm = input$PredictAlgorithm,
+                       signatures_to_use = c(as.numeric(input[[vals$cSigs]])))
+  }
+  
+  observeEvent(input$confirmPredictOverwrite, {
+    removeModal()
+    getPredict(inputs, vals)
+    showNotification("Existing result overwritten.")
+  })
+  
   observeEvent(input$confirmOverwrite, {
     removeModal()
     add_tables(input, vals)
@@ -514,7 +524,6 @@ parseDeleteEvent <- function(idstr) {
   observeEvent(input$CompareResults, {
     if (is.null(input$SelectResultA) | input$SelectResultA == "" | 
         input$Threshold == "") {
-      browser()
       output$CompareValidate <- renderText({
         validate(
           need(input$SelectResultA != "",
@@ -530,27 +539,25 @@ parseDeleteEvent <- function(idstr) {
     } else {
       other <- isolate(vals$result_objects[[input$SelectResultB]])
     }
-    tryCatch( {
-    output$ComparePlot <- renderPlot({
-    #vals$comparisonTable <-
-      browser()
-      compare_results(isolate(vals$result_objects[[input$SelectResultA]]),
-                                            other, threshold = input$Threshold,
-                                            result_name = paste(input$CompareResultA, "Signatures"),
-                                            other_result_name =
-                                              paste(input$CompareResultB, "Signatures"))
-  })
+    tryCatch({
+      print("comparing")
+      output$CompareTable <- renderTable({
+        shinybusy::show_spinner()
+        
+      table <-
+        compare_results(isolate(vals$result_objects[[input$SelectResultA]]),
+                                            other, threshold = as.numeric(input$Threshold))#,
+                                            # result_name = paste(input$CompareResultA, "Signatures"),
+                                            # other_result_name =
+                                            #   paste(input$CompareResultB, "Signatures"))
+        shinybusy::hide_spinner()
+        return(table)
+      })
     }, error = function(cond) {
-      shinyalert::shinyalert(title = "Error", text = cond$message)
+    shinybusy::hide_spinner()
+    shinyalert::shinyalert(title = "Error", text = cond$message)
     })
-  
-    # output$CompareTable <- renderTable({
-    #   vals$comparisonTable <- compare_results(vals$result_objects[[input$SelectResultA]],
-    #                   other, threshold = input$Threshold,
-    #                   result_name = paste(input$CompareResultA, "Signatures"),
-    #                   other_result_name =
-    #                     paste(input$CompareResultB, "Signatures"))
-    # })
+
   })
 
 ###############################################################################
