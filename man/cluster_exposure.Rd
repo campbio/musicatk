@@ -12,7 +12,8 @@ cluster_exposure(
   dis.method = "euclidean",
   hc.method = "ward.D",
   clara.samples = 5,
-  iter.max = 10
+  iter.max = 10,
+  tol = 1e-15
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).}
 Default is 5.}
 
 \item{iter.max}{Maximum number of iterations for k-means clustering.}
+
+\item{tol}{Tolerance level for kmeans clustering level iterations}
 }
 \value{
 A one-column data frame with sample IDs as row names and cluster number for each sample.
