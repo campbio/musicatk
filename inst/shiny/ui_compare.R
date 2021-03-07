@@ -8,10 +8,8 @@ shinyPanelCompare <- fluidPage(
                  choices = c("Cosine" = "cosine", 
                              "Jensen-Shannon Divergence (jsd)" = "jsd")),
     uiOutput("CompareValidate"),
-    actionButton("CompareResults", "CompareResults"),
-    #uiOutput("ComparisonTable")
-    shinybusy::use_busy_spinner(spin = "fading-circle"),
-    #plotOutput(outputId = "ComparePlot")
-    uiOutput("CompareTable")
+    actionButton("CompareResults", "CompareResults"), uiOutput("DownloadComparison"),
+    shinybusy::use_busy_spinner(spin = "double-bounce"),
+    dataTableOutput("CompareTable")
   )
 )

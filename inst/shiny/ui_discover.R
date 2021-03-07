@@ -1,5 +1,5 @@
 shinyPanelDiscover <- fluidPage(
-  box(
+  box(width = 12,
     # selectInput("SelectTable", h3("Select Count Table"),
     #             choices = list("SBS96" = 1, "SBS192" = 2, 
     #                            "DBS" = 3, "Indel" = 4,
@@ -15,7 +15,8 @@ shinyPanelDiscover <- fluidPage(
     textInput("nStart", h3("Number of random starts"), value = 10),
     textInput("MusicaResultName", h3("Name for musica result object")),
     textOutput("DiscoverWarning"),
-    actionButton("DiscoverSignatures", h3("Discover Signatures"))
+    actionButton("DiscoverSignatures", "Discover Signatures"),
+    shinybusy::use_busy_spinner(spin = "double-bounce")
     
   )
 )

@@ -301,6 +301,47 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  output$CombineTables <- renderUI({
+    if (length(names(tables(vals$musica))) > 1) {
+      tagList(
+        box(width = 12,
+        checkboxGroupInput("CombineTables", h3("Tables to Combine"),
+                    choices = names(tables(vals$musica))),
+        textInput("CombinedTableName", h3("Name of combined table")),
+        uiOutput("CombineWarning"),
+        actionButton("Combine", h3("Build Combined Table"))
+        )
+      )
+    }
+
+  })
+  
+  observeEvent(input$Combine, {
+    if (input$CombinedTableName == "" | length(input$CombineTables) < 2) {
+      output$CombineWarning <- renderText({
+        validate(
+          need(input$CombinedTableName != "",
+               'You must provide a name for the new result object.'),
+          need(length(input$CombineTables) < 2, 
+               'You must select two or more tables to combine.')
+        )
+      })
+      return ()
+    }
+    shinybusy::show_spinner()
+    tryCatch( {
+      combine_count_tables(vals$musica, input$CombineTables, 
+                         input$CombinedTableName)
+    }, error = function(cond) {
+      shinyalert::shinyalert(title = "Error", text = cond$message)
+      shinybuys::hide_spinner()
+      return()
+    })
+    shinybusy::hide_spinner()
+    showNotification("Table created.")
+    
+  })
+  
   output$AllowTable <- renderUI({
     if (!is.null(vals$musica)) {
       actionButton("AddTable", h3("Create Table"))
@@ -311,7 +352,14 @@ parseDeleteEvent <- function(idstr) {
   })
   
   observeEvent(input$AddTable, {
-    if(input$SelectTable %in% names(extract_count_tables(vals$musica))) {
+    tableName <- input$SelectTable
+    if(tableName == "SBS192 - Replication_Strand") {
+      tableName <- "SBS192_Rep"
+    }
+    if(tableName == "SBS192 - Transcript_Strand") {
+      tableName <- "SBS192_Trans"
+    }
+    if(tableName %in% names(tables(vals$musica))) {
       showModal(modalDialog(
         title = "Existing Table.",
         "Do you want to overwrite the existing table?",
@@ -360,12 +408,14 @@ parseDeleteEvent <- function(idstr) {
   })
   
   getResult <- function(input, vals) {
+    shinybusy::show_spinner()
     vals$result_objects[[input$MusicaResultName]] <- discover_signatures(
       vals$musica, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
       algorithm = input$Method,
       #seed = input$Seed,
       nstart = as.numeric(input$nStart))
+    shinybusy::hide_spinner()
   }
   
   observeEvent(input$confirmResultOverwrite, {
@@ -452,12 +502,14 @@ parseDeleteEvent <- function(idstr) {
   })
 
   getPredict <- function(inputs, vals) {
+    shinybusy::show_spinner()
     vals$result_objects[[input$PredictResultName]] <-
       predict_exposure(vals$musica, g = vals$genome, 
                        table_name = input$SelectPredTable,
                        signature_res = vals$cRes,
                        algorithm = input$PredictAlgorithm,
                        signatures_to_use = c(as.numeric(input[[vals$cSigs]])))
+    shinybusy::hide_spinner()
   }
   
   observeEvent(input$confirmPredictOverwrite, {
@@ -472,12 +524,13 @@ parseDeleteEvent <- function(idstr) {
     showNotification("Existing table overwritten.")
   })
 
-  output$annotations <- renderTable({
+  output$annotations <- renderDataTable({
     file <- input$AnnotationsFile
     ext <- tools::file_ext(file$datapath)
     req(file)
-    validate(need(ext %in% c("txt", "csv"), "Please upload a txt file"))
-    vals$annotations <- read.csv(file$datapath, header = input$AnnotationHeader)
+    vals$annotations <- read.delim(file$datapath, 
+                                   header = input$AnnotationHeader,
+                                   sep = input$AnnotationDelimiter)
     vals$annotations
   })
   
@@ -541,17 +594,20 @@ parseDeleteEvent <- function(idstr) {
     }
     tryCatch({
       print("comparing")
-      output$CompareTable <- renderTable({
+      output$CompareTable <- renderDataTable({
         shinybusy::show_spinner()
         
-      table <-
+      isolate(vals$comparison <-
         compare_results(isolate(vals$result_objects[[input$SelectResultA]]),
-                                            other, threshold = as.numeric(input$Threshold))#,
+                                            other, threshold = as.numeric(input$Threshold)))#,
                                             # result_name = paste(input$CompareResultA, "Signatures"),
                                             # other_result_name =
                                             #   paste(input$CompareResultB, "Signatures"))
         shinybusy::hide_spinner()
-        return(table)
+        return(isolate(vals$comparison))
+      })
+      output$DownloadComparison <- renderUI({
+        downloadButton("DownloadCompare", "Download")
       })
     }, error = function(cond) {
     shinybusy::hide_spinner()
@@ -559,6 +615,15 @@ parseDeleteEvent <- function(idstr) {
     })
 
   })
+  
+  output$DownloadCompare <- downloadHandler(
+    filename = function() { paste0("Sig-Compare", Sys.Date(), ".csv")
+      },
+    content = function(file) {
+      write.csv(vals$comparison, file)
+    }
+  )
+
 
 ###############################################################################
  
