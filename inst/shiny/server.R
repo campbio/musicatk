@@ -295,21 +295,38 @@ parseDeleteEvent <- function(idstr) {
   
   output$DiscoverTable <- renderUI({
     tagList(
-      selectInput("SelectDiscoverTable", h3("Select Count Table"),
+      selectInput("SelectDiscoverTable", "Select Count Table",
                   choices = names(
-                    extract_count_tables(vals$musica)))
+                    extract_count_tables(vals$musica))),
+      bsTooltip("SelectDiscoverTable",
+                "Name of the table to use for signature discovery.", 
+                placement = "bottom", trigger = "hover", options = NULL)
     )
   })
   
-  output$CombineTables <- renderUI({
+  output$CombineTable <- renderUI({
     if (length(names(tables(vals$musica))) > 1) {
       tagList(
         box(width = 12,
-        checkboxGroupInput("CombineTables", h3("Tables to Combine"),
+            helpText("Combine any 2 or more tables contained in your musica object. This is optional."),
+        checkboxGroupInput("CombineTables", "Tables to Combine",
                     choices = names(tables(vals$musica))),
-        textInput("CombinedTableName", h3("Name of combined table")),
+        textInput("CombinedTableName", "Name of combined table"),
         uiOutput("CombineWarning"),
-        actionButton("Combine", h3("Build Combined Table"))
+        actionButton("Combine", "Build Combined Table"),
+        bsTooltip("CombinedTableName",
+                  "Combine tables into a single table that can be used for
+                  discovery/prediction.", 
+                  placement = "bottom", trigger = "hover", options = NULL),
+        bsTooltip("Combine",
+                  "Combines tables into a single table that can be used for discovery/prediction.", 
+                  placement = "bottom", trigger = "hover", options = NULL),
+        bsTooltip("CombineTables",
+                  "Tables to combine.", 
+                  placement = "left", trigger = "hover", options = NULL),
+        bsTooltip("CombinedTableName",
+                  "Name for the combined table.", 
+                  placement = "bottom", trigger = "hover", options = NULL)
         )
       )
     }
@@ -344,7 +361,12 @@ parseDeleteEvent <- function(idstr) {
   
   output$AllowTable <- renderUI({
     if (!is.null(vals$musica)) {
-      actionButton("AddTable", h3("Create Table"))
+      tagList(
+      actionButton("AddTable", "Create Table"),
+      bsTooltip("AddTable", "Create a table containig the mutationl count information of each sample.", placement = "bottom", trigger = "hover",
+                options = NULL)
+      )
+
     } else {
       helpText("You must first create or upload a musica object to generate
                count tables.")
@@ -427,7 +449,10 @@ parseDeleteEvent <- function(idstr) {
   output$PredictTable <- renderUI({
     tagList(
       selectInput("SelectPredTable", "Select Counts Table",
-                  choices = names(tables(vals$musica)))
+                  choices = names(tables(vals$musica))),
+      bsTooltip("SelectPredTable",
+                "Name of the table used for posterior prediction", 
+                placement = "bottom", trigger = "hover", options = NULL)
     )
   })
   
@@ -560,17 +585,23 @@ parseDeleteEvent <- function(idstr) {
 
   output$CompareResultA <- renderUI({
     tagList(
-      selectInput("SelectResultA", h3("Select result object"),
-                  choices = c(names(vals$result_objects)))
+      selectInput("SelectResultA", "Select result object",
+                  choices = c(names(vals$result_objects))),
+      bsTooltip("SelectResultA",
+                "A musica result object", 
+                placement = "bottom", trigger = "hover", options = NULL)
     )
   })
   
   output$CompareResultB <- renderUI({
     tagList(
-      selectInput("SelectResultB", h3("Select comparison result object"),
+      selectInput("SelectResultB", "Select comparison result object",
                   choices = c("cosmic_v2_sigs", "cosmic_v3_dbs_sigs", 
                               "cosmic_v3_indel_sigs", 
-                              names(vals$result_objects)))
+                              names(vals$result_objects))),
+      bsTooltip("SelectResultB",
+                "A second musica result object", 
+                placement = "bottom", trigger = "hover", options = NULL)
     )
   })
 
@@ -607,7 +638,12 @@ parseDeleteEvent <- function(idstr) {
         return(isolate(vals$comparison))
       })
       output$DownloadComparison <- renderUI({
-        downloadButton("DownloadCompare", "Download")
+        tagList(
+        downloadButton("DownloadCompare", "Download"),
+        bsTooltip("DownloadCompare",
+                  "Download the comparison table", 
+                  placement = "bottom", trigger = "hover", options = NULL)
+        )
       })
     }, error = function(cond) {
     shinybusy::hide_spinner()

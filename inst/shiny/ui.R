@@ -1,5 +1,6 @@
 library(shinydashboard)
 library(shinyjs)
+library(shinyBS)
 
 source("ui_import.R",local = T)
 source("ui_import_musica.R",local = T)
@@ -48,7 +49,7 @@ ui <- fluidPage(
                   shinyPanelAnnotations),
           tabItem(tabName = "discover", h2("Discover Signatures and Exposures"), 
                 shinyPanelDiscover),
-          tabItem(tabName = "predict", h2("Predict Known Signatures"),
+          tabItem(tabName = "predict", h2("Predict Signature Exposures"),
                   shinyPanelPredict),
           tabItem(tabName = "compare", h2("Compare Signatures"), 
                   shinyPanelCompare),

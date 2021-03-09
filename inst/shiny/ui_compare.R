@@ -1,5 +1,6 @@
 shinyPanelCompare <- fluidPage(
   box( width = 12,
+       helpText("Use this tab to compare the signatures in any two musica result objects"),
     uiOutput("CompareResultA"),
     uiOutput("CompareResultB"),
     # textInput("Threshold", "Threshold", value = "0.9"),
@@ -8,8 +9,18 @@ shinyPanelCompare <- fluidPage(
                  choices = c("Cosine" = "cosine", 
                              "Jensen-Shannon Divergence (jsd)" = "jsd")),
     uiOutput("CompareValidate"),
-    actionButton("CompareResults", "CompareResults"), uiOutput("DownloadComparison"),
+    actionButton("CompareResults", "CompareResults"), 
+    uiOutput("DownloadComparison"),
     shinybusy::use_busy_spinner(spin = "double-bounce"),
-    dataTableOutput("CompareTable")
+    dataTableOutput("CompareTable"),
+    bsTooltip("Threshold",
+              "Treshold for similarity", 
+              placement = "bottom", trigger = "hover", options = NULL),
+    bsTooltip("CompareMetric",
+              "Method for calculating similarity.", 
+              placement = "left", trigger = "hover", options = NULL),
+    bsTooltip("CompareResults",
+              "Compare two result objects to find similar signatures.", 
+              placement = "bottom", trigger = "hover", options = NULL)
   )
 )
