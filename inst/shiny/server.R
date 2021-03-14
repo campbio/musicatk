@@ -5,7 +5,7 @@ library(sortable)
 options(shiny.maxRequestSize = 100*1024^2)
 source("server_tables.R", local = T)
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   
 #################### GENERAL ##################################################  
   vals <- reactiveValues(

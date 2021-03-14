@@ -4,7 +4,7 @@ shinyPanelAnnotations <- fluidPage(
     #        h3("Upload Sample Annotations"),
     #        actionButton("AddAnnotation", "Import an annotation text file.")
     # ),
-    helpText("This tab is optional. You can add sample annotations for use in downstream analysis."),
+    helpText("Use this tab to add sample annotations for use in downstream analysis. This tab is optional. "),
     uiOutput("AnnotationMusicaList"),
     wellPanel(id = "musica_data",
             h3("Upload Sample Annotations"),
