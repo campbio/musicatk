@@ -8,6 +8,7 @@ source("ui_musica.R",local = T)
 #source("ui_test.R",local = T)
 source("ui_discover.R", local = T)
 source("ui_tables.R", local = T)
+source("ui_resultvisualization.R", local = T)
 source("ui_predict.R", local = T)
 source("ui_annotations.R", local = T)
 source("ui_compare.R", local = T)
@@ -32,7 +33,7 @@ ui <- fluidPage(
                menuSubItem("Compare Signatures", "compare")),
       menuItem("Data Visualization", tabName = "visualization", icon = icon("th")),
       #menuItem("Test", tabName = "test", icon = icon("th")),
-      menuItem("Help", tabName = "help", icon = icon("th")))),
+      menuItem("Help", tabName = "widgets", icon = icon("th")))),
     
     dashboardBody(
         tabItems(
@@ -51,11 +52,11 @@ ui <- fluidPage(
           tabItem(tabName = "predict", h2("Predict Known Signatures"),
                   shinyPanelPredict),
           tabItem(tabName = "compare", h2("Compare Signatures"), 
-                  shinyPanelCompare)
-          #tabItem(tabName = "help", h2("Help"), 
-                  #shinyPanelHelp),
+                  shinyPanelCompare),
 ###############################################################################
-
+		      tabItem(tabName = "visualization",
+                  musicaresultvisualization)
       )
     )
-  ))
+  )
+)

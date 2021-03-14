@@ -16,8 +16,8 @@ add_tables <- function (input, vals) {
       }
     }
     tryCatch( {
-      build_standard_table(vals$musica, genome,
-                         table_name = input$SelectTable, 
+      build_standard_table(vals$musica, vals$genome,
+                         table_name = input$SelectTable,
                          overwrite = T)
     },error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
