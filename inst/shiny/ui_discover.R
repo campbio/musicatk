@@ -9,7 +9,8 @@ shinyPanelDiscover <- fluidPage(
                                 "Negative Matrix Factorization (nmf)" = "nmf")),
     #textInput("Seed", h3("Seed")),
     textInput("nStart", "Number of random starts", value = 10),
-    textInput("MusicaResultName", "Name for musica result object"),
+    # textInput("MusicaResultName", "Name for musica result object", value = "SBS96-Result"),
+    uiOutput("ResultName"),
     textOutput("DiscoverWarning"),
     actionButton("DiscoverSignatures", "Discover Signatures"),
     bsTooltip("DiscoverSignatures",
@@ -26,9 +27,6 @@ shinyPanelDiscover <- fluidPage(
               placement = "bottom", trigger = "hover", options = NULL),
     bsTooltip("nStart",
               "Number of independent random starts used in the mutatinoal signature algorithms.", 
-              placement = "bottom", trigger = "hover", options = NULL),
-    bsTooltip("MusicaResultName",
-              "Name for the newly created musica result object.", 
               placement = "bottom", trigger = "hover", options = NULL),
     shinybusy::use_busy_spinner(spin = "double-bounce")
     

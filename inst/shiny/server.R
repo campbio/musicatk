@@ -510,6 +510,26 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  # Discover Musica Result Object
+  output$ResultName <- renderUI({
+    isolate(name <- names(tables(vals$musica))[1])
+    if (is.null(name)) {
+      name <- "Result-1"
+    }
+    tagList(
+      textInput("MusicaResultName", "Name for musica result object", 
+                value = name),
+      bsTooltip("MusicaResultName",
+                "Name for the newly created musica result object.", 
+                placement = "bottom", trigger = "hover", options = NULL)
+    )
+  })
+  
+  observeEvent(input$SelectDiscoverTable, {
+    updateTextInput(session, "MusicaResultName",
+    value = paste0(input$SelectDiscoverTable, "-Result"))
+  })
+  
   output$DiscoverMusicaList <- renderUI({
     tagList(
       selectInput("DiscoverMusicaList", h3("Select Musica Object"),
