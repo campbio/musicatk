@@ -25,7 +25,7 @@ add_tables <- function (input, vals) {
       print(cond$message)
     }
     )
-    browser()
+    #browser()
     return()
   }
   shinyalert::shinyalert(title = "Oops",

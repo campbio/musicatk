@@ -1,6 +1,8 @@
+library(plotly)
+library(shinyBS)
 musicaresultvisualization <- fluidPage(
   h2("Visualize Signatures & Exposures"),
-  actionButton(inputId = "get_res", label = "Get Results"),
+  #actionButton(inputId = "get_res", label = "Get Results"),
   fluidRow(
     tabBox(
       title = "",
@@ -18,7 +20,19 @@ musicaresultvisualization <- fluidPage(
         checkboxInput(inputId = "scale1", label = "Same Y-axis Scale", value = TRUE),
         checkboxInput(inputId = "plotly1", label = "Plotly", value = TRUE),
         actionButton(inputId = "get_plot1", label = "Make Plot"),
-        tags$div(id = "plotdiv1")
+        tags$div(id = "plotdiv1"),
+        bsTooltip(id = "rename", title = "If checked, the names of signatures can be customized.",
+                  placement = "right", options = list(container = "body")),
+        bsTooltip(id = "textsize1", title = "Size of axis text.", placement = "right", options = list(container = "body")),
+        bsTooltip(id = "facetsize", title = "Size of facet text.", placement = "right", options = list(container = "body")),
+        bsTooltip(id = "legend1", title = "If checked, the legend for mutation types will be included in the plot.",
+                  placement = "right", options = list(container = "body")),
+        bsTooltip(id = "xlab1", title = "If checked, the labels for the mutation types on the x-axis will be shown.",
+                  placement = "right", options = list(container = "body")),
+        bsTooltip(id = "scale1", title = "If checked, the scale of the probability for each signature will be the same.",
+                  placement = "right", options = list(container = "body")),
+        bsTooltip(id = "plotly1", title = "If checked, the plot will be made interactive using plotly.",
+                  placement = "right", options = list(container = "body"))
       ),
       tabPanel(title = "Exposures",
                fluidRow(
@@ -55,7 +69,7 @@ musicaresultvisualization <- fluidPage(
                ),
                fluidRow(
                  box(
-                   h3("Sorting & Downsampling"),
+                   h3("Sorting"),
                    radioButtons(
                      inputId = "sort",
                      label = "Sort By",
@@ -65,22 +79,37 @@ musicaresultvisualization <- fluidPage(
                      selected = "total"
                    ),
                    tags$div(id = "sortbysig"),
-                   numericInput(inputId = "numsamp", label = "# of Top Samples", value = NULL),
-                   numericInput(inputId = "theta", label = "Threshold", value = NULL)
+                   uiOutput(outputId = "number"),
+                   numericInput(inputId = "theta", label = "Threshold", value = NULL),
+                   bsTooltip(id = "sort", title = "Used to sort bar plot from left to right.", 
+                             placement = "right", options = list(container = "body")),
+                   bsTooltip(id = "group1", title = "Determines how to group samples into the subplots. If set to \"annotation\", then a sample annotation must be supplied via the annotation parameter.",
+                             placement = "right", options = list(container = "body")),
+                   bsTooltip(id = "theta", title = "Exposures less than this threshold will be set to 0.",
+                             placement = "right", options = list(container = "body"))
                  )
                ),
                fluidRow(
                  box(
                    h3("Aesthetic Settings"),
                    checkboxInput(inputId = "scale2", label = "Same Y-axis Scale", value = TRUE),
-                   checkboxInput(inputId = "xlab2", label = "X-axis Label", value = TRUE),
+                   checkboxInput(inputId = "xlab2", label = "X-axis Label", value = FALSE),
                    checkboxInput(inputId = "legend2", label = "Legend", value = TRUE),
                    tags$div(id = "points"),
-                   checkboxInput(inputId = "plotly2", label = "Plotly", value = TRUE)
+                   checkboxInput(inputId = "plotly2", label = "Plotly", value = TRUE),
+                   bsTooltip(id = "scale2", title = "If checked, then all subplots will have the same scale.",
+                             placement = "right", options = list(container = "body")),
+                   bsTooltip(id = "xlab2", title = "If checked, x-axis labels will be displayed at the bottom of the plot.",
+                             placement = "right", options = list(container = "body")),
+                   bsTooltip(id = "legend2", title = "If checked, the legend will be displayed.",
+                             placement = "right", options = list(container = "body")),
+                   bsTooltip(id = "plotly2", title = "If checked, the plot will be made interactive using plotly.",
+                             placement = "right", options = list(container = "body"))
                  )
                ),
                actionButton(inputId = "get_plot2", label = "Make Plot"),
-               tags$div(id = "plotdiv2")
+               tags$div(id = "plotdiv2"),
+               plotlyOutput(outputId = "expplot")
       )
     )
   )

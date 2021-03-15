@@ -1,6 +1,7 @@
 library(musicatk)
 library(plotly)
 library(sortable)
+library(shinyBS)
 
 options(shiny.maxRequestSize = 100*1024^2)
 source("server_tables.R", local = T)
@@ -18,7 +19,7 @@ rv <- reactiveValues(
   deletedRowIndices = list()
 )
 ###################### Zainab's Code ##########################################
-server <- function(input, output) {
+server <- function(input, output, session) {
   # Create dynamic table
   vals <- reactiveValues(
     var = NULL,
@@ -515,7 +516,9 @@ parseDeleteEvent <- function(idstr) {
         inputId = "selected_res1",
         label = "Select Result",
         choices = c(names(vals$result_objects))
-      )
+      ),
+      bsTooltip(id = "selected_res1", title = "Select one musica_result object to visualize signatures.",
+                 placement = "right", options = list(container = "body"))
     )
   })
   
@@ -525,17 +528,15 @@ parseDeleteEvent <- function(idstr) {
         inputId = "selected_res2",
         label = "Select Result",
         choices = c(names(vals$result_objects))
-      )
+      ),
+      bsTooltip(id = "selected_res2", title = "Select one musica_result object to visualize exposures.",
+                placement = "right", options = list(container = "body"))
     )
   })
   
-  # observeEvent(input$select_button, {
-  #   vals$data <- vals$result_objects[[input$selected_res]]
+  # observeEvent(input$get_res,{
+  #   vals$data <- res_annot
   # })
-  
-  observeEvent(input$get_res,{
-    vals$data <- res_annot
-  })
   
   observeEvent(input$rename,{
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
@@ -619,20 +620,29 @@ parseDeleteEvent <- function(idstr) {
         ui = tags$div(
           id = "point_opt",
           checkboxInput(inputId = "addpoint", label = "Add Points", value = TRUE),
-          numericInput(inputId = "pointsize", label = "Point Size", value = 2) 
+          numericInput(inputId = "pointsize", label = "Point Size", value = 2),
+          bsTooltip(id = "addpoint", title = "If checked, then points for individual sample exposures will be 
+                    plotted on top of the violin/box plots.",
+                    placement = "right", options = list(container = "body")),
+          bsTooltip(id = "pointsize", title = "Size of the points to be plotted on top of the violin/box plots.",
+                    placement = "right", options = list(container = "body"))
         )
       )
       removeUI(selector = "#group1")
       insertUI(
         selector = "#insert_group",
-        ui = radioButtons(
-          inputId = "group1",
-          label = "Group By",
-          choices = list("Signature" = "signature",
-                         "Annotation" = "annotation"),
-          inline = TRUE,
-          selected = "signature"
-        )
+        ui = tagList(
+               radioButtons(
+                 inputId = "group1", 
+                 label = "Group By", 
+                 choices = list("Signature" = "signature",
+                                "Annotation" = "annotation"),
+                 inline = TRUE,
+                 selected = "signature"
+               ),
+               bsTooltip(id = "group1", title = "Determines how to group samples into the subplots. If set to \"annotation\", then a sample annotation must be supplied via the annotation parameter.",
+                         placement = "right", options = list(container = "body"))
+             )
       )
       vals$point_ind <- 1
     }
@@ -641,13 +651,17 @@ parseDeleteEvent <- function(idstr) {
       removeUI(selector = "#group1")
       insertUI(
         selector = "#insert_group",
-        ui = radioButtons(
-          inputId = "group1",
-          label = "Group By",
-          choices = list("None" = "none","Signature" = "signature",
-                         "Annotation" = "annotation"),
-          inline = TRUE,
-          selected = "none"
+        ui = tagList(
+          radioButtons(
+            inputId = "group1",
+            label = "Group By",
+            choices = list("None" = "none","Signature" = "signature",
+                           "Annotation" = "annotation"),
+            inline = TRUE,
+            selected = "none"
+          ),
+          bsTooltip(id = "group1", title = "Determines how to group samples into the subplots. If set to \"annotation\", then a sample annotation must be supplied via the annotation parameter.",
+                    placement = "right", options = list(container = "body"))
         )
       )
       vals$point_ind <- 0
@@ -657,18 +671,34 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  addTooltip(session, id = "proportional", title = "If checked, the exposures will be normalized to 
+             between 0 and 1 by dividing by the total number of counts for each sample.",
+             placement = "right", options = list(container = "body"))
+  addTooltip(session, id = "color", title = "Determines how to color the bars or box/violins. If set to \"annotation\", 
+             then a sample annotation must be supplied via the annotation parameter", 
+             placement = "right", options = list(container = "body"))
+  
   observeEvent(input$group1,{
     if(input$group1 == "annotation" & input$color != "annotation"){
-      vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1])
-      names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1]
-      insertUI(
-        selector = "#insertannot",
-        ui = selectInput(
-          inputId = "annotation",
-          label = "Annotation",
-          choices = vals$annot
+      if(ncol(samp_annot(vals$result_objects[[input$selected_res2]])) == 1){
+        shinyalert::shinyalert(title = "Error", text = "Annotation not found. Please add annotation to the musica object.")
+      }
+      else{
+        vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-c(1,2)])
+        names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-c(1,2)]
+        insertUI(
+          selector = "#insertannot",
+          ui = tagList(
+            selectInput(
+              inputId = "annotation",
+              label = "Annotation",
+              choices = vals$annot
+            ),
+            bsTooltip(id = "annotation", title = "Sample annotation used to group the subplots or color the bars, boxes, or violins.",
+                      placement = "right", options = list(container = "body"))
+          )
         )
-      )
+      }
     }
     else{
       if(input$color != "annotation"){
@@ -679,14 +709,23 @@ parseDeleteEvent <- function(idstr) {
   
   observeEvent(input$color,{
     if(input$color == "annotation" & input$group1 != "annotation"){
-      insertUI(
-        selector = "#insertannot",
-        ui = selectInput(
-          inputId = "annotation",
-          label = "Annotation",
-          choices = vals$annot
+      if(ncol(samp_annot(vals$result_objects[[input$selected_res2]])) == 1){
+        shinyalert::shinyalert(title = "Error", text = "Annotation not found. Please add annotation to the musica object.")
+      }
+      else{
+        insertUI(
+          selector = "#insertannot",
+          ui = tagList(
+            selectInput(
+              inputId = "annotation",
+              label = "Annotation",
+              choices = vals$annot
+            ),
+            bsTooltip(id = "annotation", title = "Sample annotation used to group the subplots or color the bars, boxes, or violins.",
+                      placement = "right", options = list(container = "body"))
+          )
         )
-      )
+      }
     }
     else{
       if(input$group1 != "annotation"){
@@ -715,7 +754,11 @@ parseDeleteEvent <- function(idstr) {
               labels = NULL,
               input_id = "sig_to"
             )
-          )
+          ),
+          bsTooltip(id = "bucket", title = "Drag signatures from top bucket to the bottom bucket. 
+                    Samples will be sorted in descending order by signatures. If multiple signatures are supplied, 
+                    samples will be sorted by each signature sequentially",
+                    placement = "right", options = list(container = "body"))
         )
       )
     }
@@ -723,6 +766,17 @@ parseDeleteEvent <- function(idstr) {
       removeUI(selector = "#insertsig")
     }
   })
+  
+  output$number <- renderUI(
+    tagList(
+      numericInput(inputId = "numsamp", label = "# of Top Samples", 
+                   value = dim(vals$result_objects[[input$selected_res2]]@exposures)[2],
+                   min = 1,
+                   max = dim(vals$result_objects[[input$selected_res2]]@exposures)[2]),
+      bsTooltip(id = "numsamp", title = "The top number of sorted samples to display.",
+                placement = "right", options = list(container = "body")),
+    )
+  )
   
   get_exp_option <- function(input){
     plot_type <- input$plottype
@@ -775,12 +829,12 @@ parseDeleteEvent <- function(idstr) {
   observeEvent(input$get_plot2,{
     options <- get_exp_option(input)
     if(options[[14]]){
-      removeUI(selector = "#expplot_plot")
+      removeUI(selector = "#expplot")
       insertUI(
         selector = "#plotdiv2",
-        ui = plotlyOutput(outputId = "expplot_plotly")
+        ui = plotlyOutput(outputId = "expplot")
       )
-      output$expplot_plotly <- renderPlotly(
+      output$expplot <- renderPlotly(
         plot_exposures(
           result = vals$result_objects[[input$selected_res2]], 
           plot_type = options[[1]], 
@@ -801,12 +855,12 @@ parseDeleteEvent <- function(idstr) {
       )
     }
     else{
-      removeUI(selector = "#expplot_plotly")
+      removeUI(selector = "#expplot")
       insertUI(
         selector = "#plotdiv2",
-        ui = plotOutput(outputId = "expplot_plot")
+        ui = plotOutput(outputId = "expplot")
       )
-      output$expplot_plot <- renderPlot(
+      output$expplot <- renderPlot(
         plot_exposures(
           result = vals$result_objects[[input$selected_res2]], 
           plot_type = options[[1]], 
