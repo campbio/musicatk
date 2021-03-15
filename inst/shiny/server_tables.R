@@ -4,7 +4,7 @@ add_tables <- function (input, vals) {
   if (input$SelectTable != "Custom") {
     # Check inputs for SBS192
     if (input$SelectTable == "SBS192 - Transcript_Strand") {
-        annotate_transcript_strand(vals$musica, "19", build_table = F)
+        annotate_transcript_strand(vals$musica, input$TableGenomeList, build_table = F)
         table_name <- "SBS192"
         strand_type = "Transcript_Strand"
     }
@@ -14,7 +14,7 @@ add_tables <- function (input, vals) {
         strand_type = "Replication_Strand"
     }
     tryCatch( {
-      build_standard_table(vals$musica, vals$genome,
+      build_standard_table(vals$musica, select_genome(input$TableGenomeList),
                          table_name = table_name,
                          strand_type = strand_type,
                          overwrite = T)

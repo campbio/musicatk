@@ -7,6 +7,8 @@ shinyPanelTables <- fluidPage(
                 choices = list("SBS96", "SBS192 - Transcript_Strand", 
                 "SBS192 - Replication_Strand", "DBS", "Indel"),
                 selected = 1),
+    uiOutput("TableGenomeList"),
+    textOutput("TableGenomeWarning"),
     uiOutput("AllowTable"),
     shinybusy::use_busy_spinner(spin = "double-bounce"),
     bsTooltip("SelectTable",

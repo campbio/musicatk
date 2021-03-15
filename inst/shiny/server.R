@@ -19,7 +19,6 @@ server <- function(input, output, session) {
     df = NULL,
     musica_contents = NULL,
     musica_upload = NULL,
-    genome = genome,
     data = NULL,
     point_ind = 0,
     annot = NULL,
@@ -62,15 +61,16 @@ server <- function(input, output, session) {
       removeUI(selector = "div#file_id")
       showNotification("Import successfully completed!")
   })
-  output$genome_list <- renderUI({
+  output$TableGenomeList <- renderUI({
     g <- BSgenome::available.genomes()
     g <-strsplit(g,",")
     gg <- gsub("^.*?\\.","", g)
-    selectInput("GenomeSelect", "Step 2: Choose genome:",
+    selectInput("TableGenomeList", "Reference genome:",
                 list( "Common genomes" = list("hg18","hg19","hg38","mm9","mm10"),
                 "Genomes" = gg), 
                       width ='100%')
-    })
+  })
+  
   genome <- reactive({
     gen <- input$GenomeSelect
     gen <- select_genome(gen)
@@ -419,7 +419,24 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  output$genome_list <- renderUI({
+    g <- BSgenome::available.genomes()
+    g <-strsplit(g,",")
+    gg <- gsub("^.*?\\.","", g)
+    selectInput("GenomeSelect", "Step 2: Choose genome:",
+                list( "Common genomes" = list("hg18","hg19","hg38","mm9","mm10"),
+                      "Genomes" = gg), 
+                width ='100%')
+  })
+  
   observeEvent(input$AddTable, {
+    # if
+    output$TableGenomeWarning <- renderText({
+      validate(
+        need(!is.null(vals$genome),
+             'Please select a reference genome in .')
+      )
+    })
     tableName <- input$SelectTable
     if(tableName == "SBS192 - Replication_Strand") {
       tableName <- "SBS192_Rep"
@@ -690,36 +707,32 @@ parseDeleteEvent <- function(idstr) {
       other <- isolate(vals$result_objects[[input$SelectResultB]])
     }
     tryCatch({
-      print("comparing")
+      shinybusy::show_spinner()
+      isolate(vals$comparison <- compare_results(isolate(vals$result_objects[[input$SelectResultA]]),
+                      other, threshold = as.numeric(input$Threshold)))
+      shinybusy::hide_spinner()
+    }, error = function(cond) {
+      shinybusy::hide_spinner()
+      shinyalert::shinyalert(title = "Error", text = cond$message)
+    })
+    
+    if(!is.null(isolate(vals$comparison))) {
       output$CompareTable <- renderDataTable({
-        shinybusy::show_spinner()
-        
-      isolate(vals$comparison <-
-        compare_results(isolate(vals$result_objects[[input$SelectResultA]]),
-                                            other, threshold = as.numeric(input$Threshold)))#,
-                                            # result_name = paste(input$CompareResultA, "Signatures"),
-                                            # other_result_name =
-                                            #   paste(input$CompareResultB, "Signatures"))
-        shinybusy::hide_spinner()
-        return(isolate(vals$comparison))
+        isolate(vals$comparison)
       })
       output$DownloadComparison <- renderUI({
         tagList(
-        downloadButton("DownloadCompare", "Download"),
-        bsTooltip("DownloadCompare",
-                  "Download the comparison table", 
-                  placement = "bottom", trigger = "hover", options = NULL)
+          downloadButton("DownloadCompare", "Download"),
+          bsTooltip("DownloadCompare",
+                    "Download the comparison table", 
+                    placement = "bottom", trigger = "hover", options = NULL)
         )
       })
-    }, error = function(cond) {
-    shinybusy::hide_spinner()
-    shinyalert::shinyalert(title = "Error", text = cond$message)
-    })
-
+    }
   })
   
   output$DownloadCompare <- downloadHandler(
-    filename = function() { paste0("Sig-Compare", Sys.Date(), ".csv")
+    filename = function() { paste0("Sig-Compare-", Sys.Date(), ".csv")
       },
     content = function(file) {
       write.csv(vals$comparison, file)
