@@ -1,23 +1,22 @@
 add_tables <- function (input, vals) { 
-  strand_type <- input$StrandType
-  # Check it table already exists
+  table_name <- input$SelectTable
+  strand_type <- NULL
   if (input$SelectTable != "Custom") {
     # Check inputs for SBS192
-    if (input$SelectTable == "SBS192") {
-      if (strand_type == "") {
-        shinyalert::shinyalert(title = "Oops", 
-                               text = "You must select strand type for table SBS192.")
-      } else if (strand_type == "Transcript_Strand") {
-        annotate_transcript_strand(vals$musica, "19", build_table = T)
-        return()
-      } else {
-        annotate_replication_strand(vals$musica, rep_range, build_table = T)
-        return()
-      }
+    if (input$SelectTable == "SBS192 - Transcript_Strand") {
+        annotate_transcript_strand(vals$musica, input$TableGenomeList, build_table = F)
+        table_name <- "SBS192"
+        strand_type = "Transcript_Strand"
+    }
+    if (input$SelectTable == "SBS192 - Replication_Strand") {
+        annotate_replication_strand(vals$musica, rep_range, build_table = F)
+        table_name <- "SBS192"
+        strand_type = "Replication_Strand"
     }
     tryCatch( {
-      build_standard_table(vals$musica, vals$genome,
-                         table_name = input$SelectTable,
+      build_standard_table(vals$musica, select_genome(input$TableGenomeList),
+                         table_name = table_name,
+                         strand_type = strand_type,
                          overwrite = T)
     },error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
@@ -25,7 +24,6 @@ add_tables <- function (input, vals) {
       print(cond$message)
     }
     )
-    #browser()
     return()
   }
   shinyalert::shinyalert(title = "Oops",

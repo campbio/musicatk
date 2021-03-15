@@ -1,5 +1,6 @@
 library(shinydashboard)
 library(shinyjs)
+library(shinyBS)
 
 source("ui_import.R",local = T)
 source("ui_import_musica.R",local = T)
@@ -13,6 +14,7 @@ source("ui_predict.R", local = T)
 source("ui_annotations.R", local = T)
 source("ui_compare.R", local = T)
 source("ui_cluster.R", local = T)
+#source("ui_help.R", local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   useShinyjs(),
@@ -24,14 +26,16 @@ ui <- fluidPage(
                menuSubItem("Import Musica Result Object", "musica_result"),
                menuSubItem("Import Annotations", "annotations")),
       #menuItem("Genome", tabName = "genome", icon = icon("th")),
-      menuItem("Musica", tabName = "musica", icon = icon("th")),
-      menuItem("Tables", tabName = "tables", icon = icon("th")),
+      menuItem("Create Musica Object", tabName = "musica", icon = icon("th")),
+      menuItem("Build Tables", tabName = "tables", icon = icon("th")),
       #menuItem("Annotations", tabName = "annotations", icon = icon("th")),
-      menuItem("Signatures and Exposures", tabName = "signatures", icon = icon("th"),
-               menuSubItem("Discover Signatures and Exposures", "discover"),
-               menuSubItem("Predict Signature Exposures", "predict"),
-               menuSubItem("Compare Signatures", "compare")),
-      menuItem("Result Visualization", tabName = "visualization", icon = icon("th")),
+      menuItem("Discover Signatures and Exposures", tabName = "signatures",
+               icon = icon("th"),
+               menuSubItem("Create Signatures and Exposures", "discover"),
+               menuSubItem("Predict Signature Exposures", "predict")),
+      menuItem("Compare Signatures", tabName = "compare", icon = icon("th")),
+      menuItem("Result Visualization", tabName = "visualization",
+               icon = icon("th")),
       #menuItem("Test", tabName = "test", icon = icon("th")),
       menuItem("Clustering", tabName = "cluster"),
       menuItem("Help", tabName = "widgets", icon = icon("th")))),
@@ -50,7 +54,7 @@ ui <- fluidPage(
                   shinyPanelAnnotations),
           tabItem(tabName = "discover", h2("Discover Signatures and Exposures"), 
                 shinyPanelDiscover),
-          tabItem(tabName = "predict", h2("Predict Known Signatures"),
+          tabItem(tabName = "predict", h2("Predict Signature Exposures"),
                   shinyPanelPredict),
           tabItem(tabName = "compare", h2("Compare Signatures"), 
                   shinyPanelCompare),
