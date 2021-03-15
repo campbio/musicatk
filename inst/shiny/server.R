@@ -9,31 +9,25 @@ server <- function(input, output, session) {
   
 #################### GENERAL ##################################################  
   vals <- reactiveValues(
-    musica = musica,
-    files = list(),
+    genome = NULL,
+    musica = NULL,
+    files = NULL,
     result_objects = list(),
     cSigs = NULL, #cosmic sig
     cRes = NULL, #cosmic result object
-    vals_annotatios = NULL,
+    annotations = NULL,
     df = NULL,
     musica_contents = NULL,
     musica_upload = NULL,
-    var = NULL,
     genome = genome,
-    musica_upload = NULL,
-    result_objects = list(),
-    vals_annotatios = NULL,
     data = NULL,
     point_ind = 0,
-    annot = NULL)
-  rv <- reactiveValues(
-    data = NULL,
+    annot = NULL,
     deletedRows = NULL,
     deletedRowIndices = list()
-
   )
-
   
+
 ###################### Zainab's Code ##########################################
   
   # Create dynamic table
@@ -54,10 +48,19 @@ server <- function(input, output, session) {
   # })
   observeEvent(input$import,{
     req(input$file)
-    file_name <- input$file$datapath
-    vals$var <- extract_variants(c(file_name))
-    removeUI(selector = "div#file_id")
-    showNotification("Import successfully completed!")
+    withProgress(message = "Importing",{
+      for (i in 1:15) {
+        incProgress(1/15)
+        Sys.sleep(0.25)
+      }
+    })
+    
+    file_name <- vals$data$datapath
+    withCallingHandlers(
+      vals$var <- extract_variants(c(file_name)),
+      message = function(m)output$text <- renderPrint(m$message))
+      removeUI(selector = "div#file_id")
+      showNotification("Import successfully completed!")
   })
   output$genome_list <- renderUI({
     g <- BSgenome::available.genomes()
@@ -94,13 +97,19 @@ server <- function(input, output, session) {
     return(stand_indels)
   })
 
-  observeEvent(input$get_musica_object,{
-    vals$genome <- genome()
+tryCatch({  observeEvent(input$get_musica_object,{
     vals$musica <- create_musica(x = vals$var, genome = genome(),check_ref_chromosomes = check_chr(),check_ref_bases = check_bases(),
                             convert_dbs = convert_dbs(),standardize_indels = stand_indels())
     showNotification("Musica Object successfully created! ")
     
+  })},
+  error = function(cond){
+    shinyalert::shinyalert(title = "Error", text = cond$message)
+  },
+  warning = function(cond) {
+    print(cond$message)
   })
+  
   output$musica_contents <- renderDataTable({
     req(vals$musica)
     return(head(vals$musica@variants))
@@ -111,27 +120,51 @@ server <- function(input, output, session) {
   output$musica_contents_summary <- renderText({
     req(vals$musica)
     vt <- unique(vals$musica@variants$Variant_Type) #variant types
-    nvt<- table(vals$musica@variants$Variant_Type)
     ns <- length(vals$musica@variants$sample) #sample length
-    mylist <- c("No. of Samples:\n",ns,"\n","Variant types",vt,"\n",nvt)
+    #mylist <- c("No. of Samples:\n",ns,"\n","Variant types",vt)
+    mylist <- c("No. of Samples:\n",ns)
     return(mylist)
     shinyjs::show(id="musica_contents_summary")
     js$enableTabs();
   })
+  output$musica_contents_table <- renderDataTable({
+    req(vals$musica)
+    nvt<- as.data.frame(table(vals$musica@variants$Variant_Type))
+    return(nvt)
+    shinyjs::show(id="musica_contents_table")
+    js$enableTabs();
+    })
   
   observeEvent(input$reset, {
     removeUI("#musica_contents")
     removeUI("#musica_contents_summary")
+    removeUI("#musica_contents_table")
     #removeUI("#musica_upload")
     showNotification("Tables cleared!")
   })
   
-  observeEvent(input$musica_file,{
+  observeEvent(input$musica_button,{
+    if(input$musica_button == "result"){
+      shinyjs::show(id = "MusicaResultName")
+    }
+    else if(input$musica_button == "object"){
+      shinyjs::hide(id = "MusicaResultName")}
+  })
+  observeEvent(input$upload_musica,{
     req(input$musica_file)
-    vals$musica_upload <- load(input$musica_file$datapath)
-    vals$musica_upload <- get(vals$musica_upload)
-    vals$musica <- vals$musica_upload
-    showNotification("Musica Result Object successfully imported!")
+    if(input$musica_button == "result"){
+      vals$musica_upload <- load(input$musica_file$datapath)
+      vals$musica_upload <- get(vals$musica_upload)
+      vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
+      showNotification("Musica Result Object successfully imported!")
+    }
+    else if(input$musica_button == "object"){
+      vals$musica_upload <- load(input$musica_file$datapath)
+      vals$musica_upload <- get(vals$musica_upload)
+      vals$musica <- vals$musica_upload 
+      showNotification("Musica Object successfully imported!")
+    }
+    
   })
   
   output$musica_upload <- renderDataTable({
@@ -178,40 +211,52 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$upload, {
-    rv$data <- data.frame(input$file[['name']])
     # Clear the previous deletions
-    rv$deletedRows <- NULL
-    rv$deletedRowIndices = list()
+    vals$files <- list(input$file[['name']])
+    vals$files <- unlist(vals$files)
+    vals$files <- c(vals$files)
+    dt <- list(input$file[['datapath']])
+    dt <- unlist(dt)
+    dt <- c(dt)
+    
+    #vals$files <- list(a = list(input$file[['name']]))
+    #vals$files <- rbindlist(vals$files)
+    #vals$files <- setDF(vals$files)
+    #vals$files <- split(vals$files,seq(nrow(vals$files)))
+    vals$files <- data.frame(files = vals$files,datapath = dt,stringsAsFactors = FALSE)
+    vals$data <- vals$files
+    vals$deletedRows <- NULL
+    vals$deletedRowIndices = list()
     })
     
     observeEvent(input$deletePressed, {
     rowNum <- parseDeleteEvent(input$deletePressed)
-    dataRow <- rv$data[rowNum,]
+    dataRow <- vals$data[rowNum,]
     
     # Put the deleted row into a data frame so we can undo
     # Last item deleted is in position 1
-    rv$deletedRows <- rbind(dataRow, rv$deletedRows)
-    rv$deletedRowIndices <- append(rv$deletedRowIndices, rowNum, after = 0)
+    vals$deletedRows <- rbind(dataRow, vals$deletedRows)
+    vals$deletedRowIndices <- append(vals$deletedRowIndices, rowNum, after = 0)
     
     # Delete the row from the data frame
-    rv$data <- rv$data[-rowNum,]
+    vals$data <- vals$data[-rowNum,]
   })
   
   observeEvent(input$undo, {
-    if(nrow(rv$deletedRows) > 0) {
-      row <- rv$deletedRows[1, ]
-      rv$data <- addRowAt(rv$data, row, rv$deletedRowIndices[[1]])
-      
+    if(nrow(vals$deletedRows) > 0) {
+      row <- vals$deletedRows[1, ]
+      vals$data <- addRowAt(vals$data, row, vals$deletedRowIndices[[1]])
+
       # Remove row
-      rv$deletedRows <- rv$deletedRows[-1,]
+      vals$deletedRows <- vals$deletedRows[-1,]
       # Remove index
-      rv$deletedRowIndices <- rv$deletedRowIndices[-1]
+      vals$deletedRowIndices <- vals$deletedRowIndices[-1]
     }
   })
   
-  # Disable the undo button if we have not deleted anything
+  #Disable the undo button if we have not deleted anything
   output$undoUI <- renderUI({
-    if(!is.null(rv$deletedRows) && nrow(rv$deletedRows) > 0) {
+    if(!is.null(vals$deletedRows) && nrow(vals$deletedRows) > 0) {
       actionButton('undo', label = 'Undo delete', icon('undo'))
     } else {
       actionButton('undo', label = 'Undo delete', icon('undo'), disabled = TRUE)
@@ -220,7 +265,8 @@ server <- function(input, output, session) {
   
   output$dtable <- DT::renderDataTable({
     # Add the delete button column
-    deleteButtonColumn(rv$data, 'delete_button')
+    req(vals$data)
+    deleteButtonColumn(vals$data, 'delete_button')
   })
 
 
@@ -237,7 +283,7 @@ addRowAt <- function(df, row, i) {
   } else {
     rbind(row, df)
   }
-  
+
 }
 
 #' A column of delete buttons for each row in the data frame for the first column
@@ -253,7 +299,7 @@ deleteButtonColumn <- function(df, id, ...) {
                               onclick = 'Shiny.setInputValue(\"deletePressed\",  this.id, {priority: "event"})'))
   }
   
-  deleteCol <- unlist(lapply(seq_len(nrow(df)), f))
+  deleteCol <- unlist(lapply(seq(nrow(df)), f))
   
   # Return a data table
   DT::datatable(cbind(delete = deleteCol, df),
@@ -473,7 +519,7 @@ parseDeleteEvent <- function(idstr) {
   
   observeEvent(input$CosmicCountTable, {
     if (input$CosmicCountTable == "SBS") {
-      shinyjs::show(id = "CosmicSBSSigs")
+     shinyjs:: show(id = "CosmicSBSSigs")
       shinyjs::hide(id = "CosmicDBSSigs")
       shinyjs::hide(id = "CosmicINDELSigs")
     } else if (input$CosmicCountTable == "DBS") {

@@ -13,6 +13,7 @@ source("ui_resultvisualization.R", local = T)
 source("ui_predict.R", local = T)
 source("ui_annotations.R", local = T)
 source("ui_compare.R", local = T)
+#source("ui_help.R", local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   useShinyjs(),
@@ -24,8 +25,8 @@ ui <- fluidPage(
                menuSubItem("Import Musica Result Object", "musica_result"),
                menuSubItem("Import Annotations", "annotations")),
       #menuItem("Genome", tabName = "genome", icon = icon("th")),
-      menuItem("Musica", tabName = "musica", icon = icon("th")),
-      menuItem("Tables", tabName = "tables", icon = icon("th")),
+      menuItem("Create Musica Object", tabName = "musica", icon = icon("th")),
+      menuItem("Build Tables", tabName = "tables", icon = icon("th")),
       #menuItem("Annotations", tabName = "annotations", icon = icon("th")),
       menuItem("Signatures and Exposures", tabName = "signatures", icon = icon("th"),
                menuSubItem("Discover Signatures and Exposures", "discover"),
