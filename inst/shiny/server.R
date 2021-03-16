@@ -1002,16 +1002,18 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
-  output$number <- renderUI(
-    tagList(
-      numericInput(inputId = "numsamp", label = "# of Top Samples", 
-                   value = dim(vals$result_objects[[input$selected_res2]]@exposures)[2],
-                   min = 1,
-                   max = dim(vals$result_objects[[input$selected_res2]]@exposures)[2]),
-      bsTooltip(id = "numsamp", title = "The top number of sorted samples to display.",
-                placement = "right", options = list(container = "body")),
+  observeEvent(input$selected_res2, {
+    output$number <- renderUI(
+      tagList(
+        numericInput(inputId = "numsamp", label = "# of Top Samples", 
+                     value = dim(vals$result_objects[[input$selected_res2]]@exposures)[2],
+                     min = 1,
+                     max = dim(vals$result_objects[[input$selected_res2]]@exposures)[2]),
+        bsTooltip(id = "numsamp", title = "The top number of sorted samples to display.",
+                  placement = "right", options = list(container = "body")),
+      )
     )
-  )
+  })
   
   get_exp_option <- function(input){
     plot_type <- input$plottype
