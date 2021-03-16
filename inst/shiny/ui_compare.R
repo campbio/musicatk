@@ -10,9 +10,7 @@ shinyPanelCompare <- fluidPage(
                              "Jensen-Shannon Divergence (jsd)" = "jsd")),
     uiOutput("CompareValidate"),
     actionButton("CompareResults", "Compare Results"), 
-    uiOutput("DownloadComparison"),
     shinybusy::use_busy_spinner(spin = "double-bounce"),
-    dataTableOutput("CompareTable"),
     bsTooltip("Threshold",
               "Treshold for similarity", 
               placement = "bottom", trigger = "hover", options = NULL),
@@ -22,5 +20,9 @@ shinyPanelCompare <- fluidPage(
     bsTooltip("CompareResults",
               "Compare two result objects to find similar signatures.", 
               placement = "bottom", trigger = "hover", options = NULL)
-  )
+  ),
+  box( width = 12,
+       uiOutput("DownloadComparison"),
+       dataTableOutput("CompareTable")
+       )
 )

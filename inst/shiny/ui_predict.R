@@ -40,7 +40,7 @@ shinyPanelPredict <- fluidPage(
                  choices = list("Latent Dirichlet Allocation (lda)" = "lda", 
                                 "decompTumor2Sig",
                                 "deconstructSigs")),
-    textInput("PredictResultName", "Name for musica result object"),
+    uiOutput("PredictResultName"),
     textOutput("PredictWarning"),
     # textInput("ChooseCosmicSignatures", 
     #           label = "Choose specific signatures (comma separated), or leave the field empty to select all signatures."),
