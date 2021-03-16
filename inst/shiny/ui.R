@@ -14,6 +14,7 @@ source("ui_predict.R", local = T)
 source("ui_annotations.R", local = T)
 source("ui_compare.R", local = T)
 source("ui_differentialanalysis.R", local = T)
+source("ui_cluster.R", local = T)
 #source("ui_help.R", local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
@@ -34,11 +35,12 @@ ui <- fluidPage(
                menuSubItem("Create Signatures and Exposures", "discover"),
                menuSubItem("Predict Signature Exposures", "predict")),
       menuItem("Compare Signatures", tabName = "compare", icon = icon("th")),
-      menuItem("Data Visualization", tabName = "visualization",
+      menuItem("Result Visualization", tabName = "visualization",
                icon = icon("th")),
       menuItem("Differential Analysis", tabName = "differentialanalysis",
                icon = icon("th")),
       #menuItem("Test", tabName = "test", icon = icon("th")),
+      menuItem("Clustering", tabName = "cluster"),
       menuItem("Help", tabName = "widgets", icon = icon("th")))),
     
     dashboardBody(
@@ -62,8 +64,8 @@ ui <- fluidPage(
           tabItem(tabName = "differentialanalysis", h2("Differential Analysis"),
                   shinyPanelDifferentialAnalysis),
 ###############################################################################
-		      tabItem(tabName = "visualization",
-                  musicaresultvisualization)
+		      tabItem(tabName = "visualization", musicaresultvisualization),
+          tabItem(tabName = "cluster", cluster_analysis)
       )
     )
   )
