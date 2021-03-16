@@ -10,7 +10,7 @@ shinyPanelDiscover <- fluidPage(
     #textInput("Seed", h3("Seed")),
     textInput("nStart", "Number of random starts", value = 10),
     # textInput("MusicaResultName", "Name for musica result object", value = "SBS96-Result"),
-    uiOutput("ResultName"),
+    uiOutput("DiscoverResultName"),
     textOutput("DiscoverWarning"),
     actionButton("DiscoverSignatures", "Discover Signatures"),
     bsTooltip("DiscoverSignatures",
