@@ -5,6 +5,8 @@ library(sortable)
 options(shiny.maxRequestSize = 100*1024^2)
 source("server_tables.R", local = T)
 vals <- reactiveValues(
+  var = NULL,
+  genome = NULL,
   musica = NULL,
   files = NULL,
   result_objects = list(),
@@ -14,22 +16,15 @@ vals <- reactiveValues(
   musica_upload = NULL,
   data = NULL,
   deletedRows = NULL,
-  deletedRowIndices = list()
+  deletedRowIndices = list(),
+  point_ind = 0,
+  annot = NULL
 )
 ###################### Zainab's Code ##########################################
 server <- function(input, output) {
   # Create dynamic table
-  vals <- reactiveValues(
-    var = NULL,
-    genome = NULL,
-    musica = NULL,
-    musica_upload = NULL,
-    result_objects = list(),
-    vals_annotatios = NULL,
-    data = NULL,
-    point_ind = 0,
-    annot = NULL
-  )
+  
+    
   
   #observeEvent(input$get_musica, {
    # maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
@@ -65,7 +60,7 @@ server <- function(input, output) {
     g <- BSgenome::available.genomes()
     g <-strsplit(g,",")
     gg <- gsub("^.*?\\.","", g)
-    selectInput("GenomeSelect", "Step 2: Choose genome:",
+    selectInput("GenomeSelect", "Step 1: Choose genome:",
                 list( "Common genomes" = list("hg18","hg19","hg38","mm9","mm10"),
                 "Genomes" = gg), 
                       width ='100%')
@@ -100,6 +95,12 @@ tryCatch({  observeEvent(input$get_musica_object,{
     vals$musica <- create_musica(x = vals$var, genome = genome(),check_ref_chromosomes = check_chr(),check_ref_bases = check_bases(),
                             convert_dbs = convert_dbs(),standardize_indels = stand_indels())
     showNotification("Musica Object successfully created! ")
+    if(req(input$get_musica_object)){
+      shinyjs::show(id = "download_musica")}
+    else {
+      shinyjs::hide(id = "download_musica")
+    }
+    
     
   })},
   error = function(cond){
@@ -207,7 +208,14 @@ tryCatch({  observeEvent(input$get_musica_object,{
     }
   )
   
-  
+  output$download_musica_object <- downloadHandler(
+    filename = function() {
+      paste("musica_object", ".rda", sep = "")
+    },
+    content = function(file) {
+      save(as.data.frame(vals$musica), file = filename)
+    }
+  )
   
   observeEvent(input$upload, {
     # Clear the previous deletions
@@ -880,4 +888,96 @@ parseDeleteEvent <- function(idstr) {
   })
 
 ################################################
+####################Heatmap##############  
+  output$select_res_heatmap <- renderUI({
+    tagList(
+      selectInput(
+        inputId = "select_res_heatmap",
+        label = "Select Result",
+        choices = c(names(vals$result_objects))
+      )
+    )
+  })
+  propor <- reactive({
+    props <- input$prop
+    return(props)
+  })
+  sel_col_names <- reactive({
+    cc <- input$col_names
+    return(cc)
+  })
+  sel_row_names <- reactive({
+    rr <- input$row_names
+    return(rr)
+  })
+  zscale <- reactive({
+    zscale <- input$scale
+    return(zscale)
+  })
+  
+  observeEvent(input$subset, {
+    if(input$subset == "signature"){
+      insertUI(
+        selector = "#sortbysigs",
+        ui = tags$div(
+          id = "insertsig",
+          bucket_list(
+            header = "Select signatures to sort",
+            group_name = "bucket",
+            orientation = "horizontal",
+            add_rank_list(
+              text = "Available Signatures:",
+              labels = as.list(colnames(vals$result_objects[[input$select_res_heatmap]]@signatures)),
+              input_id = "sig_from"
+            ),
+            add_rank_list(
+              text = "Selected Signatures:",
+              labels = NULL,
+              input_id = "sig_to"
+            )
+          )
+        )
+      )
+    }
+    else{
+      removeUI(selector = "#insertsig")
+      }
+  })
+  observeEvent(input$subset_tum, {
+    if(input$subset_tum == "tumors"){
+      insertUI(
+        selector = "#sortbytum",
+        ui = tags$div(
+          id = "inserttum",
+          selectInput("tum_val","",choices = as.list(unique(vals$result_objects[[input$select_res_heatmap]]@musica@sample_annotations$Tumor_Subtypes)))
+          )
+        )
+      
+    }
+    else{
+      removeUI(selector = "#inserttum")
+    }
+  })
+  
+  observeEvent(input$subset_annot, {
+    if(input$subset_annot == "annotation"){
+      insertUI(
+        selector = "#sortbyannot",
+        ui = tags$div(
+          id = "#insertannot",
+          selectInput("annot_val","",choices = as.list(colnames(samp_annot(vals$result_objects[[input$select_res_heatmap]])))
+        )
+      ))
+    }
+    else{
+      removeUI(selector = "#insertannot")
+    }
+  })
+  observeEvent(input$get_heatmap,{
+    output$heatmap <- renderPlot({
+    #paste0("Heatmap")
+    plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val)
+  })
+  }) 
 }
+

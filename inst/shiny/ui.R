@@ -13,6 +13,7 @@ source("ui_predict.R", local = T)
 source("ui_annotations.R", local = T)
 source("ui_compare.R", local = T)
 source("ui_help.R", local = T)
+source("ui_heatmap.R",local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   useShinyjs(),
@@ -32,15 +33,16 @@ ui <- fluidPage(
                menuSubItem("Predict Signature Exposures", "predict"),
                menuSubItem("Compare Signatures", "compare")),
       menuItem("Data Visualization", tabName = "visualization", icon = icon("th")),
+      menuItem("Heatmap", tabName = "heatmap", icon = icon("th")),
       #menuItem("Test", tabName = "test", icon = icon("th")),
       menuItem("Help", tabName = "widgets", icon = icon("th")))),
     
     dashboardBody(
         tabItems(
           tabItem(tabName = "import", h2("Import Data", shinyPanelImport)),
-          tabItem(tabName = "musica_result",shinyPanelResult),
+          tabItem(tabName = "musica_result",h2("Upload Musica"),shinyPanelResult),
           #tabItem(tabName = "genome",  shinyPanelGenome),
-          tabItem(tabName = "musica", shinyPanelMusica),
+          tabItem(tabName = "musica", h2("Create Musica Object"),shinyPanelMusica),
           #tabItem(tabName = "test", shinyPaneltest),
         
 ###################### Nathan's Code ##########################################
@@ -55,7 +57,9 @@ ui <- fluidPage(
                   shinyPanelCompare),
 ###############################################################################
 		      tabItem(tabName = "visualization",
-                  musicaresultvisualization)
+                  musicaresultvisualization),
+          tabItem(tabName = "heatmap",h2("Plot heatmap"),
+                  shinyPanelheatmap)
       )
     )
   )
