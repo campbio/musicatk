@@ -1,5 +1,6 @@
 library(shinydashboard)
 library(shinyjs)
+library(shinyBS)
 
 source("ui_import.R",local = T)
 source("ui_import_musica.R",local = T)
@@ -34,7 +35,9 @@ ui <- fluidPage(
                menuSubItem("Compare Signatures", "compare")),
       menuItem("Data Visualization", tabName = "visualization", icon = icon("th")),
       menuItem("Heatmap", tabName = "heatmap", icon = icon("th")),
+
       #menuItem("Test", tabName = "test", icon = icon("th")),
+      menuItem("Clustering", tabName = "cluster"),
       menuItem("Help", tabName = "widgets", icon = icon("th")))),
     
     dashboardBody(
@@ -51,14 +54,16 @@ ui <- fluidPage(
                   shinyPanelAnnotations),
           tabItem(tabName = "discover", h2("Discover Signatures and Exposures"), 
                 shinyPanelDiscover),
-          tabItem(tabName = "predict", h2("Predict Known Signatures"),
+          tabItem(tabName = "predict", h2("Predict Signature Exposures"),
                   shinyPanelPredict),
           tabItem(tabName = "compare", h2("Compare Signatures"), 
                   shinyPanelCompare),
+          tabItem(tabName = "differentialanalysis", h2("Differential Analysis"),
+                  shinyPanelDifferentialAnalysis),
 ###############################################################################
 		      tabItem(tabName = "visualization",
                   musicaresultvisualization),
-          tabItem(tabName = "heatmap",h2("Plot heatmap"),
+		 tabItem(tabName = "heatmap",h2("Plot heatmap"),
                   shinyPanelheatmap)
       )
     )
