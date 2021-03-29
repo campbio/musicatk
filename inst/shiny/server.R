@@ -26,7 +26,8 @@ server <- function(input, output, session) {
     point_ind = 0,
     annot = NULL,
     deletedRows = NULL,
-    deletedRowIndices = list()
+    deletedRowIndices = list(),
+    cluster = NULL
   )
   
 
@@ -979,8 +980,8 @@ parseDeleteEvent <- function(idstr) {
         shinyalert::shinyalert(title = "Error", text = "Annotation not found. Please add annotation to the musica object.")
       }
       else{
-        vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-c(1,2)])
-        names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-c(1,2)]
+        vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1])
+        names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1]
         insertUI(
           selector = "#insertannot",
           ui = tagList(
@@ -1070,7 +1071,7 @@ parseDeleteEvent <- function(idstr) {
                      min = 1,
                      max = dim(vals$result_objects[[input$selected_res2]]@exposures)[2]),
         bsTooltip(id = "numsamp", title = "The top number of sorted samples to display.",
-                  placement = "right", options = list(container = "body")),
+                  placement = "right", options = list(container = "body"))
       )
     )
   })
@@ -1180,4 +1181,200 @@ parseDeleteEvent <- function(idstr) {
   })
 
 ################################################
+  
+  ##############Clustering################
+  output$select_res3 <- renderUI({
+    tagList(
+      selectInput(
+        inputId = "selected_res3",
+        label = "Select Result",
+        choices = c(names(vals$result_objects))
+      ),
+      bsTooltip(id = "selected_res3", title = "Select one musica_result object to visualize signatures.",
+                placement = "right", options = list(container = "body"))
+    )
+  })
+  
+  observeEvent(input$selected_res3, {
+    output$no_cluster1 <- renderUI(
+      tagList(
+        numericInput(inputId = "numclust1", label = "Max Number of Clusters", 
+                     value = 10,
+                     min = 2,
+                     max = dim(vals$result_objects[[input$selected_res3]]@exposures)[2])
+      )
+    )
+    output$no_cluster2 <- renderUI(
+      tagList(
+        numericInput(inputId = "numclust2", label = "Max Number of Clusters", 
+                     value = 2,
+                     min = 2,
+                     max = dim(vals$result_objects[[input$selected_res3]]@exposures)[2])
+      )
+    )
+  })
+  
+  observeEvent(input$explore,{
+    method <- input$metric
+    clust.method <- input$algorithm1
+    n <- input$numclust1
+    proportional <- input$proportional2
+    output$explore_plot <- renderPlot(
+      k_select(
+        result = vals$result_objects[[input$selected_res3]],
+        method = method,
+        clust.method = clust.method,
+        n = n,
+        proportional = proportional
+      )
+    )
+  })
+  
+  observeEvent(input$algorithm2, {
+    choices <- list(hkmeans = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Canberra" = "canberra"),
+                    clara = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Jaccard" = "jaccard"),
+                    kmeans = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Jaccard" = "jaccard", 
+                               "Cosine" = "cosine", "Canberra" = "canberra"),
+                    hclust = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Jaccard" = "jaccard", 
+                               "Cosine" = "cosine", "Canberra" = "canberra"),
+                    pam = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Jaccard" = "jaccard", 
+                            "Cosine" = "cosine", "Canberra" = "canberra"))
+    output$diss <- renderUI(
+      selectInput(
+        inputId = "diss_method",
+        label = "Method for Dissimilarity Matrix",
+        choices = choices[[input$algorithm2]]
+      )
+    )
+    if(input$algorithm2 == "hclust"){
+      insertUI(
+        selector = "#hclust",
+        ui = selectInput(
+          inputId = "hclust_method",
+          label = "Hierarchical Clustering Method",
+          choices = c("ward.D" = "ward.D", "ward.D2" = "ward.D2", "single" = "single", "complete" = "complete", 
+                      "average" = "average", "mcquitty" = "mcquitty", "median" = "median", 
+                      "centroid" = "centroid")
+        )
+      )
+    }
+    else{
+      removeUI(selector = "div:has(>> #hclust_method)")
+    }
+    if(input$algorithm2 == "clara"){
+      insertUI(
+        selector = "#clara",
+        ui = numericInput(inputId = "clara_num",
+                          label = "No. of Samples for CLARA",
+                          value = 5,
+                          min = 1,
+                          max = dim(vals$result_objects[[input$selected_res3]]@exposures)[2])
+      )
+    }
+    else{
+      removeUI(selector = "div:has(>> #clara_num)")
+    }
+    if(input$algorithm2 %in% c("kmeans", "hkmeans")){
+      insertUI(
+        selector = "iter",
+        ui = numericInput(inputId = "max_iter",
+                          label = "Max No. of Iterations",
+                          value = 10,
+                          min = 1)
+      )
+    }
+    else{
+      removeUI(selector = "div:has(>> #max_iter)")
+    }
+  })
+  
+  observeEvent(input$group2, {
+    if(input$group2 == "annotation"){
+      vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res3]]))[-1])
+      names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res3]]))[-1]
+      insertUI(
+        selector = "#insertannot2",
+        ui = tagList(
+          selectInput(
+            inputId = "annotation2",
+            label = "Annotation",
+            choices = vals$annot
+          )
+        )
+      )
+    }
+    else{
+      removeUI(selector = "div:has(>> #annotation2)")
+    }
+  })
+  
+  observeEvent(input$cluster_calc, {
+    result <- vals$result_objects[[input$selected_res3]]
+    nclust <- input$numclust2
+    proportional <- input$proportional3
+    method <- input$algorithm2
+    dis.method <- input$diss_method
+    if(!is.null(input$hclust_method)){
+      hc.method <- input$hclust_method
+    }
+    else{
+      hc.method <- "ward.D"
+    }
+    if(!is.numeric(input$clara_num)){
+      clara.samples <- 5
+    }
+    else{
+      clara.samples <- input$clara_num
+    }
+    if(!is.numeric(input$max_iter)){
+      iter.max <- 10
+    }
+    else{
+      iter.max <- input$max_iter
+    }
+    vals$cluster <- cluster_exposure(result = result,
+                                     nclust = nclust,
+                                     proportional = proportional,
+                                     method = method,
+                                     dis.method = dis.method,
+                                     hc.method = hc.method,
+                                     clara.samples = clara.samples,
+                                     iter.max = iter.max)
+    insertUI(
+      selector = "#insert_cluster_table",
+      ui = DT::dataTableOutput("cluster_table")
+    )
+    annot <- samp_annot(vals$result_objects[[input$selected_res3]])
+    row.names(annot) <- annot$Samples
+    dat <- cbind(annot, vals$cluster)
+    output$cluster_table <- DT::renderDataTable(
+      DT::datatable(dat[,-1])
+    )
+  })
+  
+  observeEvent(input$cluster_vis, {
+    if(length(umap(vals$result_objects[[input$selected_res3]])) == 0){
+      create_umap(vals$result_objects[[input$selected_res3]])
+      result <- vals$result_objects[[input$selected_res3]]
+    }
+    else{
+      result <- vals$result_objects[[input$selected_res3]]
+    }
+    clusters <- vals$cluster
+    group <- input$group2
+    if(group == "annotation"){
+      annotation <- input$annotation2
+    }
+    else{
+      annotation <- NULL
+    }
+    output$cluster_plot <- renderPlot(
+      plot_cluster(result = result,
+                   clusters = clusters,
+                   group = group,
+                   annotation = annotation)
+    )
+  })
+  
+  ########################################
 }

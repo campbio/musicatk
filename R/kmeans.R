@@ -110,6 +110,7 @@ plot_cluster <- function(result, clusters, group = "signature", annotation = NUL
     stop("UMAP not found in musica_result object. Run create_umap(", deparse(substitute(result)),") first.")
   }
   k_toplot <- cbind(result@umap, clusters)
+  k_toplot$cluster <- factor(k_toplot$cluster)
   if(group == "signature"){
     expos <- exposures(result = result)
     expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
