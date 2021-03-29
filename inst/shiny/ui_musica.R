@@ -1,6 +1,6 @@
 shinyPanelMusica <- fluidPage(
   fluidRow(
-    uiOutput("genome_list"),
+    uiOutput("TableGenomeList"),
     textOutput("genome_select"),
     column(width = 12,
            h3("Step 2: Create Musica Object"),

@@ -1282,5 +1282,5 @@ parseDeleteEvent <- function(idstr) {
     plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val)
   })
   }) 
-}
+
 
