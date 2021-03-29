@@ -15,6 +15,7 @@ source("ui_annotations.R", local = T)
 source("ui_compare.R", local = T)
 source("ui_help.R", local = T)
 source("ui_heatmap.R",local = T)
+source("ui_cluster.R",local = T)
 source("ui_differentialanalysis.R")
 ui <- fluidPage(
   shinyalert::useShinyalert(),
@@ -65,7 +66,8 @@ ui <- fluidPage(
 		      tabItem(tabName = "visualization",
                   musicaresultvisualization),
 		 tabItem(tabName = "heatmap",h2("Plot heatmap"),
-                  shinyPanelheatmap)
+                  shinyPanelheatmap),
+          tabItem(tabName = "cluster", cluster_analysis)
       )
     )
   )
