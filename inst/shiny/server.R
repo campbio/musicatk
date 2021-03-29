@@ -5,32 +5,31 @@ library(shinyBS)
 
 options(shiny.maxRequestSize = 100*1024^2)
 source("server_tables.R", local = T)
-vals <- reactiveValues(
-  musica = NULL,
-  files = NULL,
-  result_objects = list(),
-  vals_annotatios = NULL,
-  df = NULL,
-  musica_contents = NULL,
-  musica_upload = NULL,
-  data = NULL,
-  deletedRows = NULL,
-  deletedRowIndices = list()
-)
-###################### Zainab's Code ##########################################
-  
-  # Create dynamic table
+
+server <- function(input, output, session) {
+#################### GENERAL ##################################################  
   vals <- reactiveValues(
-    var = NULL,
     genome = NULL,
     musica = NULL,
-    musica_upload = NULL,
+    files = NULL,
     result_objects = list(),
-    vals_annotatios = NULL,
+    cSigs = NULL, #cosmic sig
+    cRes = NULL, #cosmic result object
+    annotations = NULL,
+    diff = NULL,
+    df = NULL,
+    musica_contents = NULL,
+    musica_upload = NULL,
     data = NULL,
     point_ind = 0,
-    annot = NULL
+    annot = NULL,
+    deletedRows = NULL,
+    deletedRowIndices = list()
   )
+  
+###################### Zainab's Code ##########################################
+
+# Create dynamic table
   
   #observeEvent(input$get_musica, {
    # maf <-  GDCquery_Maf("BRCA", pipelines = "mutect")
@@ -62,14 +61,15 @@ vals <- reactiveValues(
       removeUI(selector = "div#file_id")
       showNotification("Import successfully completed!")
   })
-  output$TableGenomeList <- renderUI({
+
+  output$genome_list <- renderUI({
     g <- BSgenome::available.genomes()
     g <-strsplit(g,",")
     gg <- gsub("^.*?\\.","", g)
     selectInput("GenomeSelect", "Step 2: Choose genome:",
                 list( "Common genomes" = list("hg18","hg19","hg38","mm9","mm10"),
-                "Genomes" = gg), 
-                      width ='100%')
+                      "Genomes" = gg), 
+                width ='100%')
   })
   
   genome <- reactive({
@@ -357,7 +357,7 @@ parseDeleteEvent <- function(idstr) {
     tagList(
       selectInput("SelectDiscoverTable", "Select Count Table",
                   choices = names(
-                    extract_count_tables(vals$musica))),
+                    tables(vals$musica))),
       bsTooltip("SelectDiscoverTable",
                 "Name of the table to use for signature discovery.", 
                 placement = "bottom", trigger = "hover", options = NULL)
@@ -419,6 +419,12 @@ parseDeleteEvent <- function(idstr) {
     
   })
   
+  output$TableGenomeList <- renderUI({
+    selectInput("TableGenomeList", "Reference genome:",
+                list("hg19","hg38"), 
+                width ='100%')
+  })
+  
   output$AllowTable <- renderUI({
     if (!is.null(vals$musica)) {
       tagList(
@@ -435,15 +441,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
-  output$genome_list <- renderUI({
-    g <- BSgenome::available.genomes()
-    g <-strsplit(g,",")
-    gg <- gsub("^.*?\\.","", g)
-    selectInput("GenomeSelect", "Step 2: Choose genome:",
-                list( "Common genomes" = list("hg18","hg19","hg38","mm9","mm10"),
-                      "Genomes" = gg), 
-                width ='100%')
-  })
+
   
   observeEvent(input$AddTable, {
     # if
@@ -502,26 +500,26 @@ parseDeleteEvent <- function(idstr) {
           modalButton("Cancel"))
       ))
     } else {
-      getResult(input, vals)
+      discSigs(input, vals)
       showNotification(paste0("Musica Result object, ", input$DiscoverResultName,
                             ", was successfully generated"))
     }
   })
   
-  getResult <- function(input, vals) {
+  discSigs <- function(input, vals) {
     shinybusy::show_spinner()
-    vals$result_objects[[input$DiscoverResultName]] <- discover_signatures(
+    setResult(input$DiscoverResultName, discover_signatures(
       vals$musica, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
       algorithm = input$Method,
       #seed = input$Seed,
-      nstart = as.numeric(input$nStart))
+      nstart = as.numeric(input$nStart)))
     shinybusy::hide_spinner()
   }
   
   observeEvent(input$confirmResultOverwrite, {
     removeModal()
-    getResult(input, vals)
+    discSigs(input, vals)
     showNotification("Existing result object overwritten.")
   })
   
@@ -632,15 +630,19 @@ parseDeleteEvent <- function(idstr) {
     }
 
   })
+  
+  setResult <- function(x, y) {
+    vals$result_objects[[x]] <- y
+  }
 
   getPredict <- function(inputs, vals) {
     shinybusy::show_spinner()
-    vals$result_objects[[input$PredictResultName]] <-
+    setResult(input$PredictResultName,
       predict_exposure(vals$musica, g = vals$genome, 
                        table_name = input$SelectPredTable,
                        signature_res = vals$cRes,
                        algorithm = input$PredictAlgorithm,
-                       signatures_to_use = c(as.numeric(input[[vals$cSigs]])))
+                       signatures_to_use = c(as.numeric(input[[vals$cSigs]]))))
     shinybusy::hide_spinner()
   }
   
@@ -679,7 +681,7 @@ parseDeleteEvent <- function(idstr) {
           shinyalert::shinyalert(title = "Error", text = cond$message)
           return()
         })
-    } else if (!is.null(vals$result_objects[[input$AnnotationMusicaList]])) {
+    } else if (!is.null(getResult(input$AnnotationMusicaList))) {
       tryCatch( {
         sapply(names(vals$annotations), FUN = function(a) {
           samp_annot(vals$result_objects[[input$AnnotationMusicaList]], a) <- 
@@ -733,11 +735,11 @@ parseDeleteEvent <- function(idstr) {
     if(input$SelectResultB %in% names(cosmic_objects)) {
       other <- cosmic_objects[[input$SelectResultB]]
     } else {
-      other <- isolate(vals$result_objects[[input$SelectResultB]])
+      other <- isolate(getResult(input$SelectResultB))
     }
     tryCatch({
       shinybusy::show_spinner()
-      isolate(vals$comparison <- compare_results(isolate(vals$result_objects[[input$SelectResultA]]),
+      isolate(vals$comparison <- compare_results(isolate(getResult(input$SelectResultA)),
                       other, threshold = as.numeric(input$Threshold)))
       shinybusy::hide_spinner()
     }, error = function(cond) {
@@ -776,43 +778,98 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  output$DiffAnalGroups <- renderUI({
+    if(interactive()) {
+      tagList(
+        sortable::bucket_list(
+          header = "Groups",
+          #group_name = "diff_groups",
+          orientation = "horizontal",
+          add_rank_list(
+            text = "Group 1",
+            labels = unique(samp_annot(getResult(input$DiffAnalResult))[[input$DiffAnalAnnot]]),
+            input_id = "DiffGroup1"
+          ),
+          add_rank_list(
+            text = "Group2",
+            input_id = "DiffGroup2"
+          )
+        )
+      )
+    }
+  })
+  
   output$DiffAnalAnnot <- renderUI({
     tagList(
-      selectInput("DiffAnalAnnot", "Sampel annotation", 
-                choices = colnames(samp_annot(vals$result_objects[[input$DiffAnalResult]])[,-1])),
-      bsTooltip("DiffAnalAnnot", "Sampel annotation used to run differential analysis.")
+      selectInput("DiffAnalAnnot", "Sample annotation", 
+                choices = colnames(samp_annot(getResult(input$DiffAnalResult)))[-1],
+                selected = 1),
+      bsTooltip("DiffAnalAnnot", "Sample annotation used to run differential analysis.")
     )
   })
   
-  output$DiffAnalGroups <- renderUI({
-    tagList(
-    #   sortable::bucket_list(
-    #     header = "Groups",
-    #     group_name = "diff_groups",
-    #     orientation = "horizontal",
-    #     add_rank_list(
-    #       text = "Diff groups",
-    #       labels = list(samp_annot(vals$result_objects[[input$DiffAnalResult]])))
-    #   )
-      textInput("DiffGroup1", label = "Group 1"),
-      textInput("DiffGroup2" ,label = "Group 2")
-    )
+  observeEvent(input$DiffMethod, {
+    method = input$DiffMethod
+    if (method == "wilcox") {
+      shinyjs::show(id = "DiffAnalGroups")
+    } else {
+      shinyjs::hide(id = "DiffAnalGroups")
+    }
   })
   
   observeEvent(input$RunDiffAnal, {
+    shinyjs::hide("DiffError")
+    g1 <- input$DiffGroup1
+    g2 <- input$DiffGroup2
+    errors <- NULL
+    if(!is.null(g1) & !is.null(g2)) {
+      gMin <- min(length(g1), length(g2))
+      g1 <- g1[1:gMin]
+      g2 <- g2[1:gMin]
+    }
     shinybusy::show_spinner()
-    vals$diff <- exposure_differential_analysis(vals$result_objects[[input$DiffAnalResult]],
+    tryCatch({
+      vals$diff <- exposure_differential_analysis(getResult(input$DiffAnalResult),
                                    input$DiffAnalAnnot,
                                    method = input$DiffMethod,
-                                   group1 = input$DiffGroup1, 
-                                   group2 = input$DiffGroup2)
-    output$DiffTable <- renderDataTable(
-      vals$diff, 
-      options = list(scrollX = T)
-    )
-    shinybusy::hide_spinner()
+                                   group1 = g1, 
+                                   group2 = g2)
+      output$DiffTable <- renderDataTable(
+        vals$diff %>% tibble::rownames_to_column(var = "Signature"), 
+        options = list(scrollX = T)
+      )
+      shinybusy::hide_spinner()
+      # output$DownloadDiffAnal <- renderUI({
+      #   tagList(
+      #     downloadButton("DownloadDiff", "Download"),
+      #     bsTooltip("DownloadDiff",
+      #               "Download the differential exposure table",
+      #               placement = "bottom", trigger = "hover", options = NULL)
+      #   )
+      # })
+    }, error = function(cond) {
+      shinybusy::hide_spinner()
+      output$DiffTable <- renderDataTable({NULL})
+      errors <- cond
+    })
+    output$DiffError <- renderText({
+      errors
+    })
   })
+  
 
+  output$DownloadDiff <- downloadHandler(
+    filename = function() { paste0("Exp-Diff-", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      write.csv(vals$diff, file)
+    }
+  )
+
+  getResult <- function(name) {
+    return(vals$result_objects[[name]])
+  }
+  
 ###############################################################################
  
 ##################Visualization#################   
@@ -1282,5 +1339,5 @@ parseDeleteEvent <- function(idstr) {
     plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val)
   })
   }) 
-
+}
 

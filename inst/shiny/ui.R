@@ -26,7 +26,7 @@ ui <- fluidPage(
                menuSubItem("Import Files", "import"),
                menuSubItem("Import Musica Result Object", "musica_result"),
                menuSubItem("Import Annotations", "annotations")),
-      #menuItem("Genome", tabName = "genome", icon = icon("th")),
+      #menuItem("Genome", tabName = "genome"),
       menuItem("Create Musica Object", tabName = "musica"),
       menuItem("Build Tables", tabName = "tables"),
       #menuItem("Annotations", tabName = "annotations", icon = icon("th")),
