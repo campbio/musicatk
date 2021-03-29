@@ -1,5 +1,6 @@
 shinyPanelImport <- fluidPage(
           fluidRow(
+            useShinyjs(),
             column(width = 12,
                     h3("Step 1: Select File")
             )
@@ -17,6 +18,7 @@ shinyPanelImport <- fluidPage(
           actionButton("import", "Import"),
           uiOutput("spinner"),
           div(dataTableOutput("musica_contents")),
+          downloadButton("download_musica", "Download Variants"),
           bsTooltip("upload", "Press button to add your uploaded files to Sample List", placement = "bottom", trigger = "hover",
                     options = NULL),
           bsTooltip("file_id", "Table of files that have been added by you", placement = "bottom", trigger = "hover",

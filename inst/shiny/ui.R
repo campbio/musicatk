@@ -13,9 +13,8 @@ source("ui_resultvisualization.R", local = T)
 source("ui_predict.R", local = T)
 source("ui_annotations.R", local = T)
 source("ui_compare.R", local = T)
-source("ui_differentialanalysis.R", local = T)
-source("ui_cluster.R", local = T)
-#source("ui_help.R", local = T)
+source("ui_help.R", local = T)
+source("ui_heatmap.R",local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   useShinyjs(),
@@ -30,15 +29,13 @@ ui <- fluidPage(
       menuItem("Create Musica Object", tabName = "musica", icon = icon("th")),
       menuItem("Build Tables", tabName = "tables", icon = icon("th")),
       #menuItem("Annotations", tabName = "annotations", icon = icon("th")),
-      menuItem("Discover Signatures and Exposures", tabName = "signatures",
-               icon = icon("th"),
-               menuSubItem("Create Signatures and Exposures", "discover"),
-               menuSubItem("Predict Signature Exposures", "predict")),
-      menuItem("Compare Signatures", tabName = "compare", icon = icon("th")),
-      menuItem("Result Visualization", tabName = "visualization",
-               icon = icon("th")),
-      menuItem("Differential Analysis", tabName = "differentialanalysis",
-               icon = icon("th")),
+      menuItem("Signatures and Exposures", tabName = "signatures", icon = icon("th"),
+               menuSubItem("Discover Signatures and Exposures", "discover"),
+               menuSubItem("Predict Signature Exposures", "predict"),
+               menuSubItem("Compare Signatures", "compare")),
+      menuItem("Data Visualization", tabName = "visualization", icon = icon("th")),
+      menuItem("Heatmap", tabName = "heatmap", icon = icon("th")),
+
       #menuItem("Test", tabName = "test", icon = icon("th")),
       menuItem("Clustering", tabName = "cluster"),
       menuItem("Help", tabName = "widgets", icon = icon("th")))),
@@ -46,9 +43,9 @@ ui <- fluidPage(
     dashboardBody(
         tabItems(
           tabItem(tabName = "import", h2("Import Data", shinyPanelImport)),
-          tabItem(tabName = "musica_result",shinyPanelResult),
+          tabItem(tabName = "musica_result",h2("Upload Musica"),shinyPanelResult),
           #tabItem(tabName = "genome",  shinyPanelGenome),
-          tabItem(tabName = "musica", shinyPanelMusica),
+          tabItem(tabName = "musica", h2("Create Musica Object"),shinyPanelMusica),
           #tabItem(tabName = "test", shinyPaneltest),
         
 ###################### Nathan's Code ##########################################
@@ -64,8 +61,10 @@ ui <- fluidPage(
           tabItem(tabName = "differentialanalysis", h2("Differential Analysis"),
                   shinyPanelDifferentialAnalysis),
 ###############################################################################
-		      tabItem(tabName = "visualization", musicaresultvisualization),
-          tabItem(tabName = "cluster", cluster_analysis)
+		      tabItem(tabName = "visualization",
+                  musicaresultvisualization),
+		 tabItem(tabName = "heatmap",h2("Plot heatmap"),
+                  shinyPanelheatmap)
       )
     )
   )
