@@ -829,8 +829,6 @@ parseDeleteEvent <- function(idstr) {
   })
 
 ################################################
-<<<<<<< Updated upstream
-=======
 
 ####################Heatmap##############  
   output$select_res_heatmap <- renderUI({
@@ -1119,5 +1117,4 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   ########################################
->>>>>>> Stashed changes
 }
