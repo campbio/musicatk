@@ -829,4 +829,295 @@ parseDeleteEvent <- function(idstr) {
   })
 
 ################################################
+<<<<<<< Updated upstream
+=======
+
+####################Heatmap##############  
+  output$select_res_heatmap <- renderUI({
+    tagList(
+      selectInput(
+        inputId = "select_res_heatmap",
+        label = "Select Result",
+        choices = c(names(vals$result_objects))
+      )
+    )
+  })
+  propor <- reactive({
+    props <- input$prop
+    return(props)
+  })
+  sel_col_names <- reactive({
+    cc <- input$col_names
+    return(cc)
+  })
+  sel_row_names <- reactive({
+    rr <- input$row_names
+    return(rr)
+  })
+  zscale <- reactive({
+    zscale <- input$scale
+    return(zscale)
+  })
+  
+  observeEvent(input$subset, {
+    if(input$subset == "signature"){
+      insertUI(
+        selector = "#sortbysigs",
+        ui = tags$div(
+          id = "insertsig",
+          bucket_list(
+            header = "Select signatures to sort",
+            group_name = "bucket",
+            orientation = "horizontal",
+            add_rank_list(
+              text = "Available Signatures:",
+              labels = as.list(colnames(vals$result_objects[[input$select_res_heatmap]]@signatures)),
+              input_id = "sig_from"
+            ),
+            add_rank_list(
+              text = "Selected Signatures:",
+              labels = NULL,
+              input_id = "sig_to"
+            )
+          )
+        )
+      )
+    }
+    else{
+	      removeUI(selector = "#insertsig")
+      }
+  })
+  observeEvent(input$subset_tum, {
+    if(input$subset_tum == "tumors"){
+      insertUI(
+        selector = "#sortbytum",
+        ui = tags$div(
+          id = "inserttum",
+          selectInput("tum_val","",choices = as.list(unique(vals$result_objects[[input$select_res_heatmap]]@musica@sample_annotations$Tumor_Subtypes)))
+          )
+        )
+      
+    }
+    else{
+      removeUI(selector = "#inserttum")
+    }
+  })
+  
+  observeEvent(input$subset_annot, {
+    if(input$subset_annot == "annotation"){
+      insertUI(
+        selector = "#sortbyannot",
+        ui = tags$div(
+          id = "#insertannot",
+          selectInput("annot_val","",choices = as.list(colnames(samp_annot(vals$result_objects[[input$select_res_heatmap]])))
+        )
+      ))
+    }
+    else{
+      removeUI(selector = "#insertannot")
+    }
+  })
+  observeEvent(input$get_heatmap,{
+    output$heatmap <- renderPlot({
+    #paste0("Heatmap")
+    plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val)
+  })
+  }) 
+  ########################################
+
+  ##############Clustering################
+  output$select_res3 <- renderUI({
+    tagList(
+      selectInput(
+        inputId = "selected_res3",
+        label = "Select Result",
+        choices = c(names(vals$result_objects))
+      ),
+      bsTooltip(id = "selected_res3", title = "Select one musica_result object to visualize signatures.",
+                placement = "right", options = list(container = "body"))
+    )
+  })
+  
+  observeEvent(input$selected_res3, {
+    output$no_cluster1 <- renderUI(
+      tagList(
+        numericInput(inputId = "numclust1", label = "Max Number of Clusters", 
+                     value = 10,
+                     min = 2,
+                     max = dim(vals$result_objects[[input$selected_res3]]@exposures)[2])
+      )
+    )
+    output$no_cluster2 <- renderUI(
+      tagList(
+        numericInput(inputId = "numclust2", label = "Max Number of Clusters", 
+                     value = 2,
+                     min = 2,
+                     max = dim(vals$result_objects[[input$selected_res3]]@exposures)[2])
+      )
+    )
+  })
+  
+  observeEvent(input$explore,{
+    method <- input$metric
+    clust.method <- input$algorithm1
+    n <- input$numclust1
+    proportional <- input$proportional2
+    output$explore_plot <- renderPlot(
+      k_select(
+        result = vals$result_objects[[input$selected_res3]],
+        method = method,
+        clust.method = clust.method,
+        n = n,
+        proportional = proportional
+      )
+    )
+  })
+  
+  observeEvent(input$algorithm2, {
+    choices <- list(hkmeans = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Canberra" = "canberra"),
+                    clara = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Jaccard" = "jaccard"),
+                    kmeans = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Jaccard" = "jaccard", 
+                               "Cosine" = "cosine", "Canberra" = "canberra"),
+                    hclust = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Jaccard" = "jaccard", 
+                               "Cosine" = "cosine", "Canberra" = "canberra"),
+                    pam = c("Euclidean" = "euclidean", "Manhattan" = "manhattan", "Jaccard" = "jaccard", 
+                            "Cosine" = "cosine", "Canberra" = "canberra"))
+    output$diss <- renderUI(
+      selectInput(
+        inputId = "diss_method",
+        label = "Method for Dissimilarity Matrix",
+        choices = choices[[input$algorithm2]]
+      )
+    )
+    if(input$algorithm2 == "hclust"){
+      insertUI(
+        selector = "#hclust",
+        ui = selectInput(
+          inputId = "hclust_method",
+          label = "Hierarchical Clustering Method",
+          choices = c("ward.D" = "ward.D", "ward.D2" = "ward.D2", "single" = "single", "complete" = "complete", 
+                      "average" = "average", "mcquitty" = "mcquitty", "median" = "median", 
+                      "centroid" = "centroid")
+        )
+      )
+    }
+    else{
+      removeUI(selector = "div:has(>> #hclust_method)")
+    }
+    if(input$algorithm2 == "clara"){
+      insertUI(
+        selector = "#clara",
+        ui = numericInput(inputId = "clara_num",
+                          label = "No. of Samples for CLARA",
+                          value = 5,
+                          min = 1,
+                          max = dim(vals$result_objects[[input$selected_res3]]@exposures)[2])
+      )
+    }
+    else{
+      removeUI(selector = "div:has(>> #clara_num)")
+    }
+    if(input$algorithm2 %in% c("kmeans", "hkmeans")){
+      insertUI(
+        selector = "iter",
+        ui = numericInput(inputId = "max_iter",
+                          label = "Max No. of Iterations",
+                          value = 10,
+                          min = 1)
+      )
+    }
+    else{
+      removeUI(selector = "div:has(>> #max_iter)")
+    }
+  })
+  
+  observeEvent(input$group2, {
+    if(input$group2 == "annotation"){
+      vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res3]]))[-1])
+      names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res3]]))[-1]
+      insertUI(
+        selector = "#insertannot2",
+        ui = tagList(
+          selectInput(
+            inputId = "annotation2",
+            label = "Annotation",
+            choices = vals$annot
+          )
+        )
+      )
+    }
+    else{
+      removeUI(selector = "div:has(>> #annotation2)")
+    }
+  })
+  
+  observeEvent(input$cluster_calc, {
+    result <- vals$result_objects[[input$selected_res3]]
+    nclust <- input$numclust2
+    proportional <- input$proportional3
+    method <- input$algorithm2
+    dis.method <- input$diss_method
+    if(!is.null(input$hclust_method)){
+      hc.method <- input$hclust_method
+    }
+    else{
+      hc.method <- "ward.D"
+    }
+    if(!is.numeric(input$clara_num)){
+      clara.samples <- 5
+    }
+    else{
+      clara.samples <- input$clara_num
+    }
+    if(!is.numeric(input$max_iter)){
+      iter.max <- 10
+    }
+    else{
+      iter.max <- input$max_iter
+    }
+    vals$cluster <- cluster_exposure(result = result,
+                                     nclust = nclust,
+                                     proportional = proportional,
+                                     method = method,
+                                     dis.method = dis.method,
+                                     hc.method = hc.method,
+                                     clara.samples = clara.samples,
+                                     iter.max = iter.max)
+    insertUI(
+      selector = "#insert_cluster_table",
+      ui = DT::dataTableOutput("cluster_table")
+    )
+    annot <- samp_annot(vals$result_objects[[input$selected_res3]])
+    row.names(annot) <- annot$Samples
+    dat <- cbind(annot, vals$cluster)
+    output$cluster_table <- DT::renderDataTable(
+      DT::datatable(dat[,-1])
+    )
+  })
+  
+  observeEvent(input$cluster_vis, {
+    if(length(umap(vals$result_objects[[input$selected_res3]])) == 0){
+      create_umap(vals$result_objects[[input$selected_res3]])
+      result <- vals$result_objects[[input$selected_res3]]
+    }
+    else{
+      result <- vals$result_objects[[input$selected_res3]]
+    }
+    clusters <- vals$cluster
+    group <- input$group2
+    if(group == "annotation"){
+      annotation <- input$annotation2
+    }
+    else{
+      annotation <- NULL
+    }
+    output$cluster_plot <- renderPlot(
+      plot_cluster(result = result,
+                   clusters = clusters,
+                   group = group,
+                   annotation = annotation)
+    )
+  })
+  ########################################
+>>>>>>> Stashed changes
 }
