@@ -6,26 +6,27 @@ library(shinyBS)
 options(shiny.maxRequestSize = 100*1024^2)
 source("server_tables.R", local = T)
 
+server <- function(input, output, session) {
 #################### GENERAL ##################################################  
-vals <- reactiveValues(
-  genome = NULL,
-  musica = NULL,
-  files = NULL,
-  result_objects = list(),
-  cSigs = NULL, #cosmic sig
-  cRes = NULL, #cosmic result object
-  annotations = NULL,
-  diff = NULL,
-  df = NULL,
-  musica_contents = NULL,
-  musica_upload = NULL,
-  data = NULL,
-  point_ind = 0,
-  annot = NULL,
-  deletedRows = NULL,
-  deletedRowIndices = list()
-)
-
+  vals <- reactiveValues(
+    genome = NULL,
+    musica = NULL,
+    files = NULL,
+    result_objects = list(),
+    cSigs = NULL, #cosmic sig
+    cRes = NULL, #cosmic result object
+    annotations = NULL,
+    diff = NULL,
+    df = NULL,
+    musica_contents = NULL,
+    musica_upload = NULL,
+    data = NULL,
+    point_ind = 0,
+    annot = NULL,
+    deletedRows = NULL,
+    deletedRowIndices = list()
+  )
+  
 ###################### Zainab's Code ##########################################
 
 # Create dynamic table
@@ -1339,4 +1340,3 @@ parseDeleteEvent <- function(idstr) {
   })
   }) 
 }
-

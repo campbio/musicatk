@@ -15,6 +15,7 @@ source("ui_annotations.R", local = T)
 source("ui_compare.R", local = T)
 source("ui_help.R", local = T)
 source("ui_heatmap.R",local = T)
+source("ui_differentialanalysis.R", local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   useShinyjs(),
@@ -27,13 +28,16 @@ ui <- fluidPage(
                menuSubItem("Import Annotations", "annotations")),
       #menuItem("Genome", tabName = "genome", icon = icon("th")),
       menuItem("Create Musica Object", tabName = "musica", icon = icon("th")),
-      menuItem("Build Tables", tabName = "tables", icon = icon("th")),
+      menuItem("Build Tables", tabName = "tables"),
       #menuItem("Annotations", tabName = "annotations", icon = icon("th")),
-      menuItem("Signatures and Exposures", tabName = "signatures", icon = icon("th"),
+      menuItem("Signatures and Exposures", tabName = "signatures",
                menuSubItem("Discover Signatures and Exposures", "discover"),
                menuSubItem("Predict Signature Exposures", "predict"),
                menuSubItem("Compare Signatures", "compare")),
+      menuItem("Compare", tabName = "compare"),
       menuItem("Data Visualization", tabName = "visualization", icon = icon("th")),
+      menuItem("Differential Analysis", tabName = "differentialanalysis"),
+      
       menuItem("Heatmap", tabName = "heatmap", icon = icon("th")),
 
       #menuItem("Test", tabName = "test", icon = icon("th")),
