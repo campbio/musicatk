@@ -1339,5 +1339,13 @@ parseDeleteEvent <- function(idstr) {
     plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val)
   })
   }) 
+  output$download_heatmap <- downloadHandler(
+    filename = function() {
+      paste("heatmap", ".png", sep = "")
+    },
+    content = function(file) {
+      ggsave(file,plot = last_plot(),device = "png")
+    }
+  )
 }
 

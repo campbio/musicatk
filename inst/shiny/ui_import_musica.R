@@ -13,7 +13,7 @@ shinyPanelResult <- fluidPage(
               textInput("MusicaResultName", value = "", h3("Name your musica result object:")),
               actionButton(inputId = "upload_musica", label = "Upload"),
               hr(),
-              downloadButton("download_musica_result", "Download Musica Variants"),
+              downloadButton("download_musica_result", "Download Variants"),
               #actionButton(inputId = "reset_musica", label = "Clear Musica Summary"), 
               div(textOutput("musica_upload_summary")),
               hr(),
