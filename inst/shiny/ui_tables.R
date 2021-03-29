@@ -1,15 +1,21 @@
 shinyPanelTables <- fluidPage(
-  box(
+  box(width = 12,
     # uiOutput("TableMusicaList"),
-    selectInput("SelectTable", h3("Select Count Table"),
-                choices = list("SBS96", "SBS192",
-                               "DBS", "Indel",
-                               "Custom"),
+    helpText("Use this tab if your musica object has no mutational count table,
+    or if you wish to add additional count tables."),
+    selectInput("SelectTable", "Select Count Table",
+                choices = list("SBS96", "SBS192 - Transcript_Strand", 
+                "SBS192 - Replication_Strand", "DBS", "Indel"),
                 selected = 1),
-    hidden(selectInput("StrandType", h3("Strand Type"), 
-                  choices = list("", "Transcript_Strand", "Replication_Strand"),
-                  selected = NULL)),
-    hidden(fileInput("GRangeFile", h3("Upload GRanges Object"))),
-    actionButton("AddTable", h3("Add Table"))
-  )
+    uiOutput("TableGenomeList"),
+    textOutput("TableGenomeWarning"),
+    uiOutput("AllowTable"),
+    shinybusy::use_busy_spinner(spin = "double-bounce"),
+    bsTooltip("SelectTable",
+              "Name of the standard table to build.", 
+              placement = "bottom", trigger = "hover", options = NULL)
+  ),
+  uiOutput("CombineTable"),
+  shinybusy::use_busy_spinner(spin = "double-bounce")
+  
 )
