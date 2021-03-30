@@ -16,7 +16,7 @@ source("ui_compare.R", local = T)
 source("ui_help.R", local = T)
 source("ui_heatmap.R",local = T)
 source("ui_cluster.R",local = T)
-source("ui_differentialanalysis.R")
+source("ui_differentialanalysis.R", local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   useShinyjs(),
@@ -35,12 +35,14 @@ ui <- fluidPage(
                menuSubItem("Discover Signatures and Exposures", "discover"),
                menuSubItem("Predict Signature Exposures", "predict"),
                menuSubItem("Compare Signatures", "compare")),
-      menuItem("Differential Analysis", tabName = "differentialanalysis"),
       menuItem("Data Visualization", tabName = "visualization"),
-      menuItem("Heatmap", tabName = "heatmap"),
-
+      menuItem("Additional Analysis", tabName = "downstream",
+               menuSubItem("Compare Signatures", tabName = "compare"),
+               menuSubItem("Exposure Differential Analysis", 
+                           tabName = "differentialanalysis"),
+               menuSubItem("Clustering", tabName = "cluster"),
+               menuSubItem("Heatmap", tabName = "heatmap")),
       #menuItem("Test", tabName = "test", icon = icon("th")),
-      menuItem("Clustering", tabName = "cluster"),
       menuItem("Help", tabName = "widgets"))),
     
     dashboardBody(
