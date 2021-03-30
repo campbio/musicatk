@@ -35,6 +35,7 @@ ui <- fluidPage(
                menuSubItem("Discover Signatures and Exposures", "discover"),
                menuSubItem("Predict Signature Exposures", "predict"),
                menuSubItem("Compare Signatures", "compare")),
+      menuItem("Differential Analysis", tabName = "differentialanalysis"),
       menuItem("Data Visualization", tabName = "visualization"),
       menuItem("Heatmap", tabName = "heatmap"),
 
