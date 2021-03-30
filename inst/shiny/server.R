@@ -1548,5 +1548,4 @@ parseDeleteEvent <- function(idstr) {
 }
 
 
-}
 

@@ -33,8 +33,9 @@ ui <- fluidPage(
       #menuItem("Annotations", tabName = "annotations", icon = icon("th")),
       menuItem("Signatures and Exposures", tabName = "signatures",
                menuSubItem("Discover Signatures and Exposures", "discover"),
-               menuSubItem("Predict Signature Exposures", "predict"),
-               menuSubItem("Compare Signatures", "compare")),
+               menuSubItem("Predict Signature Exposures", "predict")),
+      menuItem("Compare Signatures", tabName = "compare"),
+      menuItem("Differential Analysis", tabName = "differentialanalysis"),
       menuItem("Data Visualization", tabName = "visualization"),
       menuItem("Heatmap", tabName = "heatmap"),
 
