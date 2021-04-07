@@ -25,7 +25,9 @@ server <- function(input, output, session) {
     annot = NULL,
     deletedRows = NULL,
     deletedRowIndices = list(),
-    cluster = NULL
+    cluster = NULL,
+    musica_name_user = NULL,
+    musica_message = NULL
   )
   
 ###################### Zainab's Code ##########################################
@@ -46,8 +48,20 @@ server <- function(input, output, session) {
   #   removeUI(selector = "div#file_id")
   #   return(var)
   # })
+  output$tcga_tumor <- renderUI({
+    hr()
+    textInput("tcga_tumor","Enter TCGA tumor type")
+  })
+  observeEvent(input$import_tcga,{
+    shinybusy::show_spinner()
+    maf <- TCGAbiolinks::GDCquery_Maf(input$tcga_tumor,pipelines = "mutect")
+    vals$var <- extract_variants_from_maf_file(maf)
+    showNotification("TCGA dataset successfully imported!")
+    shinybusy::hide_spinner()
+  })
   observeEvent(input$import,{
     req(input$file)
+    
     withProgress(message = "Importing",{
       for (i in 1:15) {
         incProgress(1/15)
@@ -56,28 +70,33 @@ server <- function(input, output, session) {
     })
     
     file_name <- vals$data$datapath
-    withCallingHandlers(
-      vals$var <- extract_variants(c(file_name)),
-      message = function(m)output$text <- renderPrint(m$message))
-      removeUI(selector = "div#file_id")
-      showNotification("Import successfully completed!")
+    if(all(tools::file_ext(file_name) != c("maf","vcf"))){
+      shinyalert("Error: File format not supported! Please upload .maf or .vcf files")
+    }
+    else{
+      withCallingHandlers(
+        vals$var <- extract_variants(c(file_name)),
+        message = function(m)output$text <- renderPrint(m$message))
+        removeUI(selector = "div#file_id")
+        showNotification("Import successfully completed!")
+        }
   })
 
   output$genome_list <- renderUI({
     g <- BSgenome::available.genomes()
     g <-strsplit(g,",")
     gg <- gsub("^.*?\\.","", g)
-    selectInput("GenomeSelect", "Step 2: Choose genome:",
+    selectInput("GenomeSelect", "Choose genome:",
                 list( "Common genomes" = list("hg18","hg19","hg38","mm9","mm10"),
                       "Genomes" = gg), 
                 width ='100%')
   })
   
-  genome <- reactive({
-    gen <- input$GenomeSelect
-    gen <- select_genome(gen)
-    return(gen)
-  })
+  # genome <- reactive({
+  #   gen <- input$GenomeSelect
+  #   gen <- select_genome(gen)
+  #   return(gen)
+  # })
   output$genome_select <- renderText({
     paste("Genome selected:", input$GenomeSelect)
   })
@@ -100,15 +119,19 @@ server <- function(input, output, session) {
   })
 
 tryCatch({  observeEvent(input$get_musica_object,{
-    vals$musica <- create_musica(x = vals$var, genome = genome(),check_ref_chromosomes = check_chr(),check_ref_bases = check_bases(),
+    shinybusy::show_spinner()
+    vals$genome <- input$GenomeSelect
+    vals$genome <- select_genome(vals$genome)
+    vals$musica <- create_musica(x = vals$var, genome = vals$genome,check_ref_chromosomes = check_chr(),check_ref_bases = check_bases(),
                             convert_dbs = convert_dbs(),standardize_indels = stand_indels())
+   #vals$musica_message <- capture.output(data <- )
     showNotification("Musica Object successfully created! ")
     if(req(input$get_musica_object)){
       shinyjs::show(id = "download_musica")}
     else {
       shinyjs::hide(id = "download_musica")
     }
-    
+    shinybusy::hide_spinner()  
     
   })},
   error = function(cond){
@@ -117,7 +140,11 @@ tryCatch({  observeEvent(input$get_musica_object,{
   warning = function(cond) {
     print(cond$message)
   })
-  
+ 
+ output$musica_console <- renderPrint({
+   return(print(vals$musica_message))
+ })
+ 
   output$musica_contents <- renderDataTable({
     req(vals$musica)
     return(head(vals$musica@variants))
@@ -151,6 +178,15 @@ tryCatch({  observeEvent(input$get_musica_object,{
     showNotification("Tables cleared!")
   })
   
+  
+  observe(
+    if(!is.null(req(input$musica_file))){
+    vals$musica_name_user <- input$musica_file$name
+  })
+  
+  output$MusicaResultName <- renderUI(
+    textInput("MusicaResultName", value = paste0(vals$musica_name_user), h3("Name your musica result object:"))
+  )
   observeEvent(input$musica_button,{
     if(input$musica_button == "result"){
       shinyjs::show(id = "MusicaResultName")
@@ -160,20 +196,25 @@ tryCatch({  observeEvent(input$get_musica_object,{
   })
   observeEvent(input$upload_musica,{
     req(input$musica_file)
-    if(input$musica_button == "result"){
-      vals$musica_upload <- load(input$musica_file$datapath)
-      vals$musica_upload <- get(vals$musica_upload)
-      vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
-      showNotification("Musica Result Object successfully imported!")
+    if(all(tools::file_ext(input$musica_file$name) != c("rda","rds"))){
+      shinyalert("Error: File format not supported! Please upload .rda or .rds files")
     }
-    else if(input$musica_button == "object"){
-      vals$musica_upload <- load(input$musica_file$datapath)
-      vals$musica_upload <- get(vals$musica_upload)
-      vals$musica <- vals$musica_upload 
-      showNotification("Musica Object successfully imported!")
-    }
+    else{
+      if(input$musica_button == "result"){
+        vals$musica_upload <- load(input$musica_file$datapath)
+        vals$musica_upload <- get(vals$musica_upload)
+        vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
+        showNotification("Musica Result Object successfully imported!")
+      }
+      else if(input$musica_button == "object"){
+        vals$musica_upload <- load(input$musica_file$datapath)
+        vals$musica_upload <- get(vals$musica_upload)
+        vals$musica <- vals$musica_upload 
+        showNotification("Musica Object successfully imported!")
+      }}
     
   })
+  
   
   output$musica_upload <- renderDataTable({
     req(vals$musica_upload)
@@ -1276,6 +1317,22 @@ parseDeleteEvent <- function(idstr) {
     zscale <- input$scale
     return(zscale)
   })
+  # observeEvent(input$def_sigs,{
+  #   insertUI(
+  #     ui = tags$div("#sortbysigs"),
+  #   radioButtons(
+  #     inputId = "subset",
+  #     label = "",
+  #     choices = c("All Signatures" = "all_sigs","Selected Signatures" = "signature"),
+  #     inline = TRUE,
+  #     selected = ""
+  #   )
+  #   )
+  #   })
+  
+  # observeEvent(input$def_sigs, {
+  #   insertUI()
+  # })
   
   observeEvent(input$subset, {
     if(input$subset == "signature"){
@@ -1314,12 +1371,13 @@ parseDeleteEvent <- function(idstr) {
           selectInput("tum_val","",choices = as.list(unique(vals$result_objects[[input$select_res_heatmap]]@musica@sample_annotations$Tumor_Subtypes)))
           )
         )
-      
+
     }
     else{
       removeUI(selector = "#inserttum")
     }
   })
+  #subset_tumor = input$tum_val
   
   observeEvent(input$subset_annot, {
     if(input$subset_annot == "annotation"){
@@ -1327,7 +1385,9 @@ parseDeleteEvent <- function(idstr) {
         selector = "#sortbyannot",
         ui = tags$div(
           id = "#insertannot",
-          selectInput("annot_val","",choices = as.list(colnames(samp_annot(vals$result_objects[[input$select_res_heatmap]])))
+          checkboxGroupInput("annot_val","Available annptations:",
+                             c(as.list(colnames(samp_annot(vals$result_objects[[input$select_res_heatmap]]))))
+          #selectInput("annot_val","",choices = as.list(colnames(samp_annot(vals$result_objects[[input$select_res_heatmap]])))
         )
       ))
     }
@@ -1338,7 +1398,7 @@ parseDeleteEvent <- function(idstr) {
   observeEvent(input$get_heatmap,{
     output$heatmap <- renderPlot({
     #paste0("Heatmap")
-    plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val)
+    plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val,column_title = paste0("Heatmap for ",input$select_res_heatmap))
   })
   }) 
   output$download_heatmap <- downloadHandler(
@@ -1544,8 +1604,48 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   ########################################
-
+  ########################################Download########################################
+  output$select_mus_obj_download <- renderUI({
+    tagList(
+      selectInput(
+        inputId = "select_mus_obj_download",
+        label = "Select Musica Object",
+        choices = "musica"
+      )
+    )
+  })
+  
+  output$select_res_download <- renderUI({
+    tagList(
+      selectInput(
+        inputId = "select_res_download",
+        label = "Select Musica Result Object",
+        choices = c(names(vals$result_objects))
+      )
+    )
+  })
+  
+  output$download_mus_obj <- downloadHandler(
+    
+    filename = function() {
+      paste("musica_object", ".rda", sep = "")
+    },
+    content = function(file) {
+      saveRDS(vals$musica, file)
+    }
+  )
+ output$download_res <- downloadHandler(
+    
+    filename = function() {
+      paste("musica_results", ".rda", sep = "")
+    },
+    content = function(file) {
+      saveRDS(vals$result_objects[[input$select_res_download]], file)
+    }
+  )
 }
+
+
 
 
 

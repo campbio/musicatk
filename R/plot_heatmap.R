@@ -95,11 +95,21 @@ plot_heatmap <- function(res_annot,
   
  #If/else conditions to check if annotation object available
   if (is.null(heatmap)) {
+    if(scale == FALSE){
+      ComplexHeatmap::Heatmap(exp, name = "exposures",show_column_names = show_column_names, show_row_names = show_row_names,col = c("blue", "green", "yellow", "orange", "red"), ...)
+    }
+    else{
       ComplexHeatmap::Heatmap(exp, name = "exposures", show_column_names = show_column_names, show_row_names = show_row_names, ...)
     }
-    else if (!is.null(heatmap)) {
-      ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap, show_column_names = show_column_names, show_row_names = show_row_names, ...)
   }
+    else if (!is.null(heatmap)) {
+      if(scale == FALSE){
+        ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap, show_column_names = show_column_names, show_row_names = show_row_names,col = c("blue", "green", "yellow", "orange", "red"), ...)
+      }
+      else{
+        ComplexHeatmap::Heatmap(exp, name = "exposures", top_annotation = heatmap, show_column_names = show_column_names, show_row_names = show_row_names, ...)
+      }
+    }
 }
  
   

@@ -2,6 +2,7 @@ library(shinydashboard)
 library(shinyjs)
 library(shinyBS)
 
+source("ui_import_tcga.R",local = T)
 source("ui_import.R",local = T)
 source("ui_import_musica.R",local = T)
 #source("ui_genome.R", local = T)
@@ -17,6 +18,8 @@ source("ui_help.R", local = T)
 source("ui_heatmap.R",local = T)
 source("ui_cluster.R",local = T)
 source("ui_differentialanalysis.R", local = T)
+source("ui_download.R",local = T)
+
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   useShinyjs(),
@@ -25,6 +28,7 @@ ui <- fluidPage(
     dashboardSidebar(sidebarMenu(
       menuItem("Import", tabName = "import",
                menuSubItem("Import Files", "import"),
+               menuSubItem("Import TCGA datasets", "import_tcga"),
                menuSubItem("Import Musica Result Object", "musica_result"),
                menuSubItem("Import Annotations", "annotations")),
       #menuItem("Genome", tabName = "genome"),
@@ -42,11 +46,12 @@ ui <- fluidPage(
                            tabName = "differentialanalysis"),
                menuSubItem("Clustering", tabName = "cluster"),
                menuSubItem("Heatmap", tabName = "heatmap")),
-      #menuItem("Test", tabName = "test", icon = icon("th")),
+      menuItem("Download", tabName = "download"),
       menuItem("Help", tabName = "widgets"))),
     
     dashboardBody(
         tabItems(
+          tabItem(tabName = "import_tcga", h2("Import TCGA Datasets", shinyPanelTCGA)),
           tabItem(tabName = "import", h2("Import Data", shinyPanelImport)),
           tabItem(tabName = "musica_result",h2("Upload Musica"),shinyPanelResult),
           #tabItem(tabName = "genome",  shinyPanelGenome),
@@ -68,9 +73,10 @@ ui <- fluidPage(
 ###############################################################################
 		      tabItem(tabName = "visualization",
                   musicaresultvisualization),
-		 tabItem(tabName = "heatmap",h2("Plot heatmap"),
+		      tabItem(tabName = "heatmap",h2("Plot heatmap"),
                   shinyPanelheatmap),
-          tabItem(tabName = "cluster", cluster_analysis)
+          tabItem(tabName = "cluster", cluster_analysis),
+          tabItem(tabName = "download",h2("Download musica result objects"), shinyPanelDownload)
       )
     )
   )
