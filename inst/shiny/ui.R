@@ -19,10 +19,15 @@ source("ui_cluster.R",local = T)
 source("ui_differentialanalysis.R", local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
-  useShinyjs(),
+  shinyjs::useShinyjs(),
   dashboardPage(
     dashboardHeader(title = "musicatk"),
     dashboardSidebar(sidebarMenu(
+      id = "menu",
+      tags$head(tags$style(".inactiveLink {
+                           position: relative;
+                           cursor: not-allowed;
+                           }")),
       menuItem("Import", tabName = "import",
                menuSubItem("Import Files", "import"),
                menuSubItem("Import Musica Result Object", "musica_result"),
@@ -72,5 +77,9 @@ ui <- fluidPage(
           tabItem(tabName = "cluster", cluster_analysis)
       )
     )
-  )
+  ),
+# tags$script(charset="utf-8", HTML("var x = document.getElementById(\"sidebarItemExpanded\").querySelectorAll(\"li\");
+#                var old_html = x[4].innerHTML;
+#                var new_html = '<span class=\"musica_wrapper\">' + old_html + '</span>';
+#                x[4].innerHTML = new_html;"))
 )

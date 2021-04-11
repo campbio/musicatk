@@ -4,10 +4,20 @@ library(sortable)
 library(shinyBS)
 
 options(shiny.maxRequestSize = 100*1024^2)
-source("server_tables.R", local = T)
+source("server_tables.R", local = TRUE)
 
 server <- function(input, output, session) {
 #################### GENERAL ##################################################  
+  addCssClass(selector = "a[data-value='musica']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='tables']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='discover']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='predict']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='visualization']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='compare']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='differentialanalysis']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='cluster']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='heatmap']", class = "inactiveLink")
+  
   vals <- reactiveValues(
     genome = NULL,
     musica = NULL,
@@ -25,8 +35,128 @@ server <- function(input, output, session) {
     annot = NULL,
     deletedRows = NULL,
     deletedRowIndices = list(),
-    cluster = NULL
+    cluster = NULL,
+    var = NULL
   )
+  
+  observeEvent(input$menu, {
+    if(input$menu == "musica"){
+      if(is.null(vals$var)){
+        shinyalert::shinyalert("Error", "No data was uploaded. Please go to \"Import\" and upload your data.", "error")
+        updateTabItems(session, "menu", "import")
+      }
+      else{
+        removeCssClass(selector = "a[data-value='musica']", class = "inactiveLink")
+      }
+    }
+    else if(input$menu == "tables") {
+      if(is.null(vals$var) && is.null(vals$musica) && is.null(vals$musica_upload)){
+        shinyalert::shinyalert("Error", "No data was uploaded. Please go to \"Import\" and upload your data.", "error")
+        updateTabItems(session, "menu", "import")
+      }
+      else if(!is.null(vals$var) && is.null(vals$musica) && is.null(vals$musica_upload)){
+        shinyalert::shinyalert("Error", "No musica object was created. Please go to \"Create Musica Object\" 
+                               to create a musica object or go to \"Import\" -> \"Import Musica Result Object\" to upload a
+                               muscia object.", "error")
+        updateTabItems(session, "menu", "musica")
+      }
+      else{
+        removeCssClass(selector = "a[data-value='tables']", class = "inactiveLink")
+      }
+    }
+    else if(input$menu %in% c("discover", "predict")){
+      if(is.null(vals$var) && is.null(vals$musica) && is.null(vals$musica_upload)){
+        shinyalert::shinyalert("Error", "No data was uploaded. Please go to \"Import\" and upload your data.", "error")
+        updateTabItems(session, "menu", "import")
+      }
+      else if(!is.null(vals$var) && is.null(vals$musica) && is.null(vals$musica_upload)){
+        shinyalert::shinyalert("Error", "No musica object was created. Please go to \"Create Musica Object\" 
+                               to create a musica object or go to \"Import\" -> \"Import Musica Result Object\" to upload a
+                               muscia object.", "error")
+        updateTabItems(session, "menu", "musica")
+      }
+      else if(!is.null(vals$var) && !is.null(vals$musica) && is.null(vals$musica_upload)){
+        tryCatch(
+          {
+            tables(vals$musica)
+            removeCssClass(selector = "a[data-value='discover']", class = "inactiveLink")
+            removeCssClass(selector = "a[data-value='predict']", class = "inactiveLink")
+          },
+          error = function(cond){
+            shinyalert::shinyalert("Error", "No mutation count table was created. Please go to \"Build Tables\" to create count table.",
+                                   "error")
+            updateTabItems(session, "menu", "tables")
+          }
+        )
+      }
+      else{
+        tryCatch(
+          {
+            tables(vals$musica_upload)
+            removeCssClass(selector = "a[data-value='discover']", class = "inactiveLink")
+            removeCssClass(selector = "a[data-value='predict']", class = "inactiveLink")
+          },
+          error = function(cond){
+            shinyalert::shinyalert("Error", "No mutation count table was created. Please go to \"Build Tables\" to create count table.",
+                                   "error")
+            updateTabItems(session, "menu", "tables")
+          }
+        )
+      }
+    }
+    else if(input$menu %in% c("visualization", "compare", "differentialanalysis", "cluster", "heatmap")){
+      if(is.null(vals$var) && is.null(vals$musica) && is.null(vals$musica_upload) && length(vals$result_objects) == 0){
+        shinyalert::shinyalert("Error", "No data was uploaded. Please go to \"Import\" and upload your data.", "error")
+        updateTabItems(session, "menu", "import")
+      }
+      else if(!is.null(vals$var) && is.null(vals$musica) && is.null(vals$musica_upload) && length(vals$result_objects) == 0){
+        shinyalert::shinyalert("Error", "No musica object was created. Please go to \"Create Musica Object\" 
+                               to create a musica object or go to \"Import\" -> \"Import Musica Result Object\" to upload a
+                               muscia object.", "error")
+        updateTabItems(session, "menu", "musica")
+      }
+      else if(!is.null(vals$var) && !is.null(vals$musica) && is.null(vals$musica_upload) && length(vals$result_objects) == 0){
+        tryCatch(
+          {
+            tables(vals$musica)
+            shinyalert::shinyalert("Error", "No musica_result object was created. Please go to \"Signatures and Exposures\" -> 
+                               \"Discover Signatures and Exposures\" to create musica_result object.", "error")
+            updateTabItems(session, "menu", "signatures")
+          },
+          error = function(cond){
+            shinyalert::shinyalert("Error", "No mutation count table was created. Please go to \"Build Tables\" to create count table.",
+                                   "error")
+            updateTabItems(session, "menu", "tables")
+          }
+        )
+      }
+      else if(!is.null(vals$var) && is.null(vals$musica) && !is.null(vals$musica_upload) && length(vals$result_objects) == 0){
+        tryCatch(
+          {
+            tables(vals$musica_upload)
+            shinyalert::shinyalert("Error", "No musica_result object was created. Please go to \"Signatures and Exposures\" -> 
+                               \"Discover Signatures and Exposures\" to create musica_result object.", "error")
+            updateTabItems(session, "menu", "signatures")
+          },
+          error = function(cond){
+            shinyalert::shinyalert("Error", "No mutation count table was created. Please go to \"Build Tables\" to create count table.",
+                                   "error")
+            updateTabItems(session, "menu", "tables")
+          }
+        )
+      }
+      else{
+        removeCssClass(selector = "a[data-value='visualization']", class = "inactiveLink")
+        removeCssClass(selector = "a[data-value='compare']", class = "inactiveLink")
+        removeCssClass(selector = "a[data-value='differentialanalysis']", class = "inactiveLink")
+        removeCssClass(selector = "a[data-value='cluster']", class = "inactiveLink")
+        removeCssClass(selector = "a[data-value='heatmap']", class = "inactiveLink")
+      }
+    }
+    else{
+      return()
+    }
+  })
   
 ###################### Zainab's Code ##########################################
 
@@ -46,6 +176,7 @@ server <- function(input, output, session) {
   #   removeUI(selector = "div#file_id")
   #   return(var)
   # })
+  
   observeEvent(input$import,{
     req(input$file)
     withProgress(message = "Importing",{
@@ -59,8 +190,17 @@ server <- function(input, output, session) {
     withCallingHandlers(
       vals$var <- extract_variants(c(file_name)),
       message = function(m)output$text <- renderPrint(m$message))
-      removeUI(selector = "div#file_id")
-      showNotification("Import successfully completed!")
+    removeUI(selector = "div#file_id")
+    showNotification("Import successfully completed!")
+  })
+  
+  observeEvent(vals$var, {
+    if(length(vals$var) == 0){
+      addCssClass(selector = "a[data-value='musica']", class = "inactiveLink")
+    }
+    else{
+      removeCssClass(selector = "a[data-value='musica']", class = "inactiveLink")
+    }
   })
 
   output$genome_list <- renderUI({
@@ -1510,13 +1650,24 @@ parseDeleteEvent <- function(idstr) {
                                      iter.max = iter.max)
     insertUI(
       selector = "#insert_cluster_table",
-      ui = DT::dataTableOutput("cluster_table")
+      ui = tags$div(
+        DT::dataTableOutput("cluster_table"),
+        downloadButton("download_cluster", "Download")
+      )
     )
     annot <- samp_annot(vals$result_objects[[input$selected_res3]])
     row.names(annot) <- annot$Samples
     dat <- cbind(annot, vals$cluster)
     output$cluster_table <- DT::renderDataTable(
       DT::datatable(dat[,-1])
+    )
+    output$download_cluster <- downloadHandler(
+      filename = function() {
+        paste0(input$selected_res3, "_cluster.txt")
+      },
+      content = function(file){
+        write.table(dat[,-1], file, sep = '\t', quote = F)
+      }
     )
   })
   
