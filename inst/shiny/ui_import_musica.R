@@ -1,6 +1,8 @@
 shinyPanelResult <- fluidPage(
-  fluidRow(
+  fluidRow(box(
     useShinyjs(),
+    useShinyalert(),
+    add_busy_spinner(spin = "fading-circle"),
     #wellPanel(id = "musica_data",
               #h1("Upload your Music Result Object"),
               radioButtons("musica_button","Upload Musica Result or Object",c("Musica Result" = "result",
@@ -10,7 +12,8 @@ shinyPanelResult <- fluidPage(
                         multiple = TRUE,
                         accept = c(".rda","rds")),
               hr(),
-              textInput("MusicaResultName", value = "", h3("Name your musica result object:")),
+              uiOutput("MusicaResultName"),
+              #textInput("MusicaResultName", value = "", h3("Name your musica result object:")),
               actionButton(inputId = "upload_musica", label = "Upload"),
               hr(),
               downloadButton("download_musica_result", "Download Variants"),
@@ -29,6 +32,6 @@ shinyPanelResult <- fluidPage(
     #actionButton("MusicaResults","Get Musica Result Object")
     
     
-  ))
+  )))
   
   

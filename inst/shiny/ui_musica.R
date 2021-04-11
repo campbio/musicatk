@@ -1,9 +1,9 @@
 shinyPanelMusica <- fluidPage(
-  fluidRow(
+  fluidRow(box(
     uiOutput("genome_list"),
     textOutput("genome_select"),
     column(width = 12,
-           h3("Step 2: Create Musica Object"),
+           h3("Settings"),
            checkboxInput("ref_chr", "Check Reference Chromosomes", TRUE),
            checkboxInput("ref_bases", "Check Reference Bases", TRUE),
            checkboxInput("convert_dbs", "Convert DBS", TRUE),
@@ -31,7 +31,7 @@ shinyPanelMusica <- fluidPage(
            bsTooltip("download_musica", "Press button to dwownload the musica variants.", placement = "bottom", trigger = "hover",
                      options = NULL)
            #helpText("Please find your uploaded object summary on the Import tab.")
-    )),
+    )))
     
     
 )

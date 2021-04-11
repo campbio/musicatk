@@ -2,18 +2,19 @@ shinyPanelImport <- fluidPage(
           fluidRow(
             useShinyjs(),
             column(width = 12,
-                    h3("Step 1: Select File")
+                   # h3("Step 1: Select File")
             )
           ),
-          
-          fileInput("file", "File:",
+          hr(),
+          fluidRow(box(fileInput("file", "Select file:",
                   multiple = TRUE,
                   accept = c(".maf",".vcf")),
-          actionButton("upload", "Add samples"),
-          h3("Added samples"),
+          actionButton("upload", "Add samples"))),
+          
+          fluidRow(box(h3("Added files"),
           #tags$div(id = "file_id",dataTableOutput("my_file_name"),style =  "font-size:40%"),
           tags$div(id = "file_id",DT::dataTableOutput("dtable"),style = "font-size:40%"),
-          uiOutput('undoUI'),
+          uiOutput('undoUI'))),
           hr(),
           actionButton("import", "Import"),
           uiOutput("spinner"),
