@@ -16,8 +16,11 @@ shinyPanelAnnotations <- fluidPage(
                                         "tab" = "\t",
                                         "space" = " ",
                                         "pipe" = "|",
-                                        "semicolon" = ";"),
-                         selected = ",", inline = T)
+                                        "semicolon" = ";",
+                                        "custom" = "custom"),
+                         selected = ",", inline = T),
+            hidden(textInput("CustomAnnotDelim", "Delimiter")),
+            uiOutput("AnnotationSamples")
   ),
   actionButton("AddAnnotation", "Add Annotation"),
   bsTooltip("AddAnnotation",
@@ -25,8 +28,8 @@ shinyPanelAnnotations <- fluidPage(
             placement = "bottom", trigger = "hover", options = NULL),
   bsTooltip("AnnotationDelimiter",
             "Choose the delimiter to parse your text file.", 
-            placement = "right", trigger = "hover", options = NULL), 
-  dataTableOutput("annotations")
-
+            placement = "right", trigger = "hover", options = NULL)),
+  box(width = 12, 
+    dataTableOutput("annotations")
   )
 )
