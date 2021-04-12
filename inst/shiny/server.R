@@ -71,7 +71,7 @@ server <- function(input, output, session) {
     
     file_name <- vals$data$datapath
     if(all(tools::file_ext(file_name) != c("maf","vcf"))){
-      shinyalert("Error: File format not supported! Please upload .maf or .vcf files")
+      shinyalert::shinyalert("Error: File format not supported! Please upload .maf or .vcf files")
     }
     else{
       withCallingHandlers(
@@ -197,7 +197,7 @@ tryCatch({  observeEvent(input$get_musica_object,{
   observeEvent(input$upload_musica,{
     req(input$musica_file)
     if(all(tools::file_ext(input$musica_file$name) != c("rda","rds"))){
-      shinyalert("Error: File format not supported! Please upload .rda or .rds files")
+      shinyalert::shinyalert("Error: File format not supported! Please upload .rda or .rds files")
     }
     else{
       if(input$musica_button == "result"){
@@ -509,7 +509,7 @@ parseDeleteEvent <- function(idstr) {
           modalButton("Cancel"))
         ))
     } else{
-        add_tables(input, output, vals)
+        add_tables(input, vals)
     }
   })
 
@@ -547,14 +547,14 @@ parseDeleteEvent <- function(idstr) {
   })
   
   discSigs <- function(input, vals) {
-    shinybusy::show_spinner()
+    #shinybusy::show_spinner()
     setResult(input$DiscoverResultName, discover_signatures(
       vals$musica, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
       algorithm = input$Method,
       #seed = input$Seed,
       nstart = as.numeric(input$nStart)))
-    shinybusy::hide_spinner()
+    #shinybusy::hide_spinner()
   }
   
   observeEvent(input$confirmResultOverwrite, {
@@ -677,14 +677,14 @@ parseDeleteEvent <- function(idstr) {
   }
 
   getPredict <- function(inputs, vals) {
-    shinybusy::show_spinner()
+    #shinybusy::show_spinner()
     setResult(input$PredictResultName,
       predict_exposure(vals$musica, g = vals$genome, 
                        table_name = input$SelectPredTable,
                        signature_res = vals$cRes,
                        algorithm = input$PredictAlgorithm,
                        signatures_to_use = c(as.numeric(input[[vals$cSigs]]))))
-    shinybusy::hide_spinner()
+    #shinybusy::hide_spinner()
   }
   
   observeEvent(input$confirmPredictOverwrite, {
@@ -695,7 +695,7 @@ parseDeleteEvent <- function(idstr) {
   
   observeEvent(input$confirmOverwrite, {
     removeModal()
-    add_tables(input, output, vals)
+    add_tables(input, vals)
     #showNotification("Existing table overwritten.")
   })
 
@@ -811,13 +811,13 @@ parseDeleteEvent <- function(idstr) {
       other <- isolate(getResult(input$SelectResultB))
     }
     tryCatch({
-      shinybusy::show_spinner()
+      #shinybusy::show_spinner()
       isolate(vals$comparison <- compare_results(isolate(getResult(input$SelectResultA)),
                       other, threshold = as.numeric(input$Threshold),
                       metric = input$CompareMetric))
-      shinybusy::hide_spinner()
+      #shinybusy::hide_spinner()
     }, error = function(cond) {
-      shinybusy::hide_spinner()
+      #shinybusy::hide_spinner()
       shinyalert::shinyalert(title = "Error", text = cond$message)
     })
     colnames(vals$comparison) <- c(input$CompareMetric, 
@@ -907,7 +907,7 @@ parseDeleteEvent <- function(idstr) {
       g1 <- g1[1:gMin]
       g2 <- g2[1:gMin]
     }
-    shinybusy::show_spinner()
+    #shinybusy::show_spinner()
     tryCatch({
       vals$diff <- exposure_differential_analysis(getResult(input$DiffAnalResult),
                                    input$DiffAnalAnnot,

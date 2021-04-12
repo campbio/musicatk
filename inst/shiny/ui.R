@@ -22,6 +22,7 @@ source("ui_download.R",local = T)
 
 ui <- fluidPage(
   shinyalert::useShinyalert(),
+  shinybusy::add_busy_spinner(),
   useShinyjs(),
   dashboardPage(
     dashboardHeader(title = "musicatk"),
