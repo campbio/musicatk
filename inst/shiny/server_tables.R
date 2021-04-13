@@ -22,8 +22,6 @@ add_tables <- function (input, vals) {
       showNotification("Table created.")
     },error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
-    }, warning = function(cond) {
-      print(cond$message)
     }
     )
     #shinybusy::hide_spinner()

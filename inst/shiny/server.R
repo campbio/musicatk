@@ -13,8 +13,8 @@ server <- function(input, output, session) {
     musica = NULL,
     files = NULL,
     result_objects = list(),
-    cSigs = NULL, #cosmic sig
-    cRes = NULL, #cosmic result object
+    pSigs = NULL, #cosmic sig
+    pRes = NULL, #cosmic result object
     annotations = NULL,
     diff = NULL,
     df = NULL,
@@ -461,12 +461,6 @@ parseDeleteEvent <- function(idstr) {
     
   })
   
-  output$TableGenomeList <- renderUI({
-    selectInput("TableGenomeList", "Reference genome:",
-                list("hg19","hg38"), 
-                width ='100%')
-  })
-  
   output$AllowTable <- renderUI({
     if (!is.null(vals$musica)) {
       tagList(
@@ -481,8 +475,6 @@ parseDeleteEvent <- function(idstr) {
       )
     }
   })
-  
-
   
   observeEvent(input$AddTable, {
     # if
@@ -608,7 +600,7 @@ parseDeleteEvent <- function(idstr) {
   
   observeEvent(input$CosmicCountTable, {
     if (input$CosmicCountTable == "SBS") {
-     shinyjs:: show(id = "CosmicSBSSigs")
+      shinyjs::show(id = "CosmicSBSSigs")
       shinyjs::hide(id = "CosmicDBSSigs")
       shinyjs::hide(id = "CosmicINDELSigs")
     } else if (input$CosmicCountTable == "DBS") {
@@ -633,23 +625,50 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
-  observeEvent(input$PredictCosmic, {
-    if (input$CosmicCountTable == "SBS") {
-      vals$cSigs <- "CosmicSBSSigs"
-      vals$cRes <- cosmic_v3_sbs_sigs
-    } else if (input$CosmicCountTable == "DBS") {
-      vals$cSigs <- "CosmicDBSSigs"
-      vals$cRes <- cosmic_v3_dbs_sigs
-      } else {
-      vals$cSigs <- "CosmicINDELSigs"
-      vals$cRes <- cosmic_v3_indel_sigs
+  output$PredictedResult <- renderUI({
+    tagList(
+      selectInput("PredictedResult", h3("Result to Predict"),
+                  choices = list("Cosmic" = list(
+                    "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
+                    "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
+                    "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs"),
+                                 "Other" = list(names(vals$result_objects))),
+                  selected = "cosmic_v3_sbs_sigs"),
+      bsTooltip("PredictedResult",
+                "Result object containing the signatures to predict",
+                placement = "bottom", trigger = "hover", options = NULL)
+    )
+  })
+  
+  output$PrecitedSignatures <- renderUI({
+    
+    if(input$PredictedResult %in% names(cosmic_objects)) {
+        vals$pSigs <- colnames(signatures(
+          cosmic_objects[[input$PredictedResult]]))
+        vals$pRes <- cosmic_objects[[input$PredictedResult]]
     }
-    if (input$PredictResultName == "" | length(input[[vals$cSigs]]) < 2) {
+    else {
+        vals$pSigs <- colnames(signatures(
+          vals$result_objects[[input$PredictedResult]]))
+        vals$pRes <- vals$result_objects[[input$PredictedResult]]
+    }
+    tagList(
+      checkboxGroupInput("PredSigs", "Sigantures to Predict",
+                         choices = vals$pSigs, inline = T,
+                         selected = vals$pSigs),
+      bsTooltip("PredSigs",
+                "Signatures to predict.",
+                placement = "bottom", trigger = "hover", options = NULL)
+    )
+  })
+  
+  observeEvent(input$PredictSigs, {
+    if (input$PredictResultName == "" | length(input$PredSigs) < 2) {
       output$PredictWarning <- renderText({
         validate(
           need(input$PredictResultName != "",
                'You must provide a name for the new result object.'),
-          need(length(c(input[[vals$cSigs]])) >= 2,
+          need(length(c(input$PredSigs)) >= 2,
                'You must select two or more signatures to predict.')
         )
       })
@@ -677,14 +696,12 @@ parseDeleteEvent <- function(idstr) {
   }
 
   getPredict <- function(inputs, vals) {
-    #shinybusy::show_spinner()
     setResult(input$PredictResultName,
-      predict_exposure(vals$musica, g = vals$genome, 
+      predict_exposure(vals$musica, g = select_genome(input$PredictGenomeList),
                        table_name = input$SelectPredTable,
-                       signature_res = vals$cRes,
+                       signature_res = vals$pRes,
                        algorithm = input$PredictAlgorithm,
-                       signatures_to_use = c(as.numeric(input[[vals$cSigs]]))))
-    #shinybusy::hide_spinner()
+                       signatures_to_use = input$PredSigs))
   }
   
   observeEvent(input$confirmPredictOverwrite, {
