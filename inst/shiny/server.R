@@ -626,13 +626,17 @@ parseDeleteEvent <- function(idstr) {
   })
   
   output$PredictedResult <- renderUI({
+    other <- list(names(vals$result_objects))
+    if(length(names(vals$result_objects)) > 1) {
+      other <- names(vals$result_objects)
+    }
     tagList(
-      selectInput("PredictedResult", h3("Result to Predict"),
+      selectInput("PredictedResult", "Result to Predict",
                   choices = list("Cosmic" = list(
                     "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
                     "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
                     "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs"),
-                                 "Other" = list(names(vals$result_objects))),
+                                 "Other" = other),
                   selected = "cosmic_v3_sbs_sigs"),
       bsTooltip("PredictedResult",
                 "Result object containing the signatures to predict",
