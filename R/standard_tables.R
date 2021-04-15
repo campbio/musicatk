@@ -439,20 +439,14 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
                   column_names = all_samples)
   mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), 
                       dimnames = dimlist)
-  if (isTRUE(verbose)) {
-    pb <- utils::txtProgressBar(min = 0, max = length(all_samples), initial = 0,
-                                style = 3)
-    i <- 0
-    
-  }
-
-  ins_len <- nchar(ins$alt)
-  del_len <- nchar(del$ref)
-  ins1 <- ins[which(ins_len == 1), ]
-  ins2 <- ins[which(ins_len > 1), ]
   
-  del1 <- del[which(del_len == 1), ]
-  del2 <- del[which(del_len > 1), ]
+  ins_len <- nchar(all_ins$alt)
+  del_len <- nchar(all_del$ref)
+  ins1 <- all_ins[which(ins_len == 1), ]
+  ins2 <- all_ins[which(ins_len > 1), ]
+  
+  del1 <- all_del[which(del_len == 1), ]
+  del2 <- all_del[which(del_len > 1), ]
   
   if (nrow(del1) == 0) {
     m <- .get_indel_motifs("bp1", 0, 0)
