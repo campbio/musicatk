@@ -431,14 +431,6 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   #samples <- unique(c(as.character(all_ins$sample),
   #                    as.character(all_del$sample)))
   all_samples <- sample_names(musica)
-  dimlist <- list(row_names = c(.get_indel_motifs("bp1", 0, 0),
-                                .get_indel_motifs("bp1", 1, 0),
-                                .get_indel_motifs("del", NA, NA),
-                                .get_indel_motifs("ins", NA, NA),
-                                .get_indel_motifs("micro", NA, NA)),
-                  column_names = all_samples)
-  mut_table <- matrix(NA, nrow = 83, ncol = length(all_samples), 
-                      dimnames = dimlist)
   
   ins_len <- nchar(all_ins$alt)
   del_len <- nchar(all_del$ref)
@@ -489,11 +481,19 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   } else {
     del2_counts <- .count2_del(mut = del2, type = del2$ref, g)
   }
-  mut_table <- rbind(del1_ta, ins1_ta, del2_counts$del,
-                      ins2_ta, del2_counts$micro)
-
+  
+  dimlist <- list(row_names = c(.get_indel_motifs("bp1", 0, 0),
+                                .get_indel_motifs("bp1", 1, 0),
+                                .get_indel_motifs("del", NA, NA),
+                                .get_indel_motifs("ins", NA, NA),
+                                .get_indel_motifs("micro", NA, NA)),
+                  column_names = all_samples)
+  mut_table <- matrix(rbind(del1_ta, ins1_ta, del2_counts$del,
+                            ins2_ta, del2_counts$micro), nrow = 83, 
+                      ncol = length(all_samples), 
+                      dimnames = dimlist)
   motif <- rownames(mut_table)
-  dimnames(mut_table)$row_names <- motif
+  
   mutation <- c(substr(motif[seq_len(24)], 1, 5),
                 paste(unlist(lapply(strsplit(motif[25:83], "_"), "[[", 1)),
                       unlist(lapply(strsplit(motif[25:83], "_"), "[[", 2)),
