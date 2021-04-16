@@ -198,7 +198,8 @@ plot_umap <- function(result, color_by = c("signatures", "annotation",
                           names_repair = "minimal") -> df
     
     # Ensure that the signature order will be the same as in the exposures
-    df$signature <- factor(df$signature, levels = rownames(exposures))
+    df$signature <- factor(df$signature, 
+                           levels = gtools::mixedsort(rownames(exposures)))
     
     # Create base ggplot object for "signatures"
     if (isTRUE(same_scale)) {
