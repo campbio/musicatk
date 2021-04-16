@@ -493,6 +493,7 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
                       ins2_ta, del2_counts$micro)
 
   motif <- rownames(mut_table)
+  dimnames(mut_table)$row_names <- motif
   mutation <- c(substr(motif[seq_len(24)], 1, 5),
                 paste(unlist(lapply(strsplit(motif[25:83], "_"), "[[", 1)),
                       unlist(lapply(strsplit(motif[25:83], "_"), "[[", 2)),
