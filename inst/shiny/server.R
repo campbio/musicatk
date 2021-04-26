@@ -695,6 +695,15 @@ parseDeleteEvent <- function(idstr) {
 
   })
   
+  observeEvent(input$PredictAlgorithm, {
+    if(input$PredictAlgorithm == "deconstructSigs"){
+      shinyjs::show(id = "PredictGenomeList")
+    } else {
+      shinyjs::hide(id = "PredictGenomeList")
+    }
+  })
+
+  
   setResult <- function(x, y) {
     vals$result_objects[[x]] <- y
   }
