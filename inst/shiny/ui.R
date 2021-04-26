@@ -1,6 +1,8 @@
 library(shinydashboard)
 library(shinyjs)
 library(shinyBS)
+library(shinyalert)
+library(shinybusy)
 
 source("ui_import_tcga.R",local = T)
 source("ui_import.R",local = T)
@@ -23,10 +25,15 @@ source("ui_download.R",local = T)
 ui <- fluidPage(
   shinyalert::useShinyalert(),
   shinybusy::add_busy_spinner(),
-  useShinyjs(),
+  shinyjs::useShinyjs(),
   dashboardPage(
     dashboardHeader(title = "musicatk"),
     dashboardSidebar(sidebarMenu(
+      id = "menu",
+      tags$head(tags$style(".inactiveLink {
+                           position: relative;
+                           cursor: not-allowed;
+                           }")),
       menuItem("Import", tabName = "import",
                menuSubItem("Import Files", "import"),
                menuSubItem("Import TCGA datasets", "import_tcga"),
@@ -78,5 +85,9 @@ ui <- fluidPage(
           tabItem(tabName = "download",h2("Download musica result objects"), shinyPanelDownload)
       )
     )
-  )
+  ),
+# tags$script(charset="utf-8", HTML("var x = document.getElementById(\"sidebarItemExpanded\").querySelectorAll(\"li\");
+#                var old_html = x[4].innerHTML;
+#                var new_html = '<span class=\"musica_wrapper\">' + old_html + '</span>';
+#                x[4].innerHTML = new_html;"))
 )

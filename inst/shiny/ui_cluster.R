@@ -2,7 +2,11 @@ library(plotly)
 library(shinyBS)
 cluster_analysis <- fluidPage(
   h2("Clustering Exposures"),
-  uiOutput(outputId = "select_res3"),
+  fluidRow(
+    box(
+      uiOutput(outputId = "select_res3")
+    )
+  ),
   fluidRow(
     box(
       h3("Explore Number of Clusters"),
@@ -19,6 +23,7 @@ cluster_analysis <- fluidPage(
         choices = c("k-means" = "kmeans", "Hierarchical" = "hclust", 
                     "Hierarchical k-means" = "hkmeans", "k-medoids" = "pam", "CLARA" = "clara")
       ),
+      add_busy_spinner(spin = "fading-circle"),
       uiOutput(outputId = "no_cluster1"),
       checkboxInput(inputId = "proportional2", label = "Proportional", value = TRUE),
       actionButton(inputId = "explore", label = "Explore"),
