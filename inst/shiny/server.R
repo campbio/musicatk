@@ -9,6 +9,7 @@ source("server_tables.R", local = TRUE)
 server <- function(input, output, session) {
 #################### GENERAL ##################################################  
   addCssClass(selector = "a[data-value='musica']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='annotations']", class = "inactiveLink")
   addCssClass(selector = "a[data-value='tables']", class = "inactiveLink")
   addCssClass(selector = "a[data-value='discover']", class = "inactiveLink")
   addCssClass(selector = "a[data-value='predict']", class = "inactiveLink")
@@ -49,6 +50,12 @@ server <- function(input, output, session) {
       }
       else{
         removeCssClass(selector = "a[data-value='musica']", class = "inactiveLink")
+      }
+    }
+    else if(input$menu == "annotations") {
+      if(is.null(vals$musica) && length(vals$result_objects) == 0) {
+        shinyalert::shinyalert("Error", "No musica result or object was found. Please go to \"Import\" or \"Create Musica Object\" to upload or create an object.", "error")
+        updateTabItems(session, "menu", "import")
       }
     }
     else if(input$menu == "tables") {
@@ -169,6 +176,7 @@ server <- function(input, output, session) {
   observeEvent(vals$musica, {
     if(!is.null(vals$musica)){
       removeCssClass(selector = "a[data-value='tables']", class = "inactiveLink")
+      removeCssClass(selector = "a[data-value='annotations']", class = "inactiveLink")
     }
     tryCatch(
       {
@@ -196,6 +204,7 @@ server <- function(input, output, session) {
   
   observeEvent(vals$result_objects, {
     if(length(vals$result_objects) > 0){
+      removeCssClass(selector = "a[data-value='annotations']", class = "inactiveLink")
       removeCssClass(selector = "a[data-value='visualization']", class = "inactiveLink")
       removeCssClass(selector = "a[data-value='compare']", class = "inactiveLink")
       removeCssClass(selector = "a[data-value='differentialanalysis']", class = "inactiveLink")
@@ -741,13 +750,19 @@ parseDeleteEvent <- function(idstr) {
   })
   
   output$AnnotationMusicaList <- renderUI({
-    tagList(
-      selectInput("AnnotationMusicaList", h3("Select Musica Object"),
-                  choices = list("musica objects" = list(ifelse(is.null(vals$musica), NULL, "musica")),
-                  "result objects" = list(names(vals$result_objects))))
-    )
+    if(is.null(vals$musica)) {
+      tagList(
+        selectInput("AnnotationMusicaList", "Select object",
+                    choices = list("result objects" = list(names(vals$result_objects))))        
+      )
+    } else {
+      tagList(
+        selectInput("AnnotationMusicaList", "Select object",
+                    choices = list("musica object" = list("musica"),
+                    "result objects" = list(names(vals$result_objects))))
+      )
+    }
   })
-  
 
   # Discover Musica Result Object
   output$DiscoverResultName <- renderUI({
