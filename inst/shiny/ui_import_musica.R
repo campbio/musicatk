@@ -1,8 +1,8 @@
 shinyPanelResult <- fluidPage(
   fluidRow(box(width = 12,
     useShinyjs(),
-    useShinyalert(),
-    add_busy_spinner(spin = "fading-circle"),
+    shinyalert::useShinyalert(),
+    shinybusy::add_busy_spinner(spin = "fading-circle"),
     #wellPanel(id = "musica_data",
               #h1("Upload your Music Result Object"),
               radioButtons("musica_button","Upload Musica Result or Object",c("Musica Result" = "result",

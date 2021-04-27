@@ -13,17 +13,18 @@ add_tables <- function (input, vals) {
         table_name <- "SBS192"
         strand_type = "Replication_Strand"
     }
+    #shinybusy::show_spinner()
     tryCatch( {
       build_standard_table(vals$musica, select_genome(input$TableGenomeList),
                          table_name = table_name,
                          strand_type = strand_type,
                          overwrite = T)
+      showNotification("Table created.")
     },error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
-    }, warning = function(cond) {
-      print(cond$message)
     }
     )
+    #shinybusy::hide_spinner()
     return()
   }
   shinyalert::shinyalert(title = "Oops",

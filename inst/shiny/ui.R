@@ -3,8 +3,7 @@ library(shinyjs)
 library(shinyBS)
 library(shinyalert)
 library(shinybusy)
-library(TCGAbiolinks)
-
+library(TCGAbiolinks
 source("ui_import_tcga.R",local = TRUE)
 source("ui_import.R",local = TRUE)
 source("ui_import_musica.R",local = TRUE)
@@ -25,23 +24,28 @@ source("ui_download.R",local = TRUE)
 
 ui <- fluidPage(
   shinyalert::useShinyalert(),
-  useShinyjs(),
+  shinybusy::add_busy_spinner(),
+  shinyjs::useShinyjs(),
   dashboardPage(
     dashboardHeader(title = "musicatk"),
     dashboardSidebar(sidebarMenu(
+      id = "menu",
+      tags$head(tags$style(".inactiveLink {
+                           position: relative;
+                           cursor: not-allowed;
+                           }")),
       menuItem("Import", tabName = "import",
                menuSubItem("Import Files", "import"),
-               menuSubItem("Import existing TCGA datasets", "import_tcga"),
+               menuSubItem("Import TCGA datasets", "import_tcga"),
                menuSubItem("Import Musica Result Object", "musica_result"),
                menuSubItem("Import Annotations", "annotations")),
       #menuItem("Genome", tabName = "genome"),
       menuItem("Create Musica Object", tabName = "musica"),
+      menuItem("Import Annotations", tabName = "annotations"),
       menuItem("Build Tables", tabName = "tables"),
-      #menuItem("Annotations", tabName = "annotations", icon = icon("th")),
       menuItem("Signatures and Exposures", tabName = "signatures",
-               menuSubItem("Discover Signatures and Exposures", "discover"),
-               menuSubItem("Predict Signature Exposures", "predict"),
-               menuSubItem("Compare Signatures", "compare")),
+               menuSubItem("Discover", "discover"),
+               menuSubItem("Predict", "predict")),
       menuItem("Data Visualization", tabName = "visualization"),
       menuItem("Additional Analysis", tabName = "downstream",
                menuSubItem("Compare Signatures", tabName = "compare"),
@@ -65,11 +69,11 @@ ui <- fluidPage(
           tabItem(tabName = "tables", h2("Create Tables"), shinyPanelTables),
           tabItem(tabName = "annotations", h2("Add Sample Annotations"), 
                   shinyPanelAnnotations),
-          tabItem(tabName = "discover", h2("Discover Signatures and Exposures"), 
+          tabItem(tabName = "discover", h2("Discover Signatures and Exposures"),
                 shinyPanelDiscover),
           tabItem(tabName = "predict", h2("Predict Signature Exposures"),
                   shinyPanelPredict),
-          tabItem(tabName = "compare", h2("Compare Signatures"), 
+          tabItem(tabName = "compare", h2("Compare Signatures"),
                   shinyPanelCompare),
           tabItem(tabName = "differentialanalysis", h2("Differential Analysis"),
                   shinyPanelDifferentialAnalysis),
@@ -82,5 +86,9 @@ ui <- fluidPage(
           tabItem(tabName = "download",h2("Download musica result objects"), shinyPanelDownload)
       )
     )
-  )
+  ),
+# tags$script(charset="utf-8", HTML("var x = document.getElementById(\"sidebarItemExpanded\").querySelectorAll(\"li\");
+#                var old_html = x[4].innerHTML;
+#                var new_html = '<span class=\"musica_wrapper\">' + old_html + '</span>';
+#                x[4].innerHTML = new_html;"))
 )
