@@ -1,6 +1,5 @@
 shinyPanelPredict <- fluidPage(
   box( width = 12,
-    helpText("Use this tab to calculate the exposures of specified signatures in your samples."),
     uiOutput("PredictedResult"),
     uiOutput("PrecitedSignatures"),
     uiOutput("PredictTable"),
