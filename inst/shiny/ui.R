@@ -3,7 +3,7 @@ library(shinyjs)
 library(shinyBS)
 library(shinyalert)
 library(shinybusy)
-library(TCGAbiolinks
+library(TCGAbiolinks)
 source("ui_import_tcga.R",local = TRUE)
 source("ui_import.R",local = TRUE)
 source("ui_import_musica.R",local = TRUE)
