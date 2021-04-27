@@ -24,6 +24,8 @@ shinyPanelheatmap <- fluidPage(
                     selected = ""
                   ),
                   tags$div(id = "sortbysigs"),
+                  
+                  
                   radioButtons(
                     inputId = "subset_tum",
                     label = "",
@@ -31,9 +33,8 @@ shinyPanelheatmap <- fluidPage(
                     inline = TRUE,
                     selected = ""
                   ),
-                  tags$div(id = "sortbytum")
+                  tags$div(id = "sortbytum"),
                   
-                  ,
                   radioButtons(
                     inputId = "subset_annot",
                     label = "Annotate by",

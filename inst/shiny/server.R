@@ -2,9 +2,11 @@ library(musicatk)
 library(plotly)
 library(sortable)
 library(shinyBS)
+library(shinyalert)
+library(TCGAbiolinks)
 
-options(shiny.maxRequestSize = 1000*1024^2)
-source("server_tables.R", local = TRUE)
+options(shiny.maxRequestSize = 100*1024^2)
+source("server_tables.R", local = T)
 
 server <- function(input, output, session) {
 #################### GENERAL ##################################################  
@@ -231,38 +233,64 @@ server <- function(input, output, session) {
   #   removeUI(selector = "div#file_id")
   #   return(var)
   # })
-
   output$tcga_tumor <- renderUI({
     hr()
+    p <- TCGAbiolinks:::getGDCprojects()$project_id
+    t <- grep("TCGA",p)
+    p <- p[t]
+    p <- gsub(".*-","",p)
     textInput("tcga_tumor","Enter TCGA tumor type")
+    #checkboxGroupInput("tcga_tumor","Select Tumor",choices = as.list(p))
+    selectInput("tcga_tumor","Select Tumor",choices = as.list(p),multiple = TRUE)
   })
+  
   observeEvent(input$import_tcga,{
-    shinybusy::show_spinner()
-    maf <- TCGAbiolinks::GDCquery_Maf(input$tcga_tumor,pipelines = "mutect")
-    vals$var <- extract_variants_from_maf_file(maf)
-    showNotification("TCGA dataset successfully imported!")
-    shinybusy::hide_spinner()
+    req(input$import_tcga)
+    # validate(
+    #   need(input$import_tcga, 'Check at least one letter!')
+    # )
+    if(!is.null(input$tcga_tumor)){
+      shinybusy::show_spinner()
+      maf <- TCGAbiolinks::GDCquery_Maf(input$tcga_tumor,pipelines = "mutect")
+      vals$var <- extract_variants_from_maf_file(maf)
+      showNotification("TCGA dataset successfully imported!")
+      shinybusy::hide_spinner()
+    }
+    else if(is.null(input$tcga_tumor)){
+      shinyalert("Error: No tumor found. Please select a tumor from the list!")
+      }
   })
+  
+  output$tcga_contents <- renderDataTable({
+    req(vals$var)
+    return(head(vals$var))
+    shinyjs::show(id="tcga_contents")
+    js$enableTabs()
+  })
+  
   observeEvent(input$import,{
     req(input$file)
-    
-    withProgress(message = "Importing",{
-      for (i in 1:15) {
-        incProgress(1/15)
-        Sys.sleep(0.25)
-      }
-    })
+
+    # withProgress(message = "Importing",{
+    #   for (i in 1:15) {
+    #     incProgress(1/15)
+    #     Sys.sleep(0.25)
+    #   }
+    # })
     
     file_name <- vals$data$datapath
     if(all(tools::file_ext(file_name) != c("maf","vcf"))){
       shinyalert::shinyalert("Error: File format not supported! Please upload .maf or .vcf files")
     }
     else{
-      withCallingHandlers(
-        vals$var <- extract_variants(c(file_name)),
-        message = function(m)output$text <- renderPrint(m$message))
-        removeUI(selector = "div#file_id")
+     #withCallingHandlers(
+        shinybusy::show_spinner()
+        vals$var <- extract_variants(c(file_name))
+        shinybusy::hide_spinner()
         showNotification("Import successfully completed!")
+        #message = function(m)output$text <- renderPrint(m$message))
+        #removeUI(selector = "div#file_id")
+        
         }
   })
 
@@ -271,7 +299,7 @@ server <- function(input, output, session) {
     g <-strsplit(g,",")
     gg <- gsub("^.*?\\.","", g)
     selectInput("GenomeSelect", "Choose genome:",
-                list( "Common genomes" = list("hg18","hg19","hg38","mm9","mm10"),
+                list( "Common genomes" = list("hg38","hg19","hg18","mm9","mm10"),
                       "Genomes" = gg), 
                 width ='100%')
   })
@@ -302,27 +330,32 @@ server <- function(input, output, session) {
     return(stand_indels)
   })
 
-tryCatch({  observeEvent(input$get_musica_object,{
+tryCatch({observeEvent(input$get_musica_object,{
     shinybusy::show_spinner()
     vals$genome <- input$GenomeSelect
-    vals$genome <- select_genome(vals$genome)
-    vals$musica <- create_musica(x = vals$var, genome = vals$genome,check_ref_chromosomes = check_chr(),check_ref_bases = check_bases(),
+    #vals$genome <- select_genome(vals$genome)
+    if(!is.null(vals$var)){
+      vals$musica <- create_musica(x = vals$var, genome = select_genome(vals$genome),check_ref_chromosomes = check_chr(),check_ref_bases = check_bases(),
                             convert_dbs = convert_dbs(),standardize_indels = stand_indels())
-   #vals$musica_message <- capture.output(data <- )
-    showNotification("Musica Object successfully created! ")
-    if(req(input$get_musica_object)){
-      shinyjs::show(id = "download_musica")}
-    else {
-      shinyjs::hide(id = "download_musica")
+     #vals$musica_message <- capture.output(data <- )
+      
+      if(req(input$get_musica_object)){
+        shinyjs::show(id = "download_musica")}
+      else {
+        shinyjs::hide(id = "download_musica")
+      }
+      shinybusy::hide_spinner()
+      showNotification("Musica Object successfully created! ")
     }
-    shinybusy::hide_spinner()  
-    
+    else{
+      shinyalert("Error: Please import files first in the Import section!")
+    }
   })},
   error = function(cond){
     shinyalert::shinyalert(title = "Error", text = cond$message)
   },
   warning = function(cond) {
-    print(cond$message)
+    shinyalert::shinyalert(title = "Error", text = cond$message)
   })
  
  output$musica_console <- renderPrint({
@@ -330,8 +363,8 @@ tryCatch({  observeEvent(input$get_musica_object,{
  })
  
   output$musica_contents <- renderDataTable({
-    req(vals$musica)
-    return(head(vals$musica@variants))
+    req(vals$var)
+    return(head(vals$var))
     shinyjs::show(id="musica_contents")
     js$enableTabs()
   })
@@ -365,7 +398,7 @@ tryCatch({  observeEvent(input$get_musica_object,{
   
   observe(
     if(!is.null(req(input$musica_file))){
-    vals$musica_name_user <- input$musica_file$name
+    vals$musica_name_user <- tools::file_path_sans_ext(input$musica_file$name)
   })
   
   output$MusicaResultName <- renderUI(
@@ -1631,7 +1664,9 @@ parseDeleteEvent <- function(idstr) {
         selector = "#sortbytum",
         ui = tags$div(
           id = "inserttum",
-          selectInput("tum_val","",choices = as.list(unique(vals$result_objects[[input$select_res_heatmap]]@musica@sample_annotations$Tumor_Subtypes)))
+          #selectInput("tum_val","",choices = as.list(unique(vals$result_objects[[input$select_res_heatmap]]@musica@sample_annotations$Tumor_Subtypes)))
+          checkboxGroupInput("tum_val","Available Samples:",
+                             as.list(unique(vals$result_objects[[input$select_res_heatmap]]@musica@sample_annotations$Tumor_Subtypes)))
           )
         )
 
@@ -1648,7 +1683,7 @@ parseDeleteEvent <- function(idstr) {
         selector = "#sortbyannot",
         ui = tags$div(
           id = "#insertannot",
-          checkboxGroupInput("annot_val","Available annptations:",
+          checkboxGroupInput("annot_val","Available annotations:",
                              c(as.list(colnames(samp_annot(vals$result_objects[[input$select_res_heatmap]]))))
           #selectInput("annot_val","",choices = as.list(colnames(samp_annot(vals$result_objects[[input$select_res_heatmap]])))
         )
@@ -1658,12 +1693,21 @@ parseDeleteEvent <- function(idstr) {
       removeUI(selector = "#insertannot")
     }
   })
-  observeEvent(input$get_heatmap,{
-    output$heatmap <- renderPlot({
+observeEvent(input$get_heatmap,{
+  output$heatmap <- renderPlot({
+    req(input$select_res_heatmap)
     #paste0("Heatmap")
-    plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val,column_title = paste0("Heatmap for ",input$select_res_heatmap))
+    # propor()
+    # sel_col_names()
+    # sel_row_names()
+    # zscale()
+    # input$sig_to
+    # input$tum_val
+    # input$annot_val
+    input$get_heatmap
+    isolate(plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val,column_title = paste0("Heatmap for ",input$select_res_heatmap)))
   })
-  }) 
+ }) 
   output$download_heatmap <- downloadHandler(
     filename = function() {
       paste("heatmap", ".png", sep = "")
