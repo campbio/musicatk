@@ -1,24 +1,27 @@
 library(shinydashboard)
 library(shinyjs)
 library(shinyBS)
+library(shinyalert)
+library(shinybusy)
+library(TCGAbiolinks)
 
-source("ui_import_tcga.R",local = T)
-source("ui_import.R",local = T)
-source("ui_import_musica.R",local = T)
-#source("ui_genome.R", local = T)
-source("ui_musica.R",local = T)
-#source("ui_test.R",local = T)
-source("ui_discover.R", local = T)
-source("ui_tables.R", local = T)
-source("ui_resultvisualization.R", local = T)
-source("ui_predict.R", local = T)
-source("ui_annotations.R", local = T)
-source("ui_compare.R", local = T)
-source("ui_help.R", local = T)
-source("ui_heatmap.R",local = T)
-source("ui_cluster.R",local = T)
-source("ui_differentialanalysis.R", local = T)
-source("ui_download.R",local = T)
+source("ui_import_tcga.R",local = TRUE)
+source("ui_import.R",local = TRUE)
+source("ui_import_musica.R",local = TRUE)
+#source("ui_genome.R", local = TRUE)
+source("ui_musica.R",local = TRUE)
+#source("ui_test.R",local = TRUE)
+source("ui_discover.R", local = TRUE)
+source("ui_tables.R", local = TRUE)
+source("ui_resultvisualization.R", local = TRUE)
+source("ui_predict.R", local = TRUE)
+source("ui_annotations.R", local = TRUE)
+source("ui_compare.R", local = TRUE)
+source("ui_help.R", local = TRUE)
+source("ui_heatmap.R",local = TRUE)
+source("ui_cluster.R",local = TRUE)
+source("ui_differentialanalysis.R", local = TRUE)
+source("ui_download.R",local = TRUE)
 
 ui <- fluidPage(
   shinyalert::useShinyalert(),
@@ -28,7 +31,7 @@ ui <- fluidPage(
     dashboardSidebar(sidebarMenu(
       menuItem("Import", tabName = "import",
                menuSubItem("Import Files", "import"),
-               menuSubItem("Import TCGA datasets", "import_tcga"),
+               menuSubItem("Import existing TCGA datasets", "import_tcga"),
                menuSubItem("Import Musica Result Object", "musica_result"),
                menuSubItem("Import Annotations", "annotations")),
       #menuItem("Genome", tabName = "genome"),
