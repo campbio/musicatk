@@ -263,6 +263,7 @@ server <- function(input, output, session) {
   
   output$tcga_contents <- renderDataTable({
     req(vals$var)
+    req(input$tcga_tumor)
     return(head(vals$var))
     shinyjs::show(id="tcga_contents")
     js$enableTabs()

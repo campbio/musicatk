@@ -37,7 +37,7 @@ ui <- fluidPage(
       menuItem("Import", tabName = "import",
                menuSubItem("Import Files", "import"),
                menuSubItem("Import TCGA datasets", "import_tcga"),
-               menuSubItem("Import Musica Result Object", "musica_result"),
+               menuSubItem("Import Musica", "musica_result"),
                menuSubItem("Import Annotations", "annotations")),
       #menuItem("Genome", tabName = "genome"),
       menuItem("Create Musica Object", tabName = "musica"),
