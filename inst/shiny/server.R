@@ -5,7 +5,6 @@ library(shinyBS)
 library(shinyalert)
 library(TCGAbiolinks)
 
-
 options(shiny.maxRequestSize = 1000*1024^2)
 source("server_tables.R", local = T)
 
