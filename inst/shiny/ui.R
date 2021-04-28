@@ -39,7 +39,7 @@ ui <- fluidPage(
                menuSubItem("Import Musica Result Object", "musica_result")),
       #menuItem("Genome", tabName = "genome"),
       menuItem("Create Musica Object", tabName = "musica"),
-      menuItem("Import Annotations", tabName = "annotations"),
+      menuItem("Annotations", tabName = "annotations"),
       menuItem("Build Tables", tabName = "tables"),
       menuItem("Signatures and Exposures", tabName = "signatures",
                menuSubItem("Discover", "discover"),

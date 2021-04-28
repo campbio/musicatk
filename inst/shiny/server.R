@@ -5,7 +5,7 @@ library(shinyBS)
 library(shinyalert)
 library(TCGAbiolinks)
 
-options(shiny.maxRequestSize = 100*1024^2)
+options(shiny.maxRequestSize = 1000*1024^2)
 source("server_tables.R", local = T)
 
 server <- function(input, output, session) {
@@ -987,28 +987,29 @@ parseDeleteEvent <- function(idstr) {
   
   #Add Annotations to Musica object
   observeEvent(input$AddAnnotation, {
-    if (!is.null(vals$musica)) {
+    if (!is.null(getResult(input$AnnotationMusicaList))) {
       tryCatch( {
-      new_annot <- merge(samp_annot(vals$musica),
+      new_annot <- merge(samp_annot(getResult(input$AnnotationMusicaList)),
                          vals$annotations, by.x = "Samples", 
                          by.y = input$AnnotSampleColumn,
                          all.x = T)
-      sapply(names(vals$annotations), 
+      sapply(names(new_annot), 
              FUN = function(a) {
-          samp_annot(vals$musica, a) <- new_annot[,a]
+          samp_annot(vals$result_objects[[input$AnnotationMusicaList]], a) <- 
+            new_annot[,a]
         })
         showNotification("Annotations have been added")
         }, error = function(cond) {
           shinyalert::shinyalert(title = "Error", text = cond$message)
           return()
         })
-    } else if (!is.null(getResult(input$AnnotationMusicaList))) {
+    } else if (!is.null(vals$musica)) {
       tryCatch( {
       new_annot <- merge(samp_annot(vals$musica),
-                         vals$annotations, by.x = "Samples", 
+                         vals$annotations, by.x = "Samples",
                          by.y = input$AnnotSampleColumn,
                          all.x = T)
-      sapply(names(vals$annotations), 
+      sapply(names(new_annot),
              FUN = function(a) {
                samp_annot(vals$musica, a) <- new_annot[,a]
              })
@@ -1020,6 +1021,7 @@ parseDeleteEvent <- function(idstr) {
     } else {
       print("Error: selected object does not exist")
     }
+    
   })
 
   output$CompareResultA <- renderUI({
