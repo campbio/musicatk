@@ -972,7 +972,8 @@ parseDeleteEvent <- function(idstr) {
     }
     vals$annotations <- read.delim(file$datapath, 
                                    header = input$AnnotationHeader,
-                                   sep = delim)[,-1]
+                                   sep = delim,
+                                   as.is = TRUE)
     vals$annotations
     
   }, options = list(scrollX = T))
@@ -1890,14 +1891,14 @@ observeEvent(input$get_heatmap,{
     row.names(annot) <- annot$Samples
     dat <- cbind(annot, vals$cluster)
     output$cluster_table <- DT::renderDataTable(
-      DT::datatable(dat[,-1])
+      DT::datatable(vals$cluster)
     )
     output$download_cluster <- downloadHandler(
       filename = function() {
         paste0(input$selected_res3, "_cluster.txt")
       },
       content = function(file){
-        write.table(dat[,-1], file, sep = '\t', quote = F)
+        write.table(vals$cluster, file, sep = '\t', quote = F)
       }
     )
   })
