@@ -21,6 +21,7 @@ server <- function(input, output, session) {
   addCssClass(selector = "a[data-value='differentialanalysis']", class = "inactiveLink")
   addCssClass(selector = "a[data-value='cluster']", class = "inactiveLink")
   addCssClass(selector = "a[data-value='heatmap']", class = "inactiveLink")
+  addCssClass(selector = "a[data-value='download']", class = "inactiveLink")
   
   vals <- reactiveValues(
     genome = NULL,
@@ -57,7 +58,13 @@ server <- function(input, output, session) {
     }
     else if(input$menu == "annotations") {
       if(is.null(vals$musica) && length(vals$result_objects) == 0) {
-        shinyalert::shinyalert("Error", "No musica result or object was found. Please go to \"Import\" or \"Create Musica Object\" to upload or create an object.", "error")
+        shinyalert::shinyalert("Error", "No musica object was found. Please go to \"Import\" or \"Create Musica Object\" to upload or create an object.", "error")
+        updateTabItems(session, "menu", "import")
+      }
+    }
+    else if(input$menu == "download") {
+      if(is.null(vals$musica) && length(vals$result_objects) == 0) {
+        shinyalert::shinyalert("Error", "No musica object was found. Please go to \"Import\" or \"Create Musica Object\" to upload or create an object.", "error")
         updateTabItems(session, "menu", "import")
       }
     }
@@ -180,6 +187,7 @@ server <- function(input, output, session) {
     if(!is.null(vals$musica)){
       removeCssClass(selector = "a[data-value='tables']", class = "inactiveLink")
       removeCssClass(selector = "a[data-value='annotations']", class = "inactiveLink")
+      removeCssClass(selector = "a[data-value='download']", class = "inactiveLink")
     }
     tryCatch(
       {
@@ -1891,14 +1899,14 @@ observeEvent(input$get_heatmap,{
     row.names(annot) <- annot$Samples
     dat <- cbind(annot, vals$cluster)
     output$cluster_table <- DT::renderDataTable(
-      DT::datatable(vals$cluster)
+      DT::datatable(dat[-1])
     )
     output$download_cluster <- downloadHandler(
       filename = function() {
         paste0(input$selected_res3, "_cluster.txt")
       },
       content = function(file){
-        write.table(vals$cluster, file, sep = '\t', quote = F)
+        write.table(dat[-1], file, sep = '\t', quote = F)
       }
     )
   })
