@@ -9,7 +9,6 @@ source("ui_import.R",local = TRUE)
 source("ui_import_musica.R",local = TRUE)
 #source("ui_genome.R", local = TRUE)
 source("ui_musica.R",local = TRUE)
-#source("ui_test.R",local = TRUE)
 source("ui_discover.R", local = TRUE)
 source("ui_tables.R", local = TRUE)
 source("ui_resultvisualization.R", local = TRUE)
@@ -37,11 +36,10 @@ ui <- fluidPage(
       menuItem("Import", tabName = "import",
                menuSubItem("Import Files", "import"),
                menuSubItem("Import TCGA datasets", "import_tcga"),
-               menuSubItem("Import Musica Result Object", "musica_result"),
-               menuSubItem("Import Annotations", "annotations")),
+               menuSubItem("Import Musica Result Object", "musica_result")),
       #menuItem("Genome", tabName = "genome"),
       menuItem("Create Musica Object", tabName = "musica"),
-      menuItem("Import Annotations", tabName = "annotations"),
+      menuItem("Annotations", tabName = "annotations"),
       menuItem("Build Tables", tabName = "tables"),
       menuItem("Signatures and Exposures", tabName = "signatures",
                menuSubItem("Discover", "discover"),

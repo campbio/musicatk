@@ -1,6 +1,5 @@
 shinyPanelCompare <- fluidPage(
   box( width = 12,
-       helpText("Use this tab to compare the signatures in any two musica result objects"),
     uiOutput("CompareResultA"),
     uiOutput("CompareResultB"),
     # textInput("Threshold", "Threshold", value = "0.9"),

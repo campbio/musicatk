@@ -5,7 +5,11 @@ library(shinyBS)
 library(shinyalert)
 library(TCGAbiolinks)
 
+<<<<<<< HEAD
+options(shiny.maxRequestSize = 1000*1024^2)
+=======
 options(shiny.maxRequestSize = 100*1024^2)
+>>>>>>> refs/remotes/upstream/shiny
 source("server_tables.R", local = T)
 
 server <- function(input, output, session) {
@@ -259,6 +263,7 @@ server <- function(input, output, session) {
     else if(is.null(input$tcga_tumor)){
       shinyalert("Error: No tumor found. Please select a tumor from the list!")
       }
+<<<<<<< HEAD
   })
   
   output$tcga_contents <- renderDataTable({
@@ -268,6 +273,17 @@ server <- function(input, output, session) {
     js$enableTabs()
   })
   
+=======
+  })
+  
+  output$tcga_contents <- renderDataTable({
+    req(vals$var)
+    return(head(vals$var))
+    shinyjs::show(id="tcga_contents")
+    js$enableTabs()
+  })
+  
+>>>>>>> refs/remotes/upstream/shiny
   observeEvent(input$import,{
     req(input$file)
 
@@ -987,28 +1003,29 @@ parseDeleteEvent <- function(idstr) {
   
   #Add Annotations to Musica object
   observeEvent(input$AddAnnotation, {
-    if (!is.null(vals$musica)) {
+    if (!is.null(getResult(input$AnnotationMusicaList))) {
       tryCatch( {
-      new_annot <- merge(samp_annot(vals$musica),
+      new_annot <- merge(samp_annot(getResult(input$AnnotationMusicaList)),
                          vals$annotations, by.x = "Samples", 
                          by.y = input$AnnotSampleColumn,
                          all.x = T)
-      sapply(names(vals$annotations), 
+      sapply(names(new_annot), 
              FUN = function(a) {
-          samp_annot(vals$musica, a) <- new_annot[,a]
+          samp_annot(vals$result_objects[[input$AnnotationMusicaList]], a) <- 
+            new_annot[,a]
         })
         showNotification("Annotations have been added")
         }, error = function(cond) {
           shinyalert::shinyalert(title = "Error", text = cond$message)
           return()
         })
-    } else if (!is.null(getResult(input$AnnotationMusicaList))) {
+    } else if (!is.null(vals$musica)) {
       tryCatch( {
       new_annot <- merge(samp_annot(vals$musica),
-                         vals$annotations, by.x = "Samples", 
+                         vals$annotations, by.x = "Samples",
                          by.y = input$AnnotSampleColumn,
                          all.x = T)
-      sapply(names(vals$annotations), 
+      sapply(names(new_annot),
              FUN = function(a) {
                samp_annot(vals$musica, a) <- new_annot[,a]
              })
@@ -1020,6 +1037,7 @@ parseDeleteEvent <- function(idstr) {
     } else {
       print("Error: selected object does not exist")
     }
+    
   })
 
   output$CompareResultA <- renderUI({
