@@ -67,6 +67,7 @@ Imports:
     shinyjs,
     shinyalert,
     shinybusy,
+    shinyBS,
     TCGAbiolinks
 Suggests:
     testthat,
