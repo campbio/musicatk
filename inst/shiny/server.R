@@ -1811,7 +1811,7 @@ observeEvent(input$get_heatmap,{
     }
     if(input$algorithm2 %in% c("kmeans", "hkmeans")){
       insertUI(
-        selector = "iter",
+        selector = "#iter",
         ui = numericInput(inputId = "max_iter",
                           label = "Max No. of Iterations",
                           value = 10,
