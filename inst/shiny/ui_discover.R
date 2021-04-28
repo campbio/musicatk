@@ -1,6 +1,5 @@
 shinyPanelDiscover <- fluidPage(
   box(width = 12,
-    helpText("Use this tabe to discover mutational signatures and exposures."),
     uiOutput("DiscoverTable"),
     hidden(textInput("GetTableName", "Custon Table Name")),
     textInput("NumberOfSignatures", "Number of signatures", value = 5),
