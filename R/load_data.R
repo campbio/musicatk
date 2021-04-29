@@ -315,20 +315,22 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
   }
 
   # Find variants in that sample (alt allele having number other than 0)
-  pass <- stringr::str_detect(VariantAnnotation::geno(vcf)$GT[, id], "[1-9]")
-  if (sum(pass) == 0) {
-    if (id != vcf_name) {
-      warning("All variants matched the reference allele ",
-              "for: ", vcf_name, " (", id, ")")
-
-    } else {
-      warning("All variants matched the reference allele ",
-              "for id: ", id)
+  if (isTRUE(filter)) {
+    pass <- stringr::str_detect(VariantAnnotation::geno(vcf)$GT[, id], "[1-9]")
+    if (sum(pass) == 0) {
+      if (id != vcf_name) {
+        warning("All variants matched the reference allele ",
+                "for: ", vcf_name, " (", id, ")")
+  
+      } else {
+        warning("All variants matched the reference allele ",
+                "for id: ", id)
+      }
+      return(NULL)
     }
-    return(NULL)
+    vcf <- vcf[pass, ]
   }
-  vcf <- vcf[pass, ]
-
+    
   # What does this do?
   rows <- SummarizedExperiment::rowRanges(vcf)
   dt <- cbind(data.table::as.data.table(rows)[, c("seqnames", "REF", "ALT",
