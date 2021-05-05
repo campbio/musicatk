@@ -7,14 +7,15 @@ musicaresultvisualization <- fluidPage(
     tabBox(
       title = "",
       id = "tabset1",
+      width = NULL,
       tabPanel(
         title = "Signatures",
         h3("Settings"),
         uiOutput(outputId = "select_res1"),
-        checkboxInput(inputId = "rename", label = "Rename Signatures", value = FALSE),
+        checkboxInput(inputId = "rename", label = "Rename Signatures", value = FALSE, width = "100%"),
         tags$div(id = "signame"),
-        numericInput(inputId = "textsize1", label = "Text Size", value = 10),
-        numericInput(inputId = "facetsize", label = "Facet Size", value = 10),
+        numericInput(inputId = "textsize1", label = "Text Size", value = 10, width = "50%"),
+        numericInput(inputId = "facetsize", label = "Facet Size", value = 10, width = "50%"),
         checkboxInput(inputId = "legend1", label = "Legend", value = TRUE),
         checkboxInput(inputId = "xlab1", label = "X-axis Label", value = TRUE),
         checkboxInput(inputId = "scale1", label = "Same Y-axis Scale", value = TRUE),
@@ -108,8 +109,7 @@ musicaresultvisualization <- fluidPage(
                  )
                ),
                actionButton(inputId = "get_plot2", label = "Make Plot"),
-               tags$div(id = "plotdiv2"),
-               plotlyOutput(outputId = "expplot")
+               tags$div(id = "plotdiv2")
       )
     )
   )

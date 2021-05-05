@@ -4,11 +4,13 @@ cluster_analysis <- fluidPage(
   h2("Clustering Exposures"),
   fluidRow(
     box(
+      width = 12,
       uiOutput(outputId = "select_res3")
     )
   ),
   fluidRow(
     box(
+      width = 12,
       h3("Explore Number of Clusters"),
       selectInput(
         inputId = "metric",
@@ -32,6 +34,7 @@ cluster_analysis <- fluidPage(
   ),
   fluidRow(
     box(
+      width = 12,
       h3("Clustering"),
       uiOutput(outputId = "no_cluster2"),
       checkboxInput(inputId = "proportional3", label = "Proportional", value = TRUE),
@@ -51,6 +54,7 @@ cluster_analysis <- fluidPage(
   ),
   fluidRow(
     box(
+      width = 12,
       h3("Visualization"),
       radioButtons(
         inputId = "group2",
@@ -62,8 +66,9 @@ cluster_analysis <- fluidPage(
         selected = "signature"
       ),
       tags$div(id = "insertannot2"),
+      checkboxInput(inputId = "plotly3", label = "Plotly", value = TRUE),
       actionButton(inputId = "cluster_vis", label = "Visualize"),
-      plotOutput("cluster_plot")
+      tags$div(id = "clusterplotdiv")
     )
   )
 )
