@@ -17,12 +17,13 @@ shinyPanelImport <- fluidPage(
           fluidRow(box(width = 12,h3("Added files"),
           #tags$div(id = "file_id",dataTableOutput("my_file_name"),style =  "font-size:40%"),
           tags$div(id = "file_id",DT::dataTableOutput("dtable"),style = "font-size:40%; overflow-y: scroll;overflow-x: scroll;"),
-          uiOutput('undoUI'))),
+          uiOutput('undoUI')),
           hr(),
-          actionButton("import", "Import"),
-          uiOutput("spinner"),
-          fluidRow(box(width = 12,div(dataTableOutput("musica_contents")))),
-          downloadButton("download_musica", "Download Variants"),
+          
+          uiOutput("spinner")),
+          
+          fluidRow(box(width = 12,div(dataTableOutput("musica_contents")), actionButton("import", "Import"),
+                       downloadButton("download_musica", "Download Variants"))),
           bsTooltip("upload", "Press button to add your uploaded files to Sample List", placement = "bottom", trigger = "hover",
                     options = NULL),
           bsTooltip("file_id", "Table of files that have been added by you", placement = "bottom", trigger = "hover",

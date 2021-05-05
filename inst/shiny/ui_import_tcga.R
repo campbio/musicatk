@@ -1,5 +1,5 @@
 shinyPanelTCGA <- fluidPage(
-  fluidRow(box(
+  fluidRow(box(width = 12,
     useShinyalert(),
     add_busy_spinner(spin = "fading-circle"),
     uiOutput(outputId = "tcga_tumor"),
