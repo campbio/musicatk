@@ -212,19 +212,19 @@ server <- function(input, output, session) {
     t <- grep("TCGA",p)
     p <- p[t]
     p <- gsub(".*-","",p)
-    names(p) <- c("Uterine Corpus Endometrial Carcinoma","Brain Lower Grade Glioma",
-                  "Sarcoma","Pancreatic adenocarcinoma","Esophageal carcinoma",
-                  "Prostate adenocarcinoma","Acute Myeloid Leukemia",
-                  "Kidney renal clear cell carcinoma","Pheochromocytoma and Paraganglioma",
-                  "Head and Neck squamous cell carcinoma","Ovarian serous cystadenocarcinoma",
-                  "Glioblastoma multiforme","Uterine Carcinosarcoma","Mesothelioma","Testicular Germ Cell Tumors",
-                  "Kidney Chromophobe","Rectum adenocarcinoma","Uveal Melanoma",
-                  "Thyroid carcinoma","Liver hepatocellular carcinoma","Thymoma",
-                  "Cholangiocarcinoma","Lymphoid Neoplasm Diffuse Large B-cell Lymphoma",
-                  "Kidney renal papillary cell carcinoma","Bladder Urothelial Carcinoma","Breast invasive carcinoma",
-                  "Colon adenocarcinoma","Cervical squamous cell carcinoma and endocervical adenocarcinoma",
-                  "Lung squamous cell carcinoma","Stomach adenocarcinoma",
-                  "Skin Cutaneous Melanoma","Lung adenocarcinoma","Adrenocortical carcinoma")
+    names(p) <- c("UCEC - Uterine Corpus Endometrial Carcinoma","LGG - Brain Lower Grade Glioma",
+                  "SARC - Sarcoma","PAAD - Pancreatic adenocarcinoma","ESCA - Esophageal carcinoma",
+                  "PRAD - Prostate adenocarcinoma","LAML - Acute Myeloid Leukemia",
+                  "KIRC - Kidney renal clear cell carcinoma","PCPG - Pheochromocytoma and Paraganglioma",
+                  "HNSC - Head and Neck squamous cell carcinoma","OV - Ovarian serous cystadenocarcinoma",
+                  "GBM - Glioblastoma multiforme","UCS - Uterine Carcinosarcoma","MESO - Mesothelioma","TGCT - Testicular Germ Cell Tumors",
+                  "KICH - Kidney Chromophobe","READ - Rectum adenocarcinoma","UVM - Uveal Melanoma",
+                  "THCA - Thyroid carcinoma","LIHC - Liver hepatocellular carcinoma","THYM - Thymoma",
+                  "CHOL - Cholangiocarcinoma","DLBC - Lymphoid Neoplasm Diffuse Large B-cell Lymphoma",
+                  "KIRP - Kidney renal papillary cell carcinoma","BLCA - Bladder Urothelial Carcinoma","BRCA - Breast invasive carcinoma",
+                  "COAD - Colon adenocarcinoma","CESC - Cervical squamous cell carcinoma and endocervical adenocarcinoma",
+                  "LUSC - Lung squamous cell carcinoma","STAD - Stomach adenocarcinoma",
+                  "SKCM - Skin Cutaneous Melanoma","LUAD - Lung adenocarcinoma","ACC - Adrenocortical carcinoma")
     textInput("tcga_tumor","Enter TCGA tumor type")
     tags$style("#tcga_tumor {
                     font-size:8px;
