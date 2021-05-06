@@ -421,9 +421,15 @@ tryCatch({observeEvent(input$get_musica_object,{
         showNotification("Musica Result Object successfully imported!")
       }
       else if(input$musica_button == "object"){
-        vals$musica_upload <- load(input$musica_file$datapath)
-        vals$musica_upload <- get(vals$musica_upload)
-        vals$musica <- vals$musica_upload 
+        if(all(tools::file_ext(input$musica_file$name) == "rda")){
+          vals$musica_upload <- load(input$musica_file$datapath)
+          vals$musica_upload <- get(vals$musica_upload)
+          vals$musica <- vals$musica_upload 
+        }
+        else if(all(tools::file_ext(input$musica_file$name) == "rds")){
+          vals$musica_upload <- readRDS(input$musica_file$datapath)
+          vals$musica <- vals$musica_upload 
+        }
         showNotification("Musica Object successfully imported!")
       }}
     
