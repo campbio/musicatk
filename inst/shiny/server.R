@@ -392,13 +392,13 @@ tryCatch({observeEvent(input$get_musica_object,{
     }
     else{
       if(input$musica_button == "result"){
-        vals$musica_upload <- load(input$musica_file$datapath)
+        vals$musica_upload <- readRDS(input$musica_file$datapath)
         vals$musica_upload <- get(vals$musica_upload)
         vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
         showNotification("Musica Result Object successfully imported!")
       }
       else if(input$musica_button == "object"){
-        vals$musica_upload <- load(input$musica_file$datapath)
+        vals$musica_upload <- readRDS(input$musica_file$datapath)
         vals$musica_upload <- get(vals$musica_upload)
         vals$musica <- vals$musica_upload 
         showNotification("Musica Object successfully imported!")
@@ -1951,19 +1951,19 @@ observeEvent(input$get_heatmap,{
   output$download_mus_obj <- downloadHandler(
     
     filename = function() {
-      paste("musica_object", ".rda", sep = "")
+      paste("musica_object", ".rds", sep = "")
     },
     content = function(file) {
-      saveRDS(vals$musica, file)
+      saveRDS(vals$musica, file = file)
     }
   )
  output$download_res <- downloadHandler(
     
     filename = function() {
-      paste("musica_results", ".rda", sep = "")
+      paste("musica_results", ".rds", sep = "")
     },
     content = function(file) {
-      saveRDS(vals$result_objects[[input$select_res_download]], file)
+      saveRDS(vals$result_objects[[input$select_res_download]], file = file)
     }
   )
 }
