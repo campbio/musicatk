@@ -86,7 +86,8 @@ cluster_exposure <- function(result, nclust, proportional = TRUE, method = "kmea
 #' "annotation" (columns are sample annotation), and "none" (a single UMAP plot). 
 #' Default is "signature".
 #' @param annotation Column name of annotation.
-#' @return Generate a ggplot object.
+#' @param plotly If TRUE, the plot will be made interactive using plotly.
+#' @return Generate a ggplot or plotly object.
 #' @seealso \link{create_umap}
 #' @examples 
 #' set.seed(123)
@@ -104,7 +105,7 @@ cluster_exposure <- function(result, nclust, proportional = TRUE, method = "kmea
 #' plot_cluster(result = res_annot, clusters = clust_out, group = "none")
 #' @export
 
-plot_cluster <- function(result, clusters, group = "signature", annotation = NULL){
+plot_cluster <- function(result, clusters, group = "signature", annotation = NULL, plotly = TRUE){
   group <- match.arg(group, c("signature", "annotation", "none"))
   if(length(umap(result)) == 0){
     stop("UMAP not found in musica_result object. Run create_umap(", deparse(substitute(result)),") first.")
@@ -120,10 +121,10 @@ plot_cluster <- function(result, clusters, group = "signature", annotation = NUL
                           names_to = "signature",
                           values_to = "exposure",
                           names_repair = "minimal")
-    ggplot2::ggplot(clust_by_sigs, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "exposure")) +
-      geom_point() +
-      facet_grid(cluster ~ signature) +
-      ggplot2::scale_colour_gradientn(colors = c("blue", "green", "yellow", "orange", "red"), name = "Fraction")
+    p <- ggplot2::ggplot(clust_by_sigs, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "exposure")) +
+           geom_point() +
+           facet_grid(cluster ~ signature) +
+           ggplot2::scale_colour_gradientn(colors = c("blue", "green", "yellow", "orange", "red"), name = "Fraction")
   }
   else if(group == "annotation"){
     if(is.null(annotation) || !annotation %in% colnames(samp_annot(result))){
@@ -134,14 +135,21 @@ plot_cluster <- function(result, clusters, group = "signature", annotation = NUL
       colnames(annot) <- "annotation"
       annot[["annotation"]] <- factor(annot[["annotation"]])
       clust_by_annot <- cbind(k_toplot, annot)
-      ggplot2::ggplot(clust_by_annot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
-        geom_point() +
-        facet_grid(cluster ~ annotation)
+      p <- ggplot2::ggplot(clust_by_annot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
+             geom_point() +
+             facet_grid(cluster ~ annotation)
     }
   }
   else{
-    ggplot2::ggplot(k_toplot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
-      geom_point()
+    p <- ggplot2::ggplot(k_toplot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
+           geom_point()
+  }
+  if(plotly){
+    p <- plotly::ggplotly(p)
+    return(p)
+  }
+  else{
+    return(p)
   }
 }
 
