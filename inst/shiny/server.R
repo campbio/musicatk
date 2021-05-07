@@ -1279,7 +1279,7 @@ parseDeleteEvent <- function(idstr) {
     options <- get_sig_option(input)
     result <- vals$result_objects[[input$selected_res1]]
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
-    height <- paste0(as.character(n * 75),"px")
+    height <- paste0(as.character(n * 90),"px")
     if(options[[6]]){
       removeUI(selector = "#sigplot_plot")
       removeUI(selector = "#sigplot_plotly")
