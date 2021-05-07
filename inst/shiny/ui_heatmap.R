@@ -9,19 +9,19 @@ shinyPanelheatmap <- fluidPage(
                 
            
            fluidRow(box(
-                  radioButtons(
-                    inputId = "def_sigs",
-                    label = "Subset by",
-                    choices = list("All Signatures" = "default_signatures"),
-                    inline = TRUE,
-                    selected = ""
-                  ),
+                  # radioButtons(
+                  #   inputId = "def_sigs",
+                  #   label = "Subset by",
+                  #   choices = list("All Signatures" = "default_signatures"),
+                  #   inline = TRUE,
+                  #   selected = ""
+                  # ),
                   radioButtons(
                     inputId = "subset",
                     label = "",
-                    choices = list("Selected Signatures" = "signature"),
+                    choices = list("All Signatures" = "all_signatures" ,"Selected Signatures" = "signature"),
                     inline = TRUE,
-                    selected = ""
+                    selected = "all_signatures"
                   ),
                   tags$div(id = "sortbysigs"),
                   

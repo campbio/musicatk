@@ -9,6 +9,10 @@ shinyPanelImport <- fluidPage(
           fluidRow(box(width = 12,
             useShinyalert(),
             add_busy_spinner(spin = "fading-circle"),
+            tags$style("#file {
+                    font-size:3px;
+                    height:10px;
+           }"),
             fileInput("file", "Select file:",
                   multiple = TRUE,
                   accept = c(".maf",".vcf")),
@@ -22,7 +26,7 @@ shinyPanelImport <- fluidPage(
           
           uiOutput("spinner")),
           
-          fluidRow(box(width = 12,div(dataTableOutput("musica_contents")), actionButton("import", "Import"),
+          fluidRow(box(width = 12,div(dataTableOutput("musica_contents"), style = "height:500px; overflow-y: scroll;overflow-x: scroll;"), actionButton("import", "Import"),
                        downloadButton("download_musica", "Download Variants"))),
           bsTooltip("upload", "Press button to add your uploaded files to Sample List", placement = "bottom", trigger = "hover",
                     options = NULL),

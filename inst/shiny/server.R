@@ -32,7 +32,6 @@ server <- function(input, output, session) {
     annotations = NULL,
     diff = NULL,
     df = NULL,
-    musica_contents = NULL,
     musica_upload = NULL,
     data = NULL,
     point_ind = 0,
@@ -42,7 +41,8 @@ server <- function(input, output, session) {
     cluster = NULL,
     var = NULL,
     musica_name_user = NULL,
-    musica_message = NULL
+    musica_message = NULL,
+    sort_sigs = NULL
   )
   
   observeEvent(input$menu, {
@@ -212,9 +212,26 @@ server <- function(input, output, session) {
     t <- grep("TCGA",p)
     p <- p[t]
     p <- gsub(".*-","",p)
+    names(p) <- c("UCEC - Uterine Corpus Endometrial Carcinoma","LGG - Brain Lower Grade Glioma",
+                  "SARC - Sarcoma","PAAD - Pancreatic adenocarcinoma","ESCA - Esophageal carcinoma",
+                  "PRAD - Prostate adenocarcinoma","LAML - Acute Myeloid Leukemia",
+                  "KIRC - Kidney renal clear cell carcinoma","PCPG - Pheochromocytoma and Paraganglioma",
+                  "HNSC - Head and Neck squamous cell carcinoma","OV - Ovarian serous cystadenocarcinoma",
+                  "GBM - Glioblastoma multiforme","UCS - Uterine Carcinosarcoma","MESO - Mesothelioma","TGCT - Testicular Germ Cell Tumors",
+                  "KICH - Kidney Chromophobe","READ - Rectum adenocarcinoma","UVM - Uveal Melanoma",
+                  "THCA - Thyroid carcinoma","LIHC - Liver hepatocellular carcinoma","THYM - Thymoma",
+                  "CHOL - Cholangiocarcinoma","DLBC - Lymphoid Neoplasm Diffuse Large B-cell Lymphoma",
+                  "KIRP - Kidney renal papillary cell carcinoma","BLCA - Bladder Urothelial Carcinoma","BRCA - Breast invasive carcinoma",
+                  "COAD - Colon adenocarcinoma","CESC - Cervical squamous cell carcinoma and endocervical adenocarcinoma",
+                  "LUSC - Lung squamous cell carcinoma","STAD - Stomach adenocarcinoma",
+                  "SKCM - Skin Cutaneous Melanoma","LUAD - Lung adenocarcinoma","ACC - Adrenocortical carcinoma")
     textInput("tcga_tumor","Enter TCGA tumor type")
-    #checkboxGroupInput("tcga_tumor","Select Tumor",choices = as.list(p))
-    selectInput("tcga_tumor","Select Tumor",choices = as.list(p),multiple = TRUE)
+    tags$style("#tcga_tumor {
+                    font-size:8px;
+                    height:10px;
+           }")
+    checkboxGroupInput("tcga_tumor"," ",choices = as.list(p))
+    #selectInput("tcga_tumor","Select Tumor",choices = as.list(p),multiple = TRUE)
   })
   
   observeEvent(input$import_tcga,{
@@ -392,15 +409,27 @@ tryCatch({observeEvent(input$get_musica_object,{
     }
     else{
       if(input$musica_button == "result"){
-        vals$musica_upload <- load(input$musica_file$datapath)
-        vals$musica_upload <- get(vals$musica_upload)
-        vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
+        if(all(tools::file_ext(input$musica_file$name) == "rda")){
+          vals$musica_upload <- load(input$musica_file$datapath)
+          vals$musica_upload <- get(vals$musica_upload)
+          vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
+        }
+        else if(all(tools::file_ext(input$musica_file$name) == "rds")){
+          vals$musica_upload <- readRDS(input$musica_file$datapath)
+          vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
+        }
         showNotification("Musica Result Object successfully imported!")
       }
       else if(input$musica_button == "object"){
-        vals$musica_upload <- load(input$musica_file$datapath)
-        vals$musica_upload <- get(vals$musica_upload)
-        vals$musica <- vals$musica_upload 
+        if(all(tools::file_ext(input$musica_file$name) == "rda")){
+          vals$musica_upload <- load(input$musica_file$datapath)
+          vals$musica_upload <- get(vals$musica_upload)
+          vals$musica <- vals$musica_upload 
+        }
+        else if(all(tools::file_ext(input$musica_file$name) == "rds")){
+          vals$musica_upload <- readRDS(input$musica_file$datapath)
+          vals$musica <- vals$musica_upload 
+        }
         showNotification("Musica Object successfully imported!")
       }}
     
@@ -1633,16 +1662,29 @@ parseDeleteEvent <- function(idstr) {
             add_rank_list(
               text = "Selected Signatures:",
               labels = NULL,
-              input_id = "sig_to"
+              input_id = "sort_sigs"
             )
           )
         )
       )
+    #vals$sort_sigs <- "#sort_sigs"
     }
-    else{
+    else if(input$subset == "all_signatures"){
 	      removeUI(selector = "#insertsig")
+        #vals$sort_sigs <- NULL
       }
   })
+  get_sigs <- function(input){
+    req(input$subset)
+    if(input$subset == "signature"){
+      sig <- input$sort_sigs
+    }
+    else if(input$subset == "all_signatures"){
+      sig <- NULL
+    }
+    return(sig)
+  }
+  
   observeEvent(input$subset_tum, {
     if(input$subset_tum == "tumors"){
       insertUI(
@@ -1679,8 +1721,10 @@ parseDeleteEvent <- function(idstr) {
     }
   })
 observeEvent(input$get_heatmap,{
+  sigs <- get_sigs(input)
   output$heatmap <- renderPlot({
     req(input$select_res_heatmap)
+    
     #paste0("Heatmap")
     # propor()
     # sel_col_names()
@@ -1690,7 +1734,7 @@ observeEvent(input$get_heatmap,{
     # input$tum_val
     # input$annot_val
     input$get_heatmap
-    isolate(plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(input$sig_to),subset_tumor = input$tum_val,annotation = input$annot_val,column_title = paste0("Heatmap for ",input$select_res_heatmap)))
+    isolate(plot_heatmap(res_annot = vals$result_objects[[input$select_res_heatmap]],proportional = propor(),show_row_names = sel_row_names(),show_column_names = sel_col_names(),scale = zscale(),subset_signatures = c(sigs),subset_tumor = input$tum_val,annotation = input$annot_val,column_title = paste0("Heatmap for ",input$select_res_heatmap)))
   })
  }) 
   output$download_heatmap <- downloadHandler(
@@ -1956,7 +2000,7 @@ observeEvent(input$get_heatmap,{
   output$download_mus_obj <- downloadHandler(
     
     filename = function() {
-      paste("musica_object", ".rda", sep = "")
+      paste("musica_object", ".rds", sep = "")
     },
     content = function(file) {
       saveRDS(vals$musica, file)
@@ -1965,7 +2009,7 @@ observeEvent(input$get_heatmap,{
  output$download_res <- downloadHandler(
     
     filename = function() {
-      paste("musica_results", ".rda", sep = "")
+      paste("musica_results", ".rds", sep = "")
     },
     content = function(file) {
       saveRDS(vals$result_objects[[input$select_res_download]], file)
