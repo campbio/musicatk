@@ -1,5 +1,5 @@
 shinyPanelDiscover <- fluidPage(
-  box(width = 12,
+  box(width = 6,
     uiOutput("DiscoverTable"),
     hidden(textInput("GetTableName", "Custon Table Name")),
     textInput("NumberOfSignatures", "Number of signatures", value = 5),

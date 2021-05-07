@@ -1,5 +1,5 @@
 shinyPanelPredict <- fluidPage(
-  box( width = 12,
+  box( width = 6,
     uiOutput("PredictedResult"),
     uiOutput("PrecitedSignatures"),
     uiOutput("PredictTable"),
@@ -8,7 +8,7 @@ shinyPanelPredict <- fluidPage(
                                 "decompTumor2Sig",
                                 "deconstructSigs")),
     hidden(selectInput("PredictGenomeList", "Reference genome:",
-                       list("hg19","hg38"), 
+                       list("hg38","hg19", "mm9","mm10"), 
                        width ='100%')),
     uiOutput("PredictResultName"),
     textOutput("PredictWarning"),

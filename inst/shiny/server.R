@@ -700,7 +700,9 @@ parseDeleteEvent <- function(idstr) {
   observeEvent(input$DiscoverSignatures, {
     if (input$DiscoverResultName == "" |
         input$NumberOfSignatures == "" |
-        input$nStart == "") {
+        input$nStart == "" |
+        extract_count_tables(vals$musica)[["SBS96"]]@count_table < 2 |
+        input$NumberOfSignatures < 2) {
       output$DiscoverWarning <- renderText({
         validate(
           need(input$DiscoverResultName != "",
@@ -708,7 +710,11 @@ parseDeleteEvent <- function(idstr) {
           need(input$NumberOfSignatures != "",
                'You must specify the number of expected signatures.'),
           need(input$nStart != "",
-               "Please specify the number of random starts.")
+               "Please specify the number of random starts."),
+          need(input$NumberOfSignatures >= 2,
+               "Must specify 2 or more signatures."),
+          need(extract_count_tables(vals$musica)[["SBS96"]]@count_table >= 2,
+            "You must provide 2 or more samples")
         )
       })
       return ()
@@ -842,7 +848,6 @@ parseDeleteEvent <- function(idstr) {
   })
   
   output$PrecitedSignatures <- renderUI({
-    
     if(input$PredictedResult %in% names(cosmic_objects)) {
         vals$pSigs <- colnames(signatures(
           cosmic_objects[[input$PredictedResult]]))
