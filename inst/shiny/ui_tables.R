@@ -12,7 +12,7 @@ shinyPanelTables <- fluidPage(
     shinybusy::use_busy_spinner(spin = "double-bounce"),
     bsTooltip("SelectTable",
               "Name of the standard table to build.", 
-              placement = "bottom", trigger = "hover", options = NULL)
+              placement = "right", trigger = "hover", options = NULL)
   ),
   uiOutput("CombineTable"),
   shinybusy::use_busy_spinner(spin = "double-bounce")
