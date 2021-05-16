@@ -37,75 +37,85 @@ musicaresultvisualization <- fluidPage(
       ),
       tabPanel(title = "Exposures",
                fluidRow(
-                 box(
-                   h3("General Settings"),
-                   uiOutput(outputId = "select_res2"),
-                   radioButtons(
-                     inputId = "plottype",
-                     label = "Plot Type",
-                     choices = list("Bar Plot" = "bar", "Box Plot" = "box", 
-                                    "Violin Plot" = "violin"),
-                     inline = TRUE,
-                     selected = "bar"
-                   ),
-                   checkboxInput(inputId = "proportional", label = "Proportional", value = TRUE),
-                   tags$div(id = "insert_group"),
-                   radioButtons(
-                     inputId = "group1",
-                     label = "Group By",
-                     choices = list("Signature" = "signature",
-                                    "Annotation" = "annotation"),
-                     inline = TRUE,
-                     selected = "signature"
-                   ),
-                   radioButtons(
-                     inputId = "color",
-                     label = "Color By",
-                     choices = list("Signature" = "signature", "Annotation" = "annotation"),
-                     inline = TRUE,
-                     selected = "signature"
-                   ),
-                   tags$div(id = "insertannot")
+                 column(
+                   width = 6,
+                   box(
+                     width = 12,
+                     h3("General Settings"),
+                     uiOutput(outputId = "select_res2"),
+                     radioButtons(
+                       inputId = "plottype",
+                       label = "Plot Type",
+                       choices = list("Bar Plot" = "bar", "Box Plot" = "box", 
+                                      "Violin Plot" = "violin"),
+                       inline = TRUE,
+                       selected = "bar"
+                     ),
+                     checkboxInput(inputId = "proportional", label = "Proportional", value = TRUE),
+                     tags$div(id = "insert_group"),
+                     radioButtons(
+                       inputId = "group1",
+                       label = "Group By",
+                       choices = list("Signature" = "signature",
+                                      "Annotation" = "annotation"),
+                       inline = TRUE,
+                       selected = "signature"
+                     ),
+                     radioButtons(
+                       inputId = "color",
+                       label = "Color By",
+                       choices = list("Signature" = "signature", "Annotation" = "annotation"),
+                       inline = TRUE,
+                       selected = "signature"
+                     ),
+                     tags$div(id = "insertannot")
+                   )
                  )
                ),
                fluidRow(
-                 box(
-                   h3("Sorting"),
-                   radioButtons(
-                     inputId = "sort",
-                     label = "Sort By",
-                     choices = list("Total Counts" = "total", "Sample Name" = "name",
-                                    "Signatures" = "signature"),
-                     inline = TRUE,
-                     selected = "total"
-                   ),
-                   tags$div(id = "sortbysig"),
-                   uiOutput(outputId = "number"),
-                   numericInput(inputId = "theta", label = "Threshold", value = NULL),
-                   bsTooltip(id = "sort", title = "Used to sort bar plot from left to right.", 
-                             placement = "right", options = list(container = "body")),
-                   bsTooltip(id = "group1", title = "Determines how to group samples into the subplots. If set to \"annotation\", then a sample annotation must be supplied via the annotation parameter.",
-                             placement = "right", options = list(container = "body")),
-                   bsTooltip(id = "theta", title = "Exposures less than this threshold will be set to 0.",
-                             placement = "right", options = list(container = "body"))
-                 )
-               ),
-               fluidRow(
-                 box(
-                   h3("Aesthetic Settings"),
-                   checkboxInput(inputId = "scale2", label = "Same Y-axis Scale", value = TRUE),
-                   checkboxInput(inputId = "xlab2", label = "X-axis Label", value = FALSE),
-                   checkboxInput(inputId = "legend2", label = "Legend", value = TRUE),
-                   tags$div(id = "points"),
-                   checkboxInput(inputId = "plotly2", label = "Plotly", value = TRUE),
-                   bsTooltip(id = "scale2", title = "If checked, then all subplots will have the same scale.",
-                             placement = "right", options = list(container = "body")),
-                   bsTooltip(id = "xlab2", title = "If checked, x-axis labels will be displayed at the bottom of the plot.",
-                             placement = "right", options = list(container = "body")),
-                   bsTooltip(id = "legend2", title = "If checked, the legend will be displayed.",
-                             placement = "right", options = list(container = "body")),
-                   bsTooltip(id = "plotly2", title = "If checked, the plot will be made interactive using plotly.",
-                             placement = "right", options = list(container = "body"))
+                 column(
+                   width = 6,
+                   box(
+                     width = 12,
+                     h3("Sorting"),
+                     radioButtons(
+                       inputId = "sort",
+                       label = "Sort By",
+                       choices = list("Total Counts" = "total", "Sample Name" = "name",
+                                      "Signatures" = "signature"),
+                       inline = TRUE,
+                       selected = "total"
+                     ),
+                     tags$div(id = "sortbysig"),
+                     uiOutput(outputId = "number"),
+                     numericInput(inputId = "theta", label = "Threshold", value = NULL),
+                     bsTooltip(id = "sort", title = "Used to sort bar plot from left to right.", 
+                               placement = "right", options = list(container = "body")),
+                     bsTooltip(id = "group1", title = "Determines how to group samples into the subplots. If set to \"annotation\", then a sample annotation must be supplied via the annotation parameter.",
+                               placement = "right", options = list(container = "body")),
+                     bsTooltip(id = "theta", title = "Exposures less than this threshold will be set to 0.",
+                               placement = "right", options = list(container = "body"))
+                   )
+                 ),
+                 column(
+                   width = 6,
+                   box(
+                     width = 12,
+                     h3("Aesthetic Settings"),
+                     checkboxInput(inputId = "scale2", label = "Same Y-axis Scale", value = TRUE),
+                     checkboxInput(inputId = "xlab2", label = "X-axis Label", value = FALSE),
+                     checkboxInput(inputId = "legend2", label = "Legend", value = TRUE),
+                     tags$div(id = "points"),
+                     checkboxInput(inputId = "plotly2", label = "Plotly", value = TRUE),
+                     bsTooltip(id = "scale2", title = "If checked, then all subplots will have the same scale.",
+                               placement = "right", options = list(container = "body")),
+                     bsTooltip(id = "xlab2", title = "If checked, x-axis labels will be displayed at the bottom of the plot.",
+                               placement = "right", options = list(container = "body")),
+                     bsTooltip(id = "legend2", title = "If checked, the legend will be displayed.",
+                               placement = "right", options = list(container = "body")),
+                     bsTooltip(id = "plotly2", title = "If checked, the plot will be made interactive using plotly.",
+                               placement = "right", options = list(container = "body"))
+                   )
                  )
                ),
                actionButton(inputId = "get_plot2", label = "Make Plot"),

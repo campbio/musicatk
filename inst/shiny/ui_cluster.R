@@ -29,7 +29,7 @@ cluster_analysis <- fluidPage(
       uiOutput(outputId = "no_cluster1"),
       checkboxInput(inputId = "proportional2", label = "Proportional", value = TRUE),
       actionButton(inputId = "explore", label = "Explore"),
-      plotOutput(outputId = "explore_plot")
+      tags$div(id = "insert_explore_plot")
     )
   ),
   fluidRow(

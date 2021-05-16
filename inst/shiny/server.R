@@ -1281,6 +1281,8 @@ parseDeleteEvent <- function(idstr) {
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     height <- paste0(as.character(n * 90),"px")
     if(options[[6]]){
+      jqui_resizable("#sigplot_plotly", operation = "destroy")
+      jqui_resizable("#sigplot_plot", operation = "destroy")
       removeUI(selector = "#sigplot_plot")
       removeUI(selector = "#sigplot_plotly")
       insertUI(
@@ -1298,8 +1300,11 @@ parseDeleteEvent <- function(idstr) {
           same_scale = options[[5]]
         )
       )
+      jqui_resizable("#sigplot_plotly")
     }
     else{
+      jqui_resizable("#sigplot_plotly", operation = "destroy")
+      jqui_resizable("#sigplot_plot", operation = "destroy")
       removeUI(selector = "#sigplot_plotly")
       removeUI(selector = "#sigplot_plot")
       insertUI(
@@ -1317,6 +1322,7 @@ parseDeleteEvent <- function(idstr) {
           same_scale = options[[5]]
         )
       )
+      jqui_resizable("#sigplot_plot")
     }
   })
   
@@ -1539,6 +1545,8 @@ parseDeleteEvent <- function(idstr) {
     options <- get_exp_option(input)
     result <- vals$result_objects[[input$selected_res2]]
     if(options[[14]]){
+      jqui_resizable("#expplotly", operation = "destroy")
+      jqui_resizable("#expplot", operation = "destroy")
       removeUI(selector = "#expplotly")
       removeUI(selector = "#expplot")
       insertUI(
@@ -1564,8 +1572,11 @@ parseDeleteEvent <- function(idstr) {
           plotly = options[[14]]
         )
       )
+      jqui_resizable("#expplotly")
     }
     else{
+      jqui_resizable("#expplotly", operation = "destroy")
+      jqui_resizable("#expplot", operation = "destroy")
       removeUI(selector = "#expplot")
       removeUI(selector = "#expplotly")
       insertUI(
@@ -1591,6 +1602,7 @@ parseDeleteEvent <- function(idstr) {
           plotly = options[[14]]
         )
       )
+      jqui_resizable("#expplot")
     }
   })
 
@@ -1774,6 +1786,12 @@ observeEvent(input$get_heatmap,{
   })
   
   observeEvent(input$explore,{
+    jqui_resizable("#explore_plot", operation = "destroy")
+    removeUI(selector = "#explore_plot")
+    insertUI(
+      selector = "#insert_explore_plot",
+      ui = plotOutput(outputId = "explore_plot")
+    )
     method <- input$metric
     clust.method <- input$algorithm1
     n <- input$numclust1
@@ -1787,6 +1805,7 @@ observeEvent(input$get_heatmap,{
         proportional = proportional
       )
     )
+    jqui_resizable("#explore_plot")
   })
   
   observeEvent(input$algorithm2, {
@@ -1940,6 +1959,8 @@ observeEvent(input$get_heatmap,{
     }
     plotly <- input$plotly3
     if(plotly){
+      jqui_resizable("#cluster_plot", operation = "destroy")
+      jqui_resizable("#cluster_plotly", operation = "destroy")
       removeUI(selector = "#cluster_plot")
       removeUI(selector = "#cluster_plotly")
       insertUI(
@@ -1955,6 +1976,8 @@ observeEvent(input$get_heatmap,{
       )
     }
     else{
+      jqui_resizable("#cluster_plot", operation = "destroy")
+      jqui_resizable("#cluster_plotly", operation = "destroy")
       removeUI(selector = "#cluster_plot")
       removeUI(selector = "#cluster_plotly")
       insertUI(
@@ -1968,6 +1991,7 @@ observeEvent(input$get_heatmap,{
                      annotation = annotation,
                      plotly = plotly)
       )
+      jqui_resizable("#cluster_plot")
     }
   })
   ########################################
