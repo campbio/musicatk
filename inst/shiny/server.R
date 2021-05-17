@@ -1098,7 +1098,7 @@ parseDeleteEvent <- function(idstr) {
                                    as.is = TRUE)
     vals$annotations
     
-  }, options = list(scrollX = T))
+  }, options = list(autoWidth = FALSE, scrollX = TRUE))
   
   output$AnnotationSamples <- renderUI({
     if(is.null(vals$annotations)) {
@@ -1209,7 +1209,7 @@ parseDeleteEvent <- function(idstr) {
     if(!is.null(isolate(vals$comparison))) {
       output$CompareTable <- renderDataTable({
         isolate(vals$comparison)
-      }, options = list(scrollX = T))
+      }, options = list(autoWidth = FALSE, scrollX = T))
       output$DownloadComparison <- renderUI({
         tagList(
           downloadButton("DownloadCompare", "Download"),
@@ -1296,7 +1296,7 @@ parseDeleteEvent <- function(idstr) {
                                    group2 = g2)
       output$DiffTable <- renderDataTable(
         vals$diff %>% tibble::rownames_to_column(var = "Signature"), 
-        options = list(scrollX = T)
+        options = list(autoWidth = FALSE, scrollX = TRUE)
       )
       shinybusy::hide_spinner()
       # output$DownloadDiffAnal <- renderUI({
