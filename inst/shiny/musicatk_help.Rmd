@@ -1,0 +1,52 @@
+---
+title: "musicatk_help"
+date: "5/16/2021"
+output: html_document
+---
+
+```{r Import, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Import
+
+#### Import Files
+
+#### Import TCGA Datasets
+
+#### Import Musica
+
+
+## Create Musica Object
+
+
+## Annotations
+
+
+## Build Tables
+
+
+## Signatures and Exposures
+
+#### Discover
+
+#### Predict
+
+
+## Data Visualization
+
+
+## Additional Analysis
+
+#### Compare Signatures
+
+#### Exposure Differential Analysis
+
+#### Clustering
+
+#### Heatmap
+
+
+## Download
+
+
