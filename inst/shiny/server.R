@@ -612,6 +612,120 @@ parseDeleteEvent <- function(idstr) {
   data("cosmic_v3_sbs_sigs")
   data("cosmic_v3_dbs_sigs")
   data("cosmic_v3_indel_sigs")
+  sbs_aet <- list("SBS1" = "SBS1 - Spontaneous deamination of 5-methylcytosine",
+                  "SBS2" = "SBS2 - APOBEC activity", 
+                  "SBS3" = "SBS3 - HR deficiency",
+                  "SBS4" = "SBS4 - Tobacco smoking",
+                  "SBS5" = "SBS5 - Unknown (Aging / Tobacco smoking / NER deficiency)",
+                  "SBS6" = "SBS6 -  MMR deficiency",
+                  "SBS7a" = "SBS7a - UV light exposure",
+                  "SBS7b" = "SBS7b - UV light exposure",
+                  "SBS7c" = "SBS7c - UV light exposure",
+                  "SBS7d" = "SBS7d - UV light exposure",
+                  "SBS8" = "SBS8 - Unknown (HR deficiency / NER deficiency)",
+                  "SBS9" = "SBS9 - Unknown (Polymerase eta somatic hypermutation)",
+                  "SBS10a" = "SBS10a - POLE exonuclease domain mutation",
+                  "SBS10b" = "SBS10b - POLE exonuclease domain mutation",
+                  "SBS10c" = "SBS10c - Unknown (Defective POLD1 proofreading)",
+                  "SBS10d" = "SBS10d - Unknown (Defective POLD1 proofreading)",
+                  "SBS11" = "SBS11 - Unknown (Temozolomide chemotherapy / MMR deficiency + temozolomide)",
+                  "SBS12" = "SBS12 - Unknown",
+                  "SBS13" = "SBS13 - APOBEC activity",
+                  "SBS14" = "SBS14 - MMR deficiency + POLE mutation",
+                  "SBS15" = "SBS15 - MMR deficiency",
+                  "SBS16" = "SBS16 - Unknown",
+                  "SBS17a" = "SBS17a - Unknown (Damage by ROS)",
+                  "SBS17b" = "SBS17b - Unknown (Damage by ROS / 5FU chemotherapy)",
+                  "SBS18" = "SBS18 - Damage by ROS", 
+                  "SBS19" = "SBS19 - Unknown",
+                  "SBS20" = "SBS20 - MMR deficiency + POLD1 mutation",
+                  "SBS21" = "SBS21 - MMR deficiency",
+                  "SBS22" = "SBS22 - Aristolochic acid exposure",
+                  "SBS23" = "SBS23 - Unknown",
+                  "SBS24" = "SBS24 - Aflatoxin exposure",
+                  "SBS25" = "SBS25 - Unknown (Unknown chemotherapy)",
+                  "SBS26" = "SBS26 - MMR deficiency",
+                  "SBS27" = "SBS27 - Sequencing artifact",
+                  "SBS28" = "SBS28 - Unknown (POLE exonuclease domain mutation)",
+                  "SBS29" = "SBS29 - Unknown (Tobacco chewing)",
+                  "SBS30" = "SBS30 - BER deficiency",
+                  "SBS31" = "SBS31 - Platinum chemotherapy",
+                  "SBS32" = "SBS32 - Azathioprine exposure",
+                  "SBS33" = "SBS33 - Unknown (Unknown)",
+                  "SBS34" = "SBS34 - Unknown",
+                  "SBS35" = "SBS35 - Platinum chemotherapy",
+                  "SBS36" = "SBS36 - BER deficiency",
+                  "SBS37" = "SBS37 - Unknown",
+                  "SBS38" = "SBS38 - Unknown (UV light exposure (indirect effect))",
+                  "SBS39" = "SBS39 - Unknown",
+                  "SBS40" = "SBS40 - Unknown",
+                  "SBS41" = "SBS41 - Unknown",
+                  "SBS42" = "SBS42 - Haloalkanes exposure",
+                  "SBS43" = "SBS43 - Unknown (Possible sequencing artifact)",
+                  "SBS44" = "SBS44 - MMR deficiency",
+                  "SBS45" = "SBS45 - 8-oxo-guanine introduced during sequencing",
+                  "SBS46" = "SBS46 - Sequencing artifact (early releases of TCGA)",
+                  "SBS47" = "SBS47 - Sequencing artifact (blacklisted cancer samples for poor quality)",
+                  "SBS48" = "SBS48 - Sequencing artifact (blacklisted cancer samples for poor quality)",
+                  "SBS49" = "SBS49 - Sequencing artifact (blacklisted cancer samples for poor quality)",
+                  "SBS50" = "SBS50 - Sequencing artifact (blacklisted cancer samples for poor quality)",
+                  "SBS51" = "SBS51 - Unknown (Possible sequencing artifact)",
+                  "SBS52" = "SBS52 - Sequencing artifact (blacklisted cancer samples for poor quality)",
+                  "SBS53" = "SBS53 - Sequencing artifact (blacklisted cancer samples for poor quality)",
+                  "SBS54" = "SBS54 - Germline variants contamination",
+                  "SBS55" = "SBS55 - Unknown (Possible sequencing artifact)",
+                  "SBS56" = "SBS56 - Unknown (Possible sequencing artifact)",
+                  "SBS57" = "SBS57 - Unknown (Possible sequencing artifact)",
+                  "SBS58" = "SBS58 - Unknown (Possible sequencing artifact)",
+                  "SBS59" = "SBS59 - Unknown (Possible sequencing artifact)",
+                  "SBS60" = "SBS60 - Sequencing artifact",
+                  "SBS84" = "SBS84 - AID activity",
+                  "SBS85" = "SBS85 - AID activity",
+                  "SBS86" = "SBS86 - Unkown (Unknown chemotherapy)",
+                  "SBS87" = "SBS87 - Thiopurine chemotherapy",
+                  "SBS88" = "SBS88 - Colibactin exposure",
+                  "SBS89" = "SBS89 - Unknown",
+                  "SBS90" = "SBS90 - Duocarmycin exposure",
+                  "SBS91" = "SBS91 - Unknown",
+                  "SBS92" = "SBS92 - Unknown (Tobacco smoking)",
+                  "SBS93" = "SBS93 - Unknown",
+                  "SBS94" = "SBS94 - Unknown"
+  )
+  dbs_aet <- list("DBS1" = "DBS1 - UV light exposure",
+                  "DBS2" = "DBS2 - Unknown (Tobacco smoking / Acetaldehyde exposure)",
+                  "DBS3" = "DBS3 - POLE exonuclease domain mutation",
+                  "DBS4" = "DBS4 - Unknown",
+                  "DBS5" = "DBS5 - Platinum chemotherapy",
+                  "DBS6" = "DBS6 - Unknown",
+                  "DBS7" = "DBS7 - MMR deficiency",
+                  "DBS8" = "DBS8 - Unknown",
+                  "DBS9" = "DBS9 - Unknown",
+                  "DBS10" = "DBS10 - MMR deficiency",
+                  "DBS11" = "DBS11 - Unknown (APOBEC activity)"
+  )
+  indel_aet <- list("ID1" = "ID1 - Slippage of nascent strand during DNA replication",
+                    "ID2" = "ID2 - Slippage of template strand during DNA replication",
+                    "ID3" = "ID3 - Tobacco smoking",
+                    "ID4" = "ID4 - Unknown",
+                    "ID5" = "ID5 - Unknown",
+                    "ID6" = "ID6 - HR deficiency",
+                    "ID7" = "ID7 - MMR deficiency",
+                    "ID8" = "ID8 - Unknown (DSB repair by NHEJ / TOP2A mutation)",
+                    "ID9" = "ID9 - Unknown",
+                    "ID10" = "ID10 - Unknown",
+                    "ID11" = "ID11 - Unknown",
+                    "ID12" = "ID12 - Unknown",
+                    "ID13" = "ID13 - UV light exposure",
+                    "ID14" = "ID14 - Unknown",
+                    "ID15" = "ID15 - Unknown",
+                    "ID16" = "ID16 - Unknown",
+                    "ID17" = "ID17 - TOP2A mutation",
+                    "ID18" = "ID18 - Colibactin exposure"
+  )
+  colnames(signatures(cosmic_v3_sbs_sigs)) <- sbs_aet[colnames(signatures(cosmic_v3_sbs_sigs))]
+  colnames(signatures(cosmic_v3_dbs_sigs)) <- dbs_aet[colnames(signatures(cosmic_v3_dbs_sigs))]
+  colnames(signatures(cosmic_v3_indel_sigs)) <- indel_aet[colnames(signatures(cosmic_v3_indel_sigs))]
+
   cosmic_objects <- list("cosmic_v3_sbs_sigs" = cosmic_v3_sbs_sigs,
                         # "cosmic_v3_sbs_sigs_exome" = cosmic_v3_sbs_sigs_exome,
                       "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
@@ -624,14 +738,14 @@ parseDeleteEvent <- function(idstr) {
                     extract_count_tables(vals$musica))),
       bsTooltip("SelectDiscoverTable",
                 "Name of the table to use for signature discovery.", 
-                placement = "bottom", trigger = "hover", options = NULL)
+                placement = "right", trigger = "hover", options = NULL)
     )
   })
   
   output$CombineTable <- renderUI({
     if (length(names(extract_count_tables(vals$musica))) > 1) {
       tagList(
-        box(width = 12,
+        box(width = 6,
             helpText("Combine any 2 or more tables contained in your musica object. This is optional."),
         checkboxGroupInput("CombineTables", "Tables to Combine",
                     choices = names(extract_count_tables(vals$musica))),
@@ -730,7 +844,9 @@ parseDeleteEvent <- function(idstr) {
   observeEvent(input$DiscoverSignatures, {
     if (input$DiscoverResultName == "" |
         input$NumberOfSignatures == "" |
-        input$nStart == "") {
+        input$nStart == "" |
+        extract_count_tables(vals$musica)[["SBS96"]]@count_table < 2 |
+        input$NumberOfSignatures < 2) {
       output$DiscoverWarning <- renderText({
         validate(
           need(input$DiscoverResultName != "",
@@ -738,7 +854,11 @@ parseDeleteEvent <- function(idstr) {
           need(input$NumberOfSignatures != "",
                'You must specify the number of expected signatures.'),
           need(input$nStart != "",
-               "Please specify the number of random starts.")
+               "Please specify the number of random starts."),
+          need(input$NumberOfSignatures >= 2,
+               "Must specify 2 or more signatures."),
+          need(extract_count_tables(vals$musica)[["SBS96"]]@count_table >= 2,
+            "You must provide 2 or more samples")
         )
       })
       return ()
@@ -782,7 +902,7 @@ parseDeleteEvent <- function(idstr) {
                   choices = names(extract_count_tables(vals$musica))),
       bsTooltip("SelectPredTable",
                 "Name of the table used for posterior prediction", 
-                placement = "bottom", trigger = "hover", options = NULL)
+                placement = "right", trigger = "hover", options = NULL)
     )
   })
   
@@ -867,12 +987,11 @@ parseDeleteEvent <- function(idstr) {
                   selected = "cosmic_v3_sbs_sigs"),
       bsTooltip("PredictedResult",
                 "Result object containing the signatures to predict",
-                placement = "bottom", trigger = "hover", options = NULL)
+                placement = "right", trigger = "hover", options = NULL)
     )
   })
   
   output$PrecitedSignatures <- renderUI({
-    
     if(input$PredictedResult %in% names(cosmic_objects)) {
         vals$pSigs <- colnames(signatures(
           cosmic_objects[[input$PredictedResult]]))
@@ -884,12 +1003,14 @@ parseDeleteEvent <- function(idstr) {
         vals$pRes <- vals$result_objects[[input$PredictedResult]]
     }
     tagList(
-      checkboxGroupInput("PredSigs", "Sigantures to Predict",
-                         choices = vals$pSigs, inline = T,
-                         selected = vals$pSigs),
+      selectInput("PredSigs", label = "Signatures to Predict", 
+                  choices = vals$pSigs, multiple = T, selectize = T),
+      # checkboxGroupInput("PredSigs", "Signatures to Predict",
+      #                    choices = vals$pSigs, inline = T,
+      #                    selected = vals$pSigs),
       bsTooltip("PredSigs",
                 "Signatures to predict.",
-                placement = "bottom", trigger = "hover", options = NULL)
+                placement = "right", trigger = "hover", options = NULL)
     )
   })
   
@@ -978,7 +1099,7 @@ parseDeleteEvent <- function(idstr) {
                                    as.is = TRUE)
     vals$annotations
     
-  }, options = list(scrollX = T))
+  }, options = list(autoWidth = FALSE, scrollX = TRUE))
   
   output$AnnotationSamples <- renderUI({
     if(is.null(vals$annotations)) {
@@ -1035,7 +1156,7 @@ parseDeleteEvent <- function(idstr) {
                   choices = c(names(vals$result_objects))),
       bsTooltip("SelectResultA",
                 "A musica result object", 
-                placement = "bottom", trigger = "hover", options = NULL)
+                placement = "right", trigger = "hover", options = NULL)
     )
   })
   
@@ -1048,7 +1169,7 @@ parseDeleteEvent <- function(idstr) {
                               names(vals$result_objects)))),
       bsTooltip("SelectResultB",
                 "A second musica result object", 
-                placement = "bottom", trigger = "hover", options = NULL)
+                placement = "right", trigger = "hover", options = NULL)
     )
   })
 
@@ -1089,7 +1210,7 @@ parseDeleteEvent <- function(idstr) {
     if(!is.null(isolate(vals$comparison))) {
       output$CompareTable <- renderDataTable({
         isolate(vals$comparison)
-      }, options = list(scrollX = T))
+      }, options = list(autoWidth = FALSE, scrollX = T))
       output$DownloadComparison <- renderUI({
         tagList(
           downloadButton("DownloadCompare", "Download"),
@@ -1176,7 +1297,7 @@ parseDeleteEvent <- function(idstr) {
                                    group2 = g2)
       output$DiffTable <- renderDataTable(
         vals$diff %>% tibble::rownames_to_column(var = "Signature"), 
-        options = list(scrollX = T)
+        options = list(autoWidth = FALSE, scrollX = TRUE)
       )
       shinybusy::hide_spinner()
       # output$DownloadDiffAnal <- renderUI({
