@@ -4,6 +4,7 @@ library(sortable)
 library(shinyBS)
 library(shinyalert)
 library(TCGAbiolinks)
+library(shinyjqui)
 
 options(shiny.maxRequestSize = 1000*1024^2)
 source("server_tables.R", local = T)
@@ -1974,6 +1975,7 @@ observeEvent(input$get_heatmap,{
                      annotation = annotation,
                      plotly = plotly)
       )
+      jqui_resizable("#cluster_plotly")
     }
     else{
       jqui_resizable("#cluster_plot", operation = "destroy")
