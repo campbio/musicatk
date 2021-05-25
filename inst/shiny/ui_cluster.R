@@ -23,7 +23,8 @@ cluster_analysis <- fluidPage(
         inputId = "algorithm1",
         label = "Algorithm",
         choices = c("k-means" = "kmeans", "Hierarchical" = "hclust", 
-                    "Hierarchical k-means" = "hkmeans", "k-medoids" = "pam", "CLARA" = "clara")
+                    "Hierarchical k-means" = "hkmeans", "k-medoids" = "pam", "CLARA" = "clara"),
+        selected = "hclust"
       ),
       add_busy_spinner(spin = "fading-circle"),
       uiOutput(outputId = "no_cluster1"),
@@ -42,7 +43,8 @@ cluster_analysis <- fluidPage(
         inputId = "algorithm2",
         label = "Clustering Algorithm",
         choices = c("k-means" = "kmeans", "Hierarchical" = "hclust", 
-                    "Hierarchical k-means" = "hkmeans", "k-medoids" = "pam", "CLARA" = "clara")
+                    "Hierarchical k-means" = "hkmeans", "k-medoids" = "pam", "CLARA" = "clara"),
+        selected = "hclust"
       ),
       uiOutput(outputId = "diss"),
       tags$div(id = "hclust"),

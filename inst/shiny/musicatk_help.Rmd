@@ -1,11 +1,19 @@
 ---
 title: "musicatk_help"
 date: "5/16/2021"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r Import, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(knitr)
+PATH <- getwd()
 ```
 
 ## Import
@@ -34,7 +42,91 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## Data Visualization
+The data visualization tab can make customized plots for signatures and exposures predicted from LDA and NMF algorithms using ggplot2 package. An option of making interactive plot using plotly is also provided.
 
+#### Signatures
+The signature plot is presented only using bar plot with each bar representing the probability of each type of mutation. By default, signatures are named by numbers, but an option of renaming signatures is provided if you want to name them otherwise, such as the possible etiology.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/visual_sig.png"))
+```
+
+
+In this tutorial, we found 8 single-base signatures from the mixture of lung adenocarcinoma, lung squamous cell carcinoma, and skin cutaneous melanoma samples.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/sig_plot.png"))
+```
+
+#### Exposures
+To visualize the exposure of each signature for each sample, we provided three options, including bar plot, box plot, and violin plot.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/visual_exp.png"))
+```
+
+
+By default, a stacked bar plot sorted by the total number of mutations is used. Each stacked bar shows the proportion of exposure of each signature.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/exp_plot1.png"))
+```
+
+
+The stacked bar plot can be ordered by signatures. If `Signatures` is selected in `Sort By` option, a bucket list will show up to allow you select the signatures you want to use by dragging them from the left box to the right box. Users can also set limit on the number of samples to display. 
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/sorting.png"))
+```
+
+
+This stacked bar plot is now ordered by the exposure of signature 1 and only top 400 samples were included here.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/exp_plot2.png"))
+```
+
+
+Box plot and violin plot can be used to visualize the distribution of exposures or compare exposures between different groups of samples.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/exp_box_setting1.png"))
+```
+
+
+By default, a box plot of exposure for each signature will be shown.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/exp_plot3.png"))
+```
+
+
+If an annotation file is provided, then you can visually compare the exposure of signatures among different groups.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/exp_box_setting2.png"))
+```
+
+
+In this box plot, exposures of each signature were grouped by tumor types. We can find that signatures 1 and 5 were highly exposed in lung cancer samples, while signatures 3 and 8 were enriched in skin cancer samples.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/exp_plot4.png"))
+```
+
+
+We can also group samples by signatures and then color by tumor types.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/exp_box_setting3.png"))
+```
+
+
+This plot can let you directly compare how each signatures were differentially exposed among three tumor types.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/exp_plot5.png"))
+```
 
 ## Additional Analysis
 
@@ -43,6 +135,62 @@ knitr::opts_chunk$set(echo = TRUE)
 #### Exposure Differential Analysis
 
 #### Clustering
+
+The clustering subtab provides several algorithms to cluster samples based on exposure of each signature. After selecting the musica result object, it is recommended to use `Explore Number of Clusters` box to find the optimal number of clusters in your data. Different clustering algorithms and three metrics including within cluster sum of squares, averaged silouette coefficient, and gap statistics are provided here for exploration. All algorithms were imported from [factoextra](https://cran.r-project.org/web/packages/factoextra/index.html) and [cluster](https://cran.r-project.org/web/packages/cluster/index.html).
+(Note: If gap statistic is selected, it will take much longer time to generate the plot.)
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/cluster1.png"))
+```
+
+
+This is a connected scatter plot shows the within cluster sum of squares for each number of clusters predicted using hierarchical clustering. The "elbow" method can be used to determine the optimal number of clusters.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/wss.png"))
+```
+
+
+The `Clustering` box is where you perform the clustering analysis. In addition to clustering algorithm, several methods for calculating dissimilarity matrix, imported from [philentropy](https://cran.r-project.org/web/packages/philentropy/index.html) package, are also provided.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/cluster2.png"))
+```
+
+
+This table is the output of clustering analysis, combined with annotation.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/cluster_tbl.png"))
+```
+
+
+In the `Visulaization` box, users can make scatter plots to visualize the clustering results on a UMAP panel, calculated from signature exposures. Three types of plots are provided.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/cluster_visual.png"))
+```
+
+
+If `Signature` is selected, samples are grouped by clusters and multiplicated by the number of signatures. For each column, samples are colored by exposure of a signature.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/umap1.png"))
+```
+
+
+If `Annotation` is selected, an additional select box will show up and let you choose one type of annotation of interest. Then, you can make a plot grouping samples by both clusters and annotation.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/umap2.png"))
+```
+
+
+If `None` is selected, a single scatter plot, colored by clusters, will be made.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/image/umap3.png"))
+```
 
 #### Heatmap
 
