@@ -6,7 +6,7 @@ library(shinyalert)
 library(TCGAbiolinks)
 library(shinyjqui)
 
-options(shiny.maxRequestSize = 1000*1024^2)
+options(shiny.maxRequestSize = 10000*1024^2)
 source("server_tables.R", local = T)
 
 server <- function(input, output, session) {
@@ -974,21 +974,32 @@ parseDeleteEvent <- function(idstr) {
   
   output$PredictedResult <- renderUI({
     other <- list(names(vals$result_objects))
-    if(length(names(vals$result_objects)) > 1) {
-      other <- names(vals$result_objects)
-    }
+    if (is.null(other[[1]])) {
+      tagList(
+        selectInput("PredictedResult", "Result to Predict",
+                    choices = list("Cosmic" = list(
+                      "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
+                      "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
+                      "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs")),
+                    selected = "cosmic_v3_sbs_sigs"),
+        bsTooltip("PredictedResult",
+                  "Result object containing the signatures to predict",
+                  placement = "right", trigger = "hover", options = NULL)
+      )    }
+    else {
     tagList(
       selectInput("PredictedResult", "Result to Predict",
                   choices = list("Cosmic" = list(
                     "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
                     "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
                     "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs"),
-                                 "Other" = other),
+                                 "your signatures" = other),
                   selected = "cosmic_v3_sbs_sigs"),
       bsTooltip("PredictedResult",
                 "Result object containing the signatures to predict",
                 placement = "right", trigger = "hover", options = NULL)
     )
+    }
   })
   
   output$PrecitedSignatures <- renderUI({
@@ -1003,11 +1014,11 @@ parseDeleteEvent <- function(idstr) {
         vals$pRes <- vals$result_objects[[input$PredictedResult]]
     }
     tagList(
-      selectInput("PredSigs", label = "Signatures to Predict", 
-                  choices = vals$pSigs, multiple = T, selectize = T),
-      # checkboxGroupInput("PredSigs", "Signatures to Predict",
-      #                    choices = vals$pSigs, inline = T,
-      #                    selected = vals$pSigs),
+      shinyWidgets::dropdownButton(circle=FALSE, label = "Signatures",
+                                   div(style="max-height:80vh; overflow-y: scroll", 
+                                       checkboxGroupInput("PredSigs", "",
+                         choices = vals$pSigs, inline = FALSE,
+                         selected = vals$pSigs))),
       bsTooltip("PredSigs",
                 "Signatures to predict.",
                 placement = "right", trigger = "hover", options = NULL)
