@@ -68,7 +68,8 @@ Imports:
     shinyalert,
     shinybusy,
     shinyBS,
-    TCGAbiolinks
+    TCGAbiolinks,
+    shinyjqui
 Suggests:
     testthat,
     BiocStyle,
