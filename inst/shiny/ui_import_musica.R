@@ -1,5 +1,5 @@
 shinyPanelResult <- fluidPage(
-  fluidRow(box(width = 12,
+  fluidRow(box(width = 6,
     useShinyjs(),
     shinyalert::useShinyalert(),
     shinybusy::add_busy_spinner(spin = "fading-circle"),

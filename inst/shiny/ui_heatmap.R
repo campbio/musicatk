@@ -42,12 +42,11 @@ shinyPanelheatmap <- fluidPage(
                     inline = TRUE,
                     selected = ""
                   ),
-                  tags$div(id = "sortbyannot")
-                  )),
-                  hr(),
+                  tags$div(id = "sortbyannot"),
                   actionButton("get_heatmap", "Plot"),
-                  downloadButton("download_heatmap", "Download"),
-                  hr(),
+                  #downloadButton("download_heatmap", "Download")
+                  )),
+                  
                   plotOutput("heatmap"),
                   bsTooltip("select_res_heatmap", "Select musica result object for plotting a heatmap", placement = "bottom", trigger = "hover",
                   options = NULL),
