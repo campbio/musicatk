@@ -58,24 +58,21 @@ It allows for creation of your musica object for discovery and prediction of sig
 
 
 ## Annotations
-<img src="MusicaTKScreenshots/AnnotationsTab.png" alt="Annotations Tab"/>
-<br>
-
 Sample annotations can be used to store information about each sample such as tumor type or treatment status. These are used in downstream plotting functions such as plot_exposures or plot_umap to group or color samples by a particular annotation.
 
-![](MusicaTKScreenshots/AnnotationOptions.png)
+![]("image/AnnotationsTab.png")
 <br>
-Select the musica object from the "Select object" dropdown, and upload the text file containing sample annotations. After selecting the correct delimiter, a data table will appear below to show the annotations
-that will be added to the musica object. Choose the column that contains the sample names from the "Sample Name Columns" dropdown and then click "Add Annotation".
+
+Select the musica object from the "Select object" dropdown, and upload the text file containing sample annotations. The application expects one column in the text file to contain the sample names. These sample names must match the sample names in the musica object. NA values will be used for any samples missing in the annotation file.
+
+![](image/AnnotationOptions.png)
 <br>
-![](MusicaTKScreenshots/AnnotationTable.png)
+After selecting the correct delimiter, a data table will appear below to show the annotations that will be added to the musica object. If your annotation file does not contain a header, you need to deselect the "Header" radio button. Choose the column that contains the sample names from the "Sample Name Columns" dropdown and then click "Add Annotation".
+<br>
+![](image/AnnotationTable.png)
 
 ## Build Tables
-![](MusicaTKScreenshots/TableTab.png)
-
-Generates count tables for different mutation type schemas which can be used as input to the mutational signature discovery or prediction functions. "SBS96" generates a table for single base substitutions following the standard 96 mutation types derived from the trinucleotide context. "SBS192" is the 96 mutation type schema with the addition of transcriptional strand or replication strand information added to each base. "DBS" generates a table for the double base substitution schema used in COSMIC V3. "Indel" generates a table for insertions and deletions following the schema used in COSMIC V3.
-
-To build the count tables, the user must select 1 of the 5 standard motifs in the "Select Count Table" dropdown.
+The "Build Tables" tab is used to generate count tables for different mutation type schemas which can be used as input to the mutational signature discovery or prediction functions. To build the count tables, the user must select 1 of the 5 standard motifs in the "Select Count Table" dropdown.
 
 SBS96 - Motifs are the six possible single base pair mutation types times the four possibilities each for upstream and downstream context bases (464 = 96 motifs) <br>
 SBS192_Trans - Motifs are an extension of SBS96 multiplied by the transcriptional strand (translated/untranslated), can be specified with "Transcript_Strand". <br>
@@ -85,26 +82,34 @@ INDEL - Motifs are 83 categories intended to capture different categories of ind
 
 In addition to selecting a motif, the user must also provide the reference genome.
 
+![](image/TableTab.png)
+
+
 ## Signatures and Exposures
 
-#### Discover
-![](MusicaTKScreenshots/DiscoverTab.png)
+The user has the option of discovering signatures and exposures without prior knowledge, or using predefined signatures to predict exposures. To discover signatures use the "Discover" tab. To predict signature exposures, use the "Predict" tab.
 
-Mutational signatures and exposures will be discovered using methods such as Latent Dirichlet Allocation (lda) or Non-Negative Matrix Factorization (nmf). These algorithms will deconvolute a matrix of counts for mutation types in each sample to two matrices: 1) a "signature" matrix containing the probability of each mutation type in each sample and 2) an "exposure" matrix containing the estimated counts for each signature in each sample. Before mutational discovery can be performed, variants from samples first need to be stored in a musica object using the create_musica function and mutation count tables need to be created using functions such as build_standard_table.
+#### Discover
+Mutational signatures and exposures can be discovered using methods such as Latent Dirichlet Allocation (lda) or Non-Negative Matrix Factorization (nmf). These algorithms will deconvolute a matrix of counts for mutation types in each sample to two matrices: 1) a "signature" matrix containing the probability of each mutation type in each sample and 2) an "exposure" matrix containing the estimated counts for each signature in each sample. Before mutational discovery can be performed, variants from samples first need to be stored in a musica object using the create_musica function and mutation count tables need to be created using functions such as build_standard_table.
 <br>
-You can select any count table for signature discovery. To obtain biologically significant results, it is important to select a reasonable number of expected signatures. 
+You can select any count table for signature discovery. To obtain biologically significant results, it is important to select a reasonable number of expected signatures. In this tutorial, we chose 8 signatures.
+
+![](image/DiscoverTab.png)
+
 
 #### Predict
-![](MusicaTKScreenshots/PredictTab.png)
 
-Exposures for samples will be predicted using an existing set of signatures stored in a musica_result object. Algorithms available for prediction include a modify version of "lda", "decompTumor2Sig", and "deconstructSigs".
+Exposures for samples will be predicted using an existing set of signatures stored in a musica_result object.Algorithms available for prediction include a modify version of "lda", "decompTumor2Sig", and "deconstructSigs". To use the "deconstructSigs" algorithm, you will need to provide the reference genome. 
 
-![](MusicaTKScreenshots/PredictOptions.png)
+![](image/PredictTab.png)
+
 
 The "Signatures to Predict" dropdown contains all the signatures in the result object selected from the 
-"Result to Predict" dropdown. You can search this dropdown and select multiple signatures. You can also
-remove signatures by deleting text from the select input. To use the "deconstructSigs" algorithm, you 
-will need to provide the reference genome.
+"Result to Predict" dropdown. You can search this dropdown and select multiple signatures. In our example we use the "lda" algorithm to predict exposures of 6 Cosmic signatures in our samples.
+
+![](image/PredictDropdown.png)
+
+
 
 
 ## Data Visualization
@@ -197,22 +202,30 @@ include_graphics(paste0(PATH,"/image/exp_plot5.png"))
 ## Additional Analysis
 
 #### Compare Signatures
-![](MusicaTKScreenshots/CompareTab.png)
 
 Compare two result objects to find similar signatures. The threshold acts as a cutoff
 similarity score and can be any value between 0 and 1. Results will populate in a
 data table below which can be downloaded.
 
-![](MusicaTKScreenshots/CompareTable.png)
+![](image/CompareTab.png)
+
+Using the cosine metric with a threshold of 0.8 we can identify 7 pairs of similar signatures. Interestingly, we identified a pair with a high cosine similarity score - signature1 and Cosmic SBS4. Our results indicate we may have identified a tobacco smoke signature among our tumor samples. This should not be a surprise given many of our samples are from lung tumors.
+
+![](image/CompareTable.png)
 
 #### Exposure Differential Analysis
-![](MusicaTKScreenshots/DATab.png)
+
 The "Exposure Differential Analysis" tab is used to run differential analysis on the signature exposures of annotated samples. There are 3 methods to perform the differential analysis: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test, and a negative binomial regression (glm). 
 
-When using the Wilcoxon Rank Sum Test, any two groups will be compared in a pairwise fashion. Any isolated group will be ignored. Below we display the Wilcoxon Rank Sum Test results between LUAD and LUSC. Note that SKCM was ignored since it has no pair.
+![](image/DATab.png)
 
-![](MusicaTKScreenshots/DAOptions.png)
-![](MusicaTKScreenshots/WilcoxonTable.png)
+When using the Wilcoxon Rank Sum Test, any two groups will be compared in a pairwise fashion. Any isolated group will be ignored. Below we display the Wilcoxon Rank Sum Test results between LUAD and SKCM. Note that LUAD was ignored since it has no pair.
+
+![](image/DAOptions.png)
+
+From our table, we can see several of our signatures are differentially exposed across tumor types. From our comparison analysis, we can hypothesize signature1 may be related to tobacco smoke. We may hypothesize tobacco smoke is a primary driving mechanism for lung cancer development, but not for skin cancer.
+
+![](image/WilcoxonTable.png)
 
 
 #### Clustering
@@ -277,6 +290,7 @@ include_graphics(paste0(PATH,"/image/umap3.png"))
 Please select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and s
 ![](/Users/zeenu/Documents/musicatk/inst/shiny/images/heatmap.png)
 ![](/Users/zeenu/Documents/musicatk/inst/shiny/images/heatmap1.png)
+
 
 ## Download
 You can download your musica object and musica result object from their labeled respective drop down menus as .rds files. Please select the name of the musica result or musica object that you want to download from their drop down menus and press the respective download button. 
