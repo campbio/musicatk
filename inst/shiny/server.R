@@ -4,8 +4,9 @@ library(sortable)
 library(shinyBS)
 library(shinyalert)
 library(TCGAbiolinks)
+library(shinyjqui)
 
-options(shiny.maxRequestSize = 1000*1024^2)
+options(shiny.maxRequestSize = 10000*1024^2)
 source("server_tables.R", local = T)
 
 server <- function(input, output, session) {
@@ -973,21 +974,32 @@ parseDeleteEvent <- function(idstr) {
   
   output$PredictedResult <- renderUI({
     other <- list(names(vals$result_objects))
-    if(length(names(vals$result_objects)) > 1) {
-      other <- names(vals$result_objects)
-    }
+    if (is.null(other[[1]])) {
+      tagList(
+        selectInput("PredictedResult", "Result to Predict",
+                    choices = list("Cosmic" = list(
+                      "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
+                      "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
+                      "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs")),
+                    selected = "cosmic_v3_sbs_sigs"),
+        bsTooltip("PredictedResult",
+                  "Result object containing the signatures to predict",
+                  placement = "right", trigger = "hover", options = NULL)
+      )    }
+    else {
     tagList(
       selectInput("PredictedResult", "Result to Predict",
                   choices = list("Cosmic" = list(
                     "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
                     "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
                     "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs"),
-                                 "Other" = other),
+                                 "your signatures" = other),
                   selected = "cosmic_v3_sbs_sigs"),
       bsTooltip("PredictedResult",
                 "Result object containing the signatures to predict",
                 placement = "right", trigger = "hover", options = NULL)
     )
+    }
   })
   
   output$PrecitedSignatures <- renderUI({
@@ -1002,11 +1014,11 @@ parseDeleteEvent <- function(idstr) {
         vals$pRes <- vals$result_objects[[input$PredictedResult]]
     }
     tagList(
-      selectInput("PredSigs", label = "Signatures to Predict", 
-                  choices = vals$pSigs, multiple = T, selectize = T),
-      # checkboxGroupInput("PredSigs", "Signatures to Predict",
-      #                    choices = vals$pSigs, inline = T,
-      #                    selected = vals$pSigs),
+      shinyWidgets::dropdownButton(circle=FALSE, label = "Signatures",
+                                   div(style="max-height:80vh; overflow-y: scroll", 
+                                       checkboxGroupInput("PredSigs", "",
+                         choices = vals$pSigs, inline = FALSE,
+                         selected = vals$pSigs))),
       bsTooltip("PredSigs",
                 "Signatures to predict.",
                 placement = "right", trigger = "hover", options = NULL)
@@ -1400,8 +1412,10 @@ parseDeleteEvent <- function(idstr) {
     options <- get_sig_option(input)
     result <- vals$result_objects[[input$selected_res1]]
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
-    height <- paste0(as.character(n * 75),"px")
+    height <- paste0(as.character(n * 90),"px")
     if(options[[6]]){
+      jqui_resizable("#sigplot_plotly", operation = "destroy")
+      jqui_resizable("#sigplot_plot", operation = "destroy")
       removeUI(selector = "#sigplot_plot")
       removeUI(selector = "#sigplot_plotly")
       insertUI(
@@ -1419,8 +1433,11 @@ parseDeleteEvent <- function(idstr) {
           same_scale = options[[5]]
         )
       )
+      jqui_resizable("#sigplot_plotly")
     }
     else{
+      jqui_resizable("#sigplot_plotly", operation = "destroy")
+      jqui_resizable("#sigplot_plot", operation = "destroy")
       removeUI(selector = "#sigplot_plotly")
       removeUI(selector = "#sigplot_plot")
       insertUI(
@@ -1438,6 +1455,7 @@ parseDeleteEvent <- function(idstr) {
           same_scale = options[[5]]
         )
       )
+      jqui_resizable("#sigplot_plot")
     }
   })
   
@@ -1660,6 +1678,8 @@ parseDeleteEvent <- function(idstr) {
     options <- get_exp_option(input)
     result <- vals$result_objects[[input$selected_res2]]
     if(options[[14]]){
+      jqui_resizable("#expplotly", operation = "destroy")
+      jqui_resizable("#expplot", operation = "destroy")
       removeUI(selector = "#expplotly")
       removeUI(selector = "#expplot")
       insertUI(
@@ -1685,8 +1705,11 @@ parseDeleteEvent <- function(idstr) {
           plotly = options[[14]]
         )
       )
+      jqui_resizable("#expplotly")
     }
     else{
+      jqui_resizable("#expplotly", operation = "destroy")
+      jqui_resizable("#expplot", operation = "destroy")
       removeUI(selector = "#expplot")
       removeUI(selector = "#expplotly")
       insertUI(
@@ -1712,6 +1735,7 @@ parseDeleteEvent <- function(idstr) {
           plotly = options[[14]]
         )
       )
+      jqui_resizable("#expplot")
     }
   })
 
@@ -1895,6 +1919,12 @@ observeEvent(input$get_heatmap,{
   })
   
   observeEvent(input$explore,{
+    jqui_resizable("#explore_plot", operation = "destroy")
+    removeUI(selector = "#explore_plot")
+    insertUI(
+      selector = "#insert_explore_plot",
+      ui = plotOutput(outputId = "explore_plot")
+    )
     method <- input$metric
     clust.method <- input$algorithm1
     n <- input$numclust1
@@ -1908,6 +1938,7 @@ observeEvent(input$get_heatmap,{
         proportional = proportional
       )
     )
+    jqui_resizable("#explore_plot")
   })
   
   observeEvent(input$algorithm2, {
@@ -2061,6 +2092,8 @@ observeEvent(input$get_heatmap,{
     }
     plotly <- input$plotly3
     if(plotly){
+      jqui_resizable("#cluster_plot", operation = "destroy")
+      jqui_resizable("#cluster_plotly", operation = "destroy")
       removeUI(selector = "#cluster_plot")
       removeUI(selector = "#cluster_plotly")
       insertUI(
@@ -2074,8 +2107,11 @@ observeEvent(input$get_heatmap,{
                      annotation = annotation,
                      plotly = plotly)
       )
+      jqui_resizable("#cluster_plotly")
     }
     else{
+      jqui_resizable("#cluster_plot", operation = "destroy")
+      jqui_resizable("#cluster_plotly", operation = "destroy")
       removeUI(selector = "#cluster_plot")
       removeUI(selector = "#cluster_plotly")
       insertUI(
@@ -2089,6 +2125,7 @@ observeEvent(input$get_heatmap,{
                      annotation = annotation,
                      plotly = plotly)
       )
+      jqui_resizable("#cluster_plot")
     }
   })
   ########################################
@@ -2119,7 +2156,7 @@ observeEvent(input$get_heatmap,{
       paste("musica_object", ".rds", sep = "")
     },
     content = function(file) {
-      saveRDS(vals$musica, file)
+      saveRDS(vals$musica, file = file)
     }
   )
  output$download_res <- downloadHandler(
@@ -2128,7 +2165,7 @@ observeEvent(input$get_heatmap,{
       paste("musica_results", ".rds", sep = "")
     },
     content = function(file) {
-      saveRDS(vals$result_objects[[input$select_res_download]], file)
+      saveRDS(vals$result_objects[[input$select_res_download]], file = file)
     }
   )
 }
