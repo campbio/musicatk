@@ -287,7 +287,7 @@ include_graphics(paste0(PATH,"/image/umap3.png"))
 ```
 
 #### Heatmap
-Please select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and s
+Please select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and press the 'Plot' button to see your heatmap. If you want to normalize your data, check the 'Proportional' setting and for z-scale normalization, check the 'z-scale' option. You can also see column or row names by checking 'Show column names' and 'Show row names' resepctively. If you want to subset by signatures, press 'Selected Signatures' to select the ones you want. You can also select the 'Samples' and 'Annotation' option to subset by the available samples and annotations respectively.
 ![](/image/heatmap.png)
 ![](/image/heatmap1.png)
 
