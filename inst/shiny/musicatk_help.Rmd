@@ -26,17 +26,17 @@ Users can upload their datasets through 1 of 3 different methods.
 ## Import Files
 In order to discover or predict signatures, you need to first upload VCF or MAF files in this section. You can browse through the files you want to upload by selecting the 'browse' button under the 'Select Files' label.
 
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/import.png)
+![]("/image/import.png")
 
 Once you have done that, press the 'Add Samples'button to see the list of files that you have added. At this stage, if you don't want a particular file, you can press the delete button next to the file to remove it. If you want to reverse that change, you can press the 'Undo' button. After that, please press the 'Import' button which will cause a moving circle to appear in the top right indicating that the process has begun. 
 
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/import1.png)
+![]("/image/import1.png")
 
 Once the process is completed, you'll get a ntoification in the bottom right. A variants table from your files will also appear and at this stage you can download it by pressing the 'Download Variants' button if you want. After this, you can move on to the next steps in your workflow. 
 Please note that only .vcf and .maf file format is supported and uploading another file format will result in an error.
 
 
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/import2.png)
+![]("/image/import2.png")
 
 
 
@@ -44,17 +44,17 @@ Please note that only .vcf and .maf file format is supported and uploading anoth
 ## Import TCGA Datasets
 This tab allows you to select single or multiple TCGA datasets directly instead of providing your own VCFs and MAFs in the 'Import Files' step. This is an optional step and not needed if you have your own data that you want to analyze. The TCGA datasets have  been named in the following format for your ease: TCGA Abbreviation - Full TCGA tumor name. In case, you want to refer to the original TCGA page for the tumor name list, please select the 'Full Tumor List' link right next to the 'Import' button to be redirected to that page. Please select whichever dataset you want and press the 'Import' button at the bottom which will result in a moving circle at the top right which will indicate that the import is in process. once finsihed, you'll get a notification at the bottom right. At this stage, you can move on to the next steps in your workflow.
 
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/TCGA.png)
+![]("/image/TCGA.png")
 ## Import Musica
 Import your own musica result or musica objects i .rda or .rds format which will allow for direct downstream analysis in the workflow. Select which type (musica result or musica object) you want to upload and select the 'browse' button to look for your file. Once you have selected it, you'll see a bar saying file upload is completed. By default, your musica object will be named 'musica'. For your result object, by default, it'll be named after the file's name but you can change it if you wish in the text box labeled "Name your musica result object". After that, you can press the 'Upload' button which will cause a moving circle to appear on the top right indicating that the upload is in in process. Once finished, you'll see a notification message in the bottom right and a variants table of your uploaded file will also appear. At this stage, you can move on to the next steps in your workflow and you can also download the variants table using the "Download Variants' button.
 
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/upload_musica.png)
+![]("/image/upload_musica.png")
 
 
 ## Create Musica Object
 It allows for creation of your musica object for discovery and prediction of signatures later. You need to select your reference genome from the drop down menu labeled "Choose Genome" and then select the boxes from the options given below under Settings. After your selection, please select the 'Create Musica Object' button. A moving circle will appear on the top right indicating that the creation is under process. Once,it's done, you'll see a notification message at the bottom right and a variants summary table will also appear. At this stage, you can move on to the next steps in your workflow and can also download the musica object from  by pressing the 'Download Musica Object' button.
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/create_musica.png)
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/create_musica1.png)
+![]("/image/create_musica.png")
+![]("/image/create_musica1.png")
 
 
 ## Annotations
@@ -287,12 +287,12 @@ include_graphics(paste0(PATH,"/image/umap3.png"))
 ```
 
 #### Heatmap
-Please select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and s
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/heatmap.png)
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/heatmap1.png)
+Please select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and press the 'Plot' button to see your heatmap. If you want to normalize your data, check the 'Proportional' setting and for z-scale normalization, check the 'z-scale' option. You can also see column or row names by checking 'Show column names' and 'Show row names' resepctively. If you want to subset by signatures, press 'Selected Signatures' to select the ones you want. You can also select the 'Samples' and 'Annotation' option to subset by the available samples and annotations respectively.
+![](/image/heatmap.png)
+![](/image/heatmap1.png)
 
 
 ## Download
 You can download your musica object and musica result object from their labeled respective drop down menus as .rds files. Please select the name of the musica result or musica object that you want to download from their drop down menus and press the respective download button. 
-![](/Users/zeenu/Documents/musicatk/inst/shiny/images/download.png)
+![]("/images/download.png")
 
