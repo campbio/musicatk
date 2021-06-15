@@ -52,7 +52,7 @@ ui <- fluidPage(
                menuSubItem("Clustering", tabName = "cluster"),
                menuSubItem("Heatmap", tabName = "heatmap")),
       menuItem("Download", tabName = "download"),
-      menuItem("Help", tabName = "widgets"))),
+      menuItem("Help", href = paste0(getwd(), "/www/docs/index.html")))),
     
     dashboardBody(
         tabItems(
