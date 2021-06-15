@@ -1,0 +1,319 @@
+---
+title: "musicatk_help"
+date: "5/16/2021"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r Import, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(knitr)
+PATH <- paste0(getwd(), "/docs/articles/image") #getwd()
+```
+
+## Import
+Users can upload their datasets through 1 of 3 different methods.
+- “Import Files” - upload MAF and VCF files containing the variant data.
+- “Import TCGA Datasets” - easily import all open access TCGA tumor datasets.
+- “Import Musica Result Object” - upload existing musica and result objects.
+
+
+## Import Files
+In order to discover or predict signatures, you need to first upload VCF or MAF files in this section. You can browse through the files you want to upload by selecting the 'browse' button under the 'Select Files' label.
+
+<!-- ![]("/image/import.png") -->
+
+Once you have done that, press the 'Add Samples' button to see the list of files that you have added. At this stage, if you don't want a particular file, you can press the delete button next to the file to remove it. If you want to reverse that change, you can press the 'Undo' button. After adding files, press the 'Import' button which will cause a moving circle to appear in the top right indicating that the process has begun. 
+
+<!--  ![]("/image/import1.png") -->
+
+Once the process is completed, you'll get a notification in the bottom right. A variants table from your files will also appear which you can download by pressing the 'Download Variants' button. After this, you can move on to the next steps in your workflow. 
+Please note that only .vcf and .maf file format is supported.
+
+
+
+<!--  ![]("/image/import2.png") -->
+
+
+
+
+## Import TCGA Datasets
+This tab allows you to select single or multiple TCGA datasets directly instead of providing your own VCFs and MAFs in the 'Import Files' step. This is an optional step and not needed if you have your own data that you want to analyze. The TCGA datasets have been named in the following format: TCGA Abbreviation - Full TCGA tumor name. In case, you want to refer to the original TCGA page for the tumor name list, please select the 'Full Tumor List' link right next to the 'Import' button to be redirected to that page. Please select whichever dataset you want and press the 'Import' button at the bottom which will result in a moving circle at the top right which will indicate that the import is in process. Once finished, you'll get a notification at the bottom right. At this stage, you can move on to the next steps in your workflow.
+
+<!--  ![]("/image/TCGA.png") -->
+## Import Musica
+Import your own musica result or musica objects in .rda or .rds format which will allow for direct downstream analysis in the workflow. Select which type (musica result or musica object) you want to upload and select the 'browse' button to look for your file. Once you have selected it, you'll see a bar saying file upload is completed. By default, your musica object will be named 'musica'. For your result object, by default, it'll be named after the file's name but you can change it if you wish in the text box labeled "Name your musica result object". After that, you can press the 'Upload' button which will cause a moving circle to appear on the top right indicating that the upload is in process. Once finished, you'll see a notification message in the bottom right and a variants table of your uploaded file will also appear. At this stage, you can move on to the next steps in your workflow and you can also download the variants table using the "Download Variants' button.
+
+<!--  ![]("/image/upload_musica.png") -->
+
+
+## Create Musica Object
+Here we create a  musica object for discovery and prediction of signatures from your variants. Select the reference genome from the drop down menu labeled "Choose Genome" that matches the genome build of your variants and press  the 'Create Musica Object' button. A moving circle will appear on the top right indicating that the creation is under process. Once it's done, you'll see a notification message at the bottom right and a variant summary table will also appear. At this stage, you can move on to the next steps in your workflow and can also download the musica object by pressing the 'Download Musica Object' button.
+
+<!--  ![]("/image/create_musica.png")
+![]("/image/create_musica1.png") -->
+
+
+## Annotations
+Sample annotations can be used to store information about each sample such as tumor type or treatment status. They are optional and can be used in downstream plotting functions such as plot_exposures or plot_umap to group or color samples by a particular annotation.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/AnnotationsTab.png"))
+```
+<br>
+Annotations are provided in a character delimited text file which includes a sample name column. The sample names must match the sample names in the selected musica object. NA values will be used for any samples not present in the annotation file.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/AnnotationOptions.png"))
+```
+<br>
+After selecting the correct delimiter, a data table will appear below to show the annotations that will be added to the musica object. If your annotation file does not contain a header, deselect the "Header" radio button. Choose the column that contains the sample names from the "Sample Name Columns" dropdown and then click "Add Annotation".
+<br>
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/AnnotationTable.png"))
+```
+
+## Build Tables
+The "Build Tables" tab is used to generate count tables for different mutation type schemas which are the input to mutational signature discovery or prediction functions. To build the count tables, the user must select 1 of the 5 standard motifs in the "Select Count Table" dropdown.
+SBS96 - Motifs are the six possible single base pair mutation types times the four possibilities each for upstream and downstream context bases (464 = 96 motifs) <br>
+SBS192_Trans - Motifs are an extension of SBS96 multiplied by the transcriptional strand (translated/untranslated), can be specified with "Transcript_Strand". <br>
+SBS192_Rep - Motifs are an extension of SBS96 multiplied by the replication strand (leading/lagging), can be specified with "Replication_Strand". <br>
+DBS - Motifs are the 78 possible double-base-pair substitutions. <br>
+INDEL - Motifs are 83 categories intended to capture different categories of indels based on base-pair change, repeats, or microhomology, insertion or deletion, and length.
+In addition to selecting a motif, the user must also provide the reference genome.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/TableTab.png"))
+```
+
+
+## Signatures and Exposures
+
+The user has the option of discovering novel signatures and exposures, or using previously discovered signatures to predict exposures. To discover signatures use the "Discover" tab. To predict signature exposures, use the "Predict" tab.
+
+
+#### Discover
+Mutational signatures and exposures can be discovered using methods such as Latent Dirichlet Allocation (LDA) or Non-Negative Matrix Factorization (NMF). These algorithms will deconvolute a matrix of counts for mutation types in each sample to two matrices: 1) a "signature" matrix containing the probability of each mutation type in each sample and 2) an "exposure" matrix containing the estimated counts for each signature in each sample. Before mutational discovery can be performed, variants from samples first need to be stored in a musica object using the create_musica function and mutation count tables need to be created using functions such as build_standard_table.
+
+You can select any count table for signature discovery. To obtain biologically significant results, it is important to select a reasonable number of expected signatures. In this tutorial, we chose 8 signatures.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/DiscoverTab.png"))
+```
+
+
+#### Predict
+
+Exposures for samples will be predicted using an existing set of signatures stored in a musica_result object. Algorithms available for prediction include "lda", "decompTumor2Sig", and "deconstructSigs". 
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/PredictTab.png"))
+```
+
+The "Signatures to Predict" dropdown contains all the signatures in the result object selected from the 
+"Result to Predict" dropdown. You can search this dropdown and select multiple signatures. In our example we use the "lda" algorithm to predict exposures of 6 Cosmic signatures in our samples.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/PredictDropdown.png"))
+```
+
+
+## Data Visualization
+The data visualization tab can make customized plots for signatures and exposures predicted from LDA and NMF algorithms using the ggplot2 package. An option of making interactive plots using plotly is also provided.
+
+#### Signatures
+The signature plot is presented only using bar plot with each bar representing the probability of each type of mutation. By default, signatures are named by numbers, but an option of renaming signatures is provided if you want to name them otherwise, such as the possible etiology.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/visual_sig.png"))
+```
+
+
+In this tutorial, we found 8 single-base signatures from the mixture of lung adenocarcinoma, lung squamous cell carcinoma, and skin cutaneous melanoma samples.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/sig_plot.png"))
+```
+
+#### Exposures
+To visualize the exposure of each signature for each sample, we provided three options, including bar plot, box plot, and violin plot.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/visual_exp.png"))
+```
+
+
+By default, a stacked bar plot sorted by the total number of mutations is used. Each stacked bar shows the proportion of exposure of each signature.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/exp_plot1.png"))
+```
+
+
+The stacked bar plot can be ordered by signatures. If `Signatures` is selected in `Sort By` option, a bucket list will show up to allow you select the signatures you want to use by dragging them from the left box to the right box. Users can also set limit on the number of samples to display. 
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/sorting.png"))
+```
+
+
+This stacked bar plot is now ordered by the exposure of signature 1 and only top 400 samples were included here.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/exp_plot2.png"))
+```
+
+
+Box plot and violin plot can be used to visualize the distribution of exposures or compare exposures between different groups of samples.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/exp_box_setting1.png"))
+```
+
+
+By default, a box plot of exposure for each signature will be shown.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/exp_plot3.png"))
+```
+
+
+If an annotation file is provided, then you can visually compare the exposure of signatures among different groups.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/exp_box_setting2.png"))
+```
+
+
+In this box plot, exposures of each signature were grouped by tumor types. We can find that signatures 1 and 5 were highly exposed in lung cancer samples, while signatures 3 and 8 were enriched in skin cancer samples.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/exp_plot4.png"))
+```
+
+
+We can also group samples by signatures and then color by tumor types.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/exp_box_setting3.png"))
+```
+
+
+This plot can let you directly compare how each signatures were differentially exposed among three tumor types.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/exp_plot5.png"))
+```
+
+## Additional Analysis
+
+#### Compare Signatures
+
+Compare two result objects to find similar signatures. The threshold acts as a cutoff
+similarity score and can be any value between 0 and 1. Results will populate in a
+data table below which can be downloaded.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/CompareTab.png"))
+```
+
+Using the cosine metric with a threshold of 0.8 we can identify 7 pairs of similar signatures. Interestingly, we identified a pair with a high cosine similarity score - signature1 and Cosmic SBS4. Our results indicate we may have identified a tobacco smoke signature among our tumor samples. This should not be a surprise given many of our samples are from lung tumors.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/CompareTable.png"))
+```
+
+#### Exposure Differential Analysis
+
+The "Exposure Differential Analysis" tab is used to run differential analysis on the signature exposures of annotated samples. There are 3 methods to perform the differential analysis: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test, and a negative binomial regression (glm). 
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/DATab.png"))
+```
+
+When using the Wilcoxon Rank Sum Test, any two groups will be compared in a pairwise fashion. Any isolated group will be ignored. Below we display the Wilcoxon Rank Sum Test results between LUAD and SKCM. Note that LUAD was ignored since it has no pair.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/DAOptions.png"))
+```
+
+From our table, we can see several of our signatures are differentially exposed across tumor types. From our comparison analysis, we can hypothesize signature1 may be related to tobacco smoke. We may hypothesize tobacco smoke is a primary driving mechanism for lung cancer development, but not for skin cancer.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/WilcoxonTable.png"))
+```
+
+
+#### Clustering
+
+The clustering subtab provides several algorithms to cluster samples based on exposure of each signature. After selecting the musica result object, it is recommended to use `Explore Number of Clusters` box to find the optimal number of clusters in your data. Different clustering algorithms and three metrics including within cluster sum of squares, averaged silouette coefficient, and gap statistics are provided here for exploration. All algorithms were imported from [factoextra](https://cran.r-project.org/web/packages/factoextra/index.html) and [cluster](https://cran.r-project.org/web/packages/cluster/index.html).
+(Note: If gap statistic is selected, it will take much longer time to generate the plot.)
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/cluster1.png"))
+```
+
+
+This is a connected scatter plot shows the within cluster sum of squares for each number of clusters predicted using hierarchical clustering. The "elbow" method can be used to determine the optimal number of clusters.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/wss.png"))
+```
+
+
+The `Clustering` box is where you perform the clustering analysis. In addition to clustering algorithm, several methods for calculating dissimilarity matrix, imported from [philentropy](https://cran.r-project.org/web/packages/philentropy/index.html) package, are also provided.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/cluster2.png"))
+```
+
+
+This table is the output of clustering analysis, combined with annotation.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/cluster_tbl.png"))
+```
+
+
+In the `Visulaization` box, users can make scatter plots to visualize the clustering results on a UMAP panel, calculated from signature exposures. Three types of plots are provided.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/cluster_visual.png"))
+```
+
+
+If `Signature` is selected, samples are grouped by clusters and multiplicated by the number of signatures. For each column, samples are colored by exposure of a signature.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/umap1.png"))
+```
+
+
+If `Annotation` is selected, an additional select box will show up and let you choose one type of annotation of interest. Then, you can make a plot grouping samples by both clusters and annotation.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/umap2.png"))
+```
+
+
+If `None` is selected, a single scatter plot, colored by clusters, will be made.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/umap3.png"))
+```
+
+#### Heatmap
+Please select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and press the 'Plot' button to see your heatmap. If you want to normalize your data, check the 'Proportional' setting and for z-scale normalization, check the 'z-scale' option. You can also see column or row names by checking 'Show column names' and 'Show row names' resepctively. If you want to subset by signatures, press 'Selected Signatures' to select the ones you want. You can also select the 'Samples' and 'Annotation' option to subset by the available samples and annotations respectively.
+<!--  ![](/image/heatmap.png) 
+![](/image/heatmap1.png) -->
+
+
+## Download
+You can download your musica object and musica result object from their labeled respective drop down menus as .rds files. Please select the name of the musica result or musica object that you want to download from their drop down menus and press the respective download button. 
+<!--  ![]("/images/download.png") -->
+
