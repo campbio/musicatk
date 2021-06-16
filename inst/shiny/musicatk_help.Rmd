@@ -24,16 +24,14 @@ Users can upload their datasets through 1 of 3 different methods.
 
 
 ## Import Files
-In order to discover or predict signatures, you need to first upload VCF or MAF files in this section. You can browse through the files you want to upload by selecting the 'browse' button under the 'Select Files' label.
+In order to discover or predict signatures, VCF or MAF files need to be uploaded in this section.The files can be browsed through by selecting the 'browse' button under the 'Select Files' label.
 
 ![]("/image/import.png")
-
-Once you have done that, press the 'Add Samples'button to see the list of files that you have added. At this stage, if you don't want a particular file, you can press the delete button next to the file to remove it. If you want to reverse that change, you can press the 'Undo' button. After that, please press the 'Import' button which will cause a moving circle to appear in the top right indicating that the process has begun. 
+After that, the 'Add Samples' button can be pressed to see the added files. At this stage, the delete and undo button next to the file can be pressed to remove it or revert the change respectively. After adding the files, the 'Import' button can be pressed to start the importing process. 
 
 ![]("/image/import1.png")
 
-Once the process is completed, you'll get a ntoification in the bottom right. A variants table from your files will also appear and at this stage you can download it by pressing the 'Download Variants' button if you want. After this, you can move on to the next steps in your workflow. 
-Please note that only .vcf and .maf file format is supported and uploading another file format will result in an error.
+Once the process is completed, a notification in the bottom right will appear. A variants table from the uploaded files files will also appear which can be downloaded by pressing the 'Download Variants' button. 
 
 
 ![]("/image/import2.png")
@@ -42,17 +40,18 @@ Please note that only .vcf and .maf file format is supported and uploading anoth
 
 
 ## Import TCGA Datasets
-This tab allows you to select single or multiple TCGA datasets directly instead of providing your own VCFs and MAFs in the 'Import Files' step. This is an optional step and not needed if you have your own data that you want to analyze. The TCGA datasets have  been named in the following format for your ease: TCGA Abbreviation - Full TCGA tumor name. In case, you want to refer to the original TCGA page for the tumor name list, please select the 'Full Tumor List' link right next to the 'Import' button to be redirected to that page. Please select whichever dataset you want and press the 'Import' button at the bottom which will result in a moving circle at the top right which will indicate that the import is in process. once finsihed, you'll get a notification at the bottom right. At this stage, you can move on to the next steps in your workflow.
-
+This tab allows selection of single or multiple TCGA datasets directly instead of providing user VCFs and MAFs in the 'Import Files' step. This is an optional step and not needed. Users have their own data. The TCGA datasets have been named in the following format: TCGA Abbreviation - Full TCGA tumor name. The original TCGA page for the tumor name list can be referred to by selecting the 'Full Tumor List' link right next to the 'Import' button. Once the datasets have been selected, the 'Import' button at the bottom can be pressed. Once finished, a completion notification will appear at the bottom right. 
 ![]("/image/TCGA.png")
 ## Import Musica
-Import your own musica result or musica objects i .rda or .rds format which will allow for direct downstream analysis in the workflow. Select which type (musica result or musica object) you want to upload and select the 'browse' button to look for your file. Once you have selected it, you'll see a bar saying file upload is completed. By default, your musica object will be named 'musica'. For your result object, by default, it'll be named after the file's name but you can change it if you wish in the text box labeled "Name your musica result object". After that, you can press the 'Upload' button which will cause a moving circle to appear on the top right indicating that the upload is in in process. Once finished, you'll see a notification message in the bottom right and a variants table of your uploaded file will also appear. At this stage, you can move on to the next steps in your workflow and you can also download the variants table using the "Download Variants' button.
+This tab can be used to import user’s musica result or musica objects in .rda or .rds format which will allow for direct downstream analysis in the workflow. The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file's name but it can be changed in the text box labeled "Name your musica result object". Once finished, a completion notification message in the bottom right and a variants table of the uploaded file will appear. At this stage, the next steps in the workflow can be accessed directly. If a musica result object has been uploaded, all the downstream tabs are now accessible and if a musica object has been uploaded then the users can skip the Create Musica tab and move to the build tables tab directly.  The variants table can be downloaded using the "Download Variants' button.
+
 
 ![]("/image/upload_musica.png")
 
 
 ## Create Musica Object
-It allows for creation of your musica object for discovery and prediction of signatures later. You need to select your reference genome from the drop down menu labeled "Choose Genome" and then select the boxes from the options given below under Settings. After your selection, please select the 'Create Musica Object' button. A moving circle will appear on the top right indicating that the creation is under process. Once,it's done, you'll see a notification message at the bottom right and a variants summary table will also appear. At this stage, you can move on to the next steps in your workflow and can also download the musica object from  by pressing the 'Download Musica Object' button.
+This tab can be used to create a musica object for discovery and prediction of signatures from the given variants. The reference genome can be selected from the drop down menu labeled "Choose Genome" that matches the genome build of the variants and the 'Create Musica Object' button can then be pressed. Once it's done, a completion notification message at the bottom right and a variant summary table will appear. The musica object can be downloaded by pressing the 'Download Musica Object' button. 
+
 ![]("/image/create_musica.png")
 ![]("/image/create_musica1.png")
 
