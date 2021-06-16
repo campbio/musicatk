@@ -845,7 +845,7 @@ parseDeleteEvent <- function(idstr) {
     if (input$DiscoverResultName == "" |
         input$NumberOfSignatures == "" |
         input$nStart == "" |
-        extract_count_tables(vals$musica)[["SBS96"]]@count_table < 2 |
+        dim(extract_count_tables(vals$musica)[[input$SelectDiscoverTable]]@count_table)[2] < 2 |
         input$NumberOfSignatures < 2) {
       output$DiscoverWarning <- renderText({
         validate(
@@ -857,7 +857,7 @@ parseDeleteEvent <- function(idstr) {
                "Please specify the number of random starts."),
           need(input$NumberOfSignatures >= 2,
                "Must specify 2 or more signatures."),
-          need(extract_count_tables(vals$musica)[["SBS96"]]@count_table >= 2,
+          need(dim(extract_count_tables(vals$musica)[[input$SelectDiscoverTable]]@count_table)[2] > 2,
             "You must provide 2 or more samples")
         )
       })
