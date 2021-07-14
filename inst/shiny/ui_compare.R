@@ -1,5 +1,5 @@
 shinyPanelCompare <- fluidPage(
-  box( width = 12,
+  box( width = 6,
     uiOutput("CompareResultA"),
     uiOutput("CompareResultB"),
     # textInput("Threshold", "Threshold", value = "0.9"),
