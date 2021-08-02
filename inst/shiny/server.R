@@ -1299,7 +1299,11 @@ parseDeleteEvent <- function(idstr) {
                                    group1 = g1, 
                                    group2 = g2)
       output$DiffTable <- renderDataTable(
-        vals$diff %>% tibble::rownames_to_column(var = "Signature"), 
+        if (input$DiffMethod == "wilcox") {
+          vals$diff
+        } else {
+          vals$diff %>% tibble::rownames_to_column(var = "Signature")
+        }, 
         options = list(autoWidth = FALSE, scrollX = TRUE)
       )
       # output$DownloadDiffAnal <- renderUI({

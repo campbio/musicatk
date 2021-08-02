@@ -1,5 +1,5 @@
 shinyPanelAnnotations <- fluidPage(
-  box( width = 12,
+  box( width = 6,
     # column(width = 12,
     #        h3("Upload Sample Annotations"),
     #        actionButton("AddAnnotation", "Import an annotation text file.")

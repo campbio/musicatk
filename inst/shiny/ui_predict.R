@@ -1,5 +1,5 @@
 shinyPanelPredict <- fluidPage(
-  box( width = 12,
+  box( width = 6,
     uiOutput("PredictedResult"),
     uiOutput("PrecitedSignatures"),
     uiOutput("PredictTable"),

@@ -18,6 +18,10 @@ PATH <- sub("/vignettes", "", PATH)
 PATH <- paste0(getwd(), "/docs/articles/image") #getwd()
 ```
 
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/musicatk_tutorial_workflow.png"))
+```
+
 ## Import
 Users can upload their datasets through 1 of 3 different methods.
 - “Import Files” - upload MAF and VCF files containing the variant data.

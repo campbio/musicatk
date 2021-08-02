@@ -77,26 +77,34 @@ exposure_differential_analysis <- function(musica_result, annotation,
       group1 <- groups[1]
       group2 <- groups[2]
     }
+    n_sigs <- dim(signatures(musica_result))[2]
     header <- data.frame(x = group1, y = group2) %>%
       dplyr::mutate(p = paste0(.data$x, "-", .data$y, "(Pr(>|z|))"),
                     adj = paste0(.data$x, "-", .data$y, "(fdr)"))
+    group_cols <- cbind(sapply(group1, function(x) {
+      rep(x, n_sigs) }),
+      sapply(group2, function(x) {
+        rep(x, n_sigs)})) %>% matrix(ncol = 2)
+    group_cols <- cbind(rep(rownames(exposures), length(group1)), group_cols) 
     diff.out <- sapply(seq_len(length(group1)), FUN = function(i) {
       x <- exposures[, annotations == group1[i]] %>% as.matrix()
       y <- exposures[, annotations == group2[i]] %>% as.matrix()
-      out <- matrixTests::row_wilcoxon_twosample(x, y, ...)$pvalue
+      out <- matrixTests::row_wilcoxon_twosample(x, y, ...)$pvalue 
       return(out)
       })
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(group1) + 1):ncol(diff.out)],
-      method = "BH") %>% matrix(ncol = length(group1), byrow = F)
-    diff.out <- cbind(diff.out, p) %>% as.data.frame()
-    colnames(diff.out) <- c(header$p, header$adj)
+      method = "BH") %>% matrix(ncol = 1, byrow = F)
+    diff.out <- cbind(group_cols, matrix(diff.out, ncol = 1), p) %>%
+      as.data.frame()
+    colnames(diff.out) <- c("Signature", "Group1", "Group2", "Pr(>|z|)", "(fdr)")
   } else if (method == "kruskal") {
     header <- c("K-W chi-squared", "df", "p-value", "fdr")
     diff.out <- matrixTests::row_kruskalwallis(exposures, annotations, ...) %>%
       dplyr::select(.data$statistic, .data$df, .data$pvalue)
     diff.out$fdr <- p.adjust(diff.out$pvalue, method = "BH")
     colnames(diff.out) <- header
+    rownames(diff.out) <- rownames(exposures)
   } else if (method == "glm.nb") {
     header <- data.frame(y = groups) %>%
       dplyr::mutate(coef = paste0(.data$y, "(coef)"),
@@ -119,7 +127,7 @@ exposure_differential_analysis <- function(musica_result, annotation,
     diff.out <- cbind(diff.out, anova.out)
     colnames(diff.out) <- c(header$coef, header$sd, header$z, header$p,
                             header$adj, "ANOVA(Pr(>Chi))", "ANOVA(fdr)")
+    rownames(diff.out) <- rownames(exposures)
   }
-  rownames(diff.out) <- rownames(exposures)
   return(diff.out)
 }
