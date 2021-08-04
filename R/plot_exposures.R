@@ -69,6 +69,7 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
                           group_by = "none",
                           color_by = c("signature", "annotation"),
                           annotation = NULL,
+                          subset_annotation = NULL,
                           num_samples = NULL,
                           sort_samples = "total",
                           threshold = NULL,
@@ -105,6 +106,15 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   # Add sample annotation to data frame if supplied
   plot_dat <- .add_annotation_to_df(result, plot_dat, annotation)
 
+  if (!is.null(subset_annotation)) {
+    available_annots <- unique(plot_dat$annotation)
+    if (!all(subset_annotation %in% available_annots)) {
+      stop("Not all specified annotations to subset by are present")
+    }
+    subset_ind <- which(plot_dat$annotation %in% subset_annotation)
+    plot_dat <- plot_dat[subset_ind, ]
+  }
+  
   # Order signatures with mixedsort
   plot_dat$signature <- factor(plot_dat$signature, 
                                levels = gtools::mixedsort(rownames(exposures)))

@@ -109,7 +109,8 @@ compare_results <- function(result, other_result, threshold = 0.9,
 #' @export
 compare_cosmic_v3 <- function(result, variant_class, sample_type, 
                               metric = "cosine", threshold = 0.9,
-                              result_name = deparse(substitute(result))) {
+                              result_name = deparse(substitute(result)),
+                              show_plot = TRUE) {
   if (sample_type == "exome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       cosmic_res <- musicatk::cosmic_v3_sbs_sigs_exome
@@ -134,6 +135,14 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, sig2 = signatures(cosmic_res),
                             threshold = threshold, metric = metric)
+  sigs <- colnames(signatures)
+  best_mat <- NULL
+  for (i in seq_along(sigs)) {
+    sig_ind <- which(comparison$x_sig_name %in% sigs[i])
+    best <- sig_ind[1]
+    best_mat <- rbind(best_mat, comparison[best, ])
+  }
+  comparison <- best_mat
   result_subset <- methods::new(
     "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
                                                     drop = FALSE],
@@ -146,10 +155,11 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
                                exposures = matrix(), algorithm = "NMF",
                                table_name = table_selected(cosmic_res),
                                musica = get_musica(cosmic_res))
-  
-  .plot_compare_result_signatures(result_subset, other_subset,
-                                  res1_name = result_name,
-                                  res2_name = "COSMIC Signatures (V3)")
+  if (isTRUE(show_plot)) {
+    .plot_compare_result_signatures(result_subset, other_subset,
+                                    res1_name = result_name,
+                                    res2_name = "COSMIC Signatures (V3)")
+  }
   return(comparison)
 }
 
@@ -167,11 +177,20 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' compare_cosmic_v2(res, threshold = 0.7)
 #' @export
 compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
-                              result_name = deparse(substitute(result))) {
+                              result_name = deparse(substitute(result)),
+                              show_plot = TRUE) {
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, 
                             sig2 = signatures(musicatk::cosmic_v2_sigs),
                             threshold = threshold, metric = metric)
+  sigs <- colnames(signatures)
+  best_mat <- NULL
+  for (i in seq_along(sigs)) {
+    sig_ind <- which(comparison$x_sig_name %in% sigs[i])
+    best <- sig_ind[1]
+    best_mat <- rbind(best_mat, comparison[best, ])
+  }
+  comparison <- best_mat
   result_subset <- new("musica_result",
                                 signatures =
                                   signatures(result)[, comparison$x_sig_index, 
@@ -189,9 +208,11 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
                                table_name = 
                         table_selected(musicatk::cosmic_v2_sigs))
 
-  .plot_compare_result_signatures(result_subset, other_subset,
+  if (isTRUE(show_plot)) {
+    .plot_compare_result_signatures(result_subset, other_subset,
                                   res1_name = result_name,
                                   res2_name = "COSMIC Signatures (V2)")
+  }
   return(comparison)
 }
 

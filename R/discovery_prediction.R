@@ -558,7 +558,8 @@ reconstruct_sample <- function(result, sample_number) {
 #' sample_annotation = "Tumor_Subtypes")
 #' auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda")
 #' @export
-auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
+auto_predict_grid <- function(musica, table_name, signature_res, 
+                              algorithm = "lda",
                               sample_annotation = NULL, min_exists = 0.05,
                               proportion_samples = 0.25, rare_exposure = 0.4,
                               verbose = TRUE, combine_res = TRUE) {

@@ -125,7 +125,7 @@ plot_cluster <- function(result, clusters, group = "signature", annotation = NUL
       stop("Sample annotation not found or invalid annotation column name.")
     }
     else{
-      annot <- samp_annot(result) %>% tibble::column_to_rownames(var = "Samples")
+      annot <- samp_annot(result) %>% tibble::remove_rownames() %>% tibble::column_to_rownames(var = "Samples")
       colnames(annot) <- "annotation"
       annot[["annotation"]] <- factor(annot[["annotation"]])
       clust_by_annot <- cbind(k_toplot, annot)
