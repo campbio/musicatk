@@ -25,6 +25,7 @@
 #' \code{annotation} parameter. Default \code{"signature"}.
 #' @param annotation Sample annotation used to group the subplots and/or
 #' color the bars, boxes, or violins. Default \code{NULL}.
+#' @param subset_annotation Subset sample annotation to only specified values.
 #' @param num_samples The top number of sorted samples to display. If
 #' \code{NULL}, then all samples will be displayed. If \code{group_by} is set,
 #' then the top samples will be shown within each group. Default \code{NULL}.

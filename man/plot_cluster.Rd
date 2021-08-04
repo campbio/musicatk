@@ -15,8 +15,8 @@ be stored in this object.}
 
 \item{group}{A single character string indicating the grouping factor. 
 Possible options are: "signature" (columns are signatures in a grid), 
-"annotation" (columns are sample annotation), and "none" (a single UMAP plot). 
-Default is "signature".}
+"annotation" (columns are sample annotation), and "none" (a single UMAP 
+plot). Default is "signature".}
 
 \item{annotation}{Column name of annotation.}
 }
@@ -25,8 +25,9 @@ Generate a ggplot object.
 }
 \description{
 The clustering results can be visualized on a UMAP panel. 
-Three different types of plots can be generated using this function: cluster-by-signature 
-plot, cluster-by-annotation plot, and a single UMAP plot.
+Three different types of plots can be generated using this function: 
+cluster-by-signature plot, cluster-by-annotation plot, and a single UMAP 
+plot.
 }
 \examples{
 set.seed(123)

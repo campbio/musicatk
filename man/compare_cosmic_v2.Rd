@@ -9,7 +9,8 @@ compare_cosmic_v2(
   result,
   threshold = 0.9,
   metric = "cosine",
-  result_name = deparse(substitute(result))
+  result_name = deparse(substitute(result)),
+  show_plot = TRUE
 )
 }
 \arguments{
@@ -21,6 +22,8 @@ compare_cosmic_v2(
 for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 
 \item{result_name}{title for plot user result signatures}
+
+\item{show_plot}{Toggle display of plot, or only output table}
 }
 \value{
 Returns the comparisons

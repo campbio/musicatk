@@ -22,29 +22,34 @@ a mutational discovery or prediction tool.}
 
 \item{nclust}{Pre-defined number of clusters.}
 
-\item{proportional}{Logical, indicating if proportional exposure (default) will be used for clustering.}
+\item{proportional}{Logical, indicating if proportional exposure (default) 
+will be used for clustering.}
 
-\item{method}{Clustering algorithms. Options are "kmeans" (K-means), "hkmeans" (hybrid of hierarchical 
-K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).}
+\item{method}{Clustering algorithms. Options are "kmeans" (K-means), 
+"hkmeans" (hybrid of hierarchical K-means), "hclust" (hierarchical 
+clustering), "pam" (PAM), and "clara" (Clara).}
 
-\item{dis.method}{Methods to calculate dissimilarity matrix. Options are "euclidean" (default), "manhattan", 
-"jaccard", "cosine", and "canberra".}
+\item{dis.method}{Methods to calculate dissimilarity matrix. Options are 
+"euclidean" (default), "manhattan", "jaccard", "cosine", and "canberra".}
 
-\item{hc.method}{Methods to perform hierarchical clustering. Options are "ward.D" (default), "ward.D2", 
-"single", "complete", "average", "mcquitty", "median", and "centroid".}
+\item{hc.method}{Methods to perform hierarchical clustering. Options are 
+"ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty", 
+"median", and "centroid".}
 
-\item{clara.samples}{Number of samples to be drawn from dataset. Only used when "clara" is selected. 
-Default is 5.}
+\item{clara.samples}{Number of samples to be drawn from dataset. Only used 
+when "clara" is selected. Default is 5.}
 
 \item{iter.max}{Maximum number of iterations for k-means clustering.}
 
 \item{tol}{Tolerance level for kmeans clustering level iterations}
 }
 \value{
-A one-column data frame with sample IDs as row names and cluster number for each sample.
+A one-column data frame with sample IDs as row names and 
+cluster number for each sample.
 }
 \description{
-Proportional sample exposures will be used as input to perform clustering.
+Proportional sample exposures will be used as input to 
+perform clustering.
 }
 \examples{
 set.seed(123)

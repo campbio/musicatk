@@ -143,7 +143,7 @@ plot_differential_analysis <- function(analysis, analysis_type, samp_num) {
     dt$signif <- ifelse(dt$value < 0.01, 1, 0)
     p <- ggplot2::ggplot(dt, aes_string(fill = "rn", y = "value", 
                                         x = "variable")) + 
-      geom_bar(position="dodge", stat="identity")
+      geom_bar(position = "dodge", stat = "identity")
     p <- .gg_default_theme(p)
     p <- p + theme(legend.title = element_blank())
     return(p)

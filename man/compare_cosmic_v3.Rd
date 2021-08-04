@@ -11,7 +11,8 @@ compare_cosmic_v3(
   sample_type,
   metric = "cosine",
   threshold = 0.9,
-  result_name = deparse(substitute(result))
+  result_name = deparse(substitute(result)),
+  show_plot = TRUE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 \item{threshold}{threshold for similarity}
 
 \item{result_name}{title for plot user result signatures}
+
+\item{show_plot}{Toggle display of plot, or only output table}
 }
 \value{
 Returns the comparisons

@@ -102,6 +102,7 @@ compare_results <- function(result, other_result, threshold = 0.9,
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot user result signatures
+#' @param show_plot Toggle display of plot, or only output table
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
@@ -171,6 +172,7 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot user result signatures
+#' @param show_plot Toggle display of plot, or only output table
 #' @return Returns the comparisons
 #' @examples
 #' data(res)

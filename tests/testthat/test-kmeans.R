@@ -22,7 +22,7 @@ test_that(desc = "Test kmeans visualization function", {
   expect_error(plot_cluster(result = res_annot, clusters = clust_out, group = "none"), "UMAP not found")
   create_umap(res_annot)
   test_res <- res_annot
-  test_res@musica@sample_annotations <- samp_annot(res_annot)[,-2]
+  test_res@musica@sample_annotations <- samp_annot(res_annot)[, -2]
   expect_error(plot_cluster(result = test_res, clusters = clust_out, group = "annotation"), "Sample annotation not found")
   expect_error(plot_cluster(result = res_annot, clusters = clust_out, group = "annotation", annotation = "cancer"), "invalid annotation column name")
   p <- plot_cluster(result = res_annot, clusters = clust_out, group = "signature")
