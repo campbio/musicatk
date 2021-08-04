@@ -79,6 +79,7 @@ plot_heatmap <- function(res_annot,
   }
   
   if (!is.null(subset_tumor)) {
+    . <- NULL  # Gets rid of NOTE: no visible binding for global variable ‘.’
     annot <- samp_annot(res_annot)
     samps <- annot %>% dplyr::filter_all(dplyr::any_vars(grepl(subset_tumor,.)))
     samps <- as.character(samps$Samples)
@@ -87,7 +88,7 @@ plot_heatmap <- function(res_annot,
     exp <- dplyr::select(exp, samps) #Selecting columns that match tumor subtype
     exp <- as.matrix(exp)
     
-    names <- names(annot)[which(annot == subset_tumor, arr.ind = T)[, "col"]]
+    names <- names(annot)[which(annot == subset_tumor, arr.ind = TRUE)[, "col"]]
     annot <- annot[[names[1]]]
     annot <- annot[annot == subset_tumor]
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)

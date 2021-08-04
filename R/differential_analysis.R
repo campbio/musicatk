@@ -88,7 +88,7 @@ exposure_differential_analysis <- function(musica_result, annotation,
       })
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(group1) + 1):ncol(diff.out)],
-      method = "BH") %>% matrix(ncol = length(group1), byrow = F)
+      method = "BH") %>% matrix(ncol = length(group1), byrow = FALSE)
     diff.out <- cbind(diff.out, p) %>% as.data.frame()
     colnames(diff.out) <- c(header$p, header$adj)
   } else if (method == "kruskal") {
@@ -114,7 +114,8 @@ exposure_differential_analysis <- function(musica_result, annotation,
     anova.out$fdr <- p.adjust(diff.out[, ncol(diff.out)], method = "BH")
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(groups) + 1):ncol(diff.out)],
-                  method = "BH") %>% matrix(ncol = length(groups), byrow = F)
+                  method = "BH") %>% matrix(ncol = length(groups),
+                                            byrow = FALSE)
     diff.out <- cbind(diff.out[, -ncol(diff.out)], p)
     diff.out <- cbind(diff.out, anova.out)
     colnames(diff.out) <- c(header$coef, header$sd, header$z, header$p,
@@ -130,6 +131,7 @@ exposure_differential_analysis <- function(musica_result, annotation,
 #' @param analysis Analysis created by \code{exposure_differential_analysis}
 #' @param analysis_type Currently only \code{"glm"} supported
 #' @param samp_num Number of samples that went into the analysis
+#' @return Generates a ggplot object
 #' @examples
 #' data("res_annot")
 #' analysis <- exposure_differential_analysis(res_annot, "Tumor_Subtypes", 
