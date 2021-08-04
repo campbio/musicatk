@@ -251,8 +251,12 @@ plot_sample_reconstruction_error <- function(result, sample,
   p <- p + theme_bw() + theme(
     strip.text.y = element_text(size = facet_size),
     panel.grid = element_blank(),
-    text = element_text(family = "Courier",
-                        size = text_size))
+    text = element_text(size = text_size))
+  
+  if("mono" %in% names(grDevices::pdfFonts())) {
+    p <- p + theme(text = element_text(family = "mono",
+                                       size = text_size))
+  }
   return(p)
 }
 
