@@ -11,3 +11,4 @@ musicatk.Rproj
 renv/
 renv.lock
 GDCdata
+**.tar.gz
