@@ -124,7 +124,9 @@ plot_cluster <- function(result, clusters, group = "signature", annotation = NUL
     p <- ggplot2::ggplot(clust_by_sigs, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "exposure")) +
            geom_point() +
            facet_grid(cluster ~ signature) +
-           ggplot2::scale_colour_gradientn(colors = c("blue", "green", "yellow", "orange", "red"), name = "Fraction")
+           ggplot2::scale_colour_gradientn(colors = c("blue", "green", "yellow", "orange", "red"), name = "Fraction") +
+           ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                    panel.background = element_blank())
   }
   else if(group == "annotation"){
     if(is.null(annotation) || !annotation %in% colnames(samp_annot(result))){
@@ -137,12 +139,16 @@ plot_cluster <- function(result, clusters, group = "signature", annotation = NUL
       clust_by_annot <- cbind(k_toplot, annot)
       p <- ggplot2::ggplot(clust_by_annot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
              geom_point() +
-             facet_grid(cluster ~ annotation)
+             facet_grid(cluster ~ annotation) +
+           ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                          panel.background = element_blank())
     }
   }
   else{
     p <- ggplot2::ggplot(k_toplot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
-           geom_point()
+           geom_point() +
+         ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                        panel.background = element_blank())
   }
   if(plotly){
     p <- plotly::ggplotly(p)

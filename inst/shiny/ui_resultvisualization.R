@@ -47,7 +47,7 @@ musicaresultvisualization <- fluidPage(
                        inputId = "plottype",
                        label = "Plot Type",
                        choices = list("Bar Plot" = "bar", "Box Plot" = "box", 
-                                      "Violin Plot" = "violin"),
+                                      "Violin Plot" = "violin", "Scatter Plot" = "scatter"),
                        inline = TRUE,
                        selected = "bar"
                      ),
@@ -61,6 +61,7 @@ musicaresultvisualization <- fluidPage(
                        inline = TRUE,
                        selected = "signature"
                      ),
+                     tags$div(id = "insert_color"),
                      radioButtons(
                        inputId = "color",
                        label = "Color By",

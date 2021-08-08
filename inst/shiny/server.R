@@ -1484,7 +1484,53 @@ parseDeleteEvent <- function(idstr) {
                          placement = "right", options = list(container = "body"))
              )
       )
+      removeUI(selector = "#color")
+      insertUI(
+        selector = "#insert_color",
+        ui = tagList(
+          radioButtons(
+            inputId = "color",
+            label = "Color By",
+            choices = list("Signature" = "signature",
+                           "Annotation" = "annotation"),
+            inline = TRUE,
+            selected = "signature"
+          ),
+          bsTooltip(id = "color", title = "Determines how to color samples.",
+                    placement = "right", options = list(container = "body"))
+        )
+      )
       vals$point_ind <- 1
+    }
+    else if(input$plottype == "scatter"){
+      removeUI(selector = "#point_opt")
+      removeUI(selector = "#group1")
+      insertUI(
+        selector = "#points",
+        ui = tags$div(
+          id = "point_opt",
+          numericInput(inputId = "pointsize", label = "Point Size", value = 0.7),
+          bsTooltip(id = "pointsize", title = "Size of the points on scatter plots.",
+                    placement = "right", options = list(container = "body"))
+        )
+      )
+      removeUI(selector = "#color")
+      insertUI(
+        selector = "#insert_color",
+        ui = tagList(
+          radioButtons(
+            inputId = "color",
+            label = "Color By",
+            choices = list("None" = "none","Signature" = "signatures",
+                           "Annotation" = "annotation"),
+            inline = TRUE,
+            selected = "none"
+          ),
+          bsTooltip(id = "color", title = "Determines how to color samples.",
+                    placement = "right", options = list(container = "body"))
+        )
+      )
+      vals$point_ind <- 0
     }
     else if(input$plottype == "bar"){
       removeUI(selector = "#point_opt")
@@ -1501,6 +1547,22 @@ parseDeleteEvent <- function(idstr) {
             selected = "none"
           ),
           bsTooltip(id = "group1", title = "Determines how to group samples into the subplots. If set to \"annotation\", then a sample annotation must be supplied via the annotation parameter.",
+                    placement = "right", options = list(container = "body"))
+        )
+      )
+      removeUI(selector = "#color")
+      insertUI(
+        selector = "#insert_color",
+        ui = tagList(
+          radioButtons(
+            inputId = "color",
+            label = "Color By",
+            choices = list("Signature" = "signature",
+                           "Annotation" = "annotation"),
+            inline = TRUE,
+            selected = "signature"
+          ),
+          bsTooltip(id = "color", title = "Determines how to color samples.",
                     placement = "right", options = list(container = "body"))
         )
       )
@@ -1553,6 +1615,8 @@ parseDeleteEvent <- function(idstr) {
         shinyalert::shinyalert(title = "Error", text = "Annotation not found. Please add annotation to the musica object.")
       }
       else{
+        vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1])
+        names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1]
         insertUI(
           selector = "#insertannot",
           ui = tagList(
@@ -1670,7 +1734,13 @@ parseDeleteEvent <- function(idstr) {
   
   observeEvent(input$get_plot2,{
     options <- get_exp_option(input)
-    result <- vals$result_objects[[input$selected_res2]]
+    if(length(umap(vals$result_objects[[input$selected_res2]])) == 0){
+      create_umap(vals$result_objects[[input$selected_res2]])
+      result <- vals$result_objects[[input$selected_res2]]
+    }
+    else{
+      result <- vals$result_objects[[input$selected_res2]]
+    }
     if(options[[14]]){
       jqui_resizable("#expplotly", operation = "destroy")
       jqui_resizable("#expplot", operation = "destroy")
@@ -1680,25 +1750,40 @@ parseDeleteEvent <- function(idstr) {
         selector = "#plotdiv2",
         ui = plotlyOutput(outputId = "expplotly")
       )
-      output$expplotly <- renderPlotly(
-        plot_exposures(
-          result = result, 
-          plot_type = options[[1]], 
-          proportional = options[[2]],
-          group_by = options[[3]],
-          color_by = options[[4]],
-          annotation = options[[5]],
-          num_samples = options[[6]],
-          sort_samples = options[[7]],
-          threshold = options[[8]],
-          same_scale = options[[9]],
-          label_x_axis = options[[10]],
-          legend = options[[11]],
-          add_points = options[[12]],
-          point_size = options[[13]],
-          plotly = options[[14]]
+      if(options[[1]] == "scatter"){
+        output$expplotly <- renderPlotly(
+          plot_umap(
+            result = result,
+            color_by = options[[4]],
+            proportional = options[[2]],
+            same_scale = options[[9]],
+            annotation = options[[5]],
+            plotly = options[[14]],
+            legend = options[[11]]
+          )
         )
-      )
+      }
+      else{
+        output$expplotly <- renderPlotly(
+          plot_exposures(
+            result = result, 
+            plot_type = options[[1]], 
+            proportional = options[[2]],
+            group_by = options[[3]],
+            color_by = options[[4]],
+            annotation = options[[5]],
+            num_samples = options[[6]],
+            sort_samples = options[[7]],
+            threshold = options[[8]],
+            same_scale = options[[9]],
+            label_x_axis = options[[10]],
+            legend = options[[11]],
+            add_points = options[[12]],
+            point_size = options[[13]],
+            plotly = options[[14]]
+          )
+        )
+      }
       jqui_resizable("#expplotly")
     }
     else{
@@ -1710,25 +1795,40 @@ parseDeleteEvent <- function(idstr) {
         selector = "#plotdiv2",
         ui = plotOutput(outputId = "expplot")
       )
-      output$expplot <- renderPlot(
-        plot_exposures(
-          result = result, 
-          plot_type = options[[1]], 
-          proportional = options[[2]],
-          group_by = options[[3]],
-          color_by = options[[4]],
-          annotation = options[[5]],
-          num_samples = options[[6]],
-          sort_samples = options[[7]],
-          threshold = options[[8]],
-          same_scale = options[[9]],
-          label_x_axis = options[[10]],
-          legend = options[[11]],
-          add_points = options[[12]],
-          point_size = options[[13]],
-          plotly = options[[14]]
+      if(options[[1]] == "scatter"){
+        output$expplot <- renderPlot(
+          plot_umap(
+            result = result,
+            color_by = options[[4]],
+            proportional = options[[2]],
+            same_scale = options[[9]],
+            annotation = options[[5]],
+            plotly = options[[14]],
+            legend = options[[11]]
+          )
         )
-      )
+      }
+      else{
+        output$expplot <- renderPlot(
+          plot_exposures(
+            result = result, 
+            plot_type = options[[1]], 
+            proportional = options[[2]],
+            group_by = options[[3]],
+            color_by = options[[4]],
+            annotation = options[[5]],
+            num_samples = options[[6]],
+            sort_samples = options[[7]],
+            threshold = options[[8]],
+            same_scale = options[[9]],
+            label_x_axis = options[[10]],
+            legend = options[[11]],
+            add_points = options[[12]],
+            point_size = options[[13]],
+            plotly = options[[14]]
+          )
+        )
+      }
       jqui_resizable("#expplot")
     }
   })
