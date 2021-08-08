@@ -637,10 +637,10 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' id for each variant. Default \code{"sample"}.
 #' @param extra_fields Which additional fields to extract and include in
 #' the musica object. Default \code{NULL}.
-#' @param convert_dbs Flag to convert adjacent SBS into DBS (original SBS are 
-#' removed)
 #' @param standardize_indels Flag to convert indel style (e.g. `C > CAT` 
 #' becomes `- > AT` and `GCACA > G` becomes `CACA > -`)
+#' @param convert_dbs Flag to convert adjacent SBS into DBS (original SBS are 
+#' removed)
 #' @param verbose Whether to print status messages during error checking.
 #' Default \code{TRUE}.
 #' @return Returns a musica object
@@ -661,8 +661,8 @@ create_musica <- function(x, genome,
                          alt_col = "alt",
                          sample_col = "sample",
                          extra_fields = NULL,
-                         convert_dbs = TRUE,
                          standardize_indels = TRUE,
+                         convert_dbs = TRUE,
                          verbose = TRUE) {
 
   used_fields <- c(.required_musica_headers(), extra_fields)
@@ -719,37 +719,19 @@ create_musica <- function(x, genome,
     .check_variant_ref_in_genome(dt = dt, genome = genome)
   }
 
-  if (isTRUE(convert_dbs)) {
-    if (isTRUE(verbose)) {
-      message("Converting adjacent SBS into DBS")
-    }
-    sbs <- which(dt$Variant_Type == "SBS")
-    adjacent <- which(diff(dt$start) == 1)
-    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent+1 %in% sbs & 
-                                dt$chr[adjacent] == dt$chr[adjacent+1])]
-    if (length(dbs_ind) > 0) {
-      message(length(dbs_ind), " SBS converted to DBS")
-      dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
-      dt$ref[dbs_ind] <- paste0(dt$ref[dbs_ind], dt$ref[dbs_ind + 1])
-      dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
-      dt$Variant_Type[dbs_ind] <- "DBS"
-      dt <- dt[-(dbs_ind + 1), ]
-    }
-  }
-  
   if (isTRUE(standardize_indels)) {
     if (isTRUE(verbose)) {
       message("Standardizing INS/DEL style")
     }
     comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% 
-                        c("A", "T", "G", "C"))
+                        c("A", "T", "G", "C", "-"))
     if (length(comp_ins > 0)) {
       message("Removing ", length(comp_ins), " compound insertions")
       dt <- dt[-comp_ins, ]
     }
     
     comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% 
-                        c("A", "T", "G", "C"))
+                        c("A", "T", "G", "C", "-"))
     if (length(comp_del > 0)) {
       message("Removing ", length(comp_del), " compound deletions")
       dt <- dt[-comp_del, ]
@@ -780,6 +762,24 @@ create_musica <- function(x, genome,
       dt$alt[del] <- "-"
       del_ref <- dt$ref[del]
       dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
+    }
+  }
+  
+  if (isTRUE(convert_dbs)) {
+    if (isTRUE(verbose)) {
+      message("Converting adjacent SBS into DBS")
+    }
+    sbs <- which(dt$Variant_Type == "SBS")
+    adjacent <- which(diff(dt$start) == 1)
+    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent+1 %in% sbs & 
+                                dt$chr[adjacent] == dt$chr[adjacent+1])]
+    if (length(dbs_ind) > 0) {
+      message(length(dbs_ind), " SBS converted to DBS")
+      dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
+      dt$ref[dbs_ind] <- paste0(dt$ref[dbs_ind], dt$ref[dbs_ind + 1])
+      dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
+      dt$Variant_Type[dbs_ind] <- "DBS"
+      dt <- dt[-(dbs_ind + 1), ]
     }
   }
   

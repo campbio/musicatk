@@ -66,7 +66,7 @@ extract_count_tables <- function(musica) {
   return(extract_count_tables(musica)[[table_name]]@count_table)
 }
 
-subset_count_tables <- function(musica, samples) {
+.subset_count_tables <- function(musica, samples) {
   tables <- tables(musica)
   table_names <- names(tables)
   for (name in table_names) {
