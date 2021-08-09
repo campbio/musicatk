@@ -81,17 +81,17 @@ exposure_differential_analysis <- function(musica_result, annotation,
     header <- data.frame(x = group1, y = group2) %>%
       dplyr::mutate(p = paste0(.data$x, "-", .data$y, "(Pr(>|z|))"),
                     adj = paste0(.data$x, "-", .data$y, "(fdr)"))
-    group_cols <- cbind(sapply(group1, function(x) {
+    group_cols <- c(lapply(group1, function(x) {
       rep(x, n_sigs) }),
-      sapply(group2, function(x) {
-        rep(x, n_sigs)})) %>% matrix(ncol = 2)
+      lapply(group2, function(x) {
+        rep(x, n_sigs)})) %>% unlist() %>% cbind() %>% matrix(ncol=2)
     group_cols <- cbind(rep(rownames(exposures), length(group1)), group_cols) 
-    diff.out <- sapply(seq_len(length(group1)), FUN = function(i) {
+    diff.out <- lapply(seq_len(length(group1)), FUN = function(i) {
       x <- exposures[, annotations == group1[i]] %>% as.matrix()
       y <- exposures[, annotations == group2[i]] %>% as.matrix()
       out <- matrixTests::row_wilcoxon_twosample(x, y, ...)$pvalue 
       return(out)
-      })
+      }) %>% unlist() %>% matrix(ncol = 2)
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(group1) + 1):ncol(diff.out)],
       method = "BH") %>% matrix(ncol = 1, byrow = F)

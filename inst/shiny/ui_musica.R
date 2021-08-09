@@ -3,8 +3,6 @@ shinyPanelMusica <- fluidPage(
     uiOutput("genome_list"),
     textOutput("genome_select"),
     column(width = 12,
-           useShinyalert(),
-           add_busy_spinner(spin = "fading-circle"),
            h3("Settings"),
            checkboxInput("ref_chr", "Check Reference Chromosomes", TRUE),
            checkboxInput("ref_bases", "Check Reference Bases", TRUE),

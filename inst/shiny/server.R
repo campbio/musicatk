@@ -405,29 +405,29 @@ tryCatch({observeEvent(input$get_musica_object,{
   })
   observeEvent(input$upload_musica,{
     req(input$musica_file)
-    if(all(tools::file_ext(input$musica_file$name) != c("rda","rds"))){
+    if(all(tools::file_ext(tolower(input$musica_file$name)) != c("rda","rds"))){
       shinyalert::shinyalert("Error: File format not supported! Please upload .rda or .rds files")
     }
     else{
       if(input$musica_button == "result"){
-        if(all(tools::file_ext(input$musica_file$name) == "rda")){
+        if(all(tools::file_ext(tolower(input$musica_file$name)) == "rda")){
           vals$musica_upload <- load(input$musica_file$datapath)
           vals$musica_upload <- get(vals$musica_upload)
           vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
         }
-        else if(all(tools::file_ext(input$musica_file$name) == "rds")){
+        else if(all(tools::file_ext(tolower(input$musica_file$name)) == "rds")){
           vals$musica_upload <- readRDS(input$musica_file$datapath)
           vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
         }
         showNotification("Musica Result Object successfully imported!")
       }
       else if(input$musica_button == "object"){
-        if(all(tools::file_ext(input$musica_file$name) == "rda")){
+        if(all(tools::file_ext(tolower(input$musica_file$name)) == "rda")){
           vals$musica_upload <- load(input$musica_file$datapath)
           vals$musica_upload <- get(vals$musica_upload)
           vals$musica <- vals$musica_upload 
         }
-        else if(all(tools::file_ext(input$musica_file$name) == "rds")){
+        else if(all(tools::file_ext(tolower(input$musica_file$name)) == "rds")){
           vals$musica_upload <- readRDS(input$musica_file$datapath)
           vals$musica <- vals$musica_upload 
         }
@@ -612,6 +612,8 @@ parseDeleteEvent <- function(idstr) {
   data("cosmic_v3_sbs_sigs")
   data("cosmic_v3_dbs_sigs")
   data("cosmic_v3_indel_sigs")
+  
+  # Renaming COSMIC signatures.
   sbs_aet <- list("SBS1" = "SBS1 - Spontaneous deamination of 5-methylcytosine",
                   "SBS2" = "SBS2 - APOBEC activity", 
                   "SBS3" = "SBS3 - HR deficiency",
@@ -727,10 +729,10 @@ parseDeleteEvent <- function(idstr) {
   colnames(signatures(cosmic_v3_indel_sigs)) <- indel_aet[colnames(signatures(cosmic_v3_indel_sigs))]
 
   cosmic_objects <- list("cosmic_v3_sbs_sigs" = cosmic_v3_sbs_sigs,
-                        # "cosmic_v3_sbs_sigs_exome" = cosmic_v3_sbs_sigs_exome,
                       "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
                       "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs)
   
+  # Update musica object list whenever a result or musica object is altered
   output$AnnotationMusicaList <- renderUI({
     result_names <- list(names(vals$result_objects))
     if(is.null(vals$musica)) {
@@ -753,6 +755,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  # Input to choose the annotation delimiter.
   observeEvent(input$AnnotationDelimiter, {
     if(input$AnnotationDelimiter == "custom") {
       shinyjs::show(id = "CustomAnnotDelim")
@@ -761,6 +764,8 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  # Read the annotation file, store it in vals$annotations, and display the
+  # contents as a data table.
   output$annotations <- renderDataTable({
     file <- input$AnnotationsFile
     ext <- tools::file_ext(file$datapath)
@@ -777,6 +782,7 @@ parseDeleteEvent <- function(idstr) {
     
   }, options = list(autoWidth = FALSE, scrollX = TRUE))
   
+  # Input to choose the column containing the sample names.
   output$AnnotationSamples <- renderUI({
     if(is.null(vals$annotations)) {
       return (NULL) 
@@ -787,35 +793,34 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
-  #Add Annotations to Musica object
+  # Add annotations to the provided musica_object
+  AddAnnotation <- function(musica_object) {
+    new_annot <- merge(samp_annot(musica_object),
+                       vals$annotations, by.x = "Samples", 
+                       by.y = input$AnnotSampleColumn,
+                       all.x = T)
+    sapply(names(new_annot), 
+           FUN = function(a) {
+             samp_annot(musica_object, a) <- 
+               new_annot[,a]
+           })
+    showNotification("Annotations have been added")
+  }
+  
+  # Event that triggers AddAnnotation function.
   observeEvent(input$AddAnnotation, {
+    # Add annotation to result object
     if (!is.null(getResult(input$AnnotationMusicaList))) {
-      tryCatch( {
-        new_annot <- merge(samp_annot(getResult(input$AnnotationMusicaList)),
-                           vals$annotations, by.x = "Samples", 
-                           by.y = input$AnnotSampleColumn,
-                           all.x = T)
-        sapply(names(new_annot), 
-               FUN = function(a) {
-                 samp_annot(vals$result_objects[[input$AnnotationMusicaList]], a) <- 
-                   new_annot[,a]
-               })
-        showNotification("Annotations have been added")
+      tryCatch({     
+        AddAnnotation(vals$result_objects[[input$AnnotationMusicaList]]) 
       }, error = function(cond) {
         shinyalert::shinyalert(title = "Error", text = cond$message)
-        return()
+        return() 
       })
+    # Add annotation to musica object
     } else if (!is.null(vals$musica)) {
       tryCatch( {
-        new_annot <- merge(samp_annot(vals$musica),
-                           vals$annotations, by.x = "Samples",
-                           by.y = input$AnnotSampleColumn,
-                           all.x = T)
-        sapply(names(new_annot),
-               FUN = function(a) {
-                 samp_annot(vals$musica, a) <- new_annot[,a]
-               })
-        showNotification("Annotations have been added")
+        AddAnnotation(vals$musica)
       }, error = function(cond) {
         shinyalert::shinyalert(title = "Error", text = cond$message)
         return()
@@ -827,6 +832,7 @@ parseDeleteEvent <- function(idstr) {
   })
   
   ####### Section for the Build Table Tab #######
+  # Input to select count table
   output$DiscoverTable <- renderUI({
     tagList(
       selectInput("SelectDiscoverTable", "Select Count Table",
@@ -838,6 +844,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  # UI for inputs to combine tables.
   output$CombineTable <- renderUI({
     if (length(names(extract_count_tables(vals$musica))) > 1) {
       tagList(
@@ -867,6 +874,7 @@ parseDeleteEvent <- function(idstr) {
 
   })
   
+  # 
   observeEvent(input$Combine, {
     if (input$CombinedTableName == "" | length(input$CombineTables) < 2) {
       output$CombineWarning <- renderText({
@@ -907,6 +915,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  # Event listener for add table button.
   observeEvent(input$AddTable, {
     tableName <- input$SelectTable
     if(tableName == "SBS192 - Replication_Strand") {
@@ -916,6 +925,7 @@ parseDeleteEvent <- function(idstr) {
       tableName <- "SBS192_Trans"
     }
     if(tableName %in% names(extract_count_tables(vals$musica))) {
+      # Modal to confirm overwrite of existing table
       showModal(modalDialog(
         title = "Existing Table.",
         "Do you want to overwrite the existing table?",
@@ -928,9 +938,15 @@ parseDeleteEvent <- function(idstr) {
         add_tables(input, vals)
     }
   })
-
+  
+  # Confirm overwrite for existing table
+  observeEvent(input$confirmOverwrite, {
+    removeModal()
+    add_tables(input, vals)
+  })
+  
   ####### Section for the Discover Signatures and Exposures Tab #######
-  #The latest argument for method in discover_signatures() is "algorithm"
+  # Event listener for discover_signatures.
   observeEvent(input$DiscoverSignatures, {
     if (input$DiscoverResultName == "" |
         input$NumberOfSignatures == "" |
@@ -954,6 +970,7 @@ parseDeleteEvent <- function(idstr) {
       return ()
     }
     if(input$DiscoverResultName %in% names(vals$result_objects)) {
+      # Confirm overwrite of result object
       showModal(modalDialog(
         title = "Existing Result Object.",
         "Do you want to overwrite the existing result object?",
@@ -969,15 +986,17 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  # Wrapper function for discover_signature
   discSigs <- function(input, vals) {
     setResult(input$DiscoverResultName, discover_signatures(
       vals$musica, table_name = input$SelectDiscoverTable,
       num_signatures = as.numeric(input$NumberOfSignatures),
-      algorithm = input$Method,
+      method = input$Method,
       #seed = input$Seed,
       nstart = as.numeric(input$nStart)))
   }
   
+  # Run discover_signatures if overwrite confirmed.
   observeEvent(input$confirmResultOverwrite, {
     removeModal()
     discSigs(input, vals)
@@ -996,6 +1015,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  # UI to select musica object.
   output$DiscoverMusicaList <- renderUI({
     tagList(
       selectInput("DiscoverMusicaList", h3("Select Musica Object"),
@@ -1003,6 +1023,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  # Select counts table for prediction.
   output$PredictTable <- renderUI({
     tagList(
       selectInput("SelectPredTable", "Select Counts Table",
@@ -1013,6 +1034,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  # Event listener alters UI based on selected COSMIC table.
   observeEvent(input$CosmicCountTable, {
     if (input$CosmicCountTable == "SBS") {
       shinyjs::show(id = "CosmicSBSSigs")
@@ -1029,6 +1051,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  # UI to name Predict result object
   output$PredictResultName <- renderUI({
     name <- names(extract_count_tables(vals$musica))[1]
     tagList(
@@ -1040,6 +1063,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  # UI to select which result objects to predict. 
   output$PredictedResult <- renderUI({
     other <- list(names(vals$result_objects))
     if (is.null(other[[1]])) {
@@ -1070,6 +1094,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  # UI to select signatures to predict
   output$PrecitedSignatures <- renderUI({
     if(input$PredictedResult %in% names(cosmic_objects)) {
         vals$pSigs <- colnames(signatures(
@@ -1093,6 +1118,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  # Event listener for Predict signatures
   observeEvent(input$PredictSigs, {
     if (input$PredictResultName == "" | length(input$PredSigs) < 2) {
       output$PredictWarning <- renderText({
@@ -1119,9 +1145,9 @@ parseDeleteEvent <- function(idstr) {
       showNotification(paste0("Musica result object, ", input$PredictResultName,
                               ", was created"))
     }
-
   })
   
+  # Event listener displays additional options for deconstructSigs algorithm.
   observeEvent(input$PredictAlgorithm, {
     if(input$PredictAlgorithm == "deconstructSigs"){
       shinyjs::show(id = "PredictGenomeList")
@@ -1129,12 +1155,8 @@ parseDeleteEvent <- function(idstr) {
       shinyjs::hide(id = "PredictGenomeList")
     }
   })
-
   
-  setResult <- function(x, y) {
-    vals$result_objects[[x]] <- y
-  }
-
+  # Wrapper function for predict_exposures
   getPredict <- function(inputs, vals) {
     setResult(input$PredictResultName,
       predict_exposure(vals$musica, g = select_genome(input$PredictGenomeList),
@@ -1144,16 +1166,13 @@ parseDeleteEvent <- function(idstr) {
                        signatures_to_use = input$PredSigs))
   }
   
+  # Event triggers predict_exposures when user confirms overwrite.
   observeEvent(input$confirmPredictOverwrite, {
     removeModal()
     getPredict(inputs, vals)
     showNotification("Existing result overwritten.")
   })
   
-  observeEvent(input$confirmOverwrite, {
-    removeModal()
-    add_tables(input, vals)
-  })
 
   ####### Compare Tab ########
   output$CompareResultA <- renderUI({
@@ -1179,6 +1198,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
 
+  # Event listener triggers comparison.
   observeEvent(input$CompareResults, {
     if (is.null(input$SelectResultA) | input$SelectResultA == "" | 
         input$Threshold == "") {
@@ -1192,11 +1212,13 @@ parseDeleteEvent <- function(idstr) {
       })
       return()
     }
+    # Retreive either cosmic or custom result objects.
     if(input$SelectResultB %in% names(cosmic_objects)) {
       other <- cosmic_objects[[input$SelectResultB]]
     } else {
       other <- isolate(getResult(input$SelectResultB))
     }
+    # Attempt to compare signatures
     tryCatch({
       isolate(vals$comparison <- compare_results(isolate(getResult(input$SelectResultA)),
                       other, threshold = as.numeric(input$Threshold),
@@ -1209,7 +1231,7 @@ parseDeleteEvent <- function(idstr) {
                                    paste0(input$SelectResultB, "-Index"),
                                    paste0(input$SelectResultA, "-Signature"),
                                    paste0(input$SelectResultB, "-Signature"))
-                                   
+    # generate table containig comparison statistics. 
     if(!is.null(isolate(vals$comparison))) {
       output$CompareTable <- renderDataTable({
         isolate(vals$comparison)
@@ -1242,12 +1264,12 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
+  # UI for Wilcoxon Rank Sum Test bucket list
   output$DiffAnalGroups <- renderUI({
     if(interactive()) {
       tagList(
         sortable::bucket_list(
           header = "Groups",
-          #group_name = "diff_groups",
           orientation = "horizontal",
           add_rank_list(
             text = "Group 1",
@@ -1263,6 +1285,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  # UI to select sample annotation.
   output$DiffAnalAnnot <- renderUI({
     tagList(
       selectInput("DiffAnalAnnot", "Sample annotation", 
@@ -1272,7 +1295,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
   
-  
+  # Event handler controls Wilcoxon bucket list.
   observeEvent(input$DiffMethod, {
     method = input$DiffMethod
     if (method == "wilcox") {
@@ -1282,6 +1305,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
   
+  # Event handler for differential analysis.
   observeEvent(input$RunDiffAnal, {
     shinyjs::hide("DiffError")
     g1 <- input$DiffGroup1
@@ -1292,6 +1316,7 @@ parseDeleteEvent <- function(idstr) {
       g1 <- g1[1:gMin]
       g2 <- g2[1:gMin]
     }
+    # Run differential analysis
     tryCatch({
       vals$diff <- exposure_differential_analysis(getResult(input$DiffAnalResult),
                                    input$DiffAnalAnnot,
@@ -1306,14 +1331,6 @@ parseDeleteEvent <- function(idstr) {
         }, 
         options = list(autoWidth = FALSE, scrollX = TRUE)
       )
-      # output$DownloadDiffAnal <- renderUI({
-      #   tagList(
-      #     downloadButton("DownloadDiff", "Download"),
-      #     bsTooltip("DownloadDiff",
-      #               "Download the differential exposure table",
-      #               placement = "bottom", trigger = "hover", options = NULL)
-      #   )
-      # })
     }, error = function(cond) {
       output$DiffTable <- renderDataTable({NULL})
       errors <- cond
@@ -1323,6 +1340,7 @@ parseDeleteEvent <- function(idstr) {
     })
   })
   
+  # Download differential analysis results.
   output$DownloadDiff <- downloadHandler(
     filename = function() { paste0("Exp-Diff-", Sys.Date(), ".csv")
     },
@@ -1330,7 +1348,13 @@ parseDeleteEvent <- function(idstr) {
       write.csv(vals$diff, file)
     }
   )
-
+  
+  ####### Helper Functions #######
+  # Set a result object
+  setResult <- function(x, y) {
+    vals$result_objects[[x]] <- y
+  }
+  
   getResult <- function(name) {
     return(vals$result_objects[[name]])
   }
