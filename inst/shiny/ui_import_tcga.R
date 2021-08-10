@@ -2,8 +2,6 @@ shinyPanelTCGA <- fluidPage(
   #Adding box formatting
   fluidRow(hr(),
            box(width = 6,
-    useShinyalert(),
-    add_busy_spinner(spin = "fading-circle"),
     uiOutput(outputId = "tcga_tumor"),
     #Adding help tooltips
     bsTooltip("tcga_tumor", "Select tumors you want to download from this list", placement = "bottom", trigger = "hover",
