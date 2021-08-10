@@ -1,21 +1,13 @@
 shinyPanelheatmap <- fluidPage(
+  #Adding box formating
   fluidRow(box(uiOutput(outputId = "select_res_heatmap"),
-               #uiOutput(outputId = "sig_ui"),
                   h3("Settings"),
+                  #Adding checkboxees for different heatmap fucntion parameters
                   checkboxInput("prop", "Proportional", FALSE),
                   checkboxInput("col_names", "Show column names", FALSE),
                   checkboxInput("row_names", "Show row names", TRUE),
                   checkboxInput("scale", "Z-score normalization", TRUE))),
-                
-           
-           fluidRow(box(
-                  # radioButtons(
-                  #   inputId = "def_sigs",
-                  #   label = "Subset by",
-                  #   choices = list("All Signatures" = "default_signatures"),
-                  #   inline = TRUE,
-                  #   selected = ""
-                  # ),
+                 fluidRow(box(
                   radioButtons(
                     inputId = "subset",
                     label = "",
@@ -24,7 +16,6 @@ shinyPanelheatmap <- fluidPage(
                     selected = "all_signatures"
                   ),
                   tags$div(id = "sortbysigs"),
-                  
                   
                   radioButtons(
                     inputId = "subset_tum",
@@ -44,10 +35,11 @@ shinyPanelheatmap <- fluidPage(
                   ),
                   tags$div(id = "sortbyannot"),
                   actionButton("get_heatmap", "Plot"),
-                  #downloadButton("download_heatmap", "Download")
                   )),
                   
                   plotOutput("heatmap"),
+  
+                  #Adding help tooltips
                   bsTooltip("select_res_heatmap", "Select musica result object for plotting a heatmap", placement = "bottom", trigger = "hover",
                   options = NULL),
                   bsTooltip("prop", "Check box to normalize exposures", placement = "bottom", trigger = "hover",
