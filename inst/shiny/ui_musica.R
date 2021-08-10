@@ -1,14 +1,19 @@
 shinyPanelMusica <- fluidPage(
-  fluidRow(box(
+  #Setting box formatting
+    fluidRow(box(
     uiOutput("genome_list"),
     textOutput("genome_select"),
     column(width = 12,
+           useShinyalert(),
+           add_busy_spinner(spin = "fading-circle"), #Adding spinning circle ui
            h3("Settings"),
+           #Adding checkbox input ui
            checkboxInput("ref_chr", "Check Reference Chromosomes", TRUE),
            checkboxInput("ref_bases", "Check Reference Bases", TRUE),
            checkboxInput("convert_dbs", "Convert DBS", TRUE),
            checkboxInput("stand_indels", "Standardize Indels", TRUE),
            actionButton("get_musica_object", "Create Musica Object"),
+           #Adding download button
            downloadButton("download_musica_object", "Download Musica Object"),
            #actionButton(inputId = "reset", label = "Clear Musica Summary"),
            hr(),
@@ -16,6 +21,7 @@ shinyPanelMusica <- fluidPage(
            hr(),
            div(dataTableOutput("musica_contents_table"),style = "height:500px; overflow-y: scroll;overflow-x: scroll;"),
            hr(),
+           #Adding help tooltips
            bsTooltip("genome_list", "Full genome build versions of different organisms", placement = "bottom", trigger = "hover",
                      options = NULL),
            bsTooltip("ref_chr", "Perform a check to ensure that the chromosomes in the variant object match the reference chromosomes in the genome object.", placement = "bottom", trigger = "hover",
