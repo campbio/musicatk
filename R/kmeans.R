@@ -13,6 +13,7 @@
 #' @param clara.samples Number of samples to be drawn from dataset. Only used when "clara" is selected. 
 #' Default is 5.
 #' @param iter.max Maximum number of iterations for k-means clustering.
+#' @param tol Tolerance level for kmeans clustering level iterations
 #' @return A one-column data frame with sample IDs as row names and cluster number for each sample.
 #' @seealso \link[stats]{kmeans}
 #' @examples 
@@ -20,9 +21,8 @@
 #' data(res_annot)
 #' clust_out <- cluster_exposure(res_annot, nclust = 2)
 #' @export
-
 cluster_exposure <- function(result, nclust, proportional = TRUE, method = "kmeans", dis.method = "euclidean", 
-                             hc.method = "ward.D", clara.samples = 5, iter.max = 10){
+                             hc.method = "ward.D", clara.samples = 5, iter.max = 10, tol = 1e-15){
   method <- match.arg(method, c("kmeans", "hkmeans", "hclust", 
                                 "pam", "clara"))
   dis.method <- match.arg(dis.method, c("euclidean", "manhattan", 
@@ -31,20 +31,19 @@ cluster_exposure <- function(result, nclust, proportional = TRUE, method = "kmea
                                     "average", "mcquitty", "median", "centroid"))
   #read exposure data
   expos <- exposures(result = result)
-  if(isTRUE(proportional)){
+  if (isTRUE(proportional)){
     expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
-  }
-  else{
+  } else{
     expos <- t(expos)
   }
   #Calculate dissimilarity matrix
   diss <- philentropy::distance(x = expos, method = dis.method, use.row.names = TRUE, as.dist.obj = TRUE)
   #Perform clustering
   if(method == "kmeans"){
-    res <- cluster::fanny(x = diss, k = nclust, diss = TRUE, maxit = iter.max)
+    res <- cluster::fanny(x = diss, k = nclust, diss = TRUE, maxit = iter.max, 
+                          tol = tol)
     clust_out <- data.frame(cluster = res$clustering)
-  }
-  else if(method == "hkmeans"){
+  } else if(method == "hkmeans"){
     if(!dis.method %in% c("euclidean", "manhattan", "canberra")){
       stop("For hkmeans clustering, please choose the following methods to calculate dissimilarity matrix: 
            euclidean, manhattan, canberra")
@@ -52,17 +51,14 @@ cluster_exposure <- function(result, nclust, proportional = TRUE, method = "kmea
     res <- factoextra::hkmeans(x = expos, k = nclust, hc.metric = dis.method, 
                                hc.method = hc.method, iter.max = iter.max)
     clust_out <- data.frame(cluster = res$cluster)
-  }
-  else if(method == "hclust"){
+  } else if(method == "hclust"){
     res <- factoextra::hcut(x = diss, k = nclust, isdiss = FALSE, hc_method = hc.method)
     clust_out <-data.frame(cluster = res$cluster)
-  }
-  else if(method == "pam"){
+  } else if(method == "pam"){
     clust_out <- data.frame(cluster = cluster::pam(x = diss, k = nclust,
                                                    diss = TRUE,
                                                    cluster.only = TRUE))
-  }
-  else{
+  } else{
     if(!dis.method %in% c("euclidean", "manhattan", "jaccard")){
       stop("For clara clustering, please choose the following methods to calculate dissimilarity matrix: 
            euclidean, manhattan, jaccard")
@@ -124,7 +120,9 @@ plot_cluster <- function(result, clusters, group = "signature", annotation = NUL
     p <- ggplot2::ggplot(clust_by_sigs, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "exposure")) +
            geom_point() +
            facet_grid(cluster ~ signature) +
-           ggplot2::scale_colour_gradientn(colors = c("blue", "green", "yellow", "orange", "red"), name = "Fraction")
+           ggplot2::scale_colour_gradientn(colors = c("blue", "green", "yellow", "orange", "red"), name = "Fraction") +
+           ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                    panel.background = element_blank())
   }
   else if(group == "annotation"){
     if(is.null(annotation) || !annotation %in% colnames(samp_annot(result))){
@@ -137,12 +135,16 @@ plot_cluster <- function(result, clusters, group = "signature", annotation = NUL
       clust_by_annot <- cbind(k_toplot, annot)
       p <- ggplot2::ggplot(clust_by_annot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
              geom_point() +
-             facet_grid(cluster ~ annotation)
+             facet_grid(cluster ~ annotation) +
+           ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                          panel.background = element_blank())
     }
   }
   else{
     p <- ggplot2::ggplot(k_toplot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
-           geom_point()
+           geom_point() +
+         ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                        panel.background = element_blank())
   }
   if(plotly){
     p <- plotly::ggplotly(p)

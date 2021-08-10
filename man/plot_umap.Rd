@@ -6,7 +6,7 @@
 \usage{
 plot_umap(
   result,
-  color_by = c("signatures", "annotation", "none"),
+  color_by = c("signatures", "annotation", "cluster", "none"),
   proportional = TRUE,
   annotation = NULL,
   point_size = 0.7,

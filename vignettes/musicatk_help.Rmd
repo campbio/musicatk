@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r include=FALSE}
 library(knitr)
+PATH <- getwd()
+PATH <- sub("/vignettes", "", PATH)
 PATH <- paste0(getwd(), "/docs/articles/image") #getwd()
 ```
 
@@ -25,7 +27,7 @@ Users can upload their datasets through 1 of 3 different methods.
 - “Import Files” - upload MAF and VCF files containing the variant data.
 - “Import TCGA Datasets” - easily import all open access TCGA tumor datasets.
 - “Import Musica Result Object” - upload existing musica and result objects.
-
+<br>
 
 ## Import Files
 In order to discover or predict signatures, VCF or MAF files need to be uploaded in this section.The files can be browsed through by selecting the 'browse' button under the 'Select Files' label.
@@ -47,6 +49,10 @@ include_graphics(paste0(PATH,"/TCGA.png"))
 ## Import Musica
 This tab can be used to import user’s musica result or musica objects in .rda or .rds format which will allow for direct downstream analysis in the workflow. The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file's name but it can be changed in the text box labeled "Name your musica result object". Once finished, a completion notification message in the bottom right and a variants table of the uploaded file will appear. At this stage, the next steps in the workflow can be accessed directly. If a musica result object has been uploaded, all the downstream tabs are now accessible and if a musica object has been uploaded then the users can skip the Create Musica tab and move to the build tables tab directly.  The variants table can be downloaded using the "Download Variants' button.
 
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/upload_musica.png"))
+```
+<br>
 
 ## Create Musica Object
 This tab can be used to create a musica object for discovery and prediction of signatures from the given variants. The reference genome can be selected from the drop down menu labeled "Choose Genome" that matches the genome build of the variants and the 'Create Musica Object' button can then be pressed. Once it's done, a completion notification message at the bottom right and a variant summary table will appear. The musica object can be downloaded by pressing the 'Download Musica Object' button. 
@@ -64,7 +70,6 @@ include_graphics(paste0(PATH,"/AnnotationsTab.png"))
 ```
 <br>
 Annotations are provided in a character delimited text file which includes a sample name column. The sample names must match the sample names in the selected musica object. NA values will be used for any samples not present in the annotation file.
-
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/AnnotationOptions.png"))
 ```
@@ -129,13 +134,14 @@ The signature plot is presented only using bar plot with each bar representing t
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/visual_sig.png"))
 ```
-
+<br>
 
 In this tutorial, we found 8 single-base signatures from the mixture of lung adenocarcinoma, lung squamous cell carcinoma, and skin cutaneous melanoma samples.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/sig_plot.png"))
 ```
+<br>
 
 ### Exposures
 To visualize the exposure of each signature for each sample, we provided three options, including bar plot, box plot, and violin plot.
@@ -143,35 +149,35 @@ To visualize the exposure of each signature for each sample, we provided three o
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/visual_exp.png"))
 ```
-
+<br>
 
 By default, a stacked bar plot sorted by the total number of mutations is used. Each stacked bar shows the proportion of exposure of each signature.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/exp_plot1.png"))
 ```
+<br>
 
-
-The stacked bar plot can be ordered by signatures. If `Signatures` is selected in `Sort By` option, a bucket list will show up to allow you select the signatures you want to use by dragging them from the left box to the right box. Users can also set limit on the number of samples to display. 
+The stacked bar plot can be ordered by signatures. If Signatures is selected in the Sort By option, a bucket list will show up to allow you select the signatures you want to use by dragging them from the left box to the right box. Users can also set a limit on the number of samples to display.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/sorting.png"))
 ```
+<br>
 
-
-This stacked bar plot is now ordered by the exposure of signature 1 and only top 400 samples were included here.
+This stacked bar plot is now ordered by the exposure of signature 1 and only the top 400 samples were included here.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/exp_plot2.png"))
 ```
-
+<br>
 
 Box plot and violin plot can be used to visualize the distribution of exposures or compare exposures between different groups of samples.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/exp_box_setting1.png"))
 ```
-
+<br>
 
 By default, a box plot of exposure for each signature will be shown.
 
@@ -184,27 +190,28 @@ If an annotation file is provided, then you can visually compare the exposure of
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/exp_box_setting2.png"))
 ```
-
+<br>
 
 In this box plot, exposures of each signature were grouped by tumor types. We can find that signatures 1 and 5 were highly exposed in lung cancer samples, while signatures 3 and 8 were enriched in skin cancer samples.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/exp_plot4.png"))
 ```
-
+<br>
 
 We can also group samples by signatures and then color by tumor types.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/exp_box_setting3.png"))
 ```
+<br>
 
-
-This plot can let you directly compare how each signatures were differentially exposed among three tumor types.
+This plot can let you directly compare how each signatures was differentially exposed among three tumor types.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/exp_plot5.png"))
 ```
+<br>
 
 ## Additional Analysis
 
@@ -247,61 +254,62 @@ include_graphics(paste0(PATH,"/WilcoxonTable.png"))
 
 ### Clustering
 
-The clustering subtab provides several algorithms to cluster samples based on exposure of each signature. After selecting the musica result object, it is recommended to use `Explore Number of Clusters` box to find the optimal number of clusters in your data. Different clustering algorithms and three metrics including within cluster sum of squares, averaged silouette coefficient, and gap statistics are provided here for exploration. All algorithms were imported from [factoextra](https://cran.r-project.org/web/packages/factoextra/index.html) and [cluster](https://cran.r-project.org/web/packages/cluster/index.html).
+The clustering subtab provides several algorithms to cluster samples based on exposure of each signature. After selecting the musica result object, it is recommended to use the Explore Number of Clusters box to find the optimal number of clusters in your data. Different clustering algorithms and three metrics including within cluster sum of squares, average silouette coefficient, and gap statistics are provided here for exploration. All algorithms were imported from  [factoextra](https://cran.r-project.org/web/packages/factoextra/index.html) and [cluster](https://cran.r-project.org/web/packages/cluster/index.html).
 (Note: If gap statistic is selected, it will take much longer time to generate the plot.)
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/cluster1.png"))
 ```
+<br>
 
-
-This is a connected scatter plot shows the within cluster sum of squares for each number of clusters predicted using hierarchical clustering. The "elbow" method can be used to determine the optimal number of clusters.
+This connected scatter plot shows the within cluster sum of squares for each number of clusters predicted using hierarchical clustering. The “elbow” method can be used to determine the optimal number of clusters.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/wss.png"))
 ```
+<br>
 
-
-The `Clustering` box is where you perform the clustering analysis. In addition to clustering algorithm, several methods for calculating dissimilarity matrix, imported from [philentropy](https://cran.r-project.org/web/packages/philentropy/index.html) package, are also provided.
+The `Clustering` box is where you perform the clustering analysis. In addition to clustering algorithm, several methods for calculating dissimilarity matrix, imported from the [philentropy](https://cran.r-project.org/web/packages/philentropy/index.html) package, are also provided.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/cluster2.png"))
 ```
-
+<br>
 
 This table is the output of clustering analysis, combined with annotation.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/cluster_tbl.png"))
 ```
-
+<br>
 
 In the `Visulaization` box, users can make scatter plots to visualize the clustering results on a UMAP panel, calculated from signature exposures. Three types of plots are provided.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/cluster_visual.png"))
 ```
-
+<br>
 
 If `Signature` is selected, samples are grouped by clusters and multiplicated by the number of signatures. For each column, samples are colored by exposure of a signature.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/umap1.png"))
 ```
-
+<br>
 
 If `Annotation` is selected, an additional select box will show up and let you choose one type of annotation of interest. Then, you can make a plot grouping samples by both clusters and annotation.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/umap2.png"))
 ```
-
+<br>
 
 If `None` is selected, a single scatter plot, colored by clusters, will be made.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/umap3.png"))
 ```
+<br>
 
 ### Heatmap
 Please select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and press the 'Plot' button to see your heatmap. If you want to normalize your data, check the 'Proportional' setting and for z-scale normalization, check the 'z-scale' option. You can also see column or row names by checking 'Show column names' and 'Show row names' resepctively. If you want to subset by signatures, press 'Selected Signatures' to select the ones you want. You can also select the 'Samples' and 'Annotation' option to subset by the available samples and annotations respectively.

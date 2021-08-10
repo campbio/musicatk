@@ -8,7 +8,7 @@ plot_exposures(
   result,
   plot_type = c("bar", "box", "violin"),
   proportional = FALSE,
-  group_by = c("none", "annotation", "signature"),
+  group_by = "none",
   color_by = c("signature", "annotation"),
   annotation = NULL,
   num_samples = NULL,

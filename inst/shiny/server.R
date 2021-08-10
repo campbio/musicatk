@@ -11,6 +11,8 @@ source("server_tables.R", local = T)
 
 server <- function(input, output, session) {
 #################### GENERAL ##################################################
+  
+  #Deactivate all tabs except import
   shinyjs::addCssClass(selector = "a[data-value='musica']",
                      class = "inactiveLink")
   shinyjs::addCssClass(selector = "a[data-value='annotations']",
@@ -34,6 +36,7 @@ server <- function(input, output, session) {
   shinyjs::addCssClass(selector = "a[data-value='download']",
                      class = "inactiveLink")
 
+  #Initialize variables
   vals <- reactiveValues(
     genome = NULL,
     musica = NULL,
@@ -46,7 +49,7 @@ server <- function(input, output, session) {
     df = NULL,
     musica_upload = NULL,
     data = NULL,
-    point_ind = 0,
+    point_ind = 0, #indicator for point option in exposure
     annot = NULL,
     deleted_rows = NULL,
     deleted_row_indices = list(),
@@ -57,6 +60,7 @@ server <- function(input, output, session) {
     sort_sigs = NULL
   )
 
+  #Control flow to detect user's progress and active tabs
   observeEvent(input$menu, {
     if (input$menu == "musica") {
       if (is.null(vals$var)) {
@@ -237,6 +241,7 @@ server <- function(input, output, session) {
     }
   })
 
+  #If variants uplodaed, enable musica tab
   observeEvent(vals$var, {
     if (!is.null(vals$var)) {
       removeCssClass(selector = "a[data-value='musica']",
@@ -244,6 +249,7 @@ server <- function(input, output, session) {
     }
   })
 
+  #If musica object present, enable downstream tabs
   observeEvent(vals$musica, {
     if (!is.null(vals$musica)) {
       removeCssClass(selector = "a[data-value='tables']",
@@ -261,6 +267,7 @@ server <- function(input, output, session) {
     }
   })
 
+  #If there's uploaded musica object, enable downstream tabs
   observeEvent(vals$musica_upload, {
     if (!is.null(vals$musica_upload)) {
       removeCssClass(selector = "a[data-value='tables']",
@@ -278,6 +285,7 @@ server <- function(input, output, session) {
     }
   })
 
+  #If there's result object, enable downstream tabs
   observeEvent(vals$result_objects, {
     if (length(vals$result_objects) > 0) {
       removeCssClass(selector = "a[data-value='annotations']",
@@ -1493,6 +1501,8 @@ parse_delete_event <- function(idstr) {
 ###############################################################################
 
 ##################Visualization#################
+  
+  #select box for signature
   output$select_res1 <- renderUI({
     tagList(
       selectInput(
@@ -1508,6 +1518,7 @@ parse_delete_event <- function(idstr) {
     )
   })
 
+  #select box for exposure
   output$select_res2 <- renderUI({
     tagList(
       selectInput(
@@ -1522,10 +1533,7 @@ parse_delete_event <- function(idstr) {
     )
   })
 
-  # observeEvent(input$get_res,{
-  #   vals$data <- res_annot
-  # })
-
+  #create text input for changing signature names
   observeEvent(input$rename, {
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     for (i in 1:n) {
@@ -1542,6 +1550,7 @@ parse_delete_event <- function(idstr) {
     }
   }, ignoreInit = TRUE)
 
+  #save plotting options for signatures in a list
   get_sig_option <- function(input) {
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     if (input$rename) {
@@ -1562,14 +1571,17 @@ parse_delete_event <- function(idstr) {
     return(options)
   }
 
+  #Make signature plot
   observeEvent(input$get_plot1, {
     options <- get_sig_option(input)
     result <- vals$result_objects[[input$selected_res1]]
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     height <- paste0(as.character(n * 90), "px")
     if (options[[6]]) {
+      #disable resizable
       jqui_resizable("#sigplot_plotly", operation = "destroy")
       jqui_resizable("#sigplot_plot", operation = "destroy")
+      #remove previous plot
       removeUI(selector = "#sigplot_plot")
       removeUI(selector = "#sigplot_plotly")
       insertUI(
@@ -1587,6 +1599,7 @@ parse_delete_event <- function(idstr) {
           same_scale = options[[5]]
         )
       )
+      #enable resizable
       jqui_resizable("#sigplot_plotly")
     }
     else{
@@ -1614,7 +1627,10 @@ parse_delete_event <- function(idstr) {
   })
 
   observeEvent(input$plottype, {
+    #If box or violin selected, generate options for plotting points;
+    #group by and color by have two choices
     if (input$plottype %in% c("box", "violin") & vals$point_ind == 0) {
+      removeUI(selector = "#point_opt")
       insertUI(
         selector = "#points",
         ui = tags$div(
@@ -1655,9 +1671,59 @@ parse_delete_event <- function(idstr) {
                          options = list(container = "body"))
              )
       )
+      removeUI(selector = "#color")
+      insertUI(
+        selector = "#insert_color",
+        ui = tagList(
+          radioButtons(
+            inputId = "color",
+            label = "Color By",
+            choices = list("Signature" = "signature",
+                           "Annotation" = "annotation"),
+            inline = TRUE,
+            selected = "signature"
+          ),
+          bsTooltip(id = "color", title = "Determines how to color samples.",
+                    placement = "right", options = list(container = "body"))
+        )
+      )
       vals$point_ind <- 1
     }
-    else if (input$plottype == "bar") {
+    #if scatter is selected, generate point size option, remove group by option,
+    #color by has 3 choices
+    else if(input$plottype == "scatter"){
+      removeUI(selector = "#point_opt")
+      removeUI(selector = "#group1")
+      insertUI(
+        selector = "#points",
+        ui = tags$div(
+          id = "point_opt",
+          numericInput(inputId = "pointsize", label = "Point Size", value = 0.7),
+          bsTooltip(id = "pointsize", title = "Size of the points on scatter plots.",
+                    placement = "right", options = list(container = "body"))
+        )
+      )
+      removeUI(selector = "#color")
+      insertUI(
+        selector = "#insert_color",
+        ui = tagList(
+          radioButtons(
+            inputId = "color",
+            label = "Color By",
+            choices = list("None" = "none","Signature" = "signatures",
+                           "Annotation" = "annotation"),
+            inline = TRUE,
+            selected = "none"
+          ),
+          bsTooltip(id = "color", title = "Determines how to color samples.",
+                    placement = "right", options = list(container = "body"))
+        )
+      )
+      vals$point_ind <- 0
+    }
+    #if bar is selected, remove all points related options, group by has 3 choices,
+    #color by has 2 choices
+    else if(input$plottype == "bar"){
       removeUI(selector = "#point_opt")
       removeUI(selector = "#group1")
       insertUI(
@@ -1680,6 +1746,22 @@ parse_delete_event <- function(idstr) {
                     placement = "right", options = list(container = "body"))
         )
       )
+      removeUI(selector = "#color")
+      insertUI(
+        selector = "#insert_color",
+        ui = tagList(
+          radioButtons(
+            inputId = "color",
+            label = "Color By",
+            choices = list("Signature" = "signature",
+                           "Annotation" = "annotation"),
+            inline = TRUE,
+            selected = "signature"
+          ),
+          bsTooltip(id = "color", title = "Determines how to color samples.",
+                    placement = "right", options = list(container = "body"))
+        )
+      )
       vals$point_ind <- 0
     }
     else{
@@ -1698,6 +1780,7 @@ parse_delete_event <- function(idstr) {
   supplied via the annotation parameter",
              placement = "right", options = list(container = "body"))
 
+  #if annotation is selected for group by, enable annotation option
   observeEvent(input$group1, {
     if (input$group1 == "annotation" & input$color != "annotation") {
       if (ncol(samp_annot(vals$result_objects[[input$selected_res2]])) == 1) {
@@ -1734,6 +1817,7 @@ parse_delete_event <- function(idstr) {
     }
   })
 
+  #if annotation is selected for color by, enable annotation option
   observeEvent(input$color, {
     if (input$color == "annotation" & input$group1 != "annotation") {
       if (ncol(samp_annot(vals$result_objects[[input$selected_res2]])) == 1) {
@@ -1742,6 +1826,8 @@ parse_delete_event <- function(idstr) {
                                Please add annotation to the musica object.")
       }
       else{
+        vals$annot <- as.list(colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1])
+        names(vals$annot) <- colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1]
         insertUI(
           selector = "#insertannot",
           ui = tagList(
@@ -1765,6 +1851,7 @@ parse_delete_event <- function(idstr) {
     }
   })
 
+  #If bar plot is sorted by signature exposure, generate a bucket_list
   observeEvent(input$sort, {
     if (input$sort == "signature") {
       insertUI(
@@ -1801,6 +1888,7 @@ parse_delete_event <- function(idstr) {
     }
   })
 
+  #generate the option to determine number of top samples to include in bar plot
   observeEvent(input$selected_res2, {
     output$number <- renderUI(
       tagList(
@@ -1817,6 +1905,7 @@ parse_delete_event <- function(idstr) {
     )
   })
 
+  #save plotting options for exposures in a list
   get_exp_option <- function(input) {
     plot_type <- input$plottype
     proportional <- input$proportional
@@ -1865,10 +1954,17 @@ parse_delete_event <- function(idstr) {
     return(options)
   }
 
+  #plot exposures
   observeEvent(input$get_plot2, {
     options <- get_exp_option(input)
-    result <- vals$result_objects[[input$selected_res2]]
-    if (options[[14]]) {
+    if(length(umap(vals$result_objects[[input$selected_res2]])) == 0){
+      create_umap(vals$result_objects[[input$selected_res2]])
+      result <- vals$result_objects[[input$selected_res2]]
+    }
+    else{
+      result <- vals$result_objects[[input$selected_res2]]
+    }
+    if(options[[14]]){
       jqui_resizable("#expplotly", operation = "destroy")
       jqui_resizable("#expplot", operation = "destroy")
       removeUI(selector = "#expplotly")
@@ -1877,25 +1973,40 @@ parse_delete_event <- function(idstr) {
         selector = "#plotdiv2",
         ui = plotlyOutput(outputId = "expplotly")
       )
-      output$expplotly <- renderPlotly(
-        plot_exposures(
-          result = result,
-          plot_type = options[[1]],
-          proportional = options[[2]],
-          group_by = options[[3]],
-          color_by = options[[4]],
-          annotation = options[[5]],
-          num_samples = options[[6]],
-          sort_samples = options[[7]],
-          threshold = options[[8]],
-          same_scale = options[[9]],
-          label_x_axis = options[[10]],
-          legend = options[[11]],
-          add_points = options[[12]],
-          point_size = options[[13]],
-          plotly = options[[14]]
+      if(options[[1]] == "scatter"){
+        output$expplotly <- renderPlotly(
+          plot_umap(
+            result = result,
+            color_by = options[[4]],
+            proportional = options[[2]],
+            same_scale = options[[9]],
+            annotation = options[[5]],
+            plotly = options[[14]],
+            legend = options[[11]]
+          )
         )
-      )
+      }
+      else{
+        output$expplotly <- renderPlotly(
+          plot_exposures(
+            result = result, 
+            plot_type = options[[1]], 
+            proportional = options[[2]],
+            group_by = options[[3]],
+            color_by = options[[4]],
+            annotation = options[[5]],
+            num_samples = options[[6]],
+            sort_samples = options[[7]],
+            threshold = options[[8]],
+            same_scale = options[[9]],
+            label_x_axis = options[[10]],
+            legend = options[[11]],
+            add_points = options[[12]],
+            point_size = options[[13]],
+            plotly = options[[14]]
+          )
+        )
+      }
       jqui_resizable("#expplotly")
     }
     else{
@@ -1907,25 +2018,40 @@ parse_delete_event <- function(idstr) {
         selector = "#plotdiv2",
         ui = plotOutput(outputId = "expplot")
       )
-      output$expplot <- renderPlot(
-        plot_exposures(
-          result = result,
-          plot_type = options[[1]],
-          proportional = options[[2]],
-          group_by = options[[3]],
-          color_by = options[[4]],
-          annotation = options[[5]],
-          num_samples = options[[6]],
-          sort_samples = options[[7]],
-          threshold = options[[8]],
-          same_scale = options[[9]],
-          label_x_axis = options[[10]],
-          legend = options[[11]],
-          add_points = options[[12]],
-          point_size = options[[13]],
-          plotly = options[[14]]
+      if(options[[1]] == "scatter"){
+        output$expplot <- renderPlot(
+          plot_umap(
+            result = result,
+            color_by = options[[4]],
+            proportional = options[[2]],
+            same_scale = options[[9]],
+            annotation = options[[5]],
+            plotly = options[[14]],
+            legend = options[[11]]
+          )
         )
-      )
+      }
+      else{
+        output$expplot <- renderPlot(
+          plot_exposures(
+            result = result, 
+            plot_type = options[[1]], 
+            proportional = options[[2]],
+            group_by = options[[3]],
+            color_by = options[[4]],
+            annotation = options[[5]],
+            num_samples = options[[6]],
+            sort_samples = options[[7]],
+            threshold = options[[8]],
+            same_scale = options[[9]],
+            label_x_axis = options[[10]],
+            legend = options[[11]],
+            add_points = options[[12]],
+            point_size = options[[13]],
+            plotly = options[[14]]
+          )
+        )
+      }
       jqui_resizable("#expplot")
     }
   })
@@ -2055,6 +2181,8 @@ parse_delete_event <- function(idstr) {
   })
  })
  ##############Clustering################
+  
+  #select box for clustering
   output$select_res3 <- renderUI({
     tagList(
       selectInput(
@@ -2069,6 +2197,7 @@ parse_delete_event <- function(idstr) {
     )
   })
 
+  #generate options for selecting number of clusters
   observeEvent(input$selected_res3, {
     output$no_cluster1 <- renderUI(
       tagList(
@@ -2090,6 +2219,7 @@ parse_delete_event <- function(idstr) {
     )
   })
 
+  #make plot for exploratory analysis
   observeEvent(input$explore, {
     jqui_resizable("#explore_plot", operation = "destroy")
     removeUI(selector = "#explore_plot")
@@ -2113,6 +2243,8 @@ parse_delete_event <- function(idstr) {
     jqui_resizable("#explore_plot")
   })
 
+  #generate select box for dissimilarity matrix and options specific to
+  #certain algorithms
   observeEvent(input$algorithm2, {
     choices <- list(hkmeans =
                       c("Euclidean" = "euclidean", "Manhattan" = "manhattan",
@@ -2179,6 +2311,7 @@ parse_delete_event <- function(idstr) {
     }
   })
 
+  #create select box to allow users to color plot by annotation
   observeEvent(input$group2, {
     if (input$group2 == "annotation") {
       vals$annot <- as.list(colnames(samp_annot(
@@ -2201,6 +2334,7 @@ parse_delete_event <- function(idstr) {
     }
   })
 
+  #perform clustering analysis
   observeEvent(input$cluster_calc, {
     result <- vals$result_objects[[input$selected_res3]]
     nclust <- input$numclust2
@@ -2256,6 +2390,7 @@ parse_delete_event <- function(idstr) {
     )
   })
 
+  #visualize clustering result
   observeEvent(input$cluster_vis, {
     if (length(umap(vals$result_objects[[input$selected_res3]])) == 0) {
       create_umap(vals$result_objects[[input$selected_res3]])

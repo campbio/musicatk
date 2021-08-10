@@ -139,7 +139,7 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
   tab <- .extract_count_table(musica, table_name)
   min_samples <- colnames(tab)[which(colSums(tab) >= num_counts)]
 
-  tables(musica) <- subset_count_tables(musica, min_samples)
+  tables(musica) <- .subset_count_tables(musica, min_samples)
 
   #Subset variants
   variants(musica) <- variants(musica)[
@@ -147,11 +147,11 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 
   #Subset sample annotations
   if (nrow(samp_annot(musica)) != 0) {
-    overwrite_samp_annot(musica = musica, 
-                         new_annot = 
-                           samp_annot(musica)[which(samp_annot(musica)$Samples 
-                                                 %in% min_samples), , 
-                                              drop = FALSE])
+    .overwrite_samp_annot(musica = musica, 
+                          new_annot = 
+                            samp_annot(musica)[which(samp_annot(musica)$Samples 
+                                                     %in% min_samples), , 
+                                               drop = FALSE])
     #samp_annot(musica) <- samp_annot(musica)[which(
     #  samp_annot(musica)$Samples %in% min_samples), ]
   }
@@ -187,15 +187,15 @@ subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
     stop(paste(annot_names, " not present in ", annot_col,
                " column, please review.", sep = "", collapse = TRUE))
   }
-  overwrite_samp_annot(musica, samp_annot(musica)[annotation_index, ])
+  .overwrite_samp_annot(musica, samp_annot(musica)[annotation_index, ])
   annotation_samples <- samp_annot(musica)$"Samples"
-  tables(musica) <- subset_count_tables(musica, samples = annotation_samples)
+  tables(musica) <- .subset_count_tables(musica, samples = annotation_samples)
   variants(musica) <- variants(musica)[
     which(variants(musica)$sample %in% annotation_samples), ]
   return(musica)
 }
 
-overwrite_samp_annot <- function(musica, new_annot) {
+.overwrite_samp_annot <- function(musica, new_annot) {
   eval.parent(substitute(musica@sample_annotations <- new_annot))
 }
 

@@ -140,3 +140,29 @@ exposure_differential_analysis <- function(musica_result, annotation,
   }
   return(diff.out)
 }
+
+#' @title Compare exposures of annotated samples
+#' @description \code{plot_differential_analysis} is used to plot
+#' differential analysis created by \code{exposure_differential_analysis}.
+#' @param analysis Analysis created by \code{exposure_differential_analysis}
+#' @param analysis_type Currently only \code{"glm"} supported
+#' @param samp_num Number of samples that went into the analysis
+#' @examples
+#' data("res_annot")
+#' analysis <- exposure_differential_analysis(res_annot, "Tumor_Subtypes", 
+#' method="wilcox")
+#' plot_differential_analysis(analysis, "glm", 2)
+#' @export
+plot_differential_analysis <- function(analysis, analysis_type, samp_num) {
+  if (analysis_type == "glm") {
+    dt <- data.table::melt(data.table::setDT(analysis[, seq_len(samp_num)], 
+                                             keep.rownames = TRUE), "rn")
+    dt$signif <- ifelse(dt$value < 0.01, 1, 0)
+    p <- ggplot2::ggplot(dt, aes_string(fill = "rn", y = "value", 
+                                        x = "variable")) + 
+      geom_bar(position="dodge", stat="identity")
+    p <- .gg_default_theme(p)
+    p <- p + theme(legend.title = element_blank())
+    return(p)
+  }
+}
