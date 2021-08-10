@@ -11,6 +11,8 @@ source("server_tables.R", local = T)
 
 server <- function(input, output, session) {
 #################### GENERAL ##################################################
+  
+  #Deactivate all tabs except import
   shinyjs::addCssClass(selector = "a[data-value='musica']",
                      class = "inactiveLink")
   shinyjs::addCssClass(selector = "a[data-value='annotations']",
@@ -34,6 +36,7 @@ server <- function(input, output, session) {
   shinyjs::addCssClass(selector = "a[data-value='download']",
                      class = "inactiveLink")
 
+  #Initialize variables
   vals <- reactiveValues(
     genome = NULL,
     musica = NULL,
@@ -46,17 +49,18 @@ server <- function(input, output, session) {
     df = NULL,
     musica_upload = NULL,
     data = NULL,
-    point_ind = 0,
+    point_ind = 0, #indicator for point option in exposure
     annot = NULL,
     deletedRows = NULL,
     deletedRowIndices = list(),
-    cluster = NULL,
+    cluster = NULL, #save clustering result
     var = NULL,
     musica_name_user = NULL,
     musica_message = NULL,
     sort_sigs = NULL
   )
 
+  #Control flow to detect user's progress and active tabs
   observeEvent(input$menu, {
     if (input$menu == "musica") {
       if (is.null(vals$var)) {
@@ -237,6 +241,7 @@ server <- function(input, output, session) {
     }
   })
 
+  #If variants uplodaed, enable musica tab
   observeEvent(vals$var, {
     if (!is.null(vals$var)) {
       removeCssClass(selector = "a[data-value='musica']",
@@ -244,6 +249,7 @@ server <- function(input, output, session) {
     }
   })
 
+  #If musica object present, enable downstream tabs
   observeEvent(vals$musica, {
     if (!is.null(vals$musica)) {
       removeCssClass(selector = "a[data-value='tables']",
@@ -261,6 +267,7 @@ server <- function(input, output, session) {
     }
   })
 
+  #If there's uploaded musica object, enable downstream tabs
   observeEvent(vals$musica_upload, {
     if (!is.null(vals$musica_upload)) {
       removeCssClass(selector = "a[data-value='tables']",
@@ -278,6 +285,7 @@ server <- function(input, output, session) {
     }
   })
 
+  #If there's result object, enable downstream tabs
   observeEvent(vals$result_objects, {
     if (length(vals$result_objects) > 0) {
       removeCssClass(selector = "a[data-value='annotations']",
@@ -1557,6 +1565,8 @@ parseDeleteEvent <- function(idstr) {
 ###############################################################################
 
 ##################Visualization#################
+  
+  #select box for signature
   output$select_res1 <- renderUI({
     tagList(
       selectInput(
@@ -1572,6 +1582,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
 
+  #select box for exposure
   output$select_res2 <- renderUI({
     tagList(
       selectInput(
@@ -1586,10 +1597,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
 
-  # observeEvent(input$get_res,{
-  #   vals$data <- res_annot
-  # })
-
+  #create text input for changing signature names
   observeEvent(input$rename, {
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     for (i in 1:n) {
@@ -1606,6 +1614,7 @@ parseDeleteEvent <- function(idstr) {
     }
   }, ignoreInit = TRUE)
 
+  #save plotting options for signatures in a list
   get_sig_option <- function(input) {
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     if (input$rename) {
@@ -1626,14 +1635,17 @@ parseDeleteEvent <- function(idstr) {
     return(options)
   }
 
+  #Make signature plot
   observeEvent(input$get_plot1, {
     options <- get_sig_option(input)
     result <- vals$result_objects[[input$selected_res1]]
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     height <- paste0(as.character(n * 90), "px")
     if (options[[6]]) {
+      #disable resizable
       jqui_resizable("#sigplot_plotly", operation = "destroy")
       jqui_resizable("#sigplot_plot", operation = "destroy")
+      #remove previous plot
       removeUI(selector = "#sigplot_plot")
       removeUI(selector = "#sigplot_plotly")
       insertUI(
@@ -1651,6 +1663,7 @@ parseDeleteEvent <- function(idstr) {
           same_scale = options[[5]]
         )
       )
+      #enable resizable
       jqui_resizable("#sigplot_plotly")
     }
     else{
@@ -1678,7 +1691,10 @@ parseDeleteEvent <- function(idstr) {
   })
 
   observeEvent(input$plottype, {
+    #If box or violin selected, generate options for plotting points;
+    #group by and color by have two choices
     if (input$plottype %in% c("box", "violin") & vals$point_ind == 0) {
+      removeUI(selector = "#point_opt")
       insertUI(
         selector = "#points",
         ui = tags$div(
@@ -1737,6 +1753,8 @@ parseDeleteEvent <- function(idstr) {
       )
       vals$point_ind <- 1
     }
+    #if scatter is selected, generate point size option, remove group by option,
+    #color by has 3 choices
     else if(input$plottype == "scatter"){
       removeUI(selector = "#point_opt")
       removeUI(selector = "#group1")
@@ -1767,6 +1785,8 @@ parseDeleteEvent <- function(idstr) {
       )
       vals$point_ind <- 0
     }
+    #if bar is selected, remove all points related options, group by has 3 choices,
+    #color by has 2 choices
     else if(input$plottype == "bar"){
       removeUI(selector = "#point_opt")
       removeUI(selector = "#group1")
@@ -1824,6 +1844,7 @@ parseDeleteEvent <- function(idstr) {
   supplied via the annotation parameter",
              placement = "right", options = list(container = "body"))
 
+  #if annotation is selected for group by, enable annotation option
   observeEvent(input$group1, {
     if (input$group1 == "annotation" & input$color != "annotation") {
       if (ncol(samp_annot(vals$result_objects[[input$selected_res2]])) == 1) {
@@ -1860,6 +1881,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
 
+  #if annotation is selected for color by, enable annotation option
   observeEvent(input$color, {
     if (input$color == "annotation" & input$group1 != "annotation") {
       if (ncol(samp_annot(vals$result_objects[[input$selected_res2]])) == 1) {
@@ -1893,6 +1915,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
 
+  #If bar plot is sorted by signature exposure, generate a bucket_list
   observeEvent(input$sort, {
     if (input$sort == "signature") {
       insertUI(
@@ -1929,6 +1952,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
 
+  #generate the option to determine number of top samples to include in bar plot
   observeEvent(input$selected_res2, {
     output$number <- renderUI(
       tagList(
@@ -1945,6 +1969,7 @@ parseDeleteEvent <- function(idstr) {
     )
   })
 
+  #save plotting options for exposures in a list
   get_exp_option <- function(input) {
     plot_type <- input$plottype
     proportional <- input$proportional
@@ -1993,6 +2018,7 @@ parseDeleteEvent <- function(idstr) {
     return(options)
   }
 
+  #plot exposures
   observeEvent(input$get_plot2, {
     options <- get_exp_option(input)
     if(length(umap(vals$result_objects[[input$selected_res2]])) == 0){
@@ -2257,6 +2283,8 @@ observeEvent(input$get_heatmap, {
   )
 
  ##############Clustering################
+  
+  #select box for clustering
   output$select_res3 <- renderUI({
     tagList(
       selectInput(
@@ -2271,6 +2299,7 @@ observeEvent(input$get_heatmap, {
     )
   })
 
+  #generate options for selecting number of clusters
   observeEvent(input$selected_res3, {
     output$no_cluster1 <- renderUI(
       tagList(
@@ -2292,6 +2321,7 @@ observeEvent(input$get_heatmap, {
     )
   })
 
+  #make plot for exploratory analysis
   observeEvent(input$explore, {
     jqui_resizable("#explore_plot", operation = "destroy")
     removeUI(selector = "#explore_plot")
@@ -2315,6 +2345,8 @@ observeEvent(input$get_heatmap, {
     jqui_resizable("#explore_plot")
   })
 
+  #generate select box for dissimilarity matrix and options specific to
+  #certain algorithms
   observeEvent(input$algorithm2, {
     choices <- list(hkmeans =
                       c("Euclidean" = "euclidean", "Manhattan" = "manhattan",
@@ -2381,6 +2413,7 @@ observeEvent(input$get_heatmap, {
     }
   })
 
+  #create select box to allow users to color plot by annotation
   observeEvent(input$group2, {
     if (input$group2 == "annotation") {
       vals$annot <- as.list(colnames(samp_annot(
@@ -2403,6 +2436,7 @@ observeEvent(input$get_heatmap, {
     }
   })
 
+  #perform clustering analysis
   observeEvent(input$cluster_calc, {
     result <- vals$result_objects[[input$selected_res3]]
     nclust <- input$numclust2
@@ -2458,6 +2492,7 @@ observeEvent(input$get_heatmap, {
     )
   })
 
+  #visualize clustering result
   observeEvent(input$cluster_vis, {
     if (length(umap(vals$result_objects[[input$selected_res3]])) == 0) {
       create_umap(vals$result_objects[[input$selected_res3]])
