@@ -6,14 +6,14 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Articles • musicatk</title>
+<title>Return sample from musica_variant object — subset_variants_by_samples • musicatk</title>
 
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/cerulean/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Articles" />
+<meta property="og:title" content="Return sample from musica_variant object — subset_variants_by_samples" />
+<meta property="og:description" content="Return sample from musica_variant object" />
 
 
 
@@ -58,7 +59,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-article-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -71,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.10</span>
       </span>
     </div>
 
@@ -116,20 +117,66 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Articles</h1>
+    <h1>Return sample from musica_variant object</h1>
+    <small class="dont-index">Source: <a href='https://github.com/campbio/musicatk/blob/master/R/main_class.R'><code>R/main_class.R</code></a></small>
+    <div class="hidden name"><code>subset_variants_by_samples.Rd</code></div>
     </div>
 
-    <div class="section ">
-      <h3>All vignettes</h3>
-      <p class="section-desc"></p>
-
-      <dl>
-        <dt><a href="musicatk.html">Mutational Signature Comprehensive Analysis Toolkit</a></dt>
-        <dd></dt>
-        <dt><a href="musicatk_help.html">musicatk_help</a></dt>
-        <dd></dt>
-      </dl>
+    <div class="ref-description">
+    <p>Return sample from musica_variant object</p>
     </div>
+
+    <pre class="usage"><span class='fu'>subset_variants_by_samples</span><span class='op'>(</span><span class='va'>musica</span>, <span class='va'>sample_name</span><span class='op'>)</span></pre>
+
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>musica</th>
+      <td><p>A <code><a href='musica-class.html'>musica</a></code> object.</p></td>
+    </tr>
+    <tr>
+      <th>sample_name</th>
+      <td><p>Sample name to subset by</p></td>
+    </tr>
+    </table>
+
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>Returns sample data.frame subset to a single sample</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span>
+<span class='fu'>subset_variants_by_samples</span><span class='op'>(</span><span class='va'>musica</span>, <span class='st'>"TCGA-94-7557-01A-11D-2122-08"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;        chr     start       end ref alt                       sample
+#&gt;   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08
+#&gt;   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08
+#&gt;   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08
+#&gt;   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08
+#&gt;   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08
+#&gt;  ---                                                               
+#&gt; 116: chr19  54255365  54255365   G   A TCGA-94-7557-01A-11D-2122-08
+#&gt; 117: chr20  49028576  49028576   C   T TCGA-94-7557-01A-11D-2122-08
+#&gt; 118: chr21  25881519  25881519   C   G TCGA-94-7557-01A-11D-2122-08
+#&gt; 119:  chrX  12886189  12886189   A   G TCGA-94-7557-01A-11D-2122-08
+#&gt; 120:  chrX 153950810 153950810   C   T TCGA-94-7557-01A-11D-2122-08
+#&gt;      Variant_Type
+#&gt;   1:          SBS
+#&gt;   2:          SBS
+#&gt;   3:          SBS
+#&gt;   4:          SBS
+#&gt;   5:          SBS
+#&gt;  ---             
+#&gt; 116:          SBS
+#&gt; 117:          SBS
+#&gt; 118:          SBS
+#&gt; 119:          SBS
+#&gt; 120:          SBS</div></pre>
+  </div>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 

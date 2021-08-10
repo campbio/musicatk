@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>musicatk_help • musicatk</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.10</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.2</span>
       </span>
     </div>
 
@@ -91,7 +91,7 @@
 <div id="import" class="section level2">
 <h2 class="hasAnchor">
 <a href="#import" class="anchor"></a>Import</h2>
-<p>Users can upload their datasets through 1 of 3 different methods. - “Import Files” - upload MAF and VCF files containing the variant data. - “Import TCGA Datasets” - easily import all open access TCGA tumor datasets. - “Import Musica Result Object” - upload existing musica and result objects.</p>
+<p>Users can upload their datasets through 1 of 3 different methods. - “Import Files” - upload MAF and VCF files containing the variant data. - “Import TCGA Datasets” - easily import all open access TCGA tumor datasets. - “Import Musica Result Object” - upload existing musica and result objects. <br></p>
 </div>
 <div id="import-files" class="section level2">
 <h2 class="hasAnchor">
@@ -105,6 +105,7 @@
 <h2 class="hasAnchor">
 <a href="#import-tcga-datasets" class="anchor"></a>Import TCGA Datasets</h2>
 <p>This tab allows selection of single or multiple TCGA datasets directly instead of providing user VCFs and MAFs in the ‘Import Files’ step. This is an optional step and not needed. Users have their own data. The TCGA datasets have been named in the following format: TCGA Abbreviation - Full TCGA tumor name. The original TCGA page for the tumor name list can be referred to by selecting the ‘Full Tumor List’ link right next to the ‘Import’ button. Once the datasets have been selected, the ‘Import’ button at the bottom can be pressed. Once finished, a completion notification will appear at the bottom right. <img src="image/TCGA.png" width="1212"> ## Import Musica This tab can be used to import user’s musica result or musica objects in .rda or .rds format which will allow for direct downstream analysis in the workflow. The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file’s name but it can be changed in the text box labeled “Name your musica result object”. Once finished, a completion notification message in the bottom right and a variants table of the uploaded file will appear. At this stage, the next steps in the workflow can be accessed directly. If a musica result object has been uploaded, all the downstream tabs are now accessible and if a musica object has been uploaded then the users can skip the Create Musica tab and move to the build tables tab directly. The variants table can be downloaded using the "Download Variants’ button.</p>
+<p><img src="image/upload_musica.png" width="707"><br></p>
 </div>
 <div id="create-musica-object" class="section level2">
 <h2 class="hasAnchor">
@@ -116,8 +117,7 @@
 <h2 class="hasAnchor">
 <a href="#annotations" class="anchor"></a>Annotations</h2>
 <p>Sample annotations can be used to store information about each sample such as tumor type or treatment status. They are optional and can be used in downstream plotting functions such as plot_exposures or plot_umap to group or color samples by a particular annotation.</p>
-<p><img src="image/AnnotationsTab.png" width="1377"><br> Annotations are provided in a character delimited text file which includes a sample name column. The sample names must match the sample names in the selected musica object. NA values will be used for any samples not present in the annotation file.</p>
-<p><img src="image/AnnotationOptions.png" width="1142"><br> After selecting the correct delimiter, a data table will appear below to show the annotations that will be added to the musica object. If your annotation file does not contain a header, deselect the “Header” radio button. Choose the column that contains the sample names from the “Sample Name Columns” dropdown and then click “Add Annotation”. <br><img src="image/AnnotationTable.png" width="1087"></p>
+<p><img src="image/AnnotationsTab.png" width="1377"><br> Annotations are provided in a character delimited text file which includes a sample name column. The sample names must match the sample names in the selected musica object. NA values will be used for any samples not present in the annotation file. <img src="image/AnnotationOptions.png" width="1142"><br> After selecting the correct delimiter, a data table will appear below to show the annotations that will be added to the musica object. If your annotation file does not contain a header, deselect the “Header” radio button. Choose the column that contains the sample names from the “Sample Name Columns” dropdown and then click “Add Annotation”. <br><img src="image/AnnotationTable.png" width="1087"></p>
 </div>
 <div id="build-tables" class="section level2">
 <h2 class="hasAnchor">
@@ -153,33 +153,33 @@
 <h3 class="hasAnchor">
 <a href="#signatures" class="anchor"></a>Signatures</h3>
 <p>The signature plot is presented only using bar plot with each bar representing the probability of each type of mutation. By default, signatures are named by numbers, but an option of renaming signatures is provided if you want to name them otherwise, such as the possible etiology.</p>
-<p><img src="image/visual_sig.png" width="936"></p>
+<p><img src="image/visual_sig.png" width="936"><br></p>
 <p>In this tutorial, we found 8 single-base signatures from the mixture of lung adenocarcinoma, lung squamous cell carcinoma, and skin cutaneous melanoma samples.</p>
-<p><img src="image/sig_plot.png" width="1538"></p>
+<p><img src="image/sig_plot.png" width="1538"><br></p>
 </div>
 <div id="exposures" class="section level3">
 <h3 class="hasAnchor">
 <a href="#exposures" class="anchor"></a>Exposures</h3>
 <p>To visualize the exposure of each signature for each sample, we provided three options, including bar plot, box plot, and violin plot.</p>
-<p><img src="image/visual_exp.png" width="968"></p>
+<p><img src="image/visual_exp.png" width="968"><br></p>
 <p>By default, a stacked bar plot sorted by the total number of mutations is used. Each stacked bar shows the proportion of exposure of each signature.</p>
-<p><img src="image/exp_plot1.png" width="984"></p>
-<p>The stacked bar plot can be ordered by signatures. If <code>Signatures</code> is selected in <code>Sort By</code> option, a bucket list will show up to allow you select the signatures you want to use by dragging them from the left box to the right box. Users can also set limit on the number of samples to display.</p>
-<p><img src="image/sorting.png" width="890"></p>
-<p>This stacked bar plot is now ordered by the exposure of signature 1 and only top 400 samples were included here.</p>
-<p><img src="image/exp_plot2.png" width="892"></p>
+<p><img src="image/exp_plot1.png" width="984"><br></p>
+<p>The stacked bar plot can be ordered by signatures. If Signatures is selected in the Sort By option, a bucket list will show up to allow you select the signatures you want to use by dragging them from the left box to the right box. Users can also set a limit on the number of samples to display.</p>
+<p><img src="image/sorting.png" width="890"><br></p>
+<p>This stacked bar plot is now ordered by the exposure of signature 1 and only the top 400 samples were included here.</p>
+<p><img src="image/exp_plot2.png" width="892"><br></p>
 <p>Box plot and violin plot can be used to visualize the distribution of exposures or compare exposures between different groups of samples.</p>
-<p><img src="image/exp_box_setting1.png" width="886"></p>
+<p><img src="image/exp_box_setting1.png" width="886"><br></p>
 <p>By default, a box plot of exposure for each signature will be shown.</p>
 <p><img src="image/exp_plot3.png" width="892"></p>
 <p>If an annotation file is provided, then you can visually compare the exposure of signatures among different groups.</p>
-<p><img src="image/exp_box_setting2.png" width="891"></p>
+<p><img src="image/exp_box_setting2.png" width="891"><br></p>
 <p>In this box plot, exposures of each signature were grouped by tumor types. We can find that signatures 1 and 5 were highly exposed in lung cancer samples, while signatures 3 and 8 were enriched in skin cancer samples.</p>
-<p><img src="image/exp_plot4.png" width="892"></p>
+<p><img src="image/exp_plot4.png" width="892"><br></p>
 <p>We can also group samples by signatures and then color by tumor types.</p>
-<p><img src="image/exp_box_setting3.png" width="888"></p>
-<p>This plot can let you directly compare how each signatures were differentially exposed among three tumor types.</p>
-<p><img src="image/exp_plot5.png" width="892"></p>
+<p><img src="image/exp_box_setting3.png" width="888"><br></p>
+<p>This plot can let you directly compare how each signatures was differentially exposed among three tumor types.</p>
+<p><img src="image/exp_plot5.png" width="892"><br></p>
 </div>
 </div>
 <div id="additional-analysis" class="section level2">
@@ -206,22 +206,22 @@
 <div id="clustering" class="section level3">
 <h3 class="hasAnchor">
 <a href="#clustering" class="anchor"></a>Clustering</h3>
-<p>The clustering subtab provides several algorithms to cluster samples based on exposure of each signature. After selecting the musica result object, it is recommended to use <code>Explore Number of Clusters</code> box to find the optimal number of clusters in your data. Different clustering algorithms and three metrics including within cluster sum of squares, averaged silouette coefficient, and gap statistics are provided here for exploration. All algorithms were imported from <a href="https://cran.r-project.org/web/packages/factoextra/index.html">factoextra</a> and <a href="https://cran.r-project.org/web/packages/cluster/index.html">cluster</a>. (Note: If gap statistic is selected, it will take much longer time to generate the plot.)</p>
-<p><img src="image/cluster1.png" width="863"></p>
-<p>This is a connected scatter plot shows the within cluster sum of squares for each number of clusters predicted using hierarchical clustering. The “elbow” method can be used to determine the optimal number of clusters.</p>
-<p><img src="image/wss.png" width="553"></p>
-<p>The <code>Clustering</code> box is where you perform the clustering analysis. In addition to clustering algorithm, several methods for calculating dissimilarity matrix, imported from <a href="https://cran.r-project.org/web/packages/philentropy/index.html">philentropy</a> package, are also provided.</p>
-<p><img src="image/cluster2.png" width="574"></p>
+<p>The clustering subtab provides several algorithms to cluster samples based on exposure of each signature. After selecting the musica result object, it is recommended to use the Explore Number of Clusters box to find the optimal number of clusters in your data. Different clustering algorithms and three metrics including within cluster sum of squares, average silouette coefficient, and gap statistics are provided here for exploration. All algorithms were imported from <a href="https://cran.r-project.org/web/packages/factoextra/index.html">factoextra</a> and <a href="https://cran.r-project.org/web/packages/cluster/index.html">cluster</a>. (Note: If gap statistic is selected, it will take much longer time to generate the plot.)</p>
+<p><img src="image/cluster1.png" width="863"><br></p>
+<p>This connected scatter plot shows the within cluster sum of squares for each number of clusters predicted using hierarchical clustering. The “elbow” method can be used to determine the optimal number of clusters.</p>
+<p><img src="image/wss.png" width="553"><br></p>
+<p>The <code>Clustering</code> box is where you perform the clustering analysis. In addition to clustering algorithm, several methods for calculating dissimilarity matrix, imported from the <a href="https://cran.r-project.org/web/packages/philentropy/index.html">philentropy</a> package, are also provided.</p>
+<p><img src="image/cluster2.png" width="574"><br></p>
 <p>This table is the output of clustering analysis, combined with annotation.</p>
-<p><img src="image/cluster_tbl.png" width="574"></p>
+<p><img src="image/cluster_tbl.png" width="574"><br></p>
 <p>In the <code>Visulaization</code> box, users can make scatter plots to visualize the clustering results on a UMAP panel, calculated from signature exposures. Three types of plots are provided.</p>
-<p><img src="image/cluster_visual.png" width="884"></p>
+<p><img src="image/cluster_visual.png" width="884"><br></p>
 <p>If <code>Signature</code> is selected, samples are grouped by clusters and multiplicated by the number of signatures. For each column, samples are colored by exposure of a signature.</p>
-<p><img src="image/umap1.png" width="553"></p>
+<p><img src="image/umap1.png" width="553"><br></p>
 <p>If <code>Annotation</code> is selected, an additional select box will show up and let you choose one type of annotation of interest. Then, you can make a plot grouping samples by both clusters and annotation.</p>
-<p><img src="image/umap2.png" width="553"></p>
+<p><img src="image/umap2.png" width="553"><br></p>
 <p>If <code>None</code> is selected, a single scatter plot, colored by clusters, will be made.</p>
-<p><img src="image/umap3.png" width="553"></p>
+<p><img src="image/umap3.png" width="553"><br></p>
 </div>
 <div id="heatmap" class="section level3">
 <h3 class="hasAnchor">
