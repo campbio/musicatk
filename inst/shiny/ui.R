@@ -55,15 +55,17 @@ ui <- fluidPage(
     dashboardBody(
         tabItems(
           tabItem(tabName = "import_tcga",
-                  h2("Import TCGA Datasets", shiny_panel_tcga)),
+                  h2("Import TCGA Datasets"), shiny_panel_tcga),
           tabItem(tabName = "import",
-                  h2("Import Data", shiny_panel_import)),
-          tabItem(tabName = "musica_result", h2("Upload Musica"), shiny_panel_result),
-          tabItem(tabName = "musica", h2("Create Musica Object"), shiny_panel_musica),
+                  h2("Import Data"), shiny_panel_import),
+          tabItem(tabName = "musica_result", h2("Upload Musica"),
+                  shiny_panel_result),
+          tabItem(tabName = "musica", h2("Create Musica Object"),
+                  shiny_panel_musica),
 
 ###################### Nathan's Code ##########################################
           tabItem(tabName = "tables", h2("Create Tables"), shiny_panel_tables),
-          tabItem(tabName = "annotations", h2("Add Sample Annotations"), 
+          tabItem(tabName = "annotations", h2("Add Sample Annotations"),
                   shiny_panel_annotations),
           tabItem(tabName = "discover", h2("Discover Signatures and Exposures"),
                 shiny_panel_discover),
@@ -77,14 +79,11 @@ ui <- fluidPage(
           tabItem(tabName = "visualization",
                   musicaresultvisualization),
           tabItem(tabName = "heatmap", h2("Plot heatmap"),
-		              shiny_panel_heatmap),
+                  shiny_panel_heatmap),
           tabItem(tabName = "cluster", cluster_analysis),
-          tabItem(tabName = "download", h2("Download musica result objects"), shiny_panel_download)
+          tabItem(tabName = "download", h2("Download musica result objects"),
+                  shiny_panel_download)
       )
     )
-  ),
-# tags$script(charset="utf-8", HTML("var x = document.getElementById(\"sidebarItemExpanded\").querySelectorAll(\"li\");
-#                var old_html = x[4].innerHTML;
-#                var new_html = '<span class=\"musica_wrapper\">' + old_html + '</span>';
-#                x[4].innerHTML = new_html;"))
+  )
 )

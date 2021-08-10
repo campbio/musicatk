@@ -1,6 +1,5 @@
 shiny_panel_tcga <- fluidPage(
   #Adding box formatting
-  fluidRow(hr(),
            box(width = 6,
     uiOutput(outputId = "tcga_tumor"),
     #Adding help tooltips
@@ -13,6 +12,5 @@ shiny_panel_tcga <- fluidPage(
     tags$a(href = "https://gdc.cancer.gov/resources-tcga-
            users/tcga-code-tables/tcga-study-abbreviations",
            "Full tumor name list")
-  )
   )
 )
