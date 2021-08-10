@@ -1,7 +1,7 @@
 template:
   params:
-    bootswatch: yeti
-    
+
+
 navbar:
   title: "musicaTK"
   left:
