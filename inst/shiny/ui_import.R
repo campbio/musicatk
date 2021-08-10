@@ -1,8 +1,5 @@
 shinyPanelImport <- fluidPage(
          fluidRow(box(width = 6,
-                       useShinyjs(),
-                       shinyalert::useShinyalert(),
-                       shinybusy::add_busy_spinner(spin = "fading-circle"),
             div(fileInput("file", "Select file:",
                   multiple = TRUE,
                   accept = c(".maf",".vcf")),

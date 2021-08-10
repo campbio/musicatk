@@ -64,17 +64,17 @@ ui <- fluidPage(
           #tabItem(tabName = "test", shinyPaneltest),
         
 ###################### Nathan's Code ##########################################
-          tabItem(tabName = "tables", h2("Create Tables"), shinyPanelTables),
+          tabItem(tabName = "tables", h2("Create Tables"), shiny_panel_tables),
           tabItem(tabName = "annotations", h2("Add Sample Annotations"), 
-                  shinyPanelAnnotations),
+                  shiny_panel_annotations),
           tabItem(tabName = "discover", h2("Discover Signatures and Exposures"),
-                shinyPanelDiscover),
+                shiny_panel_discover),
           tabItem(tabName = "predict", h2("Predict Signature Exposures"),
-                  shinyPanelPredict),
+                  shiny_panel_predict),
           tabItem(tabName = "compare", h2("Compare Signatures"),
-                  shinyPanelCompare),
+                  shiny_panel_compare),
           tabItem(tabName = "differentialanalysis", h2("Differential Analysis"),
-                  shinyPanelDifferentialAnalysis),
+                  shiny_panel_diffanal),
 ###############################################################################
 		      tabItem(tabName = "visualization",
                   musicaresultvisualization),
