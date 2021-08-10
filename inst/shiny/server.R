@@ -48,8 +48,8 @@ server <- function(input, output, session) {
     data = NULL,
     point_ind = 0,
     annot = NULL,
-    deletedRows = NULL,
-    deletedRowIndices = list(),
+    deleted_rows = NULL,
+    deleted_row_indices = list(),
     cluster = NULL,
     var = NULL,
     musica_name_user = NULL,
@@ -298,7 +298,7 @@ server <- function(input, output, session) {
 ###################### Zainab's Code ##########################################
   output$tcga_tumor <- renderUI({
     hr()
-    #Extracting tumor list from TCGA and formatting it to display only the abbreviations
+    #Extracting TCGA tumors and formatting it to display only the abbreviations
     p <- TCGAbiolinks:::getGDCprojects()$project_id
     t <- grep("TCGA", p)
     p <- p[t]
@@ -331,22 +331,17 @@ server <- function(input, output, session) {
                   "LUSC - Lung squamous cell carcinoma",
                   "STAD - Stomach adenocarcinoma",
                   "SKCM - Skin Cutaneous Melanoma",
-                  "LUAD - Lung adenocarcinoma", "ACC - Adrenocortical carcinoma")
+                  "LUAD - Lung adenocarcinoma",
+                  "ACC - Adrenocortical carcinoma")
     textInput("tcga_tumor", "Enter TCGA tumor type")
     tags$style("#tcga_tumor {
                     font-size:8px;
                     height:10px;
            }")
     checkboxGroupInput("tcga_tumor", " ", choices = as.list(p))
-    #selectInput("tcga_tumor","Select Tumor",choices = as.list(p),multiple = TRUE)
   })
-  
-#Adding functionality to ensure that the selected tumors are downloaded once the import button is pressed
   observeEvent(input$import_tcga, {
     req(input$import_tcga)
-    # validate(
-    #   need(input$import_tcga, 'Check at least one letter!')
-    # )
     if (!is.null(input$tcga_tumor)) {
       shinybusy::show_spinner()
       maf <- TCGAbiolinks::GDCquery_Maf(input$tcga_tumor, pipelines = "mutect")
@@ -358,8 +353,7 @@ server <- function(input, output, session) {
       shinyalert("Error: No tumor found. Please select a tumor from the list!")
       }
   })
-
-  #Displaying thr table for TCGA tumor variants
+#Displaying thr table for TCGA tumor variants
   output$tcga_contents <- renderDataTable({
     req(vals$var)
     req(input$tcga_tumor)
@@ -382,8 +376,7 @@ server <- function(input, output, session) {
         showNotification("Import successfully completed!")
         }
   })
-
- #Displaying list of avaiable genomes
+#Displaying list of available genomes
   output$genome_list <- renderUI({
     g <- BSgenome::available.genomes()
     g <- strsplit(g, ",")
@@ -394,7 +387,6 @@ server <- function(input, output, session) {
                       "Genomes" = gg),
                 width = "100%")
   })
-  
   output$genome_select <- renderText({
     paste("Genome selected:", input$GenomeSelect)
   })
@@ -452,7 +444,6 @@ server <- function(input, output, session) {
  output$musica_console <- renderPrint({
    return(print(vals$musica_message))
  })
- 
 #Displaying musica object variants
   output$musica_contents <- renderDataTable({
     req(vals$var)
@@ -465,7 +456,6 @@ server <- function(input, output, session) {
     req(vals$musica)
     vt <- unique(vals$musica@variants$Variant_Type) #variant types
     ns <- length(vals$musica@variants$sample) #sample length
-    #mylist <- c("No. of Samples:\n",ns,"\n","Variant types",vt)
     mylist <- c("No. of Samples:\n", ns)
     return(mylist)
     shinyjs::show(id = "musica_contents_summary")
@@ -478,35 +468,31 @@ server <- function(input, output, session) {
     shinyjs::show(id = "musica_contents_table")
     js$enableTabs();
     })
-  
-#Adding resetting functionality 
+#Adding resetting functionality
   observeEvent(input$reset, {
     removeUI("#musica_contents")
     removeUI("#musica_contents_summary")
     removeUI("#musica_contents_table")
-    #removeUI("#musica_upload")
     showNotification("Tables cleared!")
   })
-
-  #Adding upload musica tab functionality
+#Adding upload musica tab functionality
   observe(
     if (!is.null(req(input$musica_file))) {
     vals$musica_name_user <- tools::file_path_sans_ext(input$musica_file$name)
   })
 
-  output$MusicaResultName <- renderUI(
-    textInput("MusicaResultName", value = paste0(vals$musica_name_user),
+  output$musica_result_name <- renderUI(
+    textInput("musica_result_name", value = paste0(vals$musica_name_user),
               h3("Name your musica result object:"))
   )
   observeEvent(input$musica_button, {
     if (input$musica_button == "result") {
-      shinyjs::show(id = "MusicaResultName")
+      shinyjs::show(id = "musica_result_name")
     }
     else if (input$musica_button == "object") {
-      shinyjs::hide(id = "MusicaResultName")
+      shinyjs::hide(id = "musica_result_name")
     }
   })
-  
   observeEvent(input$upload_musica, {
     req(input$musica_file)
     if (all(tools::file_ext(tolower(input$musica_file$name)) !=
@@ -519,12 +505,12 @@ server <- function(input, output, session) {
         if (all(tools::file_ext(tolower(input$musica_file$name)) == "rda")) {
           vals$musica_upload <- load(input$musica_file$datapath)
           vals$musica_upload <- get(vals$musica_upload)
-          vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
+          vals$result_objects[[input$musica_result_name]] <- vals$musica_upload
         }
         else if (all(tools::file_ext(tolower(input$musica_file$name)) ==
                      "rds")) {
           vals$musica_upload <- readRDS(input$musica_file$datapath)
-          vals$result_objects[[input$MusicaResultName]] <- vals$musica_upload
+          vals$result_objects[[input$musica_result_name]] <- vals$musica_upload
         }
         showNotification("Musica Result Object successfully imported!")
       }
@@ -543,7 +529,6 @@ server <- function(input, output, session) {
         showNotification("Musica Object successfully imported!")
       }}
  })
-  
 #Displaying musica result/object summary table
   output$musica_upload <- renderDataTable({
     req(vals$musica_upload)
@@ -551,7 +536,6 @@ server <- function(input, output, session) {
     shinyjs::show(id = "musica_upload")
     js$enableTabs();
   })
-  
   output$musica_upload_summary <- renderText({
     req(vals$musica_upload)
     vt <- unique(vals$musica_upload@musica@variants$Variant_Type) #variant types
@@ -608,33 +592,34 @@ server <- function(input, output, session) {
     vals$files <- data.frame(files = vals$files, datapath = dt,
                              stringsAsFactors = FALSE)
     vals$data <- vals$files
-    vals$deletedRows <- NULL
-    vals$deletedRowIndices <- list()
+    vals$deleted_rows <- NULL
+    vals$deleted_row_indices <- list()
     })
 
     observeEvent(input$deletep_ressed, {
-    rowNum <- parseDeleteEvent(input$deletep_ressed)
-    dataRow <- vals$data[rowNum, ]
-    vals$deletedRows <- rbind(dataRow, vals$deletedRows)
-    vals$deletedRowIndices <- append(vals$deletedRowIndices, rowNum, after = 0)
+    row_num <- parse_delete_event(input$deletep_ressed)
+    data_row <- vals$data[row_num, ]
+    vals$deleted_rows <- rbind(data_row, vals$deleted_rows)
+    vals$deleted_row_indices <- append(vals$deleted_row_indices,
+                                       row_num, after = 0)
     # Delete the row from the data frame
-    vals$data <- vals$data[-rowNum, ]
+    vals$data <- vals$data[-row_num, ]
   })
 
   observeEvent(input$undo, {
-    if (nrow(vals$deletedRows) > 0) {
-      row <- vals$deletedRows[1, ]
-      vals$data <- addRowAt(vals$data, row, vals$deletedRowIndices[[1]])
+    if (nrow(vals$deleted_rows) > 0) {
+      row <- vals$deleted_rows[1, ]
+      vals$data <- add_row_at(vals$data, row, vals$deleted_row_indices[[1]])
       # Remove row
-      vals$deletedRows <- vals$deletedRows[-1, ]
+      vals$deleted_rows <- vals$deleted_rows[-1, ]
       # Remove index
-      vals$deletedRowIndices <- vals$deletedRowIndices[-1]
+      vals$deleted_row_indices <- vals$deleted_row_indices[-1]
     }
   })
 
   #Disable the undo button if we have not deleted anything
-  output$undoUI <- renderUI({
-    if (!is.null(vals$deletedRows) && nrow(vals$deletedRows) > 0) {
+  output$undo_ui <- renderUI({
+    if (!is.null(vals$deleted_rows) && nrow(vals$deleted_rows) > 0) {
       actionButton("undo", label = "Undo delete", icon("undo"))
     } else {
       actionButton("undo", label = "Undo delete", icon("undo"), disabled = TRUE)
@@ -644,7 +629,7 @@ server <- function(input, output, session) {
   output$dtable <- DT::renderDataTable({
     # Add the delete button column
     req(vals$data)
-    deleteButtonColumn(vals$data, "delete_button")
+    delete_button_column(vals$data, "delete_button")
   })
 #Code taken from an online open source
 #' Adds a row at a specified index
@@ -653,7 +638,7 @@ server <- function(input, output, session) {
 #' @param row a row with the same columns as \code{df}
 #' @param i the index we want to add row at.
 #' @return the data frame with \code{row} added to \code{df} at index \code{i}
-addRowAt <- function(df, row, i) {
+add_row_at <- function(df, row, i) {
   if (i > 1) {
     rbind(df[1:(i - 1), ], row, df[- (1:(i - 1)), ])
   } else {
@@ -668,7 +653,7 @@ addRowAt <- function(df, row, i) {
 #'  id'd as id_INDEX.
 #' @return A DT::datatable with escaping turned off that has the delete
 #'  buttons in the first column and \code{df} in the other
-deleteButtonColumn <- function(df, id, ...) {
+delete_button_column <- function(df, id, ...) {
   # function to create one action button as string
   f <- function(i) {
     # https://shiny.rstudio.com/articles/communicating-with-js.html
@@ -678,9 +663,9 @@ deleteButtonColumn <- function(df, id, ...) {
                               paste('Shiny.setInputValue(\"deletep_ressed\",',
                               'this.id, {priority: "event"})')))
   }
-  deleteCol <- unlist(lapply(seq(nrow(df)), f))
+  delete_col <- unlist(lapply(seq(nrow(df)), f))
   # Return a data table
-  DT::datatable(cbind(delete = deleteCol, df),
+  DT::datatable(cbind(delete = delete_col, df),
                 # Need to disable escaping for html as string to work
                 escape = FALSE,
                 options = list(
@@ -692,7 +677,7 @@ deleteButtonColumn <- function(df, id, ...) {
 #' Extracts the row id number from the id string
 #' @param idstr the id string formated as id_INDEX
 #' @return INDEX from the id string id_INDEX
-parseDeleteEvent <- function(idstr) {
+parse_delete_event <- function(idstr) {
   res <- as.integer(sub(".*_([0-9]+)", "\\1", idstr))
   if (! is.na(res)) res
 }
@@ -1973,7 +1958,6 @@ parseDeleteEvent <- function(idstr) {
     zscale <- input$scale
     return(zscale)
   })
-  
   #Subsetting my signatures
   observeEvent(input$subset, {
     if (input$subset == "signature") {
@@ -2023,7 +2007,7 @@ parseDeleteEvent <- function(idstr) {
         ui = tags$div(
           id = "inserttum",
           checkboxGroupInput(
-            "tum_val","Available Samples:",
+            "tum_val", "Available Samples:",
             as.list(unique(vals$result_objects[[
               input$select_res_heatmap
               ]]@musica@sample_annotations$Tumor_Subtypes)))
@@ -2034,7 +2018,6 @@ parseDeleteEvent <- function(idstr) {
       removeUI(selector = "#inserttum")
     }
   })
-  
   #Subsetting by annotation
   observeEvent(input$subset_annot, {
     if (input$subset_annot == "annotation") {
@@ -2053,8 +2036,7 @@ parseDeleteEvent <- function(idstr) {
       removeUI(selector = "#insertannot")
     }
   })
-  
-  #Add heatmap functionality
+   #Add heatmap functionality
   observeEvent(input$get_heatmap, {
     sigs <- get_sigs(input)
     output$heatmap <- renderPlot({
@@ -2349,7 +2331,7 @@ parseDeleteEvent <- function(idstr) {
       )
     )
   })
-  #Adding musica object and musica result download functionalitty in the Download tab
+  #Adding the download feature
   output$download_mus_obj <- downloadHandler(
 
     filename = function() {

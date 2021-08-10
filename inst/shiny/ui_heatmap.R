@@ -1,4 +1,4 @@
-shinyPanelheatmap <- fluidPage(
+shiny_panel_heatmap <- fluidPage(
   #Adding box formating
   fluidRow(box(uiOutput(outputId = "select_res_heatmap"),
                   h3("Settings"),
@@ -11,12 +11,12 @@ shinyPanelheatmap <- fluidPage(
                   radioButtons(
                     inputId = "subset",
                     label = "",
-                    choices = list("All Signatures" = "all_signatures" ,"Selected Signatures" = "signature"),
+                    choices = list("All Signatures" = "all_signatures",
+                                   "Selected Signatures" = "signature"),
                     inline = TRUE,
                     selected = "all_signatures"
                   ),
                   tags$div(id = "sortbysigs"),
-                  
                   radioButtons(
                     inputId = "subset_tum",
                     label = "",
@@ -25,7 +25,6 @@ shinyPanelheatmap <- fluidPage(
                     selected = ""
                   ),
                   tags$div(id = "sortbytum"),
-                  
                   radioButtons(
                     inputId = "subset_annot",
                     label = "Annotate by",
@@ -36,28 +35,45 @@ shinyPanelheatmap <- fluidPage(
                   tags$div(id = "sortbyannot"),
                   actionButton("get_heatmap", "Plot"),
                   )),
-                  
                   plotOutput("heatmap"),
-  
                   #Adding help tooltips
-                  bsTooltip("select_res_heatmap", "Select musica result object for plotting a heatmap", placement = "bottom", trigger = "hover",
+                  bsTooltip("select_res_heatmap",
+                            "Select musica result object for plotting a heatmap",
+                  placement = "bottom", trigger = "hover", options = NULL),
+                  bsTooltip("prop",
+                            "Check box to normalize exposures",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
-                  bsTooltip("prop", "Check box to normalize exposures", placement = "bottom", trigger = "hover",
+                  bsTooltip("col_names",
+                            "Check box to show column names",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
-                  bsTooltip("col_names", "Check box to show column names", placement = "bottom", trigger = "hover",
+                  bsTooltip("row_names"
+                            , "Check box to show row names",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
-                  bsTooltip("row_names", "Check box to show row names", placement = "bottom", trigger = "hover",
+                  bsTooltip("scale",
+                            "Check box to normalize by the z-score",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
-                  bsTooltip("scale", "Check box to normalize by the z-score", placement = "bottom", trigger = "hover",
+                  bsTooltip("subset",
+                            "Choose for subsetting data by signatures present",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
-                  bsTooltip("subset", "Choose for subsetting data by signatures present", placement = "bottom", trigger = "hover",
+                  bsTooltip("subset_tum",
+                            "Choose for subsetting by available samples ",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
-                  bsTooltip("subset_tum", "Choose for subsetting by available samples ", placement = "bottom", trigger = "hover",
+                  bsTooltip("subset_annot",
+                            "Choose for subsetting by available annotations",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
-                  bsTooltip("subset_annot", "Choose for subsetting by available annotations", placement = "bottom", trigger = "hover",
+                  bsTooltip("get_heatmap", 
+                            "Press button to plot heatmap",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
-                  bsTooltip("get_heatmap", "Press button to plot heatmap", placement = "bottom", trigger = "hover",
-                  options = NULL),
-                  bsTooltip("download_heatmap", "Press button to download plot", placement = "bottom", trigger = "hover",
+                  bsTooltip("download_heatmap",
+                            "Press button to download plot",
+                  placement = "bottom", trigger = "hover",
                   options = NULL),
 )
