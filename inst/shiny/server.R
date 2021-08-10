@@ -39,8 +39,8 @@ server <- function(input, output, session) {
     musica = NULL,
     files = NULL,
     result_objects = list(),
-    pSigs = NULL, #cosmic sig
-    pRes = NULL, #cosmic result object
+    p_sigs = NULL, #cosmic sig
+    p_res = NULL, #cosmic result object
     annotations = NULL,
     diff = NULL,
     df = NULL,
@@ -644,8 +644,8 @@ tryCatch({
     vals$deletedRowIndices <- list()
     })
 
-    observeEvent(input$deletePressed, {
-    rowNum <- parseDeleteEvent(input$deletePressed)
+    observeEvent(input$deletep_ressed, {
+    rowNum <- parseDeleteEvent(input$deletep_ressed)
     dataRow <- vals$data[rowNum, ]
 
     # Put the deleted row into a data frame so we can undo
@@ -716,7 +716,7 @@ deleteButtonColumn <- function(df, id, ...) {
     as.character(actionButton(paste(id, i, sep = "_"), label = NULL,
                               icon = icon("trash"),
                               onclick =
-                              paste('Shiny.setInputValue(\"deletePressed\",',
+                              paste('Shiny.setInputValue(\"deletep_ressed\",',
                               'this.id, {priority: "event"})')))
   }
 
@@ -932,8 +932,8 @@ parseDeleteEvent <- function(idstr) {
   })
 
   # Input to choose the annotation delimiter.
-  observeEvent(input$AnnotationDelimiter, {
-    if (input$AnnotationDelimiter == "custom") {
+  observeEvent(input$annotation_delimiter, {
+    if (input$annotation_delimiter == "custom") {
       shinyjs::show(id = "CustomAnnotDelim")
     } else {
       shinyjs::hide(id = "CustomAnnotDelim")
@@ -943,15 +943,15 @@ parseDeleteEvent <- function(idstr) {
   # Read the annotation file, store it in vals$annotations, and display the
   # contents as a data table.
   output$annotations <- renderDataTable({
-    file <- input$AnnotationsFile
+    file <- input$annotations_file
     ext <- tools::file_ext(file$datapath)
     req(file)
-    delim <- input$AnnotationDelimiter
+    delim <- input$annotation_delimiter
     if (delim == "custom") {
       delim <- input$CustomAnnotDelim
     }
     vals$annotations <- read.delim(file$datapath,
-                                   header = input$AnnotationHeader,
+                                   header = input$annotation_header,
                                    sep = delim,
                                    as.is = TRUE)
     vals$annotations
@@ -964,7 +964,7 @@ parseDeleteEvent <- function(idstr) {
       return(NULL)
     }
     tagList(
-      selectInput("AnnotSampleColumn", "Sample Name Column",
+      selectInput("annot_sample_column", "Sample Name Column",
                   choices = colnames(vals$annotations))
     )
   })
@@ -973,7 +973,7 @@ parseDeleteEvent <- function(idstr) {
   add_annotation <- function(musica_object) {
     new_annot <- merge(samp_annot(musica_object),
                        vals$annotations, by.x = "Samples",
-                       by.y = input$AnnotSampleColumn,
+                       by.y = input$annot_sample_column,
                        all.x = T)
     sapply(names(new_annot),
            FUN = function(a) {
@@ -986,7 +986,7 @@ parseDeleteEvent <- function(idstr) {
   # Event that triggers add_annotation function.
   observeEvent(input$add_annotation, {
     # Add annotation to result object
-    if (!is.null(getResult(input$annotation_musica_list))) {
+    if (!is.null(get_result(input$annotation_musica_list))) {
       tryCatch({
         add_annotation(vals$result_objects[[input$annotation_musica_list]])
       }, error = function(cond) {
@@ -1009,30 +1009,30 @@ parseDeleteEvent <- function(idstr) {
 
   ####### Section for the Build Table Tab #######
   # Input to select count table
-  output$DiscoverTable <- renderUI({
+  output$discover_table <- renderUI({
     tagList(
-      selectInput("SelectDiscoverTable", "Select Count Table",
+      selectInput("select_discover_table", "Select Count Table",
                   choices = names(
                     extract_count_tables(vals$musica))),
-      bsTooltip("SelectDiscoverTable",
+      bsTooltip("select_discover_table",
                 "Name of the table to use for signature discovery.",
                 placement = "right", trigger = "hover", options = NULL)
     )
   })
 
   # UI for inputs to combine tables.
-  output$CombineTable <- renderUI({
+  output$combine_table <- renderUI({
     if (length(names(extract_count_tables(vals$musica))) > 1) {
       tagList(
         box(width = 6,
             helpText(paste0("Combine any 2 or more tables contained in your ",
             "musica object. This is optional.")),
-        checkboxGroupInput("CombineTables", "Tables to Combine",
+        checkboxGroupInput("combine_tables", "Tables to Combine",
                     choices = names(extract_count_tables(vals$musica))),
-        textInput("CombinedTableName", "Name of combined table"),
-        uiOutput("CombineWarning"),
+        textInput("combined_table_name", "Name of combined table"),
+        uiOutput("combine_warning"),
         actionButton("Combine", "Build Combined Table"),
-        bsTooltip("CombinedTableName",
+        bsTooltip("combined_table_name",
                   "Combine tables into a single table that can be used for
                   discovery/prediction.",
                   placement = "bottom", trigger = "hover", options = NULL),
@@ -1040,10 +1040,10 @@ parseDeleteEvent <- function(idstr) {
                   paste0("Combines tables into a single table that can ",
                   "be used for discovery/prediction."),
                   placement = "bottom", trigger = "hover", options = NULL),
-        bsTooltip("CombineTables",
+        bsTooltip("combine_tables",
                   "Tables to combine.",
                   placement = "left", trigger = "hover", options = NULL),
-        bsTooltip("CombinedTableName",
+        bsTooltip("combined_table_name",
                   "Name for the combined table.",
                   placement = "bottom", trigger = "hover", options = NULL)
         )
@@ -1054,12 +1054,12 @@ parseDeleteEvent <- function(idstr) {
 
   #
   observeEvent(input$Combine, {
-    if (input$CombinedTableName == "" | length(input$CombineTables) < 2) {
-      output$CombineWarning <- renderText({
+    if (input$combined_table_name == "" | length(input$combine_tables) < 2) {
+      output$combine_warning <- renderText({
         validate(
-          need(input$CombinedTableName != "",
+          need(input$combined_table_name != "",
                "You must provide a name for the new result object."),
-          need(length(input$CombineTables) < 2,
+          need(length(input$combine_tables) < 2,
                "You must select two or more tables to combine.")
         )
       })
@@ -1067,8 +1067,8 @@ parseDeleteEvent <- function(idstr) {
     }
     shinybusy::show_spinner()
     tryCatch({
-      combine_count_tables(vals$musica, input$CombineTables,
-                         input$CombinedTableName)
+      combine_count_tables(vals$musica, input$combine_tables,
+                         input$combined_table_name)
     }, error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
       shinybuys::hide_spinner()
@@ -1078,11 +1078,11 @@ parseDeleteEvent <- function(idstr) {
 
   })
 
-  output$AllowTable <- renderUI({
+  output$allow_table <- renderUI({
     if (!is.null(vals$musica)) {
       tagList(
-      actionButton("AddTable", "Create Table"),
-      bsTooltip("AddTable",
+      actionButton("add_table", "Create Table"),
+      bsTooltip("add_table",
                 paste0("Create a table containig the mutationl count ",
                 "information of each sample."),
                 placement = "bottom", trigger = "hover",
@@ -1097,15 +1097,15 @@ parseDeleteEvent <- function(idstr) {
   })
 
   # Event listener for add table button.
-  observeEvent(input$AddTable, {
-    tableName <- input$SelectTable
-    if (tableName == "SBS192 - Replication_Strand") {
-      tableName <- "SBS192_Rep"
+  observeEvent(input$add_table, {
+    table_name <- input$select_table
+    if (table_name == "SBS192 - Replication_Strand") {
+      table_name <- "SBS192_Rep"
     }
-    if (tableName == "SBS192 - Transcript_Strand") {
-      tableName <- "SBS192_Trans"
+    if (table_name == "SBS192 - Transcript_Strand") {
+      table_name <- "SBS192_Trans"
     }
-    if (tableName %in% names(extract_count_tables(vals$musica))) {
+    if (table_name %in% names(extract_count_tables(vals$musica))) {
       # Modal to confirm overwrite of existing table
       showModal(modalDialog(
         title = "Existing Table.",
@@ -1128,150 +1128,150 @@ parseDeleteEvent <- function(idstr) {
 
   ####### Section for the Discover Signatures and Exposures Tab #######
   # Event listener for discover_signatures.
-  observeEvent(input$DiscoverSignatures, {
-    if (input$DiscoverResultName == "" |
-        input$NumberOfSignatures == "" |
-        input$nStart == "" |
+  observeEvent(input$discover_signatures, {
+    if (input$discover_result_name == "" |
+        input$number_of_signatures == "" |
+        input$n_start == "" |
         dim(extract_count_tables(vals$musica)[[
-          input$SelectDiscoverTable]]@count_table)[2] < 2 |
-        input$NumberOfSignatures < 2) {
-      output$DiscoverWarning <- renderText({
+          input$select_discover_table]]@count_table)[2] < 2 |
+        input$number_of_signatures < 2) {
+      output$discover_warning <- renderText({
         validate(
-          need(input$DiscoverResultName != "",
+          need(input$discover_result_name != "",
                "You must provide a name for the new result object."),
-          need(input$NumberOfSignatures != "",
+          need(input$number_of_signatures != "",
                "You must specify the number of expected signatures."),
-          need(input$nStart != "",
+          need(input$n_start != "",
                "Please specify the number of random starts."),
-          need(input$NumberOfSignatures >= 2,
+          need(input$number_of_signatures >= 2,
                "Must specify 2 or more signatures."),
           need(dim(extract_count_tables(vals$musica)[[
-            input$SelectDiscoverTable]]@count_table)[2] > 2,
+            input$select_discover_table]]@count_table)[2] > 2,
             "You must provide 2 or more samples")
         )
       })
       return()
     }
-    if (input$DiscoverResultName %in% names(vals$result_objects)) {
+    if (input$discover_result_name %in% names(vals$result_objects)) {
       # Confirm overwrite of result object
       showModal(modalDialog(
         title = "Existing Result Object.",
         "Do you want to overwrite the existing result object?",
         easyClose = TRUE,
         footer = list(
-          actionButton("confirmResultOverwrite", "OK"),
+          actionButton("confirm_result_overwrite", "OK"),
           modalButton("Cancel"))
       ))
     } else {
-      discSigs(input, vals)
+      disc_sigs(input, vals)
       showNotification(paste0("Musica Result object, ",
-                              input$DiscoverResultName,
+                              input$discover_result_name,
                             ", was created"))
     }
   })
 
   # Wrapper function for discover_signature
-  discSigs <- function(input, vals) {
-    setResult(input$DiscoverResultName, discover_signatures(
-      vals$musica, table_name = input$SelectDiscoverTable,
-      num_signatures = as.numeric(input$NumberOfSignatures),
+  disc_sigs <- function(input, vals) {
+    set_result(input$discover_result_name, discover_signatures(
+      vals$musica, table_name = input$select_discover_table,
+      num_signatures = as.numeric(input$number_of_signatures),
       algorithm = input$Method,
       #seed = input$Seed,
-      nstart = as.numeric(input$nStart)))
+      nstart = as.numeric(input$n_start)))
   }
 
   # Run discover_signatures if overwrite confirmed.
-  observeEvent(input$confirmResultOverwrite, {
+  observeEvent(input$confirm_result_overwrite, {
     removeModal()
-    discSigs(input, vals)
+    disc_sigs(input, vals)
     showNotification("Existing result object overwritten.")
   })
 
   # Discover Musica Result Object
-  output$DiscoverResultName <- renderUI({
-    name <- input$SelectDiscoverTable
+  output$discover_result_name <- renderUI({
+    name <- input$select_discover_table
     tagList(
-      textInput("DiscoverResultName", "Name for musica result object",
+      textInput("discover_result_name", "Name for musica result object",
                 value = paste0(name, "-Result")),
-      bsTooltip("DiscoverResultName",
+      bsTooltip("discover_result_name",
                 "Name for the newly created musica result object.",
                 placement = "bottom", trigger = "hover", options = NULL)
     )
   })
 
   # UI to select musica object.
-  output$DiscoverMusicaList <- renderUI({
+  output$discover_musica_list <- renderUI({
     tagList(
-      selectInput("DiscoverMusicaList", h3("Select Musica Object"),
+      selectInput("discover_musica_list", h3("Select Musica Object"),
                   choices = names(vals$result_objects))
     )
   })
 
   # Select counts table for prediction.
-  output$PredictTable <- renderUI({
+  output$predict_table <- renderUI({
     tagList(
-      selectInput("SelectPredTable", "Select Counts Table",
+      selectInput("select_pred_table", "Select Counts Table",
                   choices = names(extract_count_tables(vals$musica))),
-      bsTooltip("SelectPredTable",
+      bsTooltip("select_pred_table",
                 "Name of the table used for posterior prediction",
                 placement = "right", trigger = "hover", options = NULL)
     )
   })
 
   # Event listener alters UI based on selected COSMIC table.
-  observeEvent(input$CosmicCountTable, {
-    if (input$CosmicCountTable == "SBS") {
-      shinyjs::show(id = "CosmicSBSSigs")
-      shinyjs::hide(id = "CosmicDBSSigs")
-      shinyjs::hide(id = "CosmicINDELSigs")
-    } else if (input$CosmicCountTable == "DBS") {
-      shinyjs::hide(id = "CosmicSBSSigs")
-      shinyjs::show(id = "CosmicDBSSigs")
-      shinyjs::hide(id = "CosmicINDELSigs")
+  observeEvent(input$cosmic_count_table, {
+    if (input$cosmic_count_table == "SBS") {
+      shinyjs::show(id = "cosmic_SBS_sigs")
+      shinyjs::hide(id = "cosmic_DBS_sigs")
+      shinyjs::hide(id = "cosmic_INDEL_sigs")
+    } else if (input$cosmic_count_table == "DBS") {
+      shinyjs::hide(id = "cosmic_SBS_sigs")
+      shinyjs::show(id = "cosmic_DBS_sigs")
+      shinyjs::hide(id = "cosmic_INDEL_sigs")
     } else {
-      shinyjs::hide(id = "CosmicSBSSigs")
-      shinyjs::hide(id = "CosmicDBSSigs")
-      shinyjs::show(id = "CosmicINDELSigs")
+      shinyjs::hide(id = "cosmic_SBS_sigs")
+      shinyjs::hide(id = "cosmic_DBS_sigs")
+      shinyjs::show(id = "cosmic_INDEL_sigs")
     }
   })
 
   # UI to name Predict result object
-  output$PredictResultName <- renderUI({
+  output$predict_result_name <- renderUI({
     name <- names(extract_count_tables(vals$musica))[1]
     tagList(
-      textInput("PredictResultName", "Name for musica result object",
+      textInput("predict_result_name", "Name for musica result object",
         value = paste0(name, "-Predict-Result")),
-      bsTooltip("PredictResultName",
+      bsTooltip("predict_result_name",
                 "Name for the newly created musica result object.",
                 placement = "bottom", trigger = "hover", options = NULL)
     )
   })
 
   # UI to select which result objects to predict.
-  output$PredictedResult <- renderUI({
+  output$predicted_result <- renderUI({
     other <- list(names(vals$result_objects))
     if (is.null(other[[1]])) {
       tagList(
-        selectInput("PredictedResult", "Result to Predict",
+        selectInput("predicted_result", "Result to Predict",
                     choices = list("Cosmic" = list(
                       "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
                       "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
                       "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs")),
                     selected = "cosmic_v3_sbs_sigs"),
-        bsTooltip("PredictedResult",
+        bsTooltip("predicted_result",
                   "Result object containing the signatures to predict",
                   placement = "right", trigger = "hover", options = NULL)
       )    }
     else {
     tagList(
-      selectInput("PredictedResult", "Result to Predict",
+      selectInput("predicted_result", "Result to Predict",
                   choices = list("Cosmic" = list(
                     "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
                     "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
                     "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs"),
                                  "your signatures" = other),
                   selected = "cosmic_v3_sbs_sigs"),
-      bsTooltip("PredictedResult",
+      bsTooltip("predicted_result",
                 "Result object containing the signatures to predict",
                 placement = "right", trigger = "hover", options = NULL)
     )
@@ -1279,117 +1279,118 @@ parseDeleteEvent <- function(idstr) {
   })
 
   # UI to select signatures to predict
-  output$PrecitedSignatures <- renderUI({
-    if (input$PredictedResult %in% names(cosmic_objects)) {
-        vals$pSigs <- colnames(signatures(
-          cosmic_objects[[input$PredictedResult]]))
-        vals$pRes <- cosmic_objects[[input$PredictedResult]]
+  output$precited_signatures <- renderUI({
+    if (input$predicted_result %in% names(cosmic_objects)) {
+        vals$p_sigs <- colnames(signatures(
+          cosmic_objects[[input$predicted_result]]))
+        vals$p_res <- cosmic_objects[[input$predicted_result]]
     }
     else {
-        vals$pSigs <- colnames(signatures(
-          vals$result_objects[[input$PredictedResult]]))
-        vals$pRes <- vals$result_objects[[input$PredictedResult]]
+        vals$p_sigs <- colnames(signatures(
+          vals$result_objects[[input$predicted_result]]))
+        vals$p_res <- vals$result_objects[[input$predicted_result]]
     }
     tagList(
       shinyWidgets::dropdownButton(circle = FALSE, label = "Signatures",
                                    div(style =
                                        "max-height:80vh; overflow-y: scroll",
-                                       checkboxGroupInput("PredSigs", "",
-                         choices = vals$pSigs, inline = FALSE,
-                         selected = vals$pSigs))),
-      bsTooltip("PredSigs",
+                                       checkboxGroupInput("pred_sigs", "",
+                         choices = vals$p_sigs, inline = FALSE,
+                         selected = vals$p_sigs))),
+      bsTooltip("pred_sigs",
                 "Signatures to predict.",
                 placement = "right", trigger = "hover", options = NULL)
     )
   })
 
   # Event listener for Predict signatures
-  observeEvent(input$PredictSigs, {
-    if (input$PredictResultName == "" | length(input$PredSigs) < 2) {
-      output$PredictWarning <- renderText({
+  observeEvent(input$predict_sigs, {
+    if (input$predict_result_name == "" | length(input$pred_sigs) < 2) {
+      output$predict_warning <- renderText({
         validate(
-          need(input$PredictResultName != "",
+          need(input$predict_result_name != "",
                "You must provide a name for the new result object."),
-          need(length(c(input$PredSigs)) >= 2,
+          need(length(c(input$pred_sigs)) >= 2,
                "You must select two or more signatures to predict.")
         )
       })
       return()
     }
-    if (input$PredictResultName %in% names(vals$result_objects)) {
+    if (input$predict_result_name %in% names(vals$result_objects)) {
       showModal(modalDialog(
         title = "Existing Result Object.",
         "Do you want to overwrite the existing result object?",
         easyClose = TRUE,
         footer = list(
-          actionButton("confirmPredictOverwrite", "OK"),
+          actionButton("confirm_predict_overwrite", "OK"),
           modalButton("Cancel"))
       ))
     } else {
-      getPredict(input, vals)
-      showNotification(paste0("Musica result object, ", input$PredictResultName,
+      get_predict(input, vals)
+      showNotification(paste0("Musica result object, ",
+                              input$predict_result_name,
                               ", was created"))
     }
   })
 
   # Event listener displays additional options for deconstructSigs algorithm.
-  observeEvent(input$PredictAlgorithm, {
-    if (input$PredictAlgorithm == "deconstructSigs") {
-      shinyjs::show(id = "PredictGenomeList")
+  observeEvent(input$predict_algorithm, {
+    if (input$predict_algorithm == "deconstructSigs") {
+      shinyjs::show(id = "predict_genome_list")
     } else {
-      shinyjs::hide(id = "PredictGenomeList")
+      shinyjs::hide(id = "predict_genome_list")
     }
   })
 
   # Wrapper function for predict_exposures
-  getPredict <- function(inputs, vals) {
-    setResult(input$PredictResultName,
-      predict_exposure(vals$musica, g = select_genome(input$PredictGenomeList),
-                       table_name = input$SelectPredTable,
-                       signature_res = vals$pRes,
-                       algorithm = input$PredictAlgorithm,
-                       signatures_to_use = input$PredSigs))
+  get_predict <- function(inputs, vals) {
+    set_result(input$predict_result_name,
+      predict_exposure(vals$musica, g = select_genome(input$predict_genome_list),
+                       table_name = input$select_pred_table,
+                       signature_res = vals$p_res,
+                       algorithm = input$predict_algorithm,
+                       signatures_to_use = input$pred_sigs))
   }
 
   # Event triggers predict_exposures when user confirms overwrite.
-  observeEvent(input$confirmPredictOverwrite, {
+  observeEvent(input$confirm_predict_overwrite, {
     removeModal()
-    getPredict(inputs, vals)
+    get_predict(inputs, vals)
     showNotification("Existing result overwritten.")
   })
 
 
   ####### Compare Tab ########
-  output$CompareResultA <- renderUI({
+  output$compare_result_a <- renderUI({
     tagList(
-      selectInput("SelectResultA", "Select result object",
+      selectInput("select_result_a", "Select result object",
                   choices = c(names(vals$result_objects))),
-      bsTooltip("SelectResultA",
+      bsTooltip("select_result_a",
                 "A musica result object",
                 placement = "right", trigger = "hover", options = NULL)
     )
   })
 
-  output$CompareResultB <- renderUI({
+  output$compare_result_b <- renderUI({
     tagList(
-      selectInput("SelectResultB", "Select comparison result object",
+      selectInput("select_result_b", "Select comparison result object",
                   choices = list("cosmic signatures" =
                                    as.list(names(cosmic_objects)),
                                  "your signatures" = as.list(
                               names(vals$result_objects)))),
-      bsTooltip("SelectResultB",
+      bsTooltip("select_result_b",
                 "A second musica result object",
                 placement = "right", trigger = "hover", options = NULL)
     )
   })
 
   # Event listener triggers comparison.
-  observeEvent(input$CompareResults, {
-    if (is.null(input$SelectResultA) | input$SelectResultA == "" |
+  observeEvent(input$compare_results, {
+    if (is.null(input$select_result_a) | input$select_result_a == "" |
         input$Threshold == "") {
-      output$CompareValidate <- renderText({
+      output$compare_validate <- renderText({
         validate(
-          need(input$SelectResultA != "",
+          need(input$select_result_a != "",
                "Please select a result object to compare."),
           need(input$Threshold == "",
                "Please provide a similarity threshold from 0 to 1.")
@@ -1398,34 +1399,34 @@ parseDeleteEvent <- function(idstr) {
       return()
     }
     # Retreive either cosmic or custom result objects.
-    if (input$SelectResultB %in% names(cosmic_objects)) {
-      other <- cosmic_objects[[input$SelectResultB]]
+    if (input$select_result_b %in% names(cosmic_objects)) {
+      other <- cosmic_objects[[input$select_result_b]]
     } else {
-      other <- isolate(getResult(input$SelectResultB))
+      other <- isolate(get_result(input$select_result_b))
     }
     # Attempt to compare signatures
     tryCatch({
       isolate(vals$comparison <-
-                compare_results(isolate(getResult(input$SelectResultA)),
+                compare_results(isolate(get_result(input$select_result_a)),
                       other, threshold = as.numeric(input$Threshold),
-                      metric = input$CompareMetric))
+                      metric = input$compare_metric))
     }, error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
     })
-    colnames(vals$comparison) <- c(input$CompareMetric,
-                                   paste0(input$SelectResultA, "-Index"),
-                                   paste0(input$SelectResultB, "-Index"),
-                                   paste0(input$SelectResultA, "-Signature"),
-                                   paste0(input$SelectResultB, "-Signature"))
+    colnames(vals$comparison) <- c(input$compare_metric,
+                                   paste0(input$select_result_a, "-Index"),
+                                   paste0(input$select_result_b, "-Index"),
+                                   paste0(input$select_result_a, "-Signature"),
+                                   paste0(input$select_result_b, "-Signature"))
     # generate table containig comparison statistics.
     if (!is.null(isolate(vals$comparison))) {
-      output$CompareTable <- renderDataTable({
+      output$compare_table <- renderDataTable({
         isolate(vals$comparison)
       }, options = list(autoWidth = FALSE, scrollX = T))
-      output$DownloadComparison <- renderUI({
+      output$download_comparison <- renderUI({
         tagList(
-          downloadButton("DownloadCompare", "Download"),
-          bsTooltip("DownloadCompare",
+          downloadButton("download_compare", "Download"),
+          bsTooltip("download_compare",
                     "Download the comparison table",
                     placement = "bottom", trigger = "hover", options = NULL)
         )
@@ -1433,7 +1434,7 @@ parseDeleteEvent <- function(idstr) {
     }
   })
 
-  output$DownloadCompare <- downloadHandler(
+  output$download_compare <- downloadHandler(
     filename = function() {
       paste0("Sig-Compare-", Sys.Date(), ".csv")
     },
@@ -1443,16 +1444,16 @@ parseDeleteEvent <- function(idstr) {
   )
 
   ######## Differential Analysis Tab #########
-  output$DiffAnalResult <- renderUI({
+  output$diff_anal_result <- renderUI({
     tagList(
-      selectInput("DiffAnalResult", "Result Object",
+      selectInput("diff_anal_result", "Result Object",
                   choices = names(vals$result_objects)),
-      bsTooltip("DiffResult", "Musica Result object")
+      bsTooltip("diff_anal_result", "Musica Result object")
     )
   })
 
   # UI for Wilcoxon Rank Sum Test bucket list
-  output$DiffAnalGroups <- renderUI({
+  output$diff_anal_groups <- renderUI({
     if (interactive()) {
       tagList(
         sortable::bucket_list(
@@ -1461,12 +1462,12 @@ parseDeleteEvent <- function(idstr) {
           add_rank_list(
             text = "Group 1",
             labels = unique(samp_annot(
-              getResult(input$DiffAnalResult))[[input$DiffAnalAnnot]]),
-            input_id = "DiffGroup1"
+              get_result(input$diff_anal_result))[[input$diff_anal_annot]]),
+            input_id = "diff_group1"
           ),
           add_rank_list(
             text = "Group2",
-            input_id = "DiffGroup2"
+            input_id = "diff_group2"
           )
         )
       )
@@ -1474,48 +1475,48 @@ parseDeleteEvent <- function(idstr) {
   })
 
   # UI to select sample annotation.
-  output$DiffAnalAnnot <- renderUI({
+  output$diff_anal_annot <- renderUI({
     tagList(
-      selectInput("DiffAnalAnnot", "Sample annotation",
+      selectInput("diff_anal_annot", "Sample annotation",
                 choices = colnames(
-                  samp_annot(getResult(input$DiffAnalResult)))[-1],
+                  samp_annot(get_result(input$diff_anal_result)))[-1],
                 selected = 1),
-      bsTooltip("DiffAnalAnnot",
+      bsTooltip("diff_anal_annot",
                 "Sample annotation used to run differential analysis.")
     )
   })
 
   # Event handler controls Wilcoxon bucket list.
-  observeEvent(input$DiffMethod, {
-    method <- input$DiffMethod
+  observeEvent(input$diff_method, {
+    method <- input$diff_method
     if (method == "wilcox") {
-      shinyjs::show(id = "DiffAnalGroups")
+      shinyjs::show(id = "diff_anal_groups")
     } else {
-      shinyjs::hide(id = "DiffAnalGroups")
+      shinyjs::hide(id = "diff_anal_groups")
     }
   })
 
   # Event handler for differential analysis.
-  observeEvent(input$RunDiffAnal, {
-    shinyjs::hide("DiffError")
-    g1 <- input$DiffGroup1
-    g2 <- input$DiffGroup2
+  observeEvent(input$run_diff_anal, {
+    shinyjs::hide("diff_error")
+    g1 <- input$diff_group1
+    g2 <- input$diff_group2
     errors <- NULL
     if (!is.null(g1) & !is.null(g2)) {
-      gMin <- min(length(g1), length(g2))
-      g1 <- g1[1:gMin]
-      g2 <- g2[1:gMin]
+      g_min <- min(length(g1), length(g2))
+      g1 <- g1[1:g_min]
+      g2 <- g2[1:g_min]
     }
     # Run differential analysis
     tryCatch({
       vals$diff <-
-        exposure_differential_analysis(getResult(input$DiffAnalResult),
-                                       input$DiffAnalAnnot,
-                                       method = input$DiffMethod,
+        exposure_differential_analysis(get_result(input$diff_anal_result),
+                                       input$diff_anal_annot,
+                                       method = input$diff_method,
                                        group1 = g1,
                                        group2 = g2)
-      output$DiffTable <- renderDataTable(
-        if (input$DiffMethod == "wilcox") {
+      output$diff_table <- renderDataTable(
+        if (input$diff_method == "wilcox") {
           vals$diff
         } else {
           vals$diff %>% tibble::rownames_to_column(var = "Signature")
@@ -1523,18 +1524,18 @@ parseDeleteEvent <- function(idstr) {
         options = list(autoWidth = FALSE, scrollX = TRUE)
       )
     }, error = function(cond) {
-      output$DiffTable <- renderDataTable({
+      output$diff_table <- renderDataTable({
         NULL
         })
       errors <- cond
     })
-    output$DiffError <- renderText({
+    output$diff_error <- renderText({
       errors
     })
   })
 
   # Download differential analysis results.
-  output$DownloadDiff <- downloadHandler(
+  output$download_diff <- downloadHandler(
     filename = function() {
       paste0("Exp-Diff-", Sys.Date(), ".csv")
     },
@@ -1545,11 +1546,11 @@ parseDeleteEvent <- function(idstr) {
 
   ####### Helper Functions #######
   # Set a result object
-  setResult <- function(x, y) {
+  set_result <- function(x, y) {
     vals$result_objects[[x]] <- y
   }
 
-  getResult <- function(name) {
+  get_result <- function(name) {
     return(vals$result_objects[[name]])
   }
 

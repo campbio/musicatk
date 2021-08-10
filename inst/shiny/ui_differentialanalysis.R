@@ -1,20 +1,20 @@
-shinyPanelDifferentialAnalysis <- fluidPage(
+shiny_panel_diffanal <- fluidPage(
   box(width = 12,
-      uiOutput("DiffAnalResult"),
-      uiOutput("DiffAnalAnnot"),
-      radioButtons("DiffMethod", label = "Method", 
+      uiOutput("diff_anal_result"),
+      uiOutput("diff_anal_annot"),
+      radioButtons("diff_method", label = "Method",
                    choices = list("Wilcoxon Rank Sum Test" = "wilcox",
                                   "Kruskal-Wallis Rank Sum Test" = "kruskal",
                                   "Negative Binomial Regression" = "glm.nb")),
-      uiOutput("DiffAnalGroups"),
-      textOutput("DiffError"),
-      actionButton("RunDiffAnal", "Run Differential Analysis")
+      uiOutput("diff_anal_groups"),
+      textOutput("diff_error"),
+      actionButton("run_diff_anal", "Run Differential Analysis")
       ),
   box(width = 12,
-      downloadButton("DownloadDiff", "Download"),
-      bsTooltip("DownloadDiff",
+      downloadButton("download_diff", "Download"),
+      bsTooltip("download_diff",
                 "Download the differential exposure table",
                 placement = "bottom", trigger = "hover", options = NULL),
-      dataTableOutput("DiffTable")
+      dataTableOutput("diff_table")
       )
 )
