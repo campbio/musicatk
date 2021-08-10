@@ -10,5 +10,8 @@ musicatk.Rproj
 .Rprofile
 renv/
 renv.lock
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 docs
