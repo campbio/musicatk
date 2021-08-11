@@ -70,7 +70,7 @@ cluster_analysis <- fluidPage(
       tags$div(id = "insertannot2"),
       checkboxInput(inputId = "plotly3", label = "Plotly", value = TRUE),
       actionButton(inputId = "cluster_vis", label = "Visualize"),
-      tags$div(id = "clusterplotdiv")
+      tags$div(id = "cluster_plot_div")
     )
   )
 )
