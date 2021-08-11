@@ -14,18 +14,18 @@ musicaresultvisualization <- fluidPage(
         uiOutput(outputId = "select_res1"),
         checkboxInput(inputId = "rename", label = "Rename Signatures", value = FALSE, width = "100%"),
         tags$div(id = "signame"),
-        numericInput(inputId = "textsize1", label = "Text Size", value = 10, width = "50%"),
-        numericInput(inputId = "facetsize", label = "Facet Size", value = 10, width = "50%"),
+        numericInput(inputId = "text_size1", label = "Text Size", value = 10, width = "50%"),
+        numericInput(inputId = "facet_size", label = "Facet Size", value = 10, width = "50%"),
         checkboxInput(inputId = "legend1", label = "Legend", value = TRUE),
         checkboxInput(inputId = "xlab1", label = "X-axis Label", value = TRUE),
         checkboxInput(inputId = "scale1", label = "Same Y-axis Scale", value = TRUE),
         checkboxInput(inputId = "plotly1", label = "Plotly", value = TRUE),
         actionButton(inputId = "get_plot1", label = "Make Plot"),
-        tags$div(id = "plotdiv1"),
+        tags$div(id = "plot_div1"),
         bsTooltip(id = "rename", title = "If checked, the names of signatures can be customized.",
                   placement = "right", options = list(container = "body")),
-        bsTooltip(id = "textsize1", title = "Size of axis text.", placement = "right", options = list(container = "body")),
-        bsTooltip(id = "facetsize", title = "Size of facet text.", placement = "right", options = list(container = "body")),
+        bsTooltip(id = "text_size1", title = "Size of axis text.", placement = "right", options = list(container = "body")),
+        bsTooltip(id = "facet_size", title = "Size of facet text.", placement = "right", options = list(container = "body")),
         bsTooltip(id = "legend1", title = "If checked, the legend for mutation types will be included in the plot.",
                   placement = "right", options = list(container = "body")),
         bsTooltip(id = "xlab1", title = "If checked, the labels for the mutation types on the x-axis will be shown.",
@@ -44,7 +44,7 @@ musicaresultvisualization <- fluidPage(
                      h3("General Settings"),
                      uiOutput(outputId = "select_res2"),
                      radioButtons(
-                       inputId = "plottype",
+                       inputId = "plot_type",
                        label = "Plot Type",
                        choices = list("Bar Plot" = "bar", "Box Plot" = "box", 
                                       "Violin Plot" = "violin", "Scatter Plot" = "scatter"),
@@ -69,7 +69,7 @@ musicaresultvisualization <- fluidPage(
                        inline = TRUE,
                        selected = "signature"
                      ),
-                     tags$div(id = "insertannot")
+                     tags$div(id = "insert_annot")
                    )
                  )
                ),
@@ -87,12 +87,13 @@ musicaresultvisualization <- fluidPage(
                        inline = TRUE,
                        selected = "total"
                      ),
-                     tags$div(id = "sortbysig"),
+                     tags$div(id = "sort_by_sig"),
                      uiOutput(outputId = "number"),
                      numericInput(inputId = "theta", label = "Threshold", value = NULL),
                      bsTooltip(id = "sort", title = "Used to sort bar plot from left to right.", 
                                placement = "right", options = list(container = "body")),
-                     bsTooltip(id = "group1", title = "Determines how to group samples into the subplots. If set to \"annotation\", then a sample annotation must be supplied via the annotation parameter.",
+                     bsTooltip(id = "group1", title = "Determines how to group samples into the subplots. 
+                               If set to \"annotation\", then a sample annotation must be supplied via the annotation parameter.",
                                placement = "right", options = list(container = "body")),
                      bsTooltip(id = "theta", title = "Exposures less than this threshold will be set to 0.",
                                placement = "right", options = list(container = "body"))
@@ -120,7 +121,7 @@ musicaresultvisualization <- fluidPage(
                  )
                ),
                actionButton(inputId = "get_plot2", label = "Make Plot"),
-               tags$div(id = "plotdiv2")
+               tags$div(id = "plot_div2")
       )
     )
   )
