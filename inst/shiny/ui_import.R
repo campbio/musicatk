@@ -1,5 +1,4 @@
 shiny_panel_import <- fluidPage(
-    #setting box width
           fluidRow(box(width = 6,
               div(fileInput("file", "Select file:",
                   multiple = TRUE,

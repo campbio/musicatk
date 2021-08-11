@@ -1,6 +1,10 @@
 shiny_panel_tcga <- fluidPage(
   #Adding box formatting
            box(width = 6,
+          #Adding hyperlink to TCGA main page
+          tags$a(href = "https://gdc.cancer.gov/resources-tcga-
+           users/tcga-code-tables/tcga-study-abbreviations",
+                      "Full tumor name list"),
     uiOutput(outputId = "tcga_tumor"),
     #Adding help tooltips
     bsTooltip("tcga_tumor",
@@ -12,5 +16,6 @@ shiny_panel_tcga <- fluidPage(
     tags$a(href = "https://gdc.cancer.gov/resources-tcga-
            users/tcga-code-tables/tcga-study-abbreviations",
            "Full tumor name list")
+  )
   )
 )
