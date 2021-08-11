@@ -12,8 +12,8 @@
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/cerulean/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
@@ -81,7 +81,7 @@ sample_col parameters." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.10</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.2</span>
       </span>
     </div>
 
@@ -156,8 +156,8 @@ can be mapped using the <code>chromosome_col</code>, <code>start_col</code>,
   alt_col <span class='op'>=</span> <span class='st'>"alt"</span>,
   sample_col <span class='op'>=</span> <span class='st'>"sample"</span>,
   extra_fields <span class='op'>=</span> <span class='cn'>NULL</span>,
-  convert_dbs <span class='op'>=</span> <span class='cn'>TRUE</span>,
   standardize_indels <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  convert_dbs <span class='op'>=</span> <span class='cn'>TRUE</span>,
   verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></pre>
 
@@ -226,14 +226,14 @@ id for each variant. Default <code>"sample"</code>.</p></td>
 the musica object. Default <code>NULL</code>.</p></td>
     </tr>
     <tr>
-      <th>convert_dbs</th>
-      <td><p>Flag to convert adjacent SBS into DBS (original SBS are 
-removed)</p></td>
-    </tr>
-    <tr>
       <th>standardize_indels</th>
       <td><p>Flag to convert indel style (e.g. `C &gt; CAT` 
 becomes `- &gt; AT` and `GCACA &gt; G` becomes `CACA &gt; -`)</p></td>
+    </tr>
+    <tr>
+      <th>convert_dbs</th>
+      <td><p>Flag to convert adjacent SBS into DBS (original SBS are 
+removed)</p></td>
     </tr>
     <tr>
       <th>verbose</th>
@@ -252,7 +252,7 @@ package <span class='op'>=</span> <span class='st'>"musicatk"</span><span class=
 <span class='va'>variants</span> <span class='op'>&lt;-</span> <span class='fu'><a href='extract_variants_from_maf_file.html'>extract_variants_from_maf_file</a></span><span class='op'>(</span><span class='va'>maf_file</span><span class='op'>)</span>
 <span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='select_genome.html'>select_genome</a></span><span class='op'>(</span><span class='st'>"38"</span><span class='op'>)</span>
 <span class='va'>musica</span> <span class='op'>&lt;-</span> <span class='fu'>create_musica</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>variants</span>, genome <span class='op'>=</span> <span class='va'>g</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Checking that chromosomes in the 'variant' object match chromosomes in the 'genome' object.</span></div><div class='output co'>#&gt; <span class='message'>Checking that the reference bases in the 'variant' object match the reference bases in the 'genome' object.</span></div><div class='output co'>#&gt; <span class='message'>Converting adjacent SBS into DBS</span></div><div class='output co'>#&gt; <span class='message'>4 SBS converted to DBS</span></div><div class='output co'>#&gt; <span class='message'>Standardizing INS/DEL style</span></div><div class='output co'>#&gt; <span class='message'>Removing 4 compound insertions</span></div><div class='output co'>#&gt; <span class='message'>Removing 15 compound deletions</span></div></pre>
+</div><div class='output co'>#&gt; <span class='message'>Checking that chromosomes in the 'variant' object match chromosomes in the 'genome' object.</span></div><div class='output co'>#&gt; <span class='message'>Checking that the reference bases in the 'variant' object match the reference bases in the 'genome' object.</span></div><div class='output co'>#&gt; <span class='message'>Standardizing INS/DEL style</span></div><div class='output co'>#&gt; <span class='message'>Converting adjacent SBS into DBS</span></div><div class='output co'>#&gt; <span class='message'>4 SBS converted to DBS</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -1,4 +1,5 @@
 shiny_panel_tables <- fluidPage(
+  fluidRow(
   box(width = 6,
     selectInput("select_table", "Select Count Table",
                 choices = list("SBS96", "SBS192 - Transcript_Strand",
@@ -13,7 +14,8 @@ shiny_panel_tables <- fluidPage(
     bsTooltip("select_table",
               "Name of the standard table to build.",
               placement = "right", trigger = "hover", options = NULL)
-  ),
-  uiOutput("combine_table"),
+  )),
+  fluidRow(
+  uiOutput("combine_table")),
   shinybusy::use_busy_spinner(spin = "double-bounce")
 )
