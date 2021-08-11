@@ -30,24 +30,32 @@ Users can upload their datasets through 1 of 3 different methods.
 <br>
 
 ## Import Files
-In order to discover or predict signatures, VCF or MAF files need to be uploaded in this section.The files can be browsed through by selecting the 'browse' button under the 'Select Files' label.
+In order to discover signatures and exposures or predict exposures from existing signatures, VCF or MAF files containing mutations need to be uploaded and parsed. The files can be selected from your computation using the 'browse' button under the 'Select Files' label.
+
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/import.png"))
 ```
 
-After that, the 'Add Samples' button can be pressed to see the added files. At this stage, the delete and undo button next to the file can be pressed to remove it or revert the change respectively. After adding the files, the 'Import' button can be pressed to start the importing process. 
+Clicking  the 'Add Samples' button will add the files to the list of samples to be imported. The delete and undo button next to the file can be pressed to remove it or revert the change respectively. After adding the files, the 'Import' button can be clicked to start the importing process. 
 
-Once the process is completed, a notification in the bottom right will appear. A variants table from the uploaded files files will also appear which can be downloaded by pressing the 'Download Variants' button. 
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/import1.png"))
+```
+
+Once the process is completed, a notification in the bottom right will appear. A variants table from the uploaded files will also appear which can be downloaded by pressing the 'Download Variants' button. 
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/import2.png"))
+```
 
 
 ## Import TCGA Datasets
-This tab allows selection of single or multiple TCGA datasets directly instead of providing user VCFs and MAFs in the 'Import Files' step. This is an optional step and not needed. Users have their own data. The TCGA datasets have been named in the following format: TCGA Abbreviation - Full TCGA tumor name. The original TCGA page for the tumor name list can be referred to by selecting the 'Full Tumor List' link right next to the 'Import' button. Once the datasets have been selected, the 'Import' button at the bottom can be pressed. Once finished, a completion notification will appear at the bottom right. 
+This tab allows for selection of single or multiple datasets generated in The Cancer Genome Atlas (TCGA). The original TCGA page for the tumor name list can be referred to by selecting the 'Full Tumor List' link on the top. Once the desired datasets have been selected, the 'Import' button at the bottom can be clicked to download the TCGA data. It may take some time to download and process all of the selected datasets. Once finished, a completion notification will appear at the bottom right. 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/TCGA.png"))
 ```
 ## Import Musica
-This tab can be used to import user’s musica result or musica objects in .rda or .rds format which will allow for direct downstream analysis in the workflow. The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file's name but it can be changed in the text box labeled "Name your musica result object". Once finished, a completion notification message in the bottom right and a variants table of the uploaded file will appear. At this stage, the next steps in the workflow can be accessed directly. If a musica result object has been uploaded, all the downstream tabs are now accessible and if a musica object has been uploaded then the users can skip the Create Musica tab and move to the build tables tab directly.  The variants table can be downloaded using the "Download Variants' button.
+This tab can be used to import a user’s previously generated musica variant object or a musica result object in .rda or .rds format. . The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file's name but it can be changed in the text box labeled "Name your musica result object". Once finished, a notification message in the bottom right will appear along with a table of variants. If a musica variant object was uploaded then the users can skip the Create Musica tab and move to the build tables tab directly. If a musica result object was uploaded, then all the downstream tabs will be accessible.  
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/upload_musica.png"))
@@ -55,7 +63,8 @@ include_graphics(paste0(PATH,"/upload_musica.png"))
 <br>
 
 ## Create Musica Object
-This tab can be used to create a musica object for discovery and prediction of signatures from the given variants. The reference genome can be selected from the drop down menu labeled "Choose Genome" that matches the genome build of the variants and the 'Create Musica Object' button can then be pressed. Once it's done, a completion notification message at the bottom right and a variant summary table will appear. The musica object can be downloaded by pressing the 'Download Musica Object' button. 
+In this tab users can process variants and create a musica variant object which can be used for discovery of signatures or prediction of exposures. The reference genome can be selected from the drop down menu labeled "Choose Genome" that matches the genome build of the variants and the 'Create Musica Object' button can then be clicked. Once it's done, a completion notification message at the bottom right and a variant summary table will appear. The musica object can be downloaded by clicking the 'Download Musica Object' button and re-uploaded to save time in subsequent sessions. 
+
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/create_musica.png"))
@@ -312,13 +321,17 @@ include_graphics(paste0(PATH,"/umap3.png"))
 <br>
 
 ### Heatmap
-Please select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and press the 'Plot' button to see your heatmap. If you want to normalize your data, check the 'Proportional' setting and for z-scale normalization, check the 'z-scale' option. You can also see column or row names by checking 'Show column names' and 'Show row names' resepctively. If you want to subset by signatures, press 'Selected Signatures' to select the ones you want. You can also select the 'Samples' and 'Annotation' option to subset by the available samples and annotations respectively.
+Heatmaps can be used to visualize the relative levels of all signatures across tumors in a single plot. Select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and press the 'Plot' button to visualize the heatmap. Check the 'Proportional' option to normalize the levels of signatures within a sample to sum to one. Z-score normalization will scale each signature to have a mean of zero and a standard deviation of one.. You can also show or hide the  tumor and signature names by checking or unchecking the 'Show column names' and 'Show row names', respectively. If you want to display a subset by signatures, click the 'Selected Signatures' option and select the signatures to show. You can also select the 'Samples' and 'Annotation' options to subset by the available samples and annotations.
+
+
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/heatmap.png"))
 include_graphics(paste0(PATH, "/heatmap1.png"))
 ```
 
 ## Download
-You can download your musica object and musica result object from their labeled respective drop down menus as .rds files. Please select the name of the musica result or musica object that you want to download from their drop down menus and press the respective download button. 
-include_graphics(paste0(PATH,"s/download.png")
+You can download your musica object and musica result object from using the  respective drop down menus. They will be saved as .rds files which can be reuploaded back into the app at a later time. Select the name of the musica result or musica object that click the Download button to save the file to your computer. 
 
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/download.png"))
+```
