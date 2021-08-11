@@ -1,7 +1,6 @@
 shiny_panel_import <- fluidPage(
-   fluidRow(box(width = 6, #setting box width
-          fluidRow(box(width = 6,
-              div(fileInput("file", "Select file:",
+               fluidRow(box(width = 6, 
+               div(fileInput("file", "Select file:",
                   multiple = TRUE,
                   accept = c(".maf", ".vcf")),
           style = "font-size:50%;"),
@@ -38,4 +37,4 @@ shiny_panel_import <- fluidPage(
                     you made in the Sample List",
                     placement = "bottom", trigger = "hover",
                     options = NULL),
-)))
+)
