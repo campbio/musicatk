@@ -1,5 +1,6 @@
 shiny_panel_discover <- fluidPage(
   box(width = 6,
+    # UI to choose counts table
     uiOutput("discover_table"),
     hidden(textInput("get_table_name", "Custon Table Name")),
     textInput("number_of_signatures", "Number of signatures", value = 5),
@@ -7,6 +8,7 @@ shiny_panel_discover <- fluidPage(
                  choices = list("Latent Dirichlet Allocation (lda)" = "lda",
                                 "Negative Matrix Factorization (nmf)" = "nmf")),
     textInput("n_start", "Number of random starts", value = 10),
+    # UI to set result name. Default name of the counts table.
     uiOutput("discover_result_name"),
     textOutput("discover_warning"),
     actionButton("discover_signatures", "Discover Signatures"),

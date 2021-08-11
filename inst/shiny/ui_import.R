@@ -1,14 +1,12 @@
 shiny_panel_import <- fluidPage(
-               fluidRow(box(width = 6, 
-               div(fileInput("file", "Select file:",
+          fluidRow(box(width = 6,
+              div(fileInput("file", "Select file:",
                   multiple = TRUE,
-                  accept = c(".maf", ".vcf")),
-          style = "font-size:50%;"),
+                  accept = c(".maf", ".vcf"))),
           actionButton("upload", "Add samples"))),
-          fluidRow(box(width = 6, h3("Added files"),
+          fluidRow(box(width = 6, HTML(paste0("<b>","Added files:","</b>")),
           tags$div(id = "file_id", DT::dataTableOutput("dtable"),
-                   style = "font-size:40%;
-                   overflow-y: scroll;overflow-x: scroll;"),
+                   style = "overflow-y: scroll;overflow-x: scroll;"),
           uiOutput("undo_ui"),
           hr(),
           uiOutput("spinner"))),
@@ -17,7 +15,7 @@ shiny_panel_import <- fluidPage(
                        downloadButton("download_musica", "Download Variants"),
                        hr(),
                        div(dataTableOutput("musica_contents"),
-                           style = "font-size:40%; height:500px;
+                           style = "height:500px;
                            overflow-y: scroll;overflow-x: scroll;"),
                        )),
           #Adding help tootltips

@@ -1,5 +1,6 @@
 shiny_panel_annotations <- fluidPage(
   box(width = 6,
+    # Get list of musica and result objects
     uiOutput("annotation_musica_list"),
     wellPanel(id = "musica_data",
             h3("Upload Sample Annotations"),
