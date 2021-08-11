@@ -1,5 +1,5 @@
 ---
-title: "musicatk_help"
+title: "Tutorial"
 date: "5/16/2021"
 output: 
   html_document:
@@ -19,7 +19,7 @@ PATH <- paste0(getwd(), "/docs/articles/image") #getwd()
 ```
 
 ```{r echo=FALSE}
-include_graphics(paste0(PATH,"/musicatk_tutorial_workflow.png"))
+include_graphics(paste0(PATH,"/musicatk-Flowchart.jpg"))
 ```
 
 ## Import
@@ -54,6 +54,7 @@ This tab allows for selection of single or multiple datasets generated in The Ca
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/TCGA.png"))
 ```
+
 ## Import Musica
 This tab can be used to import a user’s previously generated musica variant object or a musica result object in .rda or .rds format. . The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file's name but it can be changed in the text box labeled "Name your musica result object". Once finished, a notification message in the bottom right will appear along with a table of variants. If a musica variant object was uploaded then the users can skip the Create Musica tab and move to the build tables tab directly. If a musica result object was uploaded, then all the downstream tabs will be accessible.  
 
@@ -72,36 +73,50 @@ include_graphics(paste0(PATH,"/create_musica1.png"))
 ```
 
 ## Annotations
-Sample annotations can be used to store information about each sample such as tumor type or treatment status. They are optional and can be used in downstream plotting functions such as plot_exposures or plot_umap to group or color samples by a particular annotation.
+Sample annotations can be used to store information about each sample such as tumor type or treatment status. They are optional and can be used in downstream plotting functions such as  [*plot_exposures*](../../docs/reference/plot_exposures.html) or [*plot_umap*](../../docs/reference/plot_umap.html) to group or color samples by a particular annotation.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/AnnotationsTab.png"))
 ```
 <br>
-Annotations are provided in a character delimited text file which includes a sample name column. The sample names must match the sample names in the selected musica object. NA values will be used for any samples not present in the annotation file.
+Annotations are sample-level variables such as Tumor Type or Age. These can be  provided in a character delimited text file which must include a column containing the sample IDs. 
+<br>
+```{r echo=FALSE}
+include_graphics(paste0(PATH, "/annotation_file.png"))
+```
+<br>
+The sample IDs must match the sample names in the musica object. NA values will be given to any samples not present in the annotation file.
+<br>
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/AnnotationOptions.png"))
 ```
 <br>
-After selecting the correct delimiter, a data table will appear below to show the annotations that will be added to the musica object. If your annotation file does not contain a header, deselect the "Header" radio button. Choose the column that contains the sample names from the "Sample Name Columns" dropdown and then click "Add Annotation".
+After selecting the correct delimiter, a data table will appear below to show the annotations that will be added to the musica object. If your annotation file does not contain a header, unselect the "Header" radio button. Choose the column that contains the sample names from the "Sample Name Columns" dropdown and then click "Add Annotation".
 <br>
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/AnnotationTable.png"))
 ```
 
 ## Build Tables
-The "Build Tables" tab is used to generate count tables for different mutation type schemas which are the input to mutational signature discovery or prediction functions. To build the count tables, the user must select 1 of the 5 standard motifs in the "Select Count Table" dropdown.
+The "Build Tables" tab generates count tables for different mutation schemas. These schemas are the input to the mutational signature discovery and prediction functions. To build the count tables, the user must select 1 of the 5 standard motifs in the "Select Count Table" dropdown.
+<br>
 SBS96 - Motifs are the six possible single base pair mutation types times the four possibilities each for upstream and downstream context bases (464 = 96 motifs) <br>
 SBS192_Trans - Motifs are an extension of SBS96 multiplied by the transcriptional strand (translated/untranslated), can be specified with "Transcript_Strand". <br>
 SBS192_Rep - Motifs are an extension of SBS96 multiplied by the replication strand (leading/lagging), can be specified with "Replication_Strand". <br>
 DBS - Motifs are the 78 possible double-base-pair substitutions. <br>
 INDEL - Motifs are 83 categories intended to capture different categories of indels based on base-pair change, repeats, or microhomology, insertion or deletion, and length.
+<br>
 In addition to selecting a motif, the user must also provide the reference genome.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/TableTab.png"))
 ```
 
+Any two or more tables can be combined into a new table. The option to build a combined table will only appear after the second table has been created. 
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/combine-table.png"))
+```
 
 ## Signatures and Exposures
 
@@ -109,9 +124,7 @@ The user has the option of discovering novel signatures and exposures, or using 
 
 
 ### Discover
-Mutational signatures and exposures can be discovered using methods such as Latent Dirichlet Allocation (LDA) or Non-Negative Matrix Factorization (NMF). These algorithms will deconvolute a matrix of counts for mutation types in each sample to two matrices: 1) a "signature" matrix containing the probability of each mutation type in each sample and 2) an "exposure" matrix containing the estimated counts for each signature in each sample. Before mutational discovery can be performed, variants from samples first need to be stored in a musica object using the create_musica function and mutation count tables need to be created using functions such as build_standard_table.
-
-You can select any count table for signature discovery. To obtain biologically significant results, it is important to select a reasonable number of expected signatures. In this tutorial, we chose 8 signatures.
+Mutational signatures and exposures are discovered using a Latent Dirichlet Allocation (LDA) or a Non-Negative Matrix Factorization (NMF) algorithms. These algorithms will deconvolute the mutation count matrix into two matrices: 1) a "signature" matrix containing the probability of each mutation type in each sample and 2) an "exposure" matrix containing the estimated counts for each signature in each sample. Select a count table, algorithm, number of signatures, and specify the name of the result and then click “Discover signatures”.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/DiscoverTab.png"))
@@ -119,15 +132,13 @@ include_graphics(paste0(PATH,"/DiscoverTab.png"))
 
 
 ### Predict
-
-Exposures for samples will be predicted using an existing set of signatures stored in a musica_result object. Algorithms available for prediction include "lda", "decompTumor2Sig", and "deconstructSigs". 
+Exposures for samples can be predicted using an existing set of signatures stored in a musica result object. Algorithms available for prediction include "lda", "decompTumor2Sig", and "deconstructSigs". Note that “deconstructSigs” can only work with variants stored in hg19 format. 
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/PredictTab.png"))
 ```
 
-The "Signatures to Predict" dropdown contains all the signatures in the result object selected from the 
-"Result to Predict" dropdown. You can search this dropdown and select multiple signatures. In our example we use the "lda" algorithm to predict exposures of 6 Cosmic signatures in our samples.
+The "Signatures to Predict" dropdown contains all the signatures in the result object selected from the "Result to Predict" dropdown. You can search this dropdown and select multiple signatures. In our example we use the "lda" algorithm to predict exposures of 6 Cosmic signatures.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/PredictDropdown.png"))
@@ -227,14 +238,13 @@ include_graphics(paste0(PATH,"/exp_plot5.png"))
 ### Compare Signatures
 
 Compare two result objects to find similar signatures. The threshold acts as a cutoff
-similarity score and can be any value between 0 and 1. Results will populate in a
-data table below which can be downloaded.
+similarity score and can be any value between 0 and 1. Results will populate in a downloadable data table.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/CompareTab.png"))
 ```
 
-Using the cosine metric with a threshold of 0.8 we can identify 7 pairs of similar signatures. Interestingly, we identified a pair with a high cosine similarity score - signature1 and Cosmic SBS4. Our results indicate we may have identified a tobacco smoke signature among our tumor samples. This should not be a surprise given many of our samples are from lung tumors.
+Using the cosine metric with a threshold of 0.8,7 pairs of similar signatures from COSMIC. Our Signature1 had a high cosine similarity to Cosmic SBS4 indicating that some of our tumors have been exposed to cigarette smoke. 
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/CompareTable.png"))
@@ -248,13 +258,13 @@ The "Exposure Differential Analysis" tab is used to run differential analysis on
 include_graphics(paste0(PATH,"/DATab.png"))
 ```
 
-When using the Wilcoxon Rank Sum Test, any two groups will be compared in a pairwise fashion. Any isolated group will be ignored. Below we display the Wilcoxon Rank Sum Test results between LUAD and SKCM. Note that LUAD was ignored since it has no pair.
+The Wilcoxon Rank Sum Test can be used to directly compare two groups of samples. Below we display the Wilcoxon Rank Sum Test results between LUAD and SKCM. Note that LUSC was ignored since it did not have a specified pair.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/DAOptions.png"))
 ```
 
-From our table, we can see several of our signatures are differentially exposed across tumor types. From our comparison analysis, we can hypothesize signature1 may be related to tobacco smoke. We may hypothesize tobacco smoke is a primary driving mechanism for lung cancer development, but not for skin cancer.
+From our table, we can see several of our signatures are differentially exposed across tumor types. From our comparison analysis, we can hypothesize that signature1 may be related to tobacco smoke, and exposure to tobacco smoke occurs in lung cancers but not skin cancers.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/WilcoxonTable.png"))

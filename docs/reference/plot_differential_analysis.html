@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>COSMIC v3 DBS Genome Signatures Result Object — cosmic_v3_dbs_sigs • musicatk</title>
+<title>Compare exposures of annotated samples — plot_differential_analysis • musicatk</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,9 @@
 
 
 
-<meta property="og:title" content="COSMIC v3 DBS Genome Signatures Result Object — cosmic_v3_dbs_sigs" />
-<meta property="og:description" content="Data from COSMIC formatted to be used for prediction with individual tumors
-and cohorts." />
+<meta property="og:title" content="Compare exposures of annotated samples — plot_differential_analysis" />
+<meta property="og:description" content="plot_differential_analysis is used to plot
+differential analysis created by exposure_differential_analysis." />
 
 
 
@@ -118,32 +118,42 @@ and cohorts." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>COSMIC v3 DBS Genome Signatures Result Object</h1>
-    <small class="dont-index">Source: <a href='https://github.com/campbio/musicatk/blob/master/R/cosmic_data.R'><code>R/cosmic_data.R</code></a></small>
-    <div class="hidden name"><code>cosmic_v3_dbs_sigs.Rd</code></div>
+    <h1>Compare exposures of annotated samples</h1>
+    <small class="dont-index">Source: <a href='https://github.com/campbio/musicatk/blob/master/R/differential_analysis.R'><code>R/differential_analysis.R</code></a></small>
+    <div class="hidden name"><code>plot_differential_analysis.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Data from COSMIC formatted to be used for prediction with individual tumors
-and cohorts.</p>
+    <p><code>plot_differential_analysis</code> is used to plot
+differential analysis created by <code>exposure_differential_analysis</code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>cosmic_v3_dbs_sigs</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>plot_differential_analysis</span><span class='op'>(</span><span class='va'>analysis</span>, <span class='va'>analysis_type</span>, <span class='va'>samp_num</span><span class='op'>)</span></pre>
+
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>analysis</th>
+      <td><p>Analysis created by <code>exposure_differential_analysis</code></p></td>
+    </tr>
+    <tr>
+      <th>analysis_type</th>
+      <td><p>Currently only <code>"glm"</code> supported</p></td>
+    </tr>
+    <tr>
+      <th>samp_num</th>
+      <td><p>Number of samples that went into the analysis</p></td>
+    </tr>
+    </table>
 
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
-
-    <p>An object of class <code>musica_result</code>.
-See [predict_exposure()].</p>
-    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
-
-    <p>COSMIC v3, &lt;https://cancer.sanger.ac.uk/cosmic/signatures&gt;</p>
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    <p>Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
-The repertoire of mutational signatures in human cancer. Nature 578, 94–101
-([Nature](https://doi.org/10.1038/s41586-020-1943-3))</p>
-
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='st'>"res_annot"</span><span class='op'>)</span>
+<span class='va'>analysis</span> <span class='op'>&lt;-</span> <span class='fu'><a href='exposure_differential_analysis.html'>exposure_differential_analysis</a></span><span class='op'>(</span><span class='va'>res_annot</span>, <span class='st'>"Tumor_Subtypes"</span>, 
+method<span class='op'>=</span><span class='st'>"wilcox"</span><span class='op'>)</span>
+<span class='fu'>plot_differential_analysis</span><span class='op'>(</span><span class='va'>analysis</span>, <span class='st'>"glm"</span>, <span class='fl'>2</span><span class='op'>)</span>
+</div><div class='img'><img src='plot_differential_analysis-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

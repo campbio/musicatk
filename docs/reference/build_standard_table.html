@@ -12,8 +12,8 @@
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/cerulean/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
@@ -80,7 +80,7 @@ deletions following the schema used in COSMIC V3." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.10</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.2</span>
       </span>
     </div>
 
@@ -147,7 +147,8 @@ deletions following the schema used in COSMIC V3.</p>
   <span class='va'>g</span>,
   <span class='va'>table_name</span>,
   strand_type <span class='op'>=</span> <span class='cn'>NULL</span>,
-  overwrite <span class='op'>=</span> <span class='cn'>FALSE</span>
+  overwrite <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  verbose <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -178,6 +179,10 @@ Only used if <code>table_name = SBS192</code>.</p></td>
       <td><p>If <code>TRUE</code>, any existing count table with the same
 name will be overwritten. If <code>FALSE</code>, then an error will be thrown
 if a table with the same name exists within the <code>musica</code> object.</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>Show progress bar for processed samples</p></td>
     </tr>
     </table>
 

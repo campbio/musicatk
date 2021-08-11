@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>musicatk_help • musicatk</title>
+<title>Tutorial • musicatk</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="musicatk_help">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Tutorial">
 <meta property="og:description" content="musicatk">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -76,7 +76,7 @@
       </header><script src="musicatk_help_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>musicatk_help</h1>
+      <h1 data-toc-skip>Tutorial</h1>
             
             <h4 class="date">5/16/2021</h4>
       
@@ -87,7 +87,7 @@
 
     
     
-<p><img src="image/musicatk_tutorial_workflow.png" width="220"></p>
+<p><img src="image/musicatk-Flowchart.jpg" width="902"></p>
 <div id="import" class="section level2">
 <h2 class="hasAnchor">
 <a href="#import" class="anchor"></a>Import</h2>
@@ -104,7 +104,12 @@
 <div id="import-tcga-datasets" class="section level2">
 <h2 class="hasAnchor">
 <a href="#import-tcga-datasets" class="anchor"></a>Import TCGA Datasets</h2>
-<p>This tab allows selection of single or multiple TCGA datasets directly instead of providing user VCFs and MAFs in the ‘Import Files’ step. This is an optional step and not needed. Users have their own data. The TCGA datasets have been named in the following format: TCGA Abbreviation - Full TCGA tumor name. The original TCGA page for the tumor name list can be referred to by selecting the ‘Full Tumor List’ link right next to the ‘Import’ button. Once the datasets have been selected, the ‘Import’ button at the bottom can be pressed. Once finished, a completion notification will appear at the bottom right. <img src="image/TCGA.png" width="1212"> ## Import Musica This tab can be used to import user’s musica result or musica objects in .rda or .rds format which will allow for direct downstream analysis in the workflow. The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file’s name but it can be changed in the text box labeled “Name your musica result object”. Once finished, a completion notification message in the bottom right and a variants table of the uploaded file will appear. At this stage, the next steps in the workflow can be accessed directly. If a musica result object has been uploaded, all the downstream tabs are now accessible and if a musica object has been uploaded then the users can skip the Create Musica tab and move to the build tables tab directly. The variants table can be downloaded using the "Download Variants’ button.</p>
+<p>This tab allows selection of single or multiple TCGA datasets directly instead of providing user VCFs and MAFs in the ‘Import Files’ step. This is an optional step and not needed. Users have their own data. The TCGA datasets have been named in the following format: TCGA Abbreviation - Full TCGA tumor name. The original TCGA page for the tumor name list can be referred to by selecting the ‘Full Tumor List’ link right next to the ‘Import’ button. Once the datasets have been selected, the ‘Import’ button at the bottom can be pressed. Once finished, a completion notification will appear at the bottom right. <img src="image/TCGA.png" width="1212"></p>
+</div>
+<div id="import-musica" class="section level2">
+<h2 class="hasAnchor">
+<a href="#import-musica" class="anchor"></a>Import Musica</h2>
+<p>This tab can be used to import user’s musica result or musica objects in .rda or .rds format which will allow for direct downstream analysis in the workflow. The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file’s name but it can be changed in the text box labeled “Name your musica result object”. Once finished, a completion notification message in the bottom right and a variants table of the uploaded file will appear. At this stage, the next steps in the workflow can be accessed directly. If a musica result object has been uploaded, all the downstream tabs are now accessible and if a musica object has been uploaded then the users can skip the Create Musica tab and move to the build tables tab directly. The variants table can be downloaded using the "Download Variants’ button.</p>
 <p><img src="image/upload_musica.png" width="707"><br></p>
 </div>
 <div id="create-musica-object" class="section level2">
@@ -116,14 +121,16 @@
 <div id="annotations" class="section level2">
 <h2 class="hasAnchor">
 <a href="#annotations" class="anchor"></a>Annotations</h2>
-<p>Sample annotations can be used to store information about each sample such as tumor type or treatment status. They are optional and can be used in downstream plotting functions such as plot_exposures or plot_umap to group or color samples by a particular annotation.</p>
-<p><img src="image/AnnotationsTab.png" width="1377"><br> Annotations are provided in a character delimited text file which includes a sample name column. The sample names must match the sample names in the selected musica object. NA values will be used for any samples not present in the annotation file. <img src="image/AnnotationOptions.png" width="1142"><br> After selecting the correct delimiter, a data table will appear below to show the annotations that will be added to the musica object. If your annotation file does not contain a header, deselect the “Header” radio button. Choose the column that contains the sample names from the “Sample Name Columns” dropdown and then click “Add Annotation”. <br><img src="image/AnnotationTable.png" width="1087"></p>
+<p>Sample annotations can be used to store information about each sample such as tumor type or treatment status. They are optional and can be used in downstream plotting functions such as <a href="../../docs/reference/plot_exposures.html"><em>plot_exposures</em></a> or <a href="../../docs/reference/plot_umap.html"><em>plot_umap</em></a> to group or color samples by a particular annotation.</p>
+<p><img src="image/AnnotationsTab.png" width="1377"><br> Annotations are sample-level variables such as Tumor Type or Age. These can be provided in a character delimited text file which must include a column containing the sample IDs. <br><img src="image/annotation_file.png" width="274"><br> The sample IDs must match the sample names in the musica object. NA values will be given to any samples not present in the annotation file. <br><img src="image/AnnotationOptions.png" width="1142"><br> After selecting the correct delimiter, a data table will appear below to show the annotations that will be added to the musica object. If your annotation file does not contain a header, unselect the “Header” radio button. Choose the column that contains the sample names from the “Sample Name Columns” dropdown and then click “Add Annotation”. <br><img src="image/AnnotationTable.png" width="1087"></p>
 </div>
 <div id="build-tables" class="section level2">
 <h2 class="hasAnchor">
 <a href="#build-tables" class="anchor"></a>Build Tables</h2>
-<p>The “Build Tables” tab is used to generate count tables for different mutation type schemas which are the input to mutational signature discovery or prediction functions. To build the count tables, the user must select 1 of the 5 standard motifs in the “Select Count Table” dropdown. SBS96 - Motifs are the six possible single base pair mutation types times the four possibilities each for upstream and downstream context bases (464 = 96 motifs) <br> SBS192_Trans - Motifs are an extension of SBS96 multiplied by the transcriptional strand (translated/untranslated), can be specified with “Transcript_Strand”. <br> SBS192_Rep - Motifs are an extension of SBS96 multiplied by the replication strand (leading/lagging), can be specified with “Replication_Strand”. <br> DBS - Motifs are the 78 possible double-base-pair substitutions. <br> INDEL - Motifs are 83 categories intended to capture different categories of indels based on base-pair change, repeats, or microhomology, insertion or deletion, and length. In addition to selecting a motif, the user must also provide the reference genome.</p>
+<p>The “Build Tables” tab generates count tables for different mutation schemas. These schemas are the input to the mutational signature discovery and prediction functions. To build the count tables, the user must select 1 of the 5 standard motifs in the “Select Count Table” dropdown. <br> SBS96 - Motifs are the six possible single base pair mutation types times the four possibilities each for upstream and downstream context bases (464 = 96 motifs) <br> SBS192_Trans - Motifs are an extension of SBS96 multiplied by the transcriptional strand (translated/untranslated), can be specified with “Transcript_Strand”. <br> SBS192_Rep - Motifs are an extension of SBS96 multiplied by the replication strand (leading/lagging), can be specified with “Replication_Strand”. <br> DBS - Motifs are the 78 possible double-base-pair substitutions. <br> INDEL - Motifs are 83 categories intended to capture different categories of indels based on base-pair change, repeats, or microhomology, insertion or deletion, and length. <br> In addition to selecting a motif, the user must also provide the reference genome.</p>
 <p><img src="image/TableTab.png" width="823"></p>
+<p>Any two or more tables can be combined into a new table. The option to build a combined table will only appear after the second table has been created.</p>
+<p><img src="image/combine-table.png" width="262"></p>
 </div>
 <div id="signatures-and-exposures" class="section level2">
 <h2 class="hasAnchor">
@@ -132,16 +139,15 @@
 <div id="discover" class="section level3">
 <h3 class="hasAnchor">
 <a href="#discover" class="anchor"></a>Discover</h3>
-<p>Mutational signatures and exposures can be discovered using methods such as Latent Dirichlet Allocation (LDA) or Non-Negative Matrix Factorization (NMF). These algorithms will deconvolute a matrix of counts for mutation types in each sample to two matrices: 1) a “signature” matrix containing the probability of each mutation type in each sample and 2) an “exposure” matrix containing the estimated counts for each signature in each sample. Before mutational discovery can be performed, variants from samples first need to be stored in a musica object using the create_musica function and mutation count tables need to be created using functions such as build_standard_table.</p>
-<p>You can select any count table for signature discovery. To obtain biologically significant results, it is important to select a reasonable number of expected signatures. In this tutorial, we chose 8 signatures.</p>
+<p>Mutational signatures and exposures are discovered using a Latent Dirichlet Allocation (LDA) or a Non-Negative Matrix Factorization (NMF) algorithms. These algorithms will deconvolute the mutation count matrix into two matrices: 1) a “signature” matrix containing the probability of each mutation type in each sample and 2) an “exposure” matrix containing the estimated counts for each signature in each sample. Select a count table, algorithm, number of signatures, and specify the name of the result and then click “Discover signatures”.</p>
 <p><img src="image/DiscoverTab.png" width="833"></p>
 </div>
 <div id="predict" class="section level3">
 <h3 class="hasAnchor">
 <a href="#predict" class="anchor"></a>Predict</h3>
-<p>Exposures for samples will be predicted using an existing set of signatures stored in a musica_result object. Algorithms available for prediction include “lda”, “decompTumor2Sig”, and “deconstructSigs”.</p>
+<p>Exposures for samples can be predicted using an existing set of signatures stored in a musica result object. Algorithms available for prediction include “lda”, “decompTumor2Sig”, and “deconstructSigs”. Note that “deconstructSigs” can only work with variants stored in hg19 format.</p>
 <p><img src="image/PredictTab.png" width="825"></p>
-<p>The “Signatures to Predict” dropdown contains all the signatures in the result object selected from the “Result to Predict” dropdown. You can search this dropdown and select multiple signatures. In our example we use the “lda” algorithm to predict exposures of 6 Cosmic signatures in our samples.</p>
+<p>The “Signatures to Predict” dropdown contains all the signatures in the result object selected from the “Result to Predict” dropdown. You can search this dropdown and select multiple signatures. In our example we use the “lda” algorithm to predict exposures of 6 Cosmic signatures.</p>
 <p><img src="image/PredictDropdown.png" width="546"></p>
 </div>
 </div>
@@ -188,9 +194,9 @@
 <div id="compare-signatures" class="section level3">
 <h3 class="hasAnchor">
 <a href="#compare-signatures" class="anchor"></a>Compare Signatures</h3>
-<p>Compare two result objects to find similar signatures. The threshold acts as a cutoff similarity score and can be any value between 0 and 1. Results will populate in a data table below which can be downloaded.</p>
+<p>Compare two result objects to find similar signatures. The threshold acts as a cutoff similarity score and can be any value between 0 and 1. Results will populate in a downloadable data table.</p>
 <p><img src="image/CompareTab.png" width="1383"></p>
-<p>Using the cosine metric with a threshold of 0.8 we can identify 7 pairs of similar signatures. Interestingly, we identified a pair with a high cosine similarity score - signature1 and Cosmic SBS4. Our results indicate we may have identified a tobacco smoke signature among our tumor samples. This should not be a surprise given many of our samples are from lung tumors.</p>
+<p>Using the cosine metric with a threshold of 0.8,7 pairs of similar signatures from COSMIC. Our Signature1 had a high cosine similarity to Cosmic SBS4 indicating that some of our tumors have been exposed to cigarette smoke.</p>
 <p><img src="image/CompareTable.png" width="735"></p>
 </div>
 <div id="exposure-differential-analysis" class="section level3">
@@ -198,9 +204,9 @@
 <a href="#exposure-differential-analysis" class="anchor"></a>Exposure Differential Analysis</h3>
 <p>The “Exposure Differential Analysis” tab is used to run differential analysis on the signature exposures of annotated samples. There are 3 methods to perform the differential analysis: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test, and a negative binomial regression (glm).</p>
 <p><img src="image/DATab.png" width="1373"></p>
-<p>When using the Wilcoxon Rank Sum Test, any two groups will be compared in a pairwise fashion. Any isolated group will be ignored. Below we display the Wilcoxon Rank Sum Test results between LUAD and SKCM. Note that LUAD was ignored since it has no pair.</p>
+<p>The Wilcoxon Rank Sum Test can be used to directly compare two groups of samples. Below we display the Wilcoxon Rank Sum Test results between LUAD and SKCM. Note that LUSC was ignored since it did not have a specified pair.</p>
 <p><img src="image/DAOptions.png" width="1161"></p>
-<p>From our table, we can see several of our signatures are differentially exposed across tumor types. From our comparison analysis, we can hypothesize signature1 may be related to tobacco smoke. We may hypothesize tobacco smoke is a primary driving mechanism for lung cancer development, but not for skin cancer.</p>
+<p>From our table, we can see several of our signatures are differentially exposed across tumor types. From our comparison analysis, we can hypothesize that signature1 may be related to tobacco smoke, and exposure to tobacco smoke occurs in lung cancers but not skin cancers.</p>
 <p><img src="image/WilcoxonTable.png" width="1150"></p>
 </div>
 <div id="clustering" class="section level3">
