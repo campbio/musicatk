@@ -61,13 +61,13 @@ cluster_analysis <- fluidPage(
       radioButtons(
         inputId = "group2",
         label = "Group By",
-        choices = list("Signature" = "signature",
-                       "Annotation" = "annotation",
-                       "None" = "none"),
+        choices = list("None" = "none",
+                       "Signature" = "signature",
+                       "Annotation" = "annotation"),
         inline = TRUE,
-        selected = "signature"
+        selected = "none"
       ),
-      tags$div(id = "insertannot2"),
+      tags$div(id = "insert_annot2"),
       checkboxInput(inputId = "plotly3", label = "Plotly", value = TRUE),
       actionButton(inputId = "cluster_vis", label = "Visualize"),
       tags$div(id = "cluster_plot_div")
