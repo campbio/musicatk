@@ -146,17 +146,17 @@ include_graphics(paste0(PATH,"/PredictDropdown.png"))
 
 
 ## Data Visualization
-The data visualization tab can make customized plots for signatures and exposures predicted from LDA and NMF algorithms using the ggplot2 package. An option of making interactive plots using plotly is also provided.
+The data visualization tab can be used to generate customized plots for signatures and exposures. Plots will be made interactive  if the “plotly” option is selected.
 
 ### Signatures
-The signature plot is presented only using bar plot with each bar representing the probability of each type of mutation. By default, signatures are named by numbers, but an option of renaming signatures is provided if you want to name them otherwise, such as the possible etiology.
+Bar plots can be used to display the probability of each type of mutation within each signature. 
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/visual_sig.png"))
 ```
 <br>
 
-In this tutorial, we found 8 single-base signatures from the mixture of lung adenocarcinoma, lung squamous cell carcinoma, and skin cutaneous melanoma samples.
+Previously, 8 single-base signatures were identified from a cohort of lung adenocarcinoma, lung squamous cell carcinoma, and skin cutaneous melanoma samples from TCGA. By default, signatures are named by numbers, but an option of renaming signatures is provided if you want to rename them according to their possible etiology (e.g. Smoking) or closest correlation to COSMIC (e.g. SBS4).
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/sig_plot.png"))
@@ -164,7 +164,7 @@ include_graphics(paste0(PATH,"/sig_plot.png"))
 <br>
 
 ### Exposures
-To visualize the exposure of each signature for each sample, we provided three options, including bar plot, box plot, and violin plot.
+Bar plots, box plots, violin plots and scatter plots can be used to visualize the exposure levels of each signature in each sample.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/visual_exp.png"))
@@ -226,7 +226,7 @@ include_graphics(paste0(PATH,"/exp_box_setting3.png"))
 ```
 <br>
 
-This plot can let you directly compare how each signatures was differentially exposed among three tumor types.
+This plot can be used to visualize and compare the distribution of exposure levels for signature across an annotation such as tumor type.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/exp_plot5.png"))
@@ -273,22 +273,21 @@ include_graphics(paste0(PATH,"/WilcoxonTable.png"))
 
 ### Clustering
 
-The clustering subtab provides several algorithms to cluster samples based on exposure of each signature. After selecting the musica result object, it is recommended to use the Explore Number of Clusters box to find the optimal number of clusters in your data. Different clustering algorithms and three metrics including within cluster sum of squares, average silouette coefficient, and gap statistics are provided here for exploration. All algorithms were imported from  [factoextra](https://cran.r-project.org/web/packages/factoextra/index.html) and [cluster](https://cran.r-project.org/web/packages/cluster/index.html).
-(Note: If gap statistic is selected, it will take much longer time to generate the plot.)
+The "Clustering" subtab provides several algorithms from the [factoextra](https://cran.r-project.org/web/packages/factoextra/index.html) and [cluster](https://cran.r-project.org/web/packages/cluster/index.html) packages to cluster samples based on exposure levels. After selecting the musica result object, it is recommended to use the “Explore Number of Clusters” box to help find the potential number of clusters in your data. (Note: gap statistic may take a longer time to calculate.)
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/cluster1.png"))
 ```
 <br>
 
-This connected scatter plot shows the within cluster sum of squares for each number of clusters predicted using hierarchical clustering. The “elbow” method can be used to determine the optimal number of clusters.
+This line plot shows the within cluster sum of squares for each number of clusters predicted using hierarchical clustering. The “elbow” of the curve can be used as a starting place for the cluster number.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/wss.png"))
 ```
 <br>
 
-The `Clustering` box is where you perform the clustering analysis. In addition to clustering algorithm, several methods for calculating dissimilarity matrix, imported from the [philentropy](https://cran.r-project.org/web/packages/philentropy/index.html) package, are also provided.
+The "Clustering" box is where you perform the clustering analysis. In addition to clustering algorithm, several methods for calculating dissimilarity matrix, imported from the [philentropy](https://cran.r-project.org/web/packages/philentropy/index.html) package, are also provided.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/cluster2.png"))
@@ -302,31 +301,31 @@ include_graphics(paste0(PATH,"/cluster_tbl.png"))
 ```
 <br>
 
-In the `Visulaization` box, users can make scatter plots to visualize the clustering results on a UMAP panel, calculated from signature exposures. Three types of plots are provided.
+In the "Visualization" box, users can make scatter plots to visualize the clustering results on a UMAP panel. Three types of plots are provided.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/cluster_visual.png"))
 ```
 <br>
 
-If `Signature` is selected, samples are grouped by clusters and multiplicated by the number of signatures. For each column, samples are colored by exposure of a signature.
+If “None” is selected, a single scatter plot will be made with points colored by cluster label.
+
+```{r echo=FALSE}
+include_graphics(paste0(PATH,"/umap3.png"))
+```
+<br>
+
+If “Signature” is selected, a subplot is made for each combination of cluster label and signature . Points are colored by the level of the specific signature.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/umap1.png"))
 ```
 <br>
 
-If `Annotation` is selected, an additional select box will show up and let you choose one type of annotation of interest. Then, you can make a plot grouping samples by both clusters and annotation.
+If “Annotation” is selected, an additional select box will show up and let you choose one type of user-supplied annotation of interest. A subplot is generated for each combination of signature and category in the annotation. Points are colored by cluster label.
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/umap2.png"))
-```
-<br>
-
-If `None` is selected, a single scatter plot, colored by clusters, will be made.
-
-```{r echo=FALSE}
-include_graphics(paste0(PATH,"/umap3.png"))
 ```
 <br>
 
