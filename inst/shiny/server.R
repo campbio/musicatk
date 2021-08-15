@@ -7,7 +7,6 @@ library(TCGAbiolinks)
 library(shinyjqui)
 
 options(shiny.maxRequestSize = 10000 * 1024 ^ 2)
-source("server_tables.R", local = T)
 
 server <- function(input, output, session) {
 #################### GENERAL ##################################################
@@ -913,17 +912,17 @@ parse_delete_event <- function(idstr) {
   })
 
   # Add annotations to the provided musica_object
-  add_annotation <- function(musica_object) {
+  add_annot <- function(musica_object) {
     new_annot <- merge(samp_annot(musica_object),
                        vals$annotations, by.x = "Samples",
                        by.y = input$annot_sample_column,
                        all.x = T)
-    sapply(names(new_annot),
-           FUN = function(a) {
-             samp_annot(musica_object, a) <-
-               new_annot[, a]
-           })
+    for (a in names(new_annot)) {
+      samp_annot(musica_object, a) <-
+        new_annot[, a]
+    }
     showNotification("Annotations have been added")
+    return(musica_object)
   }
 
   # Event that triggers add_annotation function.
@@ -931,7 +930,9 @@ parse_delete_event <- function(idstr) {
     # Add annotation to result object
     if (!is.null(get_result(input$annotation_musica_list))) {
       tryCatch({
-        add_annotation(vals$result_objects[[input$annotation_musica_list]])
+        vals$result_objects[[input$annotation_musica_list]] <-
+          add_annot(vals$result_objects[[input$annotation_musica_list]])
+        browser()
       }, error = function(cond) {
         shinyalert::shinyalert(title = "Error", text = cond$message)
         return()
@@ -939,7 +940,8 @@ parse_delete_event <- function(idstr) {
     # Add annotation to musica object
     } else if (!is.null(vals$musica)) {
       tryCatch({
-        add_annotation(vals$musica)
+        vals$musica <- add_annot(vals$musica)
+        browser()
       }, error = function(cond) {
         shinyalert::shinyalert(title = "Error", text = cond$message)
         return()
@@ -947,7 +949,6 @@ parse_delete_event <- function(idstr) {
     } else {
       print("Error: selected object does not exist")
     }
-
   })
 
   ####### Section for the Build Table Tab #######
@@ -1063,6 +1064,39 @@ parse_delete_event <- function(idstr) {
     }
   })
 
+  # Function used in server.R to add counts tables.
+  add_tables <- function(input, vals) {
+    table_name <- input$select_table
+    strand_type <- NULL
+    if (input$select_table != "Custom") {
+      # Check inputs for SBS192
+      if (input$select_table == "SBS192 - Transcript_Strand") {
+        annotate_transcript_strand(vals$musica, input$table_genome_list,
+                                   build_table = F)
+        table_name <- "SBS192"
+        strand_type <- "Transcript_Strand"
+      }
+      if (input$select_table == "SBS192 - Replication_Strand") {
+        annotate_replication_strand(vals$musica, rep_range, build_table = F)
+        table_name <- "SBS192"
+        strand_type <- "Replication_Strand"
+      }
+      tryCatch({
+        build_standard_table(vals$musica,
+                             select_genome(input$table_genome_list),
+                             table_name = table_name,
+                             strand_type = strand_type,
+                             overwrite = T)
+        shiny::showNotification("Table created.")
+      }, error = function(cond) {
+        shinyalert::shinyalert(title = "Error", text = cond$message)
+      }
+      )
+      return()
+    }
+    shinyalert::shinyalert(title = "Oops",
+                           text = "Custom tables are not yet supported.")
+  }
   # Confirm overwrite for existing table
   observeEvent(input$confirmOverwrite, {
     removeModal()
@@ -1299,7 +1333,7 @@ parse_delete_event <- function(idstr) {
   # Event triggers predict_exposures when user confirms overwrite.
   observeEvent(input$confirm_predict_overwrite, {
     removeModal()
-    get_predict(inputs, vals)
+    get_predict(input, vals)
     showNotification("Existing result overwritten.")
   })
 
@@ -1471,7 +1505,6 @@ parse_delete_event <- function(idstr) {
       output$diff_table <- renderDataTable({
         NULL
         })
-      errors <- cond
     })
     output$diff_error <- renderText({
       errors
@@ -1960,7 +1993,7 @@ parse_delete_event <- function(idstr) {
   #plot exposures
   observeEvent(input$get_plot2, {
     options <- get_exp_option(input)
-    if(length(umap(vals$result_objects[[input$selected_res2]])) == 0) {
+    if (length(umap(vals$result_objects[[input$selected_res2]])) == 0) {
       create_umap(vals$result_objects[[input$selected_res2]])
       result <- vals$result_objects[[input$selected_res2]]
     }

@@ -17,5 +17,4 @@ shiny_panel_tcga <- fluidPage(
            users/tcga-code-tables/tcga-study-abbreviations",
            "Full tumor name list")
   )
-  )
 )
