@@ -13,6 +13,9 @@ plot_differential_analysis(analysis, analysis_type, samp_num)
 
 \item{samp_num}{Number of samples that went into the analysis}
 }
+\value{
+Generates a ggplot object
+}
 \description{
 \code{plot_differential_analysis} is used to plot
 differential analysis created by \code{exposure_differential_analysis}.
