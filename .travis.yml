@@ -11,8 +11,8 @@ addons:
 warnings_are_errors: false
 bioc_required: true
 r_check_args: "--as-cran"
-r_github_packages:
-  - r-lib/covr
+r_packages:
+  - covr
 after_success:
   - R CMD INSTALL $PKG_TARBALL
-  - Rscript -e 'covr::coveralls()'
+  - Rscript -e 'library(covr); codecov()'

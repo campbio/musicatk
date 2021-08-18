@@ -102,7 +102,7 @@ exposure_differential_analysis <- function(musica_result, annotation,
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(group1) + 1):ncol(diff.out)],
       method = "BH") %>%
-      matrix(ncol = 1, byrow = F)
+      matrix(ncol = 1, byrow = FALSE)
     diff.out <- cbind(group_cols, matrix(diff.out, ncol = 1), p) %>%
       as.data.frame()
     colnames(diff.out) <- c("Signature", "Group1", "Group2", "Pr(>|z|)",

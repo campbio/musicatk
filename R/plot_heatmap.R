@@ -90,6 +90,7 @@ plot_heatmap <- function(res_annot,
     exp <- as.data.frame(exp)
     exp <- dplyr::select(exp, samps) #Selecting columns that match tumor subtype
     exp <- as.matrix(exp)
+    
     names <- names(annot)[which(annot == subset_tumor, arr.ind = TRUE)[, "col"]]
     annot <- annot[[names[1]]]
     annot <- annot[annot == subset_tumor]
