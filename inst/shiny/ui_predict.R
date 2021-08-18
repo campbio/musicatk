@@ -1,0 +1,37 @@
+shiny_panel_predict <- fluidPage(
+  box(width = 6,
+    uiOutput("predicted_result"),
+    uiOutput("precited_signatures"),
+    uiOutput("predict_table"),
+    radioButtons("predict_algorithm", "Algorithm",
+                 choices = list("Latent Dirichlet Allocation (lda)" = "lda",
+                                "decompTumor2Sig",
+                                "deconstructSigs")),
+    hidden(selectInput("predict_genome_list", "Reference genome:",
+                       list("hg38", "hg19", "mm9", "mm10"),
+                       width = "100%")),
+    uiOutput("predict_result_name"),
+    textOutput("predict_warning"),
+    actionButton("predict_sigs", "Predict Signature Exposures"),
+    bsTooltip("cosmic_count_table",
+              "Select the Cosmic object containing mutational
+              signatures to predict.",
+              placement = "right", trigger = "hover", options = NULL),
+    bsTooltip("cosmic_SBS_Sigs",
+              "Which Cosmic signature to use",
+              placement = "right", trigger = "hover", options = NULL),
+    bsTooltip("cosmic_DBS_sigs",
+              "Which Cosmic signature to use",
+              placement = "right", trigger = "hover", options = NULL),
+    bsTooltip("cosmic_INDEL_Sigs",
+              "Which Cosmic signature to use",
+              placement = "right", trigger = "hover", options = NULL),
+    bsTooltip("predict_algorithm",
+              "Algorithm to use for prediction of exposures",
+              placement = "bottom", trigger = "hover", options = NULL),
+    bsTooltip("predict_cosmic",
+              "Create a musica result object that contains the predicted
+              exposures for samples using an existing set of signatures.",
+              placement = "bottom", trigger = "hover", options = NULL)
+  )
+)

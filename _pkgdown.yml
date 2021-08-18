@@ -1,0 +1,17 @@
+template:
+  params:
+  bootswatch: default
+
+
+navbar:
+  title: "musicaTK"
+  left:
+    - text: "General Workflow"
+      href: articles/musicatk.html
+    - text: "Shiny UI Analysis"
+      menu:
+        - text: "Tutorial"
+          href: articles/musicatk_help.html
+    - text: "References"
+      href: reference/index.html
+
