@@ -932,7 +932,6 @@ parse_delete_event <- function(idstr) {
       tryCatch({
         vals$result_objects[[input$annotation_musica_list]] <-
           add_annot(vals$result_objects[[input$annotation_musica_list]])
-        browser()
       }, error = function(cond) {
         shinyalert::shinyalert(title = "Error", text = cond$message)
         return()
@@ -941,7 +940,6 @@ parse_delete_event <- function(idstr) {
     } else if (!is.null(vals$musica)) {
       tryCatch({
         vals$musica <- add_annot(vals$musica)
-        browser()
       }, error = function(cond) {
         shinyalert::shinyalert(title = "Error", text = cond$message)
         return()
