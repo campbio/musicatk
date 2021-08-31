@@ -7,3 +7,6 @@
 ^\.travis\.yml$
 ^renv*
 .Rprofile
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

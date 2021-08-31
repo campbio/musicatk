@@ -12,9 +12,9 @@ navbar:
     - text: "Vignettes"
       menu:
       - text: "Analysis of TCGA data on the R console"
-        href: articles/articles/celda_pbmc3k.html
+        href: articles/articles/tutorial_tcga_cnsl.Rmd
       - text: "Interactive analysis of TCGA Data"
-        href: articles/articles/decontX_pbmc4k.html
+        href: articles/articles/tutorial_tcga_ui.Rmd
     - text: "Reference"
       href: reference/index.html
     - text: "News"

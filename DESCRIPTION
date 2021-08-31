@@ -60,8 +60,17 @@ Imports:
     factoextra,
     cluster,
     ComplexHeatmap,
-    stringi,
-    philentropy
+    philentropy,
+    shinydashboard,
+    vcfR,
+    maftools,
+    shinyjs,
+    shinyalert,
+    shinybusy,
+    shinyBS,
+    TCGAbiolinks,
+    shinyjqui,
+    stringi
 Suggests:
     testthat,
     BiocStyle,
