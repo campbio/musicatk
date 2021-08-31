@@ -99,7 +99,7 @@ musica <- create_musica(x = variants, genome = g)
 # Creating mutation count tables
 Motifs are the building blocks of mutational signatures. Motifs themselves are 
 a mutation combined with other genomic information. For instance, **SBS96** 
-motifs are constructed from an SBS mutation and one upsteam and one downstream 
+motifs are constructed from an SBS mutation and one upstream and one downstream 
 base sandwiched together. We build tables by counting these motifs for each 
 sample. 
 ```{r build_tables}
