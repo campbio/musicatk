@@ -1,9 +1,10 @@
 template:
   params:
     bootswatch: yeti
+    message: FALSE
 
 navbar:
-  title: "celda"
+  title: "musicatk"
   left:
     - icon: fa-home fa-lg
       href: http://musicatk.camplab.net/
@@ -11,14 +12,15 @@ navbar:
       href: articles/articles/installation.html
     - text: "Vignettes"
       menu:
-      - text: "Analysis of TCGA data on the R console"
-        href: articles/articles/tutorial_tcga_cnsl.Rmd
-      - text: "Interactive analysis of TCGA Data"
-        href: articles/articles/tutorial_tcga_ui.Rmd
+      - text: "Analysis in the R console"
+        href: articles/articles/tutorial_tcga_cnsl.html
+      - text: "Analysis with the user interface"
+        href: articles/articles/tutorial_tcga_ui.html
     - text: "Reference"
       href: reference/index.html
     - text: "News"
       href: news/index.html
+  right:      
     - icon: fa-github
       href: https://github.com/campbio/musicatk
     - icon: fa-twitter
@@ -100,3 +102,4 @@ reference:
   - '`tables`'
   - '`umap`'
   - '`variants`'  
+  - '`musicatk`'

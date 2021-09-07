@@ -1,6 +1,12 @@
 ---
 title: "Analysis of mutational signatures with musicatk in the R console"
+date: "Compiled `r format(Sys.time(), '%B %d, %Y')`"
+author: "Aaron Chevalier, Joshua Campbell"
 ---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, fig.align='center')
+```
 
 # Introduction
 A variety of exogenous exposures or endogenous biological processes can contribute to the overall mutational load observed in human tumors. Many different mutational patterns, or “mutational signatures”, have been identified across different tumor types. These signatures can provide a record of environmental exposure and can give clues about the etiology of carcinogenesis. The Mutational Signature Comprehensive Analysis Toolkit (musicatk) contains a complete end-to-end workflow for characterization of mutational signatures in a cohort of samples. musicatk has utilities for extracting variants from a variety of file formats, multiple methods for discovery of novel signatures or prediction of pre-existing signatures, and many types of downstream visualizations for exploratory analysis. This package has the ability to parse and combine multiple motif classes in the mutational signature discovery or prediction processes. Mutation motifs include single base substitutions (SBS), double base substitutions (DBS), insertions (INS) and deletions (DEL). The package can be loaded using the `library` command:
@@ -9,15 +15,13 @@ A variety of exogenous exposures or endogenous biological processes can contribu
 library(musicatk)
 ```
 
-# Setting up a musica object
+# Importing mutational data
 In order to discover or predict mutational signatures, we must first set up
 our musica object by 1) extracting variants from files or objects such as
 VCFs and MAFs, 2) selecting the appropriate reference genome 3) creating a 
 musica object, 4) adding sample-level annotations, and 5) building a count tables for our variants of interest.
 
-## Extracting variants
-
-### Extract variants from files or objects
+## Import variants from files
 
 Variants can be extracted from various formats using the following functions:
 
@@ -46,11 +50,11 @@ melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
 variants <- extract_variants(c(lusc_maf, luad_vcf, melanoma_vcfs))
 ```
 
-### Downloading variants for TCGA samples
+## Import TCGA datasets
 
-For this tutorial, we will analyze mutational data from lung and skin cancer from TCGA. This data will be retrieved using the the `GDCquery` function from `r `BiocStyle::Biocpkg("TCGAbiolinks")` package. 
+For this tutorial, we will analyze mutational data from lung and skin tumors from TCGA. This data will be retrieved using the the `GDCquery` function from `r BiocStyle::Biocpkg("TCGAbiolinks")` package. 
 
-```{r get_tcga, message = FALSE}
+```{r get_tcga, message = FALSE, results='hide'}
 library(TCGAbiolinks)
 tcga_datasets <- c("TCGA-LUAD", "TCGA-LUSC", "TCGA-SKCM")
 types <- gsub("TCGA-", "", tcga_datasets)
@@ -75,22 +79,21 @@ colnames(annot) <- c("Tumor_Type", "ID")
 rownames(annot) <- annot[,"ID"]
 ```
 
+# Creating a musica object
 
-## Choosing a genome
-musicatk uses `r BiocStyle::Biocpkg("BSgenome")` objects to access genome sequence information that flanks each mutation which is used bases for generating mutation count tables. BSgenome objects store full genome sequences for different organisms. A full list of supported organisms can be obtained by running `available.genomes()` after loading the BSgenome library. Custom genomes can be forged as well (see [BSgenome](https://bioconductor.org/packages/release/bioc/html/BSgenome.html) documentation). musicatk provides a utility function called `select_genome()` to allow users to quickly select human genome build versions "hg19" and "hg38" or mouse genome builds "mm9" and "mm10". The reference sequences for these genomes are in UCSC format (e.g. chr1).
+A genome build must first be selected before a musica object can be created for mutational signature analysis. musicatk uses `r BiocStyle::Biocpkg("BSgenome")` objects to access genome sequence information that flanks each mutation which is used bases for generating mutation count tables. BSgenome objects store full genome sequences for different organisms. A full list of supported organisms can be obtained by running `available.genomes()` after loading the BSgenome library. Custom genomes can be forged as well (see `r BiocStyle::Biocpkg("BSgenome")` documentation). musicatk provides a utility function called `select_genome()` to allow users to quickly select human genome build versions "hg19" and "hg38" or mouse genome builds "mm9" and "mm10". The reference sequences for these genomes are in UCSC format (e.g. chr1).
 
 ```{r select_genome}
 g <- select_genome("hg38")
 ```
 
-## Creating a musica object
 The last preprocessing step is to create an object with the variants and the genome using the `create_musica` function. This function will perform checks to ensure that the chromosome names and reference alleles in the input variant object match those in supplied BSgenome object. These checks can be turned off by setting `check_ref_chromosomes = FALSE` and `check_ref_bases = FALSE`, respectively. This function also looks for adjacent single base substitutions (SBSs) and will convert them to double base substitutions (DBSs). To disable this automatic conversion, set `convert_dbs = FALSE`. 
 
 ```{r create_musica}
 musica <- create_musica(x = variants, genome = g)
 ```
 
-# Adding sample annotations
+# Importing sample annotations
 
 Sample-level annotations, such as tumor type, treatment, or outcome can be used in downstream analyses. Sample annotations that are stored in a `vector` or `data.frame` can be directly added to the `musica` object using the `samp_annot` function:
 
@@ -99,12 +102,12 @@ id <- as.character(sample_names(musica))
 samp_annot(musica, "Tumor_Type") <- annot[id,"Tumor_Type"]
 ```
 
-**Be sure that the annotation vector or data.frame being supplied is in the same order as the samples in the `musica` object.** The `sample_names` function can be used to get the order of the samples in the musica object. Note that the annotations can also be added later on to a `musica_result` objects created by discovery or prediction using the same function: `samp_annot(result, "Tumor_Type") <- annot[id,"Tumor_Type"]`. 
+> **Note: Be sure that the annotation vector or data.frame being supplied is in the same order as the samples in the `musica` object.** The `sample_names` function can be used to get the order of the samples in the musica object. Note that the annotations can also be added later on to a `musica_result` objects created by discovery or prediction using the same function: `samp_annot(result, "Tumor_Type") <- annot[id,"Tumor_Type"]`. 
 
 
 # Creating mutation count tables
 
-## Creating standard tables
+## Create standard tables
 Motifs are the building blocks of mutational signatures. Motifs themselves are 
 a mutation combined with other genomic information. For instance, **SBS96** 
 motifs are constructed from an SBS mutation and one upstream and one downstream 
@@ -131,7 +134,7 @@ replication strand (leading/lagging), can be specified with
 indels based on base-pair change, repeats, or microhomology, insertion or 
 deletion, and length.
 
-## Combining tables
+## Combine tables
 
 Different count tables can be combined into one using the `combine_count_tables`
 function. For example, the SBS96 and the DBS tables could be combined and 
@@ -150,7 +153,7 @@ combine_count_tables(musica, to_comb = c("SBS96", "DBS78"), name = "SBS_DBS", de
 names(tables(musica))
 ```
 
-## Sample filtering
+# Filtering samples
 Samples with low numbers of mutations should usually be excluded from discover and prediction procedures. The `subset_musica_by_counts` function can be used to exclude samples with low numbers of mutations in a particular table:
 
 
@@ -165,7 +168,7 @@ musica_luad <- subset_musica_by_annotation(musica, annot_col = "Tumor_Type", ann
 ```
 
 
-# Discovering Signatures and Exposures
+# Discovery of signatures and exposures
 
 Mutational signature discovery is the process of deconvoluting a matrix
 containing the count of each mutation type in each sample into two matrices: 1)
@@ -200,9 +203,9 @@ sigs[1:3,1:3]
 ```
 
 
-# Plotting
+# Visualization of results
 
-## Signatures
+## Plot signatures
 The `plot_signatures` function can be used to display barplots that show the probability of each mutation type in each signature:
 
 ```{r plot_sigs}
@@ -216,7 +219,7 @@ signatures. This behavior can be turned off by setting `same_scale = FALSE`:
 plot_signatures(result_discov, same_scale = FALSE)
 ```
 
-## Comparison to external signatures (e.g. COSMIC)
+## Comparing to external signatures
 A common analysis is to compare the signatures estimated in a dataset to those generated in other datasets or to those in the [COSMIC database](https://cancer.sanger.ac.uk/cosmic/signatures). We have a set of functions that can be used to easily perform pairwise correlations between signatures. The `compare_results` functions compares the signatures between two `musica_result` objects. The `compare_cosmic_v2` will correlate the signatures between a `musica_result` object and the SBS signatures in COSMIC V2. For example:
 
 ```{r compare_cosmic}
@@ -233,7 +236,7 @@ plot_signatures(result_discov)
 ```
 
 
-## Exposures
+## Plot exposures
 
 Barplots showing the exposures in each sample can be plotted with the 
 `plot_exposures` function:
@@ -260,7 +263,26 @@ The proportion of each exposure in each tumor can be shown by setting `proportio
 plot_exposures(result_discov, plot_type = "bar", num_samples = 50, proportional = TRUE)
 ```
 
-To verify that the deconvolution algorithm produced good signatures, one strategy is to examine the patterns of mutations in individual samples with a high predicted percentage of a particular signature. If the shape of the counts match the patterns of the signature, then this is a good indicator that the deconvolution algorithms worked well. Counts for individual samples can be plotted with the `plot_sample_counts` function. For example, we can plot the sample with the highest proportion of the APOBEC signature:
+The `plot_exposures` function can group exposures by either a sample annotation or by a signature by setting the `group_by` parameter. To group by an annotation, the `groupBy` parameter must be set to `"annotation"` and the name of the annotation must be supplied via the `annotation` parameter. For example, the exposures from the previous result can be grouped by the `Tumor_Type` annotation:
+
+```{r plot_exposures_by_subtype}
+plot_exposures(result_discov, plot_type = "bar", group_by = "annotation", annotation = "Tumor_Type")
+```
+
+In this plot, it is clear that the smoking signature is more active in the lung cancers while the UV signature is more active in the skin cancers. The distribution of exposures with respect to annotation can be viewed using boxplots by setting `plot_type = "box"` and `group_by = "annotation"`:
+
+```{r plot_exposures_box_annot}
+plot_exposures(result_discov, plot_type = "box", group_by = "annotation", annotation = "Tumor_Type")
+```
+
+Note that boxplots can be converted to violin plots by setting `plot_type = "violin"`. To compare the exposures levels across groups of samples within a signature, we can set `group_by = "signature"` and `color_by = "annotation"`:
+
+```{r plot_exposures_box_sig}
+plot_exposures(result_discov, plot_type = "box", group_by = "signature", 
+               color_by = "annotation", annotation = "Tumor_Type")
+```
+
+To verify that the deconvolution algorithm produced good signatures, one strategy is to examine the patterns of mutations in individual samples with a high predicted percentage of a particular signature. If the shape of the counts match the patterns of the signature, then this is a good indicator that the deconvolution algorithm worked well. Counts for individual samples can be plotted with the `plot_sample_counts` function. For example, we can plot the sample with the highest proportion of the APOBEC signature:
 
 ```{r sample_counts}
 # Normalize exposures
@@ -272,10 +294,9 @@ plot_sample_counts(musica_filter, sample_names = colnames(expos.prop)[ix], table
 ```
 
 
+# Predict exposures from existing signatures
 
-# Predicting exposures using pre-existing signatures
-
-## Prediction of COSMIC signatures
+## Predict COSMIC signatures
 
 Instead of discovering mutational signatures and exposures from a dataset *de novo*, a better result may be obtained by predicting the exposures of signatures that have been previously estimated in other datasets. Predicting exposures for pre-existing signatures may have more sensitivity for detecting active compared to the discovery-based methods as we are incorporating prior information derived from larger datasets. The `musicatk` package incorporates several methods for estimating exposures given a set of pre-existing signatures. For example, the exposures for COSMIC signatures 1, 4, 7, 13, and 15 can be predicted in our current dataset. Note that we are including COSMIC signature 1 in the prediction even though it did not show up in the discovery algorithm as this signature has been previously shown to be active in lung tumors and we are also including both APOBEC signatures (2 and 13) which were previously combined into 1 signature in the discovery method.
 
@@ -313,9 +334,9 @@ The three major parameters that determine whether a signature is present in a da
 * `proportion_samples` - A signature will be considered active in a cohort and included in the second pass if it is active in at least this proportion of samples (Default `0.25`).
 * `rare_exposure` - A signature will be considered active in a cohort and included in the second pass if the proportion of its exposure is above this threshold in at least one sample (Default `0.4`). This parameter is meant to capture signatures that produce high number of mutations but are found in a small number of samples (e.g. Mismatch repair).
 
-## Assessing predicted signatures
+## Assess predicted signatures
 
-It is almost always worthwhile to manually assess and confirm the signatures predicted to be present within a dataset, especially for signatures that have similar profiles to one another. For example, both COSMIC [signatures 4](https://cancer.sanger.ac.uk/signatures/media/images/v2_signature_profile_4.original.png) (smoking) and [Signature 24](https://cancer.sanger.ac.uk/signatures/media/images/v2_signature_profile_24.original.png) (aflatoxin) were predicted to be present within our dataset. The smoking-related signature is expected as our cohort contains lung cancers, but the aflatoxin signature is unexpected given that it is usually found in liver cancers. These signatures both have a strong concentration of C>A tranversions. In fact, we can see that the predicted exposures for these signatures are highly correlated to each other across samples:
+It is almost always worthwhile to manually assess and confirm the signatures predicted to be present within a dataset, especially for signatures that have similar profiles to one another. For example, both COSMIC [Signature 4](https://cancer.sanger.ac.uk/signatures/media/images/v2_signature_profile_4.original.png) (smoking) and [Signature 24](https://cancer.sanger.ac.uk/signatures/media/images/v2_signature_profile_24.original.png) (aflatoxin) were predicted to be present within our dataset. The smoking-related signature is expected as our cohort contains lung cancers, but the aflatoxin signature is unexpected given that it is usually found in liver cancers. These signatures both have a strong concentration of C>A tranversions. In fact, we can see that the predicted exposures for these signatures are highly correlated to each other across samples:
 
 ```{r plot_SBS4_vs_SBS24}
 e <- exposures(result_cosmic_auto)
@@ -352,38 +373,18 @@ result_cosmic_final <- predict_exposure(musica = musica_filter, table_name = "SB
 ```
 
 
-# Exploratory analysis of exposures
+# Downstream analyses
 
-## Plotting exposures grouped by annotations
-
-As mentioned previously, the `plot_exposures` function can plot sample exposures in a `musica_result` object. This function can group exposures by either a sample annotation or by a signature by setting the `group_by` parameter. To group by an annotation, the `groupBy` parameter must be set to `"annotation"` and the name of the annotation must be supplied via the `annotation` parameter. For example, the exposures from the previous result can be grouped by the `Tumor_Type` annotation:
-
-```{r plot_exposures_by_subtype}
-plot_exposures(result_cosmic_final, plot_type = "bar", group_by = "annotation", annotation = "Tumor_Type")
-```
-
-In this plot, it is clear that the smoking signature is more active in the lung cancers while the UV signature is more active in the skin cancers. The distribution of exposures with respect to annotation can be viewed using boxplots by setting `plot_type = "box"` and `group_by = "annotation"`:
-
-```{r plot_exposures_box_annot}
-plot_exposures(result_cosmic_final, plot_type = "box", group_by = "annotation", annotation = "Tumor_Type")
-```
-
-Note that boxplots can be converted to violin plots by setting `plot_type = "violin"`. To compare the exposures levels across groups of samples within a signature, we can set `group_by = "signature"` and `color_by = "annotation"`:
-
-```{r plot_exposures_box_sig}
-plot_exposures(result_cosmic_final, plot_type = "box", group_by = "signature", 
-               color_by = "annotation", annotation = "Tumor_Type")
-```
-
-## Visualize releationships between samples with 2-D embedding
+## Visualize relationships between samples with 2-D embedding
 
 The `create_umap` function embeds samples in 2 dimensions using the `umap` function from the `r BiocStyle::CRANpkg("uwot")` package. The major parameters for fine tuning the UMAP are `n_neighbors`, `min_dist`, and `spread`. Generally, a higher `min_dist` will create more separation between the larger groups of samples while a lower See `?uwot::umap` for more information on these parameters as well as this [tutorial](https://pair-code.github.io/understanding-umap/) for fine-tuning. Here, a UMAP will be created with standard parameters:
 
 ```{r umap_create}
+set.seed(1)
 create_umap(result_cosmic_final)
 ```
 
-The `plot_umap` function will generate a scatter plot of the UMAP coordinates. The points of plot will be colored by the level of a signature by default:
+Note that while we are using the `result_cosmic_final` object which came from the prediction algorithm, we could have also used the `result_discov` object generated by the discovery algorithm. The `plot_umap` function will generate a scatter plot of the UMAP coordinates. The points of plot will be colored by the level of a signature by default:
 
 ```{r umap_plot}
 plot_umap(result_cosmic_final)
@@ -429,7 +430,7 @@ plot_heatmap(result_cosmic_final, annotation = "Tumor_Type", subset_signatures =
 
 In this heatmap, we can see that only a small subset of distinct samples have relatively higher levels of these signatures. 
 
-## Cluster samples based on exposures
+## Clustering samples based on exposures
 
 Samples can be grouped into **de novo** clusters using a several algorithms from the factoextra and cluster packages such as `pam` or `kmeans`. One major challenge is choosing the number of clusters (k). The function `k_select` has several metrics for examining cluster stability such as total within cluster sum of squares (`wss`), Silhouette Width (`silhouette`), and the Gap Statistic (`gap_stat`). 
 

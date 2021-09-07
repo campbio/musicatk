@@ -6,7 +6,7 @@ library(shinyalert)
 library(TCGAbiolinks)
 library(shinyjqui)
 
-options(shiny.maxRequestSize = 10000 * 1024 ^ 2)
+#options(shiny.maxRequestSize = 10000 * 1024 ^ 2)
 
 server <- function(input, output, session) {
 #################### GENERAL ##################################################
@@ -916,7 +916,7 @@ parse_delete_event <- function(idstr) {
     new_annot <- merge(samp_annot(musica_object),
                        vals$annotations, by.x = "Samples",
                        by.y = input$annot_sample_column,
-                       all.x = T)
+                       all.x = TRUE)
     for (a in names(new_annot)) {
       samp_annot(musica_object, a) <-
         new_annot[, a]
@@ -1070,12 +1070,12 @@ parse_delete_event <- function(idstr) {
       # Check inputs for SBS192
       if (input$select_table == "SBS192 - Transcript_Strand") {
         annotate_transcript_strand(vals$musica, input$table_genome_list,
-                                   build_table = F)
+                                   build_table = FALSE)
         table_name <- "SBS192"
         strand_type <- "Transcript_Strand"
       }
       if (input$select_table == "SBS192 - Replication_Strand") {
-        annotate_replication_strand(vals$musica, rep_range, build_table = F)
+        annotate_replication_strand(vals$musica, rep_range, build_table = FALSE)
         table_name <- "SBS192"
         strand_type <- "Replication_Strand"
       }
@@ -1084,7 +1084,7 @@ parse_delete_event <- function(idstr) {
                              select_genome(input$table_genome_list),
                              table_name = table_name,
                              strand_type = strand_type,
-                             overwrite = T)
+                             overwrite = TRUE)
         shiny::showNotification("Table created.")
       }, error = function(cond) {
         shinyalert::shinyalert(title = "Error", text = cond$message)
@@ -1398,7 +1398,7 @@ parse_delete_event <- function(idstr) {
     if (!is.null(isolate(vals$comparison))) {
       output$compare_table <- renderDataTable({
         isolate(vals$comparison)
-      }, options = list(autoWidth = FALSE, scrollX = T))
+      }, options = list(autoWidth = FALSE, scrollX = TRUE))
       output$download_comparison <- renderUI({
         tagList(
           downloadButton("download_compare", "Download"),
@@ -2418,7 +2418,7 @@ parse_delete_event <- function(idstr) {
         paste0(input$selected_res3, "_cluster.txt")
       },
       content = function(file) {
-        write.table(dat[-1], file, sep = "\t", quote = F)
+        write.table(dat[-1], file, sep = "\t", quote = FALSE)
       }
     )
   })
