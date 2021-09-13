@@ -6,7 +6,7 @@ shiny_panel_annotations <- fluidPage(
             h3("Upload Sample Annotations"),
             fileInput("annotations_file", "Annotations file:",
                       multiple = TRUE),
-            checkboxInput("annotation_header", "Header", T),
+            checkboxInput("annotation_header", "Header", TRUE),
             radioButtons("annotation_delimiter", "Delimiter",
                          choices = list("comma" = ",",
                                         "tab" = "\t",
@@ -14,7 +14,7 @@ shiny_panel_annotations <- fluidPage(
                                         "pipe" = "|",
                                         "semicolon" = ";",
                                         "custom" = "custom"),
-                         selected = ",", inline = T),
+                         selected = ",", inline = TRUE),
             hidden(textInput("CustomAnnotDelim", "Delimiter")),
             uiOutput("annotation_samples")
   ),

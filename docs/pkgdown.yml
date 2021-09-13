@@ -1,8 +1,10 @@
-pandoc: 2.7.3
+pandoc: 2.11.4
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
+  articles/installation: installation.html
+  articles/tutorial_tcga_cnsl: tutorial_tcga_cnsl.html
+  articles/tutorial_tcga_ui: tutorial_tcga_ui.html
   musicatk: musicatk.html
-  musicatk_help: musicatk_help.html
-last_built: 2021-08-11T15:20Z
+last_built: 2021-09-07T01:03Z
 

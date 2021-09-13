@@ -1,17 +1,105 @@
 template:
   params:
-  bootswatch: default
-
+    bootswatch: yeti
+    message: FALSE
 
 navbar:
-  title: "musicaTK"
+  title: "musicatk"
   left:
-    - text: "General Workflow"
-      href: articles/musicatk.html
-    - text: "Shiny UI Analysis"
+    - icon: fa-home fa-lg
+      href: http://musicatk.camplab.net/
+    - text: "Installation"
+      href: articles/articles/installation.html
+    - text: "Vignettes"
       menu:
-        - text: "Tutorial"
-          href: articles/musicatk_help.html
-    - text: "References"
+      - text: "Analysis in the R console"
+        href: articles/articles/tutorial_tcga_cnsl.html
+      - text: "Analysis with the user interface"
+        href: articles/articles/tutorial_tcga_ui.html
+    - text: "Reference"
       href: reference/index.html
-
+    - text: "News"
+      href: news/index.html
+  right:      
+    - icon: fa-github
+      href: https://github.com/campbio/musicatk
+    - icon: fa-twitter
+      href: https://twitter.com/camplab1
+      
+reference:
+- title: All functions
+  contents:
+  - '`add_flank_to_variants`'
+  - '`annotate_replication_strand`'
+  - '`annotate_transcript_strand`'
+  - '`annotate_variant_length`'
+  - '`annotate_variant_type`'
+  - '`auto_predict_grid`'
+  - '`build_custom_table`'
+  - '`build_standard_table`'
+  - '`built_tables`'
+  - '`cluster_exposure`'
+  - '`combine_count_tables`'
+  - '`combine_predict_grid`'
+  - '`compare_cosmic_v2`'
+  - '`compare_cosmic_v3`'
+  - '`compare_results`'
+  - '`cosmic_v2_sigs`'
+  - '`cosmic_v2_subtype_map`'
+  - '`cosmic_v3_dbs_sigs`'
+  - '`cosmic_v3_indel_sigs`'
+  - '`cosmic_v3_sbs_sigs`'
+  - '`cosmic_v3_sbs_sigs_exome`'
+  - '`count_table-class`'
+  - '`create_musica`'
+  - '`create_umap`'
+  - '`dbs_musica`'
+  - '`discover_signatures`'
+  - '`drop_annotation`'
+  - '`exposure_differential_analysis`'
+  - '`exposures`'
+  - '`extract_count_tables`'
+  - '`extract_variants`'
+  - '`extract_variants_from_maf`'
+  - '`extract_variants_from_maf_file`'
+  - '`extract_variants_from_matrix`'
+  - '`extract_variants_from_vcf`'
+  - '`extract_variants_from_vcf_file`'
+  - '`generate_result_grid`'
+  - '`get_musica`'
+  - '`indel_musica`'
+  - '`k_select`'
+  - '`musica-class`'
+  - '`musica`'
+  - '`musica_annot`'
+  - '`musica_result-class`'
+  - '`musica_result_grid-class`'
+  - '`musica_sbs96`'
+  - '`musica_sbs96_tiny`'
+  - '`name_signatures`'
+  - '`plot_cluster`'
+  - '`plot_differential_analysis`'
+  - '`plot_exposures`'
+  - '`plot_heatmap`'
+  - '`plot_sample_counts`'
+  - '`plot_sample_reconstruction_error`'
+  - '`plot_signatures`'
+  - '`plot_umap`'
+  - '`predict_exposure`'
+  - '`rc`'
+  - '`rep_range`'
+  - '`res`'
+  - '`res_annot`'
+  - '`samp_annot`'
+  - '`sample_names`'
+  - '`select_genome`'
+  - '`signatures`'
+  - '`subset_musica_by_annotation`'
+  - '`subset_musica_by_counts`'
+  - '`subset_variant_by_type`'
+  - '`subset_variants_by_samples`'
+  - '`table_selected`'
+  - '`tables`'
+  - '`umap`'
+  - '`variants`'  
+  - '`musicatk`'

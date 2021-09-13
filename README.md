@@ -1,4 +1,3 @@
-# musicatk
 <!-- badges: start -->
-  [![Codecov test coverage](https://codecov.io/gh/campbio/musicatk/branch/master/graph/badge.svg)](https://codecov.io/gh/campbio/musicatk?branch=master)
-  <!-- badges: end -->
+[![R-CMD-check](https://github.com/campbio/musicatk/workflows/R-CMD-check/badge.svg)](https://github.com/campbio/musicatk/actions)
+<!-- badges: end -->

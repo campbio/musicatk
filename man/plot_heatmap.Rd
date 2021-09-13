@@ -24,38 +24,50 @@ a mutational discovery or prediction tool.}
 to between 0 and 1 by dividing by the total number of counts for each sample.
 Default \code{FALSE}.}
 
-\item{show_column_names}{Boolean check. If \code{True}, column names are shown. Otherwise, they aren't. 
+\item{show_column_names}{Boolean check. If \code{True}, column names are shown.
+Otherwise, they aren't.
 Default \code{FALSE}}
 
-\item{show_row_names}{Boolean check. If \code{True}, row names are shown. Otherwise, they aren't. 
+\item{show_row_names}{Boolean check. If \code{True}, row names are shown.
+Otherwise, they aren't.
 Default \code{FALSE}}
 
-\item{scale}{Boolean check. If \code{True}, values are scaled by z-score. Otherwise, they aren't.
+\item{scale}{Boolean check. If \code{True}, values are scaled by z-score.
+Otherwise, they aren't.
 Default \code{TRUE}}
 
-\item{subset_tumor}{Users can specify certain tumor types on which they want to subset the exposure matrix for 
+\item{subset_tumor}{Users can specify certain tumor types on which
+they want to subset the exposure matrix for
 plotting the heatmap.}
 
-\item{subset_signatures}{Users can specify certain signatures on which they want to subset the exposure matrix 
+\item{subset_signatures}{Users can specify certain signatures on
+ which they want to subset the exposure matrix
 plotting the heatmap.}
 
-\item{annotation}{Users have the option of plotting the exposure matrix based on their given annotation like
-Tumor_Subtypes or age. Error given if the user given annotation doesn't exist in the res_annot annotation object.}
+\item{annotation}{Users have the option of plotting the exposure matrix
+based on their given annotation like
+Tumor_Subtypes or age. Error given if the user given annotation
+doesn't exist in the res_annot annotation object.}
 
-\item{...}{Ellipsis used for passing any arguments directly to the ComplexHeatmap's heatmap function.}
+\item{...}{Ellipsis used for passing any arguments directly
+to the ComplexHeatmap's heatmap function.}
 }
 \value{
 Generates a heatmap for using the exposure matrix.
 }
 \description{
-The exposures for different signatures can be visualized using a heatmap with this function.
-Heatmaps make it easier to visualize the data by representing the magbitude of exposure values
-as color in 2-dimensions. The variation in color intensity can help see if the exposures are clustered
-or how they vary over space. Exposures can be normalized by providing the \code{proportional} argument.
+The exposures for different signatures can be
+visualized using a heatmap with this function.
+Heatmaps make it easier to visualize the data by
+representing the magnitude of exposure values
+as color in 2-dimensions. The variation in color
+intensity can help see if the exposures are clustered
+or how they vary over space. Exposures can be
+normalized by providing the \code{proportional} argument.
 Column annotations can also be seen by passing the \code{col_annot} argument.
 }
 \examples{
 data(res_annot)
-plot_heatmap(res_annot = res_annot, proportional = TRUE, scale = TRUE, 
+plot_heatmap(res_annot = res_annot, proportional = TRUE, scale = TRUE,
 annotation = "Tumor_Subtypes")
 }
