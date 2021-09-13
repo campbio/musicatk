@@ -71,6 +71,9 @@ In this tab users can process variants and create a musica variant object which 
 
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/create_musica.jpg"))
+```
+<br>
+```{r echo=FALSE}
 include_graphics(paste0(PATH,"/create_musica1.jpg"))
 ```
 
@@ -255,19 +258,19 @@ include_graphics(paste0(PATH,"/CompareTable.jpg"))
 ### Exposure Differential Analysis
 
 The "Exposure Differential Analysis" tab is used to run differential analysis on the signature exposures of annotated samples. There are 3 methods to perform the differential analysis: Wilcoxon Rank Sum Test, Kruskal-Wallis Rank Sum Test, and a negative binomial regression (glm). 
-
+<br>
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/DATab.jpg"))
 ```
 
 The Wilcoxon Rank Sum Test can be used to directly compare two groups of samples. Below we display the Wilcoxon Rank Sum Test results between LUAD and SKCM. Note that LUSC was ignored since it did not have a specified pair.
-
+<br>
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/DAOptions.jpg"))
 ```
 
 From our table, we can see several of our signatures are differentially exposed across tumor types. From our comparison analysis, we can hypothesize that signature1 may be related to tobacco smoke, and exposure to tobacco smoke occurs in lung cancers but not skin cancers.
-
+<br>
 ```{r echo=FALSE}
 include_graphics(paste0(PATH,"/WilcoxonTable.jpg"))
 ```
