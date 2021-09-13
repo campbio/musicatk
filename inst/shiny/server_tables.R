@@ -6,12 +6,12 @@ add_tables <- function(input, vals) {
     # Check inputs for SBS192
     if (input$select_table == "SBS192 - Transcript_Strand") {
         annotate_transcript_strand(vals$musica, input$table_genome_list,
-                                   build_table = F)
+                                   build_table = FALSE)
         table_name <- "SBS192"
         strand_type <- "Transcript_Strand"
     }
     if (input$select_table == "SBS192 - Replication_Strand") {
-        annotate_replication_strand(vals$musica, rep_range, build_table = F)
+        annotate_replication_strand(vals$musica, rep_range, build_table = FALSE)
         table_name <- "SBS192"
         strand_type <- "Replication_Strand"
     }
@@ -19,7 +19,7 @@ add_tables <- function(input, vals) {
       build_standard_table(vals$musica, select_genome(input$table_genome_list),
                          table_name = table_name,
                          strand_type = strand_type,
-                         overwrite = T)
+                         overwrite = TRUE)
       shiny::showNotification("Table created.")
     }, error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
