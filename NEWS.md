@@ -1,6 +1,7 @@
 # musicatk 1.2.1 (2021-08-08)
 * Fixed bug in fonts for some plots
 * Added documentation site generated with pkgdown
+* Added Shiny UI for interactive analysis of mutational signatures
 
 # musicatk 1.2.0 (2021-08-08)
 * Generated new release for Bioconductor 3.13
