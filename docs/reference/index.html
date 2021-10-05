@@ -71,14 +71,14 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="http://musicatk.camplab.net/">
+  <a href="https://www.camplab.net/musicatk">
     <span class="fas fa-home fa-lg"></span>
      
   </a>
@@ -148,8 +148,8 @@
     <tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
+          <h2 id="section-importing-and-processing" class="hasAnchor"><a href="#section-importing-and-processing" class="anchor"></a>Importing and processing</h2>
+          <p class="section-desc"><p>Functions to import, extract, and process variants</p></p>
         </th>
       </tr>
       
@@ -158,194 +158,6 @@
       
       
       <tr>
-        
-        <td>
-          <p><code><a href="add_flank_to_variants.html">add_flank_to_variants()</a></code> </p>
-        </td>
-        <td><p>Uses a genome object to find context and add it to the variant table</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="annotate_replication_strand.html">annotate_replication_strand()</a></code> </p>
-        </td>
-        <td><p>Add replication strand annotation to SBS variants based on bedgraph file</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="annotate_transcript_strand.html">annotate_transcript_strand()</a></code> </p>
-        </td>
-        <td><p>Add transcript strand annotation to SBS variants (defined in genes only)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="annotate_variant_length.html">annotate_variant_length()</a></code> </p>
-        </td>
-        <td><p>Adds an annotation to the input musica's variant table with length of each
-variant</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="annotate_variant_type.html">annotate_variant_type()</a></code> </p>
-        </td>
-        <td><p>Annotate variants with variant type ("SBS", "INS", "DEl", "DBS")</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="auto_predict_grid.html">auto_predict_grid()</a></code> </p>
-        </td>
-        <td><p>Automatic filtering of signatures for exposure prediction gridded across
-specific annotation</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="build_custom_table.html">build_custom_table()</a></code> </p>
-        </td>
-        <td><p>Builds a custom table from specified user variants</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="build_standard_table.html">build_standard_table()</a></code> </p>
-        </td>
-        <td><p>Builds count tables using various mutation type schemas</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="built_tables.html">built_tables()</a></code> </p>
-        </td>
-        <td><p>Retrieve the names of count_tables from a musica or musica_result 
-object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cluster_exposure.html">cluster_exposure()</a></code> </p>
-        </td>
-        <td><p>Perform clustering analysis from a musica result object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="combine_count_tables.html">combine_count_tables()</a></code> </p>
-        </td>
-        <td><p>Combines tables into a single table that can be used for discovery/prediction</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="combine_predict_grid.html">combine_predict_grid()</a></code> </p>
-        </td>
-        <td><p>Combine prediction grid list into a result object. Exposure values are zero
-for samples in an annotation where that signature was not predicted</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="compare_cosmic_v2.html">compare_cosmic_v2()</a></code> </p>
-        </td>
-        <td><p>Compare a result object to COSMIC V2 SBS Signatures (combination whole-exome
-and whole-genome)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="compare_cosmic_v3.html">compare_cosmic_v3()</a></code> </p>
-        </td>
-        <td><p>Compare a result object to COSMIC V3 Signatures; Select exome or genome for
-SBS and only genome for DBS or Indel classes</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="compare_results.html">compare_results()</a></code> </p>
-        </td>
-        <td><p>Compare two result files to find similar signatures</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cosmic_v2_sigs.html">cosmic_v2_sigs</a></code> </p>
-        </td>
-        <td><p>COSMIC v2 SBS96 Signatures Result Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cosmic_v2_subtype_map.html">cosmic_v2_subtype_map()</a></code> </p>
-        </td>
-        <td><p>Input a cancer subtype to return a list of related COSMIC signatures</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cosmic_v3_dbs_sigs.html">cosmic_v3_dbs_sigs</a></code> </p>
-        </td>
-        <td><p>COSMIC v3 DBS Genome Signatures Result Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cosmic_v3_indel_sigs.html">cosmic_v3_indel_sigs</a></code> </p>
-        </td>
-        <td><p>COSMIC v3 Indel Genome Signatures Result Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cosmic_v3_sbs_sigs.html">cosmic_v3_sbs_sigs</a></code> </p>
-        </td>
-        <td><p>COSMIC v3 SBS96 Genome Signatures Result Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cosmic_v3_sbs_sigs_exome.html">cosmic_v3_sbs_sigs_exome</a></code> </p>
-        </td>
-        <td><p>COSMIC v3 SBS96 Exome Signatures Result Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="count_table-class.html">count_table-class</a></code> </p>
-        </td>
-        <td><p>Object containing the count table matrices, their names and descriptions
-that we generated by provided and by user functions. These are used to
-discover and infer signatures and exposures.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="create_musica.html">create_musica()</a></code> </p>
-        </td>
-        <td><p>Creates a musica object from a variant table</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="create_umap.html">create_umap()</a></code> </p>
-        </td>
-        <td><p>Create a UMAP from a musica result</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="dbs_musica.html">dbs_musica</a></code> </p>
-        </td>
-        <td><p>dbs_musica</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="discover_signatures.html">discover_signatures()</a></code> </p>
-        </td>
-        <td><p>Discover mutational signatures</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="drop_annotation.html">drop_annotation()</a></code> </p>
-        </td>
-        <td><p>Drops a column from the variant table that the user no longer needs</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="exposure_differential_analysis.html">exposure_differential_analysis()</a></code> </p>
-        </td>
-        <td><p>Compare exposures of annotated samples</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="exposures.html">exposures()</a></code> <code><a href="exposures.html">`exposures&lt;-`()</a></code> </p>
-        </td>
-        <td><p>Retrieve exposures from a musica_result object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="extract_count_tables.html">extract_count_tables()</a></code> </p>
-        </td>
-        <td><p>Extract count tables list from a musica object</p></td>
-      </tr><tr>
         
         <td>
           <p><code><a href="extract_variants.html">extract_variants()</a></code> </p>
@@ -381,172 +193,20 @@ discover and infer signatures and exposures.</p></td>
           <p><code><a href="extract_variants_from_vcf_file.html">extract_variants_from_vcf_file()</a></code> </p>
         </td>
         <td><p>Extracts variants from a vcf file</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="generate_result_grid.html">generate_result_grid()</a></code> </p>
-        </td>
-        <td><p>Generate result_grid from musica based on annotation and range of k</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_musica.html">get_musica()</a></code> </p>
-        </td>
-        <td><p>Retrieve musica from a musica_result object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="indel_musica.html">indel_musica</a></code> </p>
-        </td>
-        <td><p>indel_musica</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="k_select.html">k_select()</a></code> </p>
-        </td>
-        <td><p>Plots for helping decide number of clusters</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="musica-class.html">musica-class</a></code> </p>
-        </td>
-        <td><p>The primary object that contains variants, count_tables,
-and samples annotations</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="musica.html">musica</a></code> </p>
-        </td>
-        <td><p>musica</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="musica_annot.html">musica_annot</a></code> </p>
-        </td>
-        <td><p>musica_annot</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="musica_result-class.html">musica_result-class</a></code> </p>
-        </td>
-        <td><p>Object containing deconvolved/predicted signatures, sample weights, and
-the musica object the result was generated from</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="musica_result_grid-class.html">musica_result_grid-class</a></code> </p>
-        </td>
-        <td><p>Object containing the result objects generated from the combination of
-annotations and a range of k values</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="musica_sbs96.html">musica_sbs96</a></code> </p>
-        </td>
-        <td><p>musica_sbs96</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="musica_sbs96_tiny.html">musica_sbs96_tiny</a></code> </p>
-        </td>
-        <td><p>musica_sbs96_tiny</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="name_signatures.html">name_signatures()</a></code> </p>
-        </td>
-        <td><p>Return sample from musica object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_cluster.html">plot_cluster()</a></code> </p>
-        </td>
-        <td><p>Visualize clustering results</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_differential_analysis.html">plot_differential_analysis()</a></code> </p>
-        </td>
-        <td><p>Compare exposures of annotated samples</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_exposures.html">plot_exposures()</a></code> </p>
-        </td>
-        <td><p>Display sample exposures with bar, box, or violin plots</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_heatmap.html">plot_heatmap()</a></code> </p>
-        </td>
-        <td><p>Plot heatmaps using the exposures matrix</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_sample_counts.html">plot_sample_counts()</a></code> </p>
-        </td>
-        <td><p>Plot distribution of sample counts</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_sample_reconstruction_error.html">plot_sample_reconstruction_error()</a></code> </p>
-        </td>
-        <td><p>Plot reconstruction error for a sample</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_signatures.html">plot_signatures()</a></code> </p>
-        </td>
-        <td><p>Plots the mutational signatures</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_umap.html">plot_umap()</a></code> </p>
-        </td>
-        <td><p>Plot a UMAP from a musica result</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="predict_exposure.html">predict_exposure()</a></code> </p>
-        </td>
-        <td><p>Prediction of exposures in new samples using pre-existing signatures</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rc.html">rc()</a></code> </p>
-        </td>
-        <td><p>Reverse complement of a string using biostrings</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rep_range.html">rep_range</a></code> </p>
-        </td>
-        <td><p>Replication Timing Data as GRanges Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="res.html">res</a></code> </p>
-        </td>
-        <td><p>res</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="res_annot.html">res_annot</a></code> </p>
-        </td>
-        <td><p>res_annot</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="samp_annot.html">samp_annot()</a></code> <code><a href="samp_annot.html">`samp_annot&lt;-`()</a></code> </p>
-        </td>
-        <td><p>Get or set sample annotations from a musica or musica_result object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sample_names.html">sample_names()</a></code> </p>
-        </td>
-        <td><p>Retrieve sample names from a musica or musica_result object</p></td>
-      </tr><tr>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-musica-objects" class="hasAnchor"><a href="#section-musica-objects" class="anchor"></a>musica objects</h2>
+          <p class="section-desc"><p>Functions to create and subset musica objects</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
           <p><code><a href="select_genome.html">select_genome()</a></code> </p>
@@ -555,9 +215,9 @@ annotations and a range of k values</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="signatures.html">signatures()</a></code> <code><a href="signatures.html">`signatures&lt;-`()</a></code> </p>
+          <p><code><a href="create_musica.html">create_musica()</a></code> </p>
         </td>
-        <td><p>Retrieve signatures from a musica_result object</p></td>
+        <td><p>Creates a musica object from a variant table</p></td>
       </tr><tr>
         
         <td>
@@ -585,9 +245,77 @@ annotations and a range of k values</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="table_selected.html">table_selected()</a></code> </p>
+          <p><code><a href="variants.html">variants()</a></code> <code><a href="variants.html">`variants&lt;-`()</a></code> </p>
         </td>
-        <td><p>Retrieve table name used for plotting from a musica_result object</p></td>
+        <td><p>Retrieve variants from a musica or musica_result object</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-creating-mutation-count-tables" class="hasAnchor"><a href="#section-creating-mutation-count-tables" class="anchor"></a>Creating mutation count tables</h2>
+          <p class="section-desc"><p>Functions to build and combine mutation count tables</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="build_standard_table.html">build_standard_table()</a></code> </p>
+        </td>
+        <td><p>Builds count tables using various mutation type schemas</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="build_custom_table.html">build_custom_table()</a></code> </p>
+        </td>
+        <td><p>Builds a custom table from specified user variants</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="add_flank_to_variants.html">add_flank_to_variants()</a></code> </p>
+        </td>
+        <td><p>Uses a genome object to find context and add it to the variant table</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="annotate_replication_strand.html">annotate_replication_strand()</a></code> </p>
+        </td>
+        <td><p>Add replication strand annotation to SBS variants based on bedgraph file</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="annotate_transcript_strand.html">annotate_transcript_strand()</a></code> </p>
+        </td>
+        <td><p>Add transcript strand annotation to SBS variants (defined in genes only)</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="annotate_variant_length.html">annotate_variant_length()</a></code> </p>
+        </td>
+        <td><p>Adds an annotation to the input musica's variant table with length of each
+variant</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="annotate_variant_type.html">annotate_variant_type()</a></code> </p>
+        </td>
+        <td><p>Annotate variants with variant type ("SBS", "INS", "DEl", "DBS")</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="combine_count_tables.html">combine_count_tables()</a></code> </p>
+        </td>
+        <td><p>Combines tables into a single table that can be used for discovery/prediction</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="extract_count_tables.html">extract_count_tables()</a></code> </p>
+        </td>
+        <td><p>Extract count tables list from a musica object</p></td>
       </tr><tr>
         
         <td>
@@ -595,6 +323,180 @@ annotations and a range of k values</p></td>
         </td>
         <td><p>Retrieve the list of count_tables from a musica or musica_result 
 object</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-sample-annotations" class="hasAnchor"><a href="#section-sample-annotations" class="anchor"></a>Sample annotations</h2>
+          <p class="section-desc"><p>Functions to add and manipulate sample annotations</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="samp_annot.html">samp_annot()</a></code> <code><a href="samp_annot.html">`samp_annot&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get or set sample annotations from a musica or musica_result object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="sample_names.html">sample_names()</a></code> </p>
+        </td>
+        <td><p>Retrieve sample names from a musica or musica_result object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="drop_annotation.html">drop_annotation()</a></code> </p>
+        </td>
+        <td><p>Drops a column from the variant table that the user no longer needs</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-discovery-and-prediction" class="hasAnchor"><a href="#section-discovery-and-prediction" class="anchor"></a>Discovery and prediction</h2>
+          <p class="section-desc"><p>Functions to identify signatures and exposures from mutation count tables</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="discover_signatures.html">discover_signatures()</a></code> </p>
+        </td>
+        <td><p>Discover mutational signatures</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="exposures.html">exposures()</a></code> <code><a href="exposures.html">`exposures&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Retrieve exposures from a musica_result object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="signatures.html">signatures()</a></code> <code><a href="signatures.html">`signatures&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Retrieve signatures from a musica_result object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="name_signatures.html">name_signatures()</a></code> </p>
+        </td>
+        <td><p>Return sample from musica object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="auto_predict_grid.html">auto_predict_grid()</a></code> </p>
+        </td>
+        <td><p>Automatic filtering of signatures for exposure prediction gridded across
+specific annotation</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="combine_predict_grid.html">combine_predict_grid()</a></code> </p>
+        </td>
+        <td><p>Combine prediction grid list into a result object. Exposure values are zero
+for samples in an annotation where that signature was not predicted</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="generate_result_grid.html">generate_result_grid()</a></code> </p>
+        </td>
+        <td><p>Generate result_grid from musica based on annotation and range of k</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-visualization" class="hasAnchor"><a href="#section-visualization" class="anchor"></a>Visualization</h2>
+          <p class="section-desc"><p>Functions to identify signatures and exposures from mutation count tables</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="plot_exposures.html">plot_exposures()</a></code> </p>
+        </td>
+        <td><p>Display sample exposures with bar, box, or violin plots</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_signatures.html">plot_signatures()</a></code> </p>
+        </td>
+        <td><p>Plots the mutational signatures</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_umap.html">plot_umap()</a></code> </p>
+        </td>
+        <td><p>Plot a UMAP from a musica result</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_cluster.html">plot_cluster()</a></code> </p>
+        </td>
+        <td><p>Visualize clustering results</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_differential_analysis.html">plot_differential_analysis()</a></code> </p>
+        </td>
+        <td><p>Compare exposures of annotated samples</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_heatmap.html">plot_heatmap()</a></code> </p>
+        </td>
+        <td><p>Plot heatmaps using the exposures matrix</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_sample_counts.html">plot_sample_counts()</a></code> </p>
+        </td>
+        <td><p>Plot distribution of sample counts</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_sample_reconstruction_error.html">plot_sample_reconstruction_error()</a></code> </p>
+        </td>
+        <td><p>Plot reconstruction error for a sample</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="predict_exposure.html">predict_exposure()</a></code> </p>
+        </td>
+        <td><p>Prediction of exposures in new samples using pre-existing signatures</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-downstream-analysis" class="hasAnchor"><a href="#section-downstream-analysis" class="anchor"></a>Downstream analysis</h2>
+          <p class="section-desc"><p>Functions to compare the signatures between two results objects</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="create_umap.html">create_umap()</a></code> </p>
+        </td>
+        <td><p>Create a UMAP from a musica result</p></td>
       </tr><tr>
         
         <td>
@@ -604,15 +506,218 @@ object</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="variants.html">variants()</a></code> <code><a href="variants.html">`variants&lt;-`()</a></code> </p>
+          <p><code><a href="cluster_exposure.html">cluster_exposure()</a></code> </p>
         </td>
-        <td><p>Retrieve variants from a musica or musica_result object</p></td>
+        <td><p>Perform clustering analysis from a musica result object</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="musicatk.html">musicatk()</a></code> </p>
+          <p><code><a href="k_select.html">k_select()</a></code> </p>
         </td>
-        <td><p>Starts the musicatk interactive Shiny app</p></td>
+        <td><p>Plots for helping decide number of clusters</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-signature-comparisons" class="hasAnchor"><a href="#section-signature-comparisons" class="anchor"></a>Signature comparisons</h2>
+          <p class="section-desc"><p>Functions to compare the signatures between two results objects</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="compare_cosmic_v2.html">compare_cosmic_v2()</a></code> </p>
+        </td>
+        <td><p>Compare a result object to COSMIC V2 SBS Signatures (combination whole-exome
+and whole-genome)</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="compare_cosmic_v3.html">compare_cosmic_v3()</a></code> </p>
+        </td>
+        <td><p>Compare a result object to COSMIC V3 Signatures; Select exome or genome for
+SBS and only genome for DBS or Indel classes</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="compare_results.html">compare_results()</a></code> </p>
+        </td>
+        <td><p>Compare two result files to find similar signatures</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="exposure_differential_analysis.html">exposure_differential_analysis()</a></code> </p>
+        </td>
+        <td><p>Compare exposures of annotated samples</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-cosmic-signatures" class="hasAnchor"><a href="#section-cosmic-signatures" class="anchor"></a>COSMIC signatures</h2>
+          <p class="section-desc"><p>Result objects that contain COSMIC signatures</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="cosmic_v2_sigs.html">cosmic_v2_sigs</a></code> </p>
+        </td>
+        <td><p>COSMIC v2 SBS96 Signatures Result Object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="cosmic_v3_dbs_sigs.html">cosmic_v3_dbs_sigs</a></code> </p>
+        </td>
+        <td><p>COSMIC v3 DBS Genome Signatures Result Object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="cosmic_v3_indel_sigs.html">cosmic_v3_indel_sigs</a></code> </p>
+        </td>
+        <td><p>COSMIC v3 Indel Genome Signatures Result Object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="cosmic_v3_sbs_sigs.html">cosmic_v3_sbs_sigs</a></code> </p>
+        </td>
+        <td><p>COSMIC v3 SBS96 Genome Signatures Result Object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="cosmic_v3_sbs_sigs_exome.html">cosmic_v3_sbs_sigs_exome</a></code> </p>
+        </td>
+        <td><p>COSMIC v3 SBS96 Exome Signatures Result Object</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-miscellaneous-functions" class="hasAnchor"><a href="#section-miscellaneous-functions" class="anchor"></a>Miscellaneous functions</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="cosmic_v2_subtype_map.html">cosmic_v2_subtype_map()</a></code> </p>
+        </td>
+        <td><p>Input a cancer subtype to return a list of related COSMIC signatures</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="get_musica.html">get_musica()</a></code> </p>
+        </td>
+        <td><p>Retrieve musica from a musica_result object</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-data-objects-and-classes" class="hasAnchor"><a href="#section-data-objects-and-classes" class="anchor"></a>Data objects and classes</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="musica_sbs96.html">musica_sbs96</a></code> </p>
+        </td>
+        <td><p>musica_sbs96</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="musica_sbs96_tiny.html">musica_sbs96_tiny</a></code> </p>
+        </td>
+        <td><p>musica_sbs96_tiny</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="dbs_musica.html">dbs_musica</a></code> </p>
+        </td>
+        <td><p>dbs_musica</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="indel_musica.html">indel_musica</a></code> </p>
+        </td>
+        <td><p>indel_musica</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="musica.html">musica</a></code> </p>
+        </td>
+        <td><p>musica</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="musica_annot.html">musica_annot</a></code> </p>
+        </td>
+        <td><p>musica_annot</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="res.html">res</a></code> </p>
+        </td>
+        <td><p>res</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="res_annot.html">res_annot</a></code> </p>
+        </td>
+        <td><p>res_annot</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="rep_range.html">rep_range</a></code> </p>
+        </td>
+        <td><p>Replication Timing Data as GRanges Object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="musica-class.html">musica-class</a></code> </p>
+        </td>
+        <td><p>The primary object that contains variants, count_tables,
+and samples annotations</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="count_table-class.html">count_table-class</a></code> </p>
+        </td>
+        <td><p>Object containing the count table matrices, their names and descriptions
+that we generated by provided and by user functions. These are used to
+discover and infer signatures and exposures.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="musica_result-class.html">musica_result-class</a></code> </p>
+        </td>
+        <td><p>Object containing deconvolved/predicted signatures, sample weights, and
+the musica object the result was generated from</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="musica_result_grid-class.html">musica_result_grid-class</a></code> </p>
+        </td>
+        <td><p>Object containing the result objects generated from the combination of
+annotations and a range of k values</p></td>
       </tr>
     </tbody>
     </table>
