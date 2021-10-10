@@ -11,7 +11,6 @@ plot_exposures(
   group_by = "none",
   color_by = c("signature", "annotation"),
   annotation = NULL,
-  subset_annotation = NULL,
   num_samples = NULL,
   sort_samples = "total",
   threshold = NULL,
@@ -47,8 +46,6 @@ then a sample annotation must be supplied via the
 
 \item{annotation}{Sample annotation used to group the subplots and/or
 color the bars, boxes, or violins. Default \code{NULL}.}
-
-\item{subset_annotation}{Subset sample annotation to only specified values.}
 
 \item{num_samples}{The top number of sorted samples to display. If
 \code{NULL}, then all samples will be displayed. If \code{group_by} is set,

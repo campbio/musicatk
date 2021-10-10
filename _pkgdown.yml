@@ -1,0 +1,136 @@
+template:
+  params:
+    bootswatch: yeti
+    message: FALSE
+
+navbar:
+  title: "musicatk"
+  left:
+    - icon: fa-home fa-lg
+      href: https://www.camplab.net/musicatk
+    - text: "Installation"
+      href: articles/articles/installation.html
+    - text: "Vignettes"
+      menu:
+      - text: "Analysis in the R console"
+        href: articles/articles/tutorial_tcga_cnsl.html
+      - text: "Analysis with the user interface"
+        href: articles/articles/tutorial_tcga_ui.html
+    - text: "Reference"
+      href: reference/index.html
+    - text: "News"
+      href: news/index.html
+  right:      
+    - icon: fa-github
+      href: https://github.com/campbio/musicatk
+    - icon: fa-twitter
+      href: https://twitter.com/camplab1
+      
+reference:
+- title: Importing and processing
+  desc: Functions to import, extract, and process variants
+  contents:
+  - '`extract_variants`'
+  - '`extract_variants_from_maf`'
+  - '`extract_variants_from_maf_file`'
+  - '`extract_variants_from_matrix`'
+  - '`extract_variants_from_vcf`'
+  - '`extract_variants_from_vcf_file`'
+- title: musica objects
+  desc: Functions to create and subset musica objects
+  contents:
+  - '`select_genome`'
+  - '`create_musica`'  
+  - '`subset_musica_by_annotation`'
+  - '`subset_musica_by_counts`'
+  - '`subset_variant_by_type`'
+  - '`subset_variants_by_samples`'
+  - '`variants`'  
+- title: Creating mutation count tables
+  desc: Functions to build and combine mutation count tables
+  contents:
+  - '`build_standard_table`'
+  - '`build_custom_table`'
+  - '`add_flank_to_variants`'
+  - '`annotate_replication_strand`'
+  - '`annotate_transcript_strand`'
+  - '`annotate_variant_length`'
+  - '`annotate_variant_type`'
+  - '`combine_count_tables`'
+  - '`extract_count_tables`'
+  - '`tables`'
+- title: Sample annotations
+  desc: Functions to add and manipulate sample annotations
+  contents:
+  - '`samp_annot`'
+  - '`sample_names`'
+  - '`drop_annotation`'
+- title: Discovery and prediction
+  desc: Functions to identify signatures and exposures from mutation count tables
+  contents:
+  - '`discover_signatures`'
+  - '`exposures`'
+  - '`signatures`'
+  - '`name_signatures`'
+  - '`auto_predict_grid`'
+  - '`combine_predict_grid`'
+  - '`generate_result_grid`'
+- title: Visualization
+  desc: Functions to identify signatures and exposures from mutation count tables
+  contents:
+  - '`plot_exposures`'
+  - '`plot_signatures`'  
+  - '`plot_umap`'  
+  - '`plot_cluster`'
+  - '`plot_differential_analysis`'
+  - '`plot_heatmap`'
+  - '`plot_sample_counts`'
+  - '`plot_sample_reconstruction_error`'
+  - '`predict_exposure`'  
+- title: Downstream analysis
+  desc: Functions to compare the signatures between two results objects
+  contents:
+  - '`create_umap`'
+  - '`umap`'  
+  - '`cluster_exposure`'
+  - '`k_select`'
+- title: Signature comparisons
+  desc: Functions to compare the signatures between two results objects
+  contents:
+  - '`compare_cosmic_v2`'
+  - '`compare_cosmic_v3`'
+  - '`compare_results`'
+  - '`exposure_differential_analysis`'
+- title: COSMIC signatures
+  desc: Result objects that contain COSMIC signatures
+  contents:
+  - '`cosmic_v2_sigs`'
+  - '`cosmic_v3_dbs_sigs`'
+  - '`cosmic_v3_indel_sigs`'
+  - '`cosmic_v3_sbs_sigs`'
+  - '`cosmic_v3_sbs_sigs_exome`'
+- title: Miscellaneous functions
+  contents:
+  - '`cosmic_v2_subtype_map`'
+  - '`get_musica`'
+- title: Data objects and classes
+  contents:
+  - '`musica_sbs96`'
+  - '`musica_sbs96_tiny`'
+  - '`dbs_musica`'
+  - '`indel_musica`'
+  - '`musica`'
+  - '`musica_annot`'
+  - '`res`'
+  - '`res_annot`'
+  - '`rep_range`'
+  - '`musica-class`'
+  - '`count_table-class`'
+  - '`musica_result-class`'
+  - '`musica_result_grid-class`'
+
+
+
+
+
+  

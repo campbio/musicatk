@@ -184,15 +184,13 @@ subset_variant_by_type <- function(tab, type) {
 #' @param genome_build Which genome build to use: hg19, hg38, or a custom TxDb
 #' object
 #' @param build_table Automatically build a table from this annotation
-#' @param overwrite Overwrite transcript table if built
 #' @return None
 #' @examples
 #' data(musica)
 #' annotate_transcript_strand(musica, 19)
 #' @export
 annotate_transcript_strand <- function(musica, genome_build, 
-                                       build_table = TRUE, 
-                                       overwrite = TRUE) {
+                                       build_table = TRUE) {
   if (genome_build %in% c("19", "hg19")) {
     genes <- genes(
       TxDb.Hsapiens.UCSC.hg19.knownGene)
@@ -239,8 +237,7 @@ annotate_transcript_strand <- function(musica, genome_build,
       sample_annotations = samp_annot(musica))
     tab <- build_custom_table(musica = dat_musica, variant_annotation =
                                   "Transcript_Strand", name =
-                                  "Transcript_Strand", return_instead = TRUE, 
-                              overwrite = overwrite)
+                                  "Transcript_Strand", return_instead = TRUE)
     eval.parent(substitute(tables(musica)[["Transcript_Strand"]] <- tab))
   }
 }

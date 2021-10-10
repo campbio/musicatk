@@ -77,26 +77,43 @@ exposure_differential_analysis <- function(musica_result, annotation,
       group1 <- groups[1]
       group2 <- groups[2]
     }
+    n_sigs <- dim(signatures(musica_result))[2]
     header <- data.frame(x = group1, y = group2) %>%
       dplyr::mutate(p = paste0(.data$x, "-", .data$y, "(Pr(>|z|))"),
                     adj = paste0(.data$x, "-", .data$y, "(fdr)"))
-    diff.out <- sapply(seq_len(length(group1)), FUN = function(i) {
-      x <- exposures[, annotations == group1[i]] %>% as.matrix()
-      y <- exposures[, annotations == group2[i]] %>% as.matrix()
+    group_cols <- c(lapply(group1, function(x) {
+      rep(x, n_sigs) }),
+      lapply(group2, function(x) {
+        rep(x, n_sigs)})) %>%
+      unlist() %>%
+      cbind() %>%
+      matrix(ncol = 2)
+    group_cols <- cbind(rep(rownames(exposures), length(group1)), group_cols)
+    diff.out <- lapply(seq_len(length(group1)), FUN = function(i) {
+      x <- exposures[, annotations == group1[i]] %>%
+        as.matrix()
+      y <- exposures[, annotations == group2[i]] %>%
+        as.matrix()
       out <- matrixTests::row_wilcoxon_twosample(x, y, ...)$pvalue
       return(out)
-      })
+      }) %>%
+      unlist() %>%
+      matrix(ncol = 1)
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(group1) + 1):ncol(diff.out)],
-      method = "BH") %>% matrix(ncol = length(group1), byrow = F)
-    diff.out <- cbind(diff.out, p) %>% as.data.frame()
-    colnames(diff.out) <- c(header$p, header$adj)
+      method = "BH") %>%
+      matrix(ncol = 1, byrow = FALSE)
+    diff.out <- cbind(group_cols, matrix(diff.out, ncol = 1), p) %>%
+      as.data.frame()
+    colnames(diff.out) <- c("Signature", "Group1", "Group2", "Pr(>|z|)",
+                            "(fdr)")
   } else if (method == "kruskal") {
     header <- c("K-W chi-squared", "df", "p-value", "fdr")
     diff.out <- matrixTests::row_kruskalwallis(exposures, annotations, ...) %>%
       dplyr::select(.data$statistic, .data$df, .data$pvalue)
     diff.out$fdr <- p.adjust(diff.out$pvalue, method = "BH")
     colnames(diff.out) <- header
+    rownames(diff.out) <- rownames(exposures)
   } else if (method == "glm.nb") {
     header <- data.frame(y = groups) %>%
       dplyr::mutate(coef = paste0(.data$y, "(coef)"),
@@ -114,13 +131,14 @@ exposure_differential_analysis <- function(musica_result, annotation,
     anova.out$fdr <- p.adjust(diff.out[, ncol(diff.out)], method = "BH")
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(groups) + 1):ncol(diff.out)],
-                  method = "BH") %>% matrix(ncol = length(groups), byrow = F)
+                  method = "BH") %>% matrix(ncol = length(groups),
+                                            byrow = FALSE)
     diff.out <- cbind(diff.out[, -ncol(diff.out)], p)
     diff.out <- cbind(diff.out, anova.out)
     colnames(diff.out) <- c(header$coef, header$sd, header$z, header$p,
                             header$adj, "ANOVA(Pr(>Chi))", "ANOVA(fdr)")
+    rownames(diff.out) <- rownames(exposures)
   }
-  rownames(diff.out) <- rownames(exposures)
   return(diff.out)
 }
 
@@ -130,6 +148,7 @@ exposure_differential_analysis <- function(musica_result, annotation,
 #' @param analysis Analysis created by \code{exposure_differential_analysis}
 #' @param analysis_type Currently only \code{"glm"} supported
 #' @param samp_num Number of samples that went into the analysis
+#' @return Generates a ggplot object
 #' @examples
 #' data("res_annot")
 #' analysis <- exposure_differential_analysis(res_annot, "Tumor_Subtypes", 
@@ -143,7 +162,7 @@ plot_differential_analysis <- function(analysis, analysis_type, samp_num) {
     dt$signif <- ifelse(dt$value < 0.01, 1, 0)
     p <- ggplot2::ggplot(dt, aes_string(fill = "rn", y = "value", 
                                         x = "variable")) + 
-      geom_bar(position = "dodge", stat = "identity")
+      geom_bar(position="dodge", stat="identity")
     p <- .gg_default_theme(p)
     p <- p + theme(legend.title = element_blank())
     return(p)

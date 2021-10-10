@@ -28,7 +28,6 @@ Imports:
     tidyr,
     gtools,
     gridExtra,
-    maftools,
     MCMCprecision,
     MASS,
     matrixTests,
@@ -60,8 +59,18 @@ Imports:
     factoextra,
     cluster,
     ComplexHeatmap,
-    stringi,
-    philentropy
+    philentropy,
+    shinydashboard,
+    sortable,
+    maftools,
+    shiny,
+    shinyjs,
+    shinyalert,
+    shinybusy,
+    shinyBS,
+    TCGAbiolinks,
+    shinyjqui,
+    stringi
 Suggests:
     testthat,
     BiocStyle,

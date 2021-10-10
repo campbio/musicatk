@@ -9,7 +9,7 @@ auto_predict_grid(
   musica,
   table_name,
   signature_res,
-  algorithm = "lda",
+  algorithm,
   sample_annotation = NULL,
   min_exists = 0.05,
   proportion_samples = 0.25,

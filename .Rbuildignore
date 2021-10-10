@@ -7,4 +7,8 @@
 ^\.travis\.yml$
 ^renv*
 .Rprofile
-^GDCdata/$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+vignettes/articles/GDCdata
+^\.github$

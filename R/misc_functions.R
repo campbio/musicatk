@@ -20,7 +20,7 @@
   for (i in seq_len(ncol(p))) {
     for (j in seq_len(ncol(q))) {
       m <- (p[, i] + q[, j]) / 2
-      res[i, j, drop = FALSE] <- 1 - (0.5 * .kld(p[, i], m) + 0.5 * .kld(q[, j], m))
+      res[i, j] <- 1 - (0.5 * .kld(p[, i], m) + 0.5 * .kld(q[, j], m))
     }
   }
   return(res)
@@ -43,6 +43,6 @@
   }
   temp <- t(cbind(x, y))
   res <- temp %*% t(temp) / (sqrt(rowSums(temp^2) %*% t(rowSums(temp^2))))
-  return(res[seq(nX), -seq(nX), drop = FALSE])
+  return(res[seq(nX), -seq(nX)])
 }
 

@@ -4,12 +4,7 @@
 \alias{annotate_transcript_strand}
 \title{Add transcript strand annotation to SBS variants (defined in genes only)}
 \usage{
-annotate_transcript_strand(
-  musica,
-  genome_build,
-  build_table = TRUE,
-  overwrite = TRUE
-)
+annotate_transcript_strand(musica, genome_build, build_table = TRUE)
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
@@ -18,8 +13,6 @@ annotate_transcript_strand(
 object}
 
 \item{build_table}{Automatically build a table from this annotation}
-
-\item{overwrite}{Overwrite transcript table if built}
 }
 \value{
 None
