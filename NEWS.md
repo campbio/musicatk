@@ -1,3 +1,6 @@
+# musicatk 1.3.1 (2021-10-10)
+* Updated version number to match Bioconductor
+
 # musicatk 1.2.1 (2021-08-08)
 * Fixed bug in fonts for some plots
 * Added documentation site generated with pkgdown
