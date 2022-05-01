@@ -79,6 +79,7 @@ Suggests:
     survival,
     XVector,
     qpdf,
-    covr
+    covr,
+    shinyWidgets
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr

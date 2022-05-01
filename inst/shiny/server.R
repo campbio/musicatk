@@ -305,40 +305,11 @@ server <- function(input, output, session) {
   output$tcga_tumor <- renderUI({
     hr()
     #Extracting TCGA tumors and formatting it to display only the abbreviations
-    p <- TCGAbiolinks:::getGDCprojects()$project_id
-    t <- grep("TCGA", p)
-    p <- p[t]
-    p <- gsub(".*-", "", p)
-    names(p) <- c("UCEC - Uterine Corpus Endometrial Carcinoma",
-                  "LGG - Brain Lower Grade Glioma",
-                  "SARC - Sarcoma", "PAAD - Pancreatic adenocarcinoma",
-                  "ESCA - Esophageal carcinoma",
-                  "PRAD - Prostate adenocarcinoma",
-                  "LAML - Acute Myeloid Leukemia",
-                  "KIRC - Kidney renal clear cell carcinoma",
-                  "PCPG - Pheochromocytoma and Paraganglioma",
-                  "HNSC - Head and Neck squamous cell carcinoma",
-                  "OV - Ovarian serous cystadenocarcinoma",
-                  "GBM - Glioblastoma multiforme",
-                  "UCS - Uterine Carcinosarcoma", "MESO - Mesothelioma",
-                  "TGCT - Testicular Germ Cell Tumors",
-                  "KICH - Kidney Chromophobe", "READ - Rectum adenocarcinoma",
-                  "UVM - Uveal Melanoma",
-                  "THCA - Thyroid carcinoma",
-                  "LIHC - Liver hepatocellular carcinoma", "THYM - Thymoma",
-                  "CHOL - Cholangiocarcinoma",
-                  "DLBC - Lymphoid Neoplasm Diffuse Large B-cell Lymphoma",
-                  "KIRP - Kidney renal papillary cell carcinoma",
-                  "BLCA - Bladder Urothelial Carcinoma",
-                  "BRCA - Breast invasive carcinoma",
-                  "COAD - Colon adenocarcinoma",
-                  paste0("CESC - Cervical squamous cell carcinoma ",
-                  "and endocervical adenocarcinoma"),
-                  "LUSC - Lung squamous cell carcinoma",
-                  "STAD - Stomach adenocarcinoma",
-                  "SKCM - Skin Cutaneous Melanoma",
-                  "LUAD - Lung adenocarcinoma",
-                  "ACC - Adrenocortical carcinoma")
+    projects <- TCGAbiolinks:::getGDCprojects()
+    project.name <- paste0(projects$id, ": ", projects$name)
+    p <- projects$id
+    names(p) <- project.name
+    p <- sort(p)
     textInput("tcga_tumor", "Enter TCGA tumor type")
     tags$style("#tcga_tumor {
                     font-size:8px;
@@ -346,11 +317,24 @@ server <- function(input, output, session) {
            }")
     checkboxGroupInput("tcga_tumor", " ", choices = as.list(p))
   })
+
   observeEvent(input$import_tcga, {
     req(input$import_tcga)
     if (!is.null(input$tcga_tumor)) {
       shinybusy::show_spinner()
-      maf <- TCGAbiolinks::GDCquery_Maf(input$tcga_tumor, pipelines = "mutect")
+      
+      # Now defunct in TCGAbiolink
+      # maf <- TCGAbiolinks::GDCquery_Maf(input$tcga_tumor, pipelines = "mutect")
+     
+      # New way:
+      query <- GDCquery(project = input$tcga_tumor, 
+                  data.category = "Simple Nucleotide Variation",
+                  data.type = "Masked Somatic Mutation",
+                  workflow.type = "Aliquot Ensemble Somatic Variant Merging and Masking",
+                  experimental.strategy = "WXS",
+                  data.format = "maf")
+      GDCdownload(query)
+      maf <- GDCprepare(query)
       vals$var <- extract_variants_from_maf_file(maf)
       showNotification("TCGA dataset successfully imported!")
       shinybusy::hide_spinner()
@@ -359,7 +343,8 @@ server <- function(input, output, session) {
       shinyalert("Error: No tumor found. Please select a tumor from the list!")
       }
   })
-#Displaying thr table for TCGA tumor variants
+
+  #Displaying thr table for TCGA tumor variants
   output$tcga_contents <- renderDataTable({
     req(vals$var)
     req(input$tcga_tumor)
