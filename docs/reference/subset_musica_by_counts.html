@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.0</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="https://www.camplab.net/musicatk">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fa fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -88,7 +88,7 @@
   <a href="../articles/articles/installation.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -112,13 +112,13 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/campbio/musicatk">
-    <span class="fas fa-github"></span>
+    <span class="fa fa-github"></span>
      
   </a>
 </li>
 <li>
   <a href="https://twitter.com/camplab1">
-    <span class="fas fa-twitter"></span>
+    <span class="fa fa-twitter"></span>
      
   </a>
 </li>
@@ -170,82 +170,83 @@ and variants subsetted to only contains samples with the specified minimum
 number of counts (column sums) in the specified table</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>musica_sbs96</span><span class='op'>)</span>
-<span class='fu'>subset_musica_by_counts</span><span class='op'>(</span><span class='va'>musica_sbs96</span>, <span class='st'>"SBS96"</span>, <span class='fl'>20</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; An object of class "musica"
-#&gt; Slot "variants":
-#&gt;        chr     start       end ref alt                       sample
-#&gt;   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08
-#&gt;   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08
-#&gt;   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08
-#&gt;   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08
-#&gt;   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08
-#&gt;  ---                                                               
-#&gt; 869: chr19  54885292  54885292   G   A TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 870: chr20  49374328  49374328   A   T TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 871:  chrX  73213768  73213768   T   G TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 872:  chrX 101292834 101292834   G   A TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 873:  chrX 107526690 107526690   C   T TCGA-ER-A19O-06A-11D-A197-08
-#&gt;      Variant_Type
-#&gt;   1:          SBS
-#&gt;   2:          SBS
-#&gt;   3:          SBS
-#&gt;   4:          SBS
-#&gt;   5:          SBS
-#&gt;  ---             
-#&gt; 869:          SBS
-#&gt; 870:          SBS
-#&gt; 871:          SBS
-#&gt; 872:          SBS
-#&gt; 873:          SBS
-#&gt; 
-#&gt; Slot "count_tables":
-#&gt; $SBS96
-#&gt; Count_Table:  SBS96 
-#&gt; Motifs: 96 
-#&gt; Samples: 6 
-#&gt;  
-#&gt; **Annotations: 
-#&gt;            motif mutation context
-#&gt; C&gt;A_ACA C&gt;A_ACA      C&gt;A     ACA
-#&gt; C&gt;A_ACC C&gt;A_ACC      C&gt;A     ACC
-#&gt; C&gt;A_ACG C&gt;A_ACG      C&gt;A     ACG
-#&gt; C&gt;A_ACT C&gt;A_ACT      C&gt;A     ACT
-#&gt; C&gt;A_CCA C&gt;A_CCA      C&gt;A     CCA
-#&gt; C&gt;A_CCC C&gt;A_CCC      C&gt;A     CCC
-#&gt; 7           ...      ...     ... 
-#&gt; 
-#&gt; **Features: 
-#&gt;    mutation
-#&gt; 1  C&gt;A_TCA
-#&gt; 2  C&gt;A_ACT
-#&gt; 3  T&gt;C_ATT
-#&gt; 4  C&gt;G_TCT
-#&gt; 5  T&gt;G_CTC
-#&gt; 6  C&gt;G_CCC
-#&gt; 7      ... 
-#&gt; 
-#&gt; **Types: 
-#&gt;  SBS
-#&gt;  
-#&gt; **Color Variable: 
-#&gt;  mutation
-#&gt;  
-#&gt; **Color Mapping: 
-#&gt;  #5ABCEBFF
-#&gt;  #050708FF
-#&gt;  #D33C32FF
-#&gt;  #CBCACBFF
-#&gt;  #ABCD72FF
-#&gt;  #E7C9C6FF
-#&gt;  
-#&gt; **Descriptions: 
-#&gt;  Single Base Substitution table with one base upstream and downstream
-#&gt; 
-#&gt; 
-#&gt; Slot "sample_annotations":
-#&gt; Null data.table (0 rows and 0 cols)
-#&gt; </div></pre>
+    <pre class="examples"><span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>musica_sbs96</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'>subset_musica_by_counts</span><span class='op'>(</span><span class='va'>musica_sbs96</span>, <span class='st'>"SBS96"</span>, <span class='fl'>20</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> An object of class "musica"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "variants":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>        chr     start       end ref alt                       sample</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  ---                                                               </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 869: chr19  54885292  54885292   G   A TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 870: chr20  49374328  49374328   A   T TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 871:  chrX  73213768  73213768   T   G TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 872:  chrX 101292834 101292834   G   A TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 873:  chrX 107526690 107526690   C   T TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>      Variant_Type</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   1:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   2:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   3:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   4:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   5:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  ---             </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 869:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 870:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 871:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 872:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 873:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "count_tables":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $SBS96</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Count_Table:  SBS96 </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Motifs: 96 </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Samples: 6 </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Annotations: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            motif mutation context</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACA C&gt;A_ACA      C&gt;A     ACA</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACC C&gt;A_ACC      C&gt;A     ACC</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACG C&gt;A_ACG      C&gt;A     ACG</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACT C&gt;A_ACT      C&gt;A     ACT</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_CCA C&gt;A_CCA      C&gt;A     CCA</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_CCC C&gt;A_CCC      C&gt;A     CCC</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 7           ...      ...     ... </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Features: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>    mutation</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 1  C&gt;A_TCA</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 2  C&gt;A_ACT</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 3  T&gt;C_ATT</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 4  C&gt;G_TCT</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 5  T&gt;G_CTC</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 6  C&gt;G_CCC</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 7      ... </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Types: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Color Variable: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  mutation</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Color Mapping: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #5ABCEBFF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #050708FF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #D33C32FF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #CBCACBFF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #ABCD72FF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #E7C9C6FF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Descriptions: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  Single Base Substitution table with one base upstream and downstream</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "sample_annotations":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Null data.table (0 rows and 0 cols)</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

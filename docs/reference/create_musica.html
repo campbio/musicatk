@@ -81,7 +81,7 @@ sample_col parameters." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.0</span>
       </span>
     </div>
 
@@ -89,7 +89,7 @@ sample_col parameters." />
       <ul class="nav navbar-nav">
         <li>
   <a href="https://www.camplab.net/musicatk">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fa fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -97,7 +97,7 @@ sample_col parameters." />
   <a href="../articles/articles/installation.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -121,13 +121,13 @@ sample_col parameters." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/campbio/musicatk">
-    <span class="fas fa-github"></span>
+    <span class="fa fa-github"></span>
      
   </a>
 </li>
 <li>
   <a href="https://twitter.com/camplab1">
-    <span class="fas fa-twitter"></span>
+    <span class="fa fa-twitter"></span>
      
   </a>
 </li>
@@ -265,12 +265,17 @@ Default <code>TRUE</code>.</p></td>
     <p>Returns a musica object</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>maf_file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/system.file.html'>system.file</a></span><span class='op'>(</span><span class='st'>"extdata"</span>, <span class='st'>"public_TCGA.LUSC.maf"</span>,
-package <span class='op'>=</span> <span class='st'>"musicatk"</span><span class='op'>)</span>
-<span class='va'>variants</span> <span class='op'>&lt;-</span> <span class='fu'><a href='extract_variants_from_maf_file.html'>extract_variants_from_maf_file</a></span><span class='op'>(</span><span class='va'>maf_file</span><span class='op'>)</span>
-<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='select_genome.html'>select_genome</a></span><span class='op'>(</span><span class='st'>"38"</span><span class='op'>)</span>
-<span class='va'>musica</span> <span class='op'>&lt;-</span> <span class='fu'>create_musica</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>variants</span>, genome <span class='op'>=</span> <span class='va'>g</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Checking that chromosomes in the 'variant' object match chromosomes in the 'genome' object.</span></div><div class='output co'>#&gt; <span class='message'>Checking that the reference bases in the 'variant' object match the reference bases in the 'genome' object.</span></div><div class='output co'>#&gt; <span class='message'>Standardizing INS/DEL style</span></div><div class='output co'>#&gt; <span class='message'>Converting adjacent SBS into DBS</span></div><div class='output co'>#&gt; <span class='message'>4 SBS converted to DBS</span></div></pre>
+    <pre class="examples"><span class='r-in'><span class='va'>maf_file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/system.file.html'>system.file</a></span><span class='op'>(</span><span class='st'>"extdata"</span>, <span class='st'>"public_TCGA.LUSC.maf"</span>,</span>
+<span class='r-in'>package <span class='op'>=</span> <span class='st'>"musicatk"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>variants</span> <span class='op'>&lt;-</span> <span class='fu'><a href='extract_variants_from_maf_file.html'>extract_variants_from_maf_file</a></span><span class='op'>(</span><span class='va'>maf_file</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='select_genome.html'>select_genome</a></span><span class='op'>(</span><span class='st'>"38"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>musica</span> <span class='op'>&lt;-</span> <span class='fu'>create_musica</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>variants</span>, genome <span class='op'>=</span> <span class='va'>g</span><span class='op'>)</span></span>
+<span class='r-msg co'><span class='r-pr'>#&gt;</span> Checking that chromosomes in the 'variant' object match chromosomes in the 'genome' object.</span>
+<span class='r-msg co'><span class='r-pr'>#&gt;</span> Checking that the reference bases in the 'variant' object match the reference bases in the 'genome' object.</span>
+<span class='r-msg co'><span class='r-pr'>#&gt;</span> Standardizing INS/DEL style</span>
+<span class='r-msg co'><span class='r-pr'>#&gt;</span> Converting adjacent SBS into DBS</span>
+<span class='r-msg co'><span class='r-pr'>#&gt;</span> 4 SBS converted to DBS</span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

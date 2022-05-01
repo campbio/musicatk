@@ -82,7 +82,7 @@ build_standard_table." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.0</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@ build_standard_table." />
       <ul class="nav navbar-nav">
         <li>
   <a href="https://www.camplab.net/musicatk">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fa fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -98,7 +98,7 @@ build_standard_table." />
   <a href="../articles/articles/installation.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -122,13 +122,13 @@ build_standard_table." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/campbio/musicatk">
-    <span class="fas fa-github"></span>
+    <span class="fa fa-github"></span>
      
   </a>
 </li>
 <li>
   <a href="https://twitter.com/camplab1">
-    <span class="fas fa-twitter"></span>
+    <span class="fa fa-twitter"></span>
      
   </a>
 </li>
@@ -219,221 +219,224 @@ signature algorithms. Default <code>10</code>.</p></td>
 signatures and exposures.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span>
-<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='select_genome.html'>select_genome</a></span><span class='op'>(</span><span class='st'>"19"</span><span class='op'>)</span>
-<span class='fu'><a href='build_standard_table.html'>build_standard_table</a></span><span class='op'>(</span><span class='va'>musica</span>, <span class='va'>g</span>, <span class='st'>"SBS96"</span>, overwrite <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Building count table from SBS with SBS96 schema</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Overwriting counts table: SBS96</span></div><div class='input'><span class='fu'>discover_signatures</span><span class='op'>(</span>musica <span class='op'>=</span> <span class='va'>musica</span>, table_name <span class='op'>=</span> <span class='st'>"SBS96"</span>,
-num_signatures <span class='op'>=</span> <span class='fl'>3</span>, algorithm <span class='op'>=</span> <span class='st'>"lda"</span>, seed <span class='op'>=</span> <span class='fl'>12345</span>, nstart <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; An object of class "musica_result"
-#&gt; Slot "signatures":
-#&gt;           Signature1   Signature2   Signature3
-#&gt; C&gt;A_ACA 3.214412e-22 4.257622e-02 4.320778e-02
-#&gt; C&gt;A_ACC 7.068686e-72 3.378749e-02 7.273860e-57
-#&gt; C&gt;A_ACG 1.696120e-76 5.631249e-03 3.801190e-79
-#&gt; C&gt;A_ACT 1.439528e-70 1.689375e-02 3.139490e-54
-#&gt; C&gt;A_CCA 2.443956e-69 2.815624e-02 1.256298e-02
-#&gt; C&gt;A_CCC 1.554471e-69 2.815624e-02 2.512596e-02
-#&gt; C&gt;A_CCG 6.265378e-03 1.622837e-02 5.081727e-05
-#&gt; C&gt;A_CCT 9.750270e-19 3.378747e-02 3.962780e-08
-#&gt; C&gt;A_GCA 6.265689e-03 1.623538e-02 3.449016e-05
-#&gt; C&gt;A_GCC 5.661380e-72 1.126250e-02 1.256298e-02
-#&gt; C&gt;A_GCG 1.441197e-67 1.126250e-02 4.896510e-48
-#&gt; C&gt;A_GCT 4.251600e-71 3.941874e-02 8.310749e-55
-#&gt; C&gt;A_TCA 1.079587e-75 2.815624e-02 2.030294e-77
-#&gt; C&gt;A_TCC 6.227899e-72 1.689375e-02 2.512596e-02
-#&gt; C&gt;A_TCG 2.917076e-72 2.252499e-02 2.383283e-56
-#&gt; C&gt;A_TCT 1.040964e-63 3.378749e-02 1.256298e-02
-#&gt; C&gt;G_ACA 8.982685e-72 1.689375e-02 4.340776e-55
-#&gt; C&gt;G_ACC 3.332204e-14 1.023482e-02 2.292690e-03
-#&gt; C&gt;G_ACG 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; C&gt;G_ACT 4.790181e-16 1.602187e-02 2.707106e-02
-#&gt; C&gt;G_CCA 5.966718e-72 5.631249e-03 1.256298e-02
-#&gt; C&gt;G_CCC 9.067051e-17 2.252476e-02 5.134283e-07
-#&gt; C&gt;G_CCG 5.623647e-03 5.631249e-03 2.985272e-45
-#&gt; C&gt;G_CCT 2.341534e-13 2.052206e-02 4.468438e-03
-#&gt; C&gt;G_GCA 3.673864e-72 2.815624e-02 4.208045e-57
-#&gt; C&gt;G_GCC 5.477960e-80 1.236855e-78 1.256298e-02
-#&gt; C&gt;G_GCG 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; C&gt;G_GCT 1.298768e-79 3.551297e-78 5.025193e-02
-#&gt; C&gt;G_TCA 3.448376e-76 1.126250e-02 8.959530e-78
-#&gt; C&gt;G_TCC 8.532596e-21 1.315044e-02 3.347705e-02
-#&gt; C&gt;G_TCG 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; C&gt;G_TCT 1.559492e-17 7.339826e-03 2.131423e-02
-#&gt; C&gt;T_ACA 9.283284e-02 1.860131e-02 1.493970e-02
-#&gt; C&gt;T_ACC 1.687094e-02 4.660678e-76 1.256298e-02
-#&gt; C&gt;T_ACG 1.687094e-02 5.605620e-76 2.512596e-02
-#&gt; C&gt;T_ACT 6.951015e-02 1.850334e-02 2.957119e-02
-#&gt; C&gt;T_CCA 7.873106e-02 1.689375e-02 6.554712e-69
-#&gt; C&gt;T_CCC 6.318646e-02 3.604767e-02 4.224660e-02
-#&gt; C&gt;T_CCG 1.124729e-02 5.631814e-84 3.067592e-77
-#&gt; C&gt;T_CCT 1.007431e-01 2.657566e-02 1.716718e-02
-#&gt; C&gt;T_GCA 6.186012e-02 2.252499e-02 2.512596e-02
-#&gt; C&gt;T_GCC 5.789264e-02 1.231471e-02 4.420470e-02
-#&gt; C&gt;T_GCG 5.623647e-03 2.469049e-75 1.256298e-02
-#&gt; C&gt;T_GCT 4.210611e-02 1.396361e-02 3.810356e-02
-#&gt; C&gt;T_TCA 4.634952e-02 3.704481e-02 1.482014e-02
-#&gt; C&gt;T_TCC 1.008866e-01 3.337747e-02 5.192405e-02
-#&gt; C&gt;T_TCG 1.124729e-02 5.346482e-78 4.813211e-68
-#&gt; C&gt;T_TCT 6.186012e-02 1.689375e-02 1.256298e-02
-#&gt; T&gt;A_ATA 4.222375e-70 1.126250e-02 1.127285e-52
-#&gt; T&gt;A_ATC 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;A_ATG 1.244484e-69 1.126250e-02 1.799990e-51
-#&gt; T&gt;A_ATT 5.623647e-03 5.631249e-03 1.256298e-02
-#&gt; T&gt;A_CTA 4.540720e-68 1.126250e-02 1.559780e-48
-#&gt; T&gt;A_CTC 2.329443e-68 1.126250e-02 1.256298e-02
-#&gt; T&gt;A_CTG 1.583880e-69 1.126250e-02 2.512596e-02
-#&gt; T&gt;A_CTT 5.623647e-03 5.631249e-03 1.256298e-02
-#&gt; T&gt;A_GTA 6.742502e-71 2.212938e-67 2.512596e-02
-#&gt; T&gt;A_GTC 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;A_GTG 5.623647e-03 5.631249e-03 8.389862e-71
-#&gt; T&gt;A_GTT 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;A_TTA 3.534605e-76 1.689375e-02 1.112954e-76
-#&gt; T&gt;A_TTC 5.623647e-03 5.806495e-76 1.256298e-02
-#&gt; T&gt;A_TTG 5.623647e-03 1.485272e-75 1.256298e-02
-#&gt; T&gt;A_TTT 1.687094e-02 1.689375e-02 2.512596e-02
-#&gt; T&gt;C_ATA 1.100756e-13 6.228549e-08 1.256284e-02
-#&gt; T&gt;C_ATC 2.279139e-68 1.126250e-02 1.256298e-02
-#&gt; T&gt;C_ATG 1.296000e-02 9.303956e-03 5.432740e-04
-#&gt; T&gt;C_ATT 5.837458e-03 2.529910e-02 3.102243e-02
-#&gt; T&gt;C_CTA 4.866067e-76 5.631249e-03 6.309342e-77
-#&gt; T&gt;C_CTC 1.124729e-02 5.631249e-03 1.439249e-71
-#&gt; T&gt;C_CTG 6.659905e-66 5.631249e-03 2.512596e-02
-#&gt; T&gt;C_CTT 1.230529e-02 2.999234e-12 2.276246e-02
-#&gt; T&gt;C_GTA 3.619894e-71 2.772732e-66 2.512596e-02
-#&gt; T&gt;C_GTC 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;C_GTG 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;C_GTT 5.623647e-03 7.333095e-76 1.256298e-02
-#&gt; T&gt;C_TTA 1.687094e-02 5.631249e-03 4.987590e-72
-#&gt; T&gt;C_TTC 6.074431e-03 7.222243e-03 2.056952e-02
-#&gt; T&gt;C_TTG 1.979686e-68 5.631249e-03 6.494058e-49
-#&gt; T&gt;C_TTT 5.623647e-03 8.877562e-76 1.256298e-02
-#&gt; T&gt;G_ATA 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;G_ATC 5.623647e-03 3.239622e-73 1.256298e-02
-#&gt; T&gt;G_ATG 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;G_ATT 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;G_CTA 2.440947e-78 1.427290e-77 1.256298e-02
-#&gt; T&gt;G_CTC 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;G_CTG 5.623647e-03 1.120463e-83 2.578236e-76
-#&gt; T&gt;G_CTT 9.044721e-72 5.631249e-03 2.512596e-02
-#&gt; T&gt;G_GTA 8.002118e-77 5.631249e-03 7.430059e-78
-#&gt; T&gt;G_GTC 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;G_GTG 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;G_GTT 7.320200e-69 5.631249e-03 1.047583e-49
-#&gt; T&gt;G_TTA 1.124729e-02 4.725050e-80 1.226595e-70
-#&gt; T&gt;G_TTC 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;G_TTG 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; T&gt;G_TTT 3.720076e-44 3.720076e-44 3.720076e-44
-#&gt; 
-#&gt; Slot "exposures":
-#&gt;            TCGA-56-7582-01A-11D-2042-08 TCGA-77-7335-01A-11D-2042-08
-#&gt; Signature1                   0.05077393                   0.05080516
-#&gt; Signature2                  46.89845213                   0.05080516
-#&gt; Signature3                   0.05077393                  57.89838968
-#&gt;            TCGA-94-7557-01A-11D-2122-08 TCGA-97-7938-01A-11D-2167-08
-#&gt; Signature1                     5.061058                   0.05087258
-#&gt; Signature2                    14.057990                 116.89825485
-#&gt; Signature3                     9.880952                   0.05087258
-#&gt;            TCGA-EE-A3J5-06A-11D-A20D-08 TCGA-ER-A197-06A-32D-A197-08
-#&gt; Signature1                 121.89824941                   0.05024105
-#&gt; Signature2                   0.05087529                   0.05024105
-#&gt; Signature3                   0.05087529                  10.89951790
-#&gt;            TCGA-ER-A19O-06A-11D-A197-08
-#&gt; Signature1                  50.89842631
-#&gt; Signature2                   0.05078684
-#&gt; Signature3                   0.05078684
-#&gt; 
-#&gt; Slot "table_name":
-#&gt; [1] "SBS96"
-#&gt; 
-#&gt; Slot "algorithm":
-#&gt; [1] "LDA"
-#&gt; 
-#&gt; Slot "musica":
-#&gt; An object of class "musica"
-#&gt; Slot "variants":
-#&gt;        chr     start       end ref alt                       sample
-#&gt;   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08
-#&gt;   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08
-#&gt;   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08
-#&gt;   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08
-#&gt;   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08
-#&gt;  ---                                                               
-#&gt; 907: chr19  54885292  54885292   G   A TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 908: chr20  49374328  49374328   A   T TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 909:  chrX  73213768  73213768   T   G TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 910:  chrX 101292834 101292834   G   A TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 911:  chrX 107526690 107526690   C   T TCGA-ER-A19O-06A-11D-A197-08
-#&gt;      Variant_Type
-#&gt;   1:          SBS
-#&gt;   2:          SBS
-#&gt;   3:          SBS
-#&gt;   4:          SBS
-#&gt;   5:          SBS
-#&gt;  ---             
-#&gt; 907:          SBS
-#&gt; 908:          SBS
-#&gt; 909:          SBS
-#&gt; 910:          SBS
-#&gt; 911:          SBS
-#&gt; 
-#&gt; Slot "count_tables":
-#&gt; $SBS96
-#&gt; Count_Table:  SBS96 
-#&gt; Motifs: 96 
-#&gt; Samples: 7 
-#&gt;  
-#&gt; **Annotations: 
-#&gt;            motif mutation context
-#&gt; C&gt;A_ACA C&gt;A_ACA      C&gt;A     ACA
-#&gt; C&gt;A_ACC C&gt;A_ACC      C&gt;A     ACC
-#&gt; C&gt;A_ACG C&gt;A_ACG      C&gt;A     ACG
-#&gt; C&gt;A_ACT C&gt;A_ACT      C&gt;A     ACT
-#&gt; C&gt;A_CCA C&gt;A_CCA      C&gt;A     CCA
-#&gt; C&gt;A_CCC C&gt;A_CCC      C&gt;A     CCC
-#&gt; 7           ...      ...     ... 
-#&gt; 
-#&gt; **Features: 
-#&gt;    mutation
-#&gt; 1  C&gt;A_CCG
-#&gt; 2  C&gt;A_GCA
-#&gt; 3  T&gt;C_ATG
-#&gt; 4  C&gt;G_TGC
-#&gt; 5  T&gt;G_AGC
-#&gt; 6  C&gt;G_CCT
-#&gt; 7      ... 
-#&gt; 
-#&gt; **Types: 
-#&gt;  SBS
-#&gt;  
-#&gt; **Color Variable: 
-#&gt;  mutation
-#&gt;  
-#&gt; **Color Mapping: 
-#&gt;  #5ABCEBFF
-#&gt;  #050708FF
-#&gt;  #D33C32FF
-#&gt;  #CBCACBFF
-#&gt;  #ABCD72FF
-#&gt;  #E7C9C6FF
-#&gt;  
-#&gt; **Descriptions: 
-#&gt;  Single Base Substitution table with one base upstream and downstream
-#&gt; 
-#&gt; 
-#&gt; Slot "sample_annotations":
-#&gt;                         Samples Tumor_Subtypes
-#&gt; 1: TCGA-94-7557-01A-11D-2122-08           Lung
-#&gt; 2: TCGA-56-7582-01A-11D-2042-08           Lung
-#&gt; 3: TCGA-77-7335-01A-11D-2042-08           Lung
-#&gt; 4: TCGA-97-7938-01A-11D-2167-08           Lung
-#&gt; 5: TCGA-EE-A3J5-06A-11D-A20D-08         Breast
-#&gt; 6: TCGA-ER-A197-06A-32D-A197-08         Breast
-#&gt; 7: TCGA-ER-A19O-06A-11D-A197-08         Breast
-#&gt; 
-#&gt; 
-#&gt; Slot "umap":
-#&gt; &lt;0 x 0 matrix&gt;
-#&gt; </div></pre>
+    <pre class="examples"><span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='select_genome.html'>select_genome</a></span><span class='op'>(</span><span class='st'>"19"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='build_standard_table.html'>build_standard_table</a></span><span class='op'>(</span><span class='va'>musica</span>, <span class='va'>g</span>, <span class='st'>"SBS96"</span>, overwrite <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span>
+<span class='r-msg co'><span class='r-pr'>#&gt;</span> Building count table from SBS with SBS96 schema</span>
+<span class='r-wrn co'><span class='r-pr'>#&gt;</span> <span class='warning'>Warning: </span>Overwriting counts table: SBS96</span>
+<span class='r-in'><span class='fu'>discover_signatures</span><span class='op'>(</span>musica <span class='op'>=</span> <span class='va'>musica</span>, table_name <span class='op'>=</span> <span class='st'>"SBS96"</span>,</span>
+<span class='r-in'>num_signatures <span class='op'>=</span> <span class='fl'>3</span>, algorithm <span class='op'>=</span> <span class='st'>"lda"</span>, seed <span class='op'>=</span> <span class='fl'>12345</span>, nstart <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> An object of class "musica_result"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "signatures":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>           Signature1   Signature2   Signature3</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACA 3.214412e-22 4.257622e-02 4.320778e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACC 7.068686e-72 3.378749e-02 7.273860e-57</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACG 1.696120e-76 5.631249e-03 3.801190e-79</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACT 1.439528e-70 1.689375e-02 3.139490e-54</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_CCA 2.443956e-69 2.815624e-02 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_CCC 1.554471e-69 2.815624e-02 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_CCG 6.265378e-03 1.622837e-02 5.081727e-05</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_CCT 9.750270e-19 3.378747e-02 3.962780e-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_GCA 6.265689e-03 1.623538e-02 3.449016e-05</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_GCC 5.661380e-72 1.126250e-02 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_GCG 1.441197e-67 1.126250e-02 4.896510e-48</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_GCT 4.251600e-71 3.941874e-02 8.310749e-55</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_TCA 1.079587e-75 2.815624e-02 2.030294e-77</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_TCC 6.227899e-72 1.689375e-02 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_TCG 2.917076e-72 2.252499e-02 2.383283e-56</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_TCT 1.040964e-63 3.378749e-02 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_ACA 8.982685e-72 1.689375e-02 4.340776e-55</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_ACC 3.332204e-14 1.023482e-02 2.292690e-03</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_ACG 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_ACT 4.790181e-16 1.602187e-02 2.707106e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_CCA 5.966718e-72 5.631249e-03 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_CCC 9.067051e-17 2.252476e-02 5.134283e-07</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_CCG 5.623647e-03 5.631249e-03 2.985272e-45</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_CCT 2.341534e-13 2.052206e-02 4.468438e-03</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_GCA 3.673864e-72 2.815624e-02 4.208045e-57</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_GCC 5.477960e-80 1.236855e-78 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_GCG 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_GCT 1.298768e-79 3.551297e-78 5.025193e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_TCA 3.448376e-76 1.126250e-02 8.959530e-78</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_TCC 8.532596e-21 1.315044e-02 3.347705e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_TCG 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;G_TCT 1.559492e-17 7.339826e-03 2.131423e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_ACA 9.283284e-02 1.860131e-02 1.493970e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_ACC 1.687094e-02 4.660678e-76 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_ACG 1.687094e-02 5.605620e-76 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_ACT 6.951015e-02 1.850334e-02 2.957119e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_CCA 7.873106e-02 1.689375e-02 6.554712e-69</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_CCC 6.318646e-02 3.604767e-02 4.224660e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_CCG 1.124729e-02 5.631814e-84 3.067592e-77</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_CCT 1.007431e-01 2.657566e-02 1.716718e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_GCA 6.186012e-02 2.252499e-02 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_GCC 5.789264e-02 1.231471e-02 4.420470e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_GCG 5.623647e-03 2.469049e-75 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_GCT 4.210611e-02 1.396361e-02 3.810356e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_TCA 4.634952e-02 3.704481e-02 1.482014e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_TCC 1.008866e-01 3.337747e-02 5.192405e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_TCG 1.124729e-02 5.346482e-78 4.813211e-68</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;T_TCT 6.186012e-02 1.689375e-02 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_ATA 4.222375e-70 1.126250e-02 1.127285e-52</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_ATC 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_ATG 1.244484e-69 1.126250e-02 1.799990e-51</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_ATT 5.623647e-03 5.631249e-03 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_CTA 4.540720e-68 1.126250e-02 1.559780e-48</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_CTC 2.329443e-68 1.126250e-02 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_CTG 1.583880e-69 1.126250e-02 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_CTT 5.623647e-03 5.631249e-03 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_GTA 6.742502e-71 2.212938e-67 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_GTC 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_GTG 5.623647e-03 5.631249e-03 8.389862e-71</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_GTT 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_TTA 3.534605e-76 1.689375e-02 1.112954e-76</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_TTC 5.623647e-03 5.806495e-76 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_TTG 5.623647e-03 1.485272e-75 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;A_TTT 1.687094e-02 1.689375e-02 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_ATA 1.100756e-13 6.228549e-08 1.256284e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_ATC 2.279139e-68 1.126250e-02 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_ATG 1.296000e-02 9.303956e-03 5.432740e-04</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_ATT 5.837458e-03 2.529910e-02 3.102243e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_CTA 4.866067e-76 5.631249e-03 6.309342e-77</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_CTC 1.124729e-02 5.631249e-03 1.439249e-71</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_CTG 6.659905e-66 5.631249e-03 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_CTT 1.230529e-02 2.999234e-12 2.276246e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_GTA 3.619894e-71 2.772732e-66 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_GTC 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_GTG 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_GTT 5.623647e-03 7.333095e-76 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_TTA 1.687094e-02 5.631249e-03 4.987590e-72</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_TTC 6.074431e-03 7.222243e-03 2.056952e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_TTG 1.979686e-68 5.631249e-03 6.494058e-49</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;C_TTT 5.623647e-03 8.877562e-76 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_ATA 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_ATC 5.623647e-03 3.239622e-73 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_ATG 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_ATT 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_CTA 2.440947e-78 1.427290e-77 1.256298e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_CTC 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_CTG 5.623647e-03 1.120463e-83 2.578236e-76</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_CTT 9.044721e-72 5.631249e-03 2.512596e-02</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_GTA 8.002118e-77 5.631249e-03 7.430059e-78</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_GTC 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_GTG 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_GTT 7.320200e-69 5.631249e-03 1.047583e-49</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_TTA 1.124729e-02 4.725050e-80 1.226595e-70</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_TTC 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_TTG 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> T&gt;G_TTT 3.720076e-44 3.720076e-44 3.720076e-44</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "exposures":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            TCGA-56-7582-01A-11D-2042-08 TCGA-77-7335-01A-11D-2042-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature1                   0.05077393                   0.05080516</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature2                  46.89845213                   0.05080516</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature3                   0.05077393                  57.89838968</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            TCGA-94-7557-01A-11D-2122-08 TCGA-97-7938-01A-11D-2167-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature1                     5.061058                   0.05087258</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature2                    14.057990                 116.89825485</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature3                     9.880952                   0.05087258</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            TCGA-EE-A3J5-06A-11D-A20D-08 TCGA-ER-A197-06A-32D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature1                 121.89824941                   0.05024105</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature2                   0.05087529                   0.05024105</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature3                   0.05087529                  10.89951790</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature1                  50.89842631</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature2                   0.05078684</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature3                   0.05078684</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "table_name":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "SBS96"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "algorithm":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "LDA"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "musica":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> An object of class "musica"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "variants":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>        chr     start       end ref alt                       sample</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  ---                                                               </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 907: chr19  54885292  54885292   G   A TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 908: chr20  49374328  49374328   A   T TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 909:  chrX  73213768  73213768   T   G TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 910:  chrX 101292834 101292834   G   A TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 911:  chrX 107526690 107526690   C   T TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>      Variant_Type</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   1:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   2:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   3:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   4:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   5:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  ---             </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 907:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 908:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 909:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 910:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 911:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "count_tables":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $SBS96</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Count_Table:  SBS96 </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Motifs: 96 </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Samples: 7 </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Annotations: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            motif mutation context</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACA C&gt;A_ACA      C&gt;A     ACA</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACC C&gt;A_ACC      C&gt;A     ACC</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACG C&gt;A_ACG      C&gt;A     ACG</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_ACT C&gt;A_ACT      C&gt;A     ACT</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_CCA C&gt;A_CCA      C&gt;A     CCA</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> C&gt;A_CCC C&gt;A_CCC      C&gt;A     CCC</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 7           ...      ...     ... </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Features: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>    mutation</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 1  C&gt;A_CCG</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 2  C&gt;A_GCA</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 3  T&gt;C_ATG</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 4  C&gt;G_TGC</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 5  T&gt;G_AGC</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 6  C&gt;G_CCT</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 7      ... </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Types: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Color Variable: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  mutation</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Color Mapping: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #5ABCEBFF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #050708FF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #D33C32FF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #CBCACBFF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #ABCD72FF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  #E7C9C6FF</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> **Descriptions: </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  Single Base Substitution table with one base upstream and downstream</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "sample_annotations":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>                         Samples Tumor_Subtypes</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 1: TCGA-94-7557-01A-11D-2122-08           Lung</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 2: TCGA-56-7582-01A-11D-2042-08           Lung</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 3: TCGA-77-7335-01A-11D-2042-08           Lung</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 4: TCGA-97-7938-01A-11D-2167-08           Lung</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 5: TCGA-EE-A3J5-06A-11D-A20D-08         Breast</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 6: TCGA-ER-A197-06A-32D-A197-08         Breast</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 7: TCGA-ER-A19O-06A-11D-A197-08         Breast</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Slot "umap":</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> &lt;0 x 0 matrix&gt;</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

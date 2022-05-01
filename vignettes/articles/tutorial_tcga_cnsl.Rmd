@@ -62,14 +62,17 @@ types <- gsub("TCGA-", "", tcga_datasets)
 variants <- NULL
 annot <- NULL
 for(i in seq_along(tcga_datasets)) {
+  # Download variants
   query <- GDCquery(project = tcga_datasets[i], 
-                  data.category = "Simple Nucleotide Variation", 
-                  data.type = "Masked Somatic Mutation", 
-                  workflow.type = "MuTect2 Variant Aggregation and Masking",
+                  data.category = "Simple Nucleotide Variation",
+                  data.type = "Masked Somatic Mutation",
+                  workflow.type = "Aliquot Ensemble Somatic Variant Merging and Masking",
                   experimental.strategy = "WXS",
                   data.format = "maf")
   GDCdownload(query)
   data <- GDCprepare(query)
+  
+  # Extract from maf
   temp <- extract_variants_from_matrix(data)
   variants <- rbind(variants, temp)  
   annot <- rbind(annot, cbind(rep(types[i], length(unique(temp$sample))), 
@@ -78,6 +81,8 @@ for(i in seq_along(tcga_datasets)) {
 colnames(annot) <- c("Tumor_Type", "ID")
 rownames(annot) <- annot[,"ID"]
 ```
+
+Note that with previous versions of the GDC database, you may need to set `worflow.type` to another string such as `workflow.type = MuTect2 Variant Aggregation and Masking`.
 
 # Creating a musica object
 

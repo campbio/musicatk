@@ -74,7 +74,7 @@ columns correspond to each sample." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.0</span>
       </span>
     </div>
 
@@ -82,7 +82,7 @@ columns correspond to each sample." />
       <ul class="nav navbar-nav">
         <li>
   <a href="https://www.camplab.net/musicatk">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fa fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -90,7 +90,7 @@ columns correspond to each sample." />
   <a href="../articles/articles/installation.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -114,13 +114,13 @@ columns correspond to each sample." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/campbio/musicatk">
-    <span class="fas fa-github"></span>
+    <span class="fa fa-github"></span>
      
   </a>
 </li>
 <li>
   <a href="https://twitter.com/camplab1">
-    <span class="fas fa-twitter"></span>
+    <span class="fa fa-twitter"></span>
      
   </a>
 </li>
@@ -177,26 +177,27 @@ a mutational discovery or prediction tool.</p></td>
     <p>A matrix of exposures</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span>
-<span class='fu'>exposures</span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;            TCGA-56-7582-01A-11D-2042-08 TCGA-77-7335-01A-11D-2042-08
-#&gt; Signature1                   0.09060907                 175.47415750
-#&gt; Signature2                 191.81878100                  98.43519276
-#&gt; Signature3                   0.09060993                   0.09064974
-#&gt;            TCGA-94-7557-01A-11D-2122-08 TCGA-97-7938-01A-11D-2167-08
-#&gt; Signature1                     64.48884                 116.81894638
-#&gt; Signature2                     38.41289                   0.09052656
-#&gt; Signature3                     14.09827                   0.09052706
-#&gt;            TCGA-EE-A3J5-06A-11D-A20D-08 TCGA-ER-A197-06A-32D-A197-08
-#&gt; Signature1                    0.0905308                   6.89236265
-#&gt; Signature2                    0.0905325                   4.01908283
-#&gt; Signature3                  121.8189367                   0.08855452
-#&gt;            TCGA-ER-A19O-06A-11D-A197-08
-#&gt; Signature1                   0.09025138
-#&gt; Signature2                   0.09025280
-#&gt; Signature3                  50.81949582</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span>
-<span class='fu'>exposures</span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='op'>)</span>
-</div></pre>
+    <pre class="examples"><span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'>exposures</span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            TCGA-56-7582-01A-11D-2042-08 TCGA-77-7335-01A-11D-2042-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature1                   0.09060907                 175.47415750</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature2                 191.81878100                  98.43519276</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature3                   0.09060993                   0.09064974</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            TCGA-94-7557-01A-11D-2122-08 TCGA-97-7938-01A-11D-2167-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature1                     64.48884                 116.81894638</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature2                     38.41289                   0.09052656</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature3                     14.09827                   0.09052706</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            TCGA-EE-A3J5-06A-11D-A20D-08 TCGA-ER-A197-06A-32D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature1                    0.0905308                   6.89236265</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature2                    0.0905325                   4.01908283</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature3                  121.8189367                   0.08855452</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>            TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature1                   0.09025138</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature2                   0.09025280</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Signature3                  50.81949582</span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'>exposures</span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='op'>)</span></span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

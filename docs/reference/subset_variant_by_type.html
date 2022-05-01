@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.0</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="https://www.camplab.net/musicatk">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fa fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -88,7 +88,7 @@
   <a href="../articles/articles/installation.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -112,13 +112,13 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/campbio/musicatk">
-    <span class="fas fa-github"></span>
+    <span class="fa fa-github"></span>
      
   </a>
 </li>
 <li>
   <a href="https://twitter.com/camplab1">
-    <span class="fas fa-twitter"></span>
+    <span class="fa fa-twitter"></span>
      
   </a>
 </li>
@@ -165,33 +165,34 @@
 of the specified variant type</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span>
-<span class='fu'><a href='annotate_variant_type.html'>annotate_variant_type</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span>
-<span class='fu'>subset_variant_by_type</span><span class='op'>(</span><span class='fu'><a href='variants.html'>variants</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span>, <span class='st'>"SBS"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;        chr     start       end ref alt                       sample
-#&gt;   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08
-#&gt;   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08
-#&gt;   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08
-#&gt;   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08
-#&gt;   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08
-#&gt;  ---                                                               
-#&gt; 880: chr19  54885292  54885292   G   A TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 881: chr20  49374328  49374328   A   T TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 882:  chrX  73213768  73213768   T   G TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 883:  chrX 101292834 101292834   G   A TCGA-ER-A19O-06A-11D-A197-08
-#&gt; 884:  chrX 107526690 107526690   C   T TCGA-ER-A19O-06A-11D-A197-08
-#&gt;      Variant_Type
-#&gt;   1:          SBS
-#&gt;   2:          SBS
-#&gt;   3:          SBS
-#&gt;   4:          SBS
-#&gt;   5:          SBS
-#&gt;  ---             
-#&gt; 880:          SBS
-#&gt; 881:          SBS
-#&gt; 882:          SBS
-#&gt; 883:          SBS
-#&gt; 884:          SBS</div></pre>
+    <pre class="examples"><span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='annotate_variant_type.html'>annotate_variant_type</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'>subset_variant_by_type</span><span class='op'>(</span><span class='fu'><a href='variants.html'>variants</a></span><span class='op'>(</span><span class='va'>musica</span><span class='op'>)</span>, <span class='st'>"SBS"</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>        chr     start       end ref alt                       sample</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  ---                                                               </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 880: chr19  54885292  54885292   G   A TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 881: chr20  49374328  49374328   A   T TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 882:  chrX  73213768  73213768   T   G TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 883:  chrX 101292834 101292834   G   A TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 884:  chrX 107526690 107526690   C   T TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>      Variant_Type</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   1:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   2:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   3:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   4:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   5:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  ---             </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 880:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 881:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 882:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 883:          SBS</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 884:          SBS</span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
