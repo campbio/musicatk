@@ -12,4 +12,3 @@
 ^pkgdown$
 vignettes/articles/GDCdata
 ^\.github$
-renv*
