@@ -43,6 +43,9 @@ discover_signatures <- function(musica, table_name, num_signatures,
   }
   algorithm <- match.arg(algorithm, c("lda", "nmf"))
   counts_table <- .extract_count_table(musica, table_name)
+  if (dim(counts_table)[2] < 2) {
+    stop("The 'musica' object inputted must contain at least two samples.")
+  }
   present_samples <- which(colSums(counts_table) > 0)
   counts_table <- counts_table[, present_samples]
 
