@@ -60,18 +60,18 @@ Imports:
     cluster,
     ComplexHeatmap,
     philentropy,
-    shinydashboard,
-    sortable,
     maftools,
     shiny,
-    shinyjs,
-    shinyalert,
-    shinybusy,
-    shinyBS,
-    TCGAbiolinks,
-    shinyjqui,
     stringi
 Suggests:
+    TCGAbiolinks,
+    shinyBS,
+    shinyalert,
+    shinybusy,
+    shinydashboard,
+    shinyjs,
+    shinyjqui,
+    sortable,
     testthat,
     BiocStyle,
     knitr,
@@ -81,5 +81,5 @@ Suggests:
     qpdf,
     covr,
     shinyWidgets
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
