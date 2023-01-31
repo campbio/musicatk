@@ -487,10 +487,10 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
                                 .get_indel_motifs("del", NA, NA),
                                 .get_indel_motifs("ins", NA, NA),
                                 .get_indel_motifs("micro", NA, NA)),
-                  column_names = all_samples)
+                  column_names = levels(all_samples))
   mut_table <- matrix(rbind(del1_ta, ins1_ta, del2_counts$del,
                             ins2_ta, del2_counts$micro), nrow = 83, 
-                      ncol = length(all_samples), 
+                      ncol = length(levels(all_samples)), 
                       dimnames = dimlist)
   motif <- rownames(mut_table)
   
