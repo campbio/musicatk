@@ -1,4 +1,3 @@
-#' @importFrom methods new
 NULL
 
 
@@ -85,10 +84,21 @@ compare_results <- function(result, other_result, threshold = 0.9,
                                exposures = matrix(), algorithm = "NMF",
                                musica = get_musica(other_result), 
                                table_name = table_selected(other_result))
+  
+  result_subset_maxes <- NULL
+  other_subset_maxes <- NULL
+  for (index in 1:dim(comparison)[1]){
+    result_subset_maxes <- c(result_subset_maxes, max(signatures(result_subset)[,index]))
+  }
+  for (index in 1:dim(comparison)[1]){
+    other_subset_maxes <- c(other_subset_maxes, max(signatures(other_subset)[,index]))
+  }
+  maxes <- pmax(result_subset_maxes, other_subset_maxes) * 100
+  maxes <- rep(max(maxes), length(maxes))
 
-  .plot_compare_result_signatures(result_subset, other_subset,
+  .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   res1_name = result_name,
-                                  res2_name = other_result_name)
+                                  res2_name = other_result_name, maxes = maxes)
   return(comparison)
 }
 
@@ -102,6 +112,11 @@ compare_results <- function(result, other_result, threshold = 0.9,
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot user result signatures
+#' @param decimals Specifies rounding for similarity metric displayed. Default
+#' \code{2}.
+#' @param same_scale If \code{TRUE}, the scale of the probability for each
+#' signature will be the same. If \code{FALSE}, then the scale of the y-axis
+#' will be adjusted for each signature. Default \code{TRUE}.
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
@@ -109,7 +124,8 @@ compare_results <- function(result, other_result, threshold = 0.9,
 #' @export
 compare_cosmic_v3 <- function(result, variant_class, sample_type, 
                               metric = "cosine", threshold = 0.9,
-                              result_name = deparse(substitute(result))) {
+                              result_name = deparse(substitute(result)),
+                              decimals = 2, same_scale = FALSE) {
   if (sample_type == "exome") {
     if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       cosmic_res <- musicatk::cosmic_v3_sbs_sigs_exome
@@ -136,7 +152,7 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
                             threshold = threshold, metric = metric)
   result_subset <- methods::new(
     "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
-                                                    drop = FALSE],
+                                                     drop = FALSE],
     exposures = matrix(), algorithm = "NMF", 
     table_name = table_selected(result), musica = get_musica(result))
   other_subset <- methods::new("musica_result", signatures =
@@ -147,10 +163,26 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
                                table_name = table_selected(cosmic_res),
                                musica = get_musica(cosmic_res))
   
-  .plot_compare_result_signatures(result_subset, other_subset,
+  result_subset_maxes <- NULL
+  other_subset_maxes <- NULL
+  for (index in 1:dim(comparison)[1]){
+    result_subset_maxes <- c(result_subset_maxes, max(signatures(result_subset)[,index]))
+  }
+  for (index in 1:dim(comparison)[1]){
+    other_subset_maxes <- c(other_subset_maxes, max(signatures(other_subset)[,index]))
+  }
+  maxes <- pmax(result_subset_maxes, other_subset_maxes) * 100
+  
+  if (same_scale == TRUE){
+    maxes <- rep(max(maxes), length(maxes))
+  }
+  
+  .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   res1_name = result_name,
-                                  res2_name = "COSMIC Signatures (V3)")
+                                  res2_name = "COSMIC Signatures (V3)",
+                                  decimals = decimals, maxes = maxes, same_scale = same_scale)
   return(comparison)
+  
 }
 
 #' Compare a result object to COSMIC V2 SBS Signatures (combination whole-exome
@@ -161,39 +193,64 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot user result signatures
+#' @param decimals Specifies rounding for similarity metric displayed. Default
+#' \code{2}.
+#' @param same_scale If \code{TRUE}, the scale of the probability for each
+#' signature will be the same. If \code{FALSE}, then the scale of the y-axis
+#' will be adjusted for each signature. Default \code{TRUE}.
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
 #' compare_cosmic_v2(res, threshold = 0.7)
 #' @export
 compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
-                              result_name = deparse(substitute(result))) {
+                              result_name = deparse(substitute(result)),
+                              decimals = 2, same_scale = FALSE) {
+  
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, 
                             sig2 = signatures(musicatk::cosmic_v2_sigs),
                             threshold = threshold, metric = metric)
-  result_subset <- new("musica_result",
-                                signatures =
-                                  signatures(result)[, comparison$x_sig_index, 
-                                                     drop = FALSE], exposures =
-                                  matrix(), algorithm = get_result_alg(result), 
-                                musica = get_musica(result), 
-                                table_name = table_selected(result))
-  other_subset <- new("musica_result",
-                               signatures = 
+  result_subset <- methods::new("musica_result",
+                       signatures =
+                         signatures(result)[, comparison$x_sig_index, 
+                                            drop = FALSE], exposures =
+                         matrix(), algorithm = get_result_alg(result), 
+                       musica = get_musica(result), 
+                       table_name = table_selected(result))
+  other_subset <- methods::new("musica_result",
+                      signatures = 
                         signatures(
                           musicatk::cosmic_v2_sigs)[, comparison$y_sig_index, 
-                                                   drop = FALSE],
-                               exposures = matrix(), algorithm = "NMF",
-                               musica = get_musica(musicatk::cosmic_v2_sigs),
-                               table_name = 
+                                                    drop = FALSE],
+                      exposures = matrix(), algorithm = "NMF",
+                      musica = get_musica(musicatk::cosmic_v2_sigs),
+                      table_name = 
                         table_selected(musicatk::cosmic_v2_sigs))
-
-  .plot_compare_result_signatures(result_subset, other_subset,
+  
+  
+  result_subset_maxes <- NULL
+  other_subset_maxes <- NULL
+  for (index in 1:dim(comparison)[1]){
+    result_subset_maxes <- c(result_subset_maxes, max(signatures(result_subset)[,index]))
+  }
+  for (index in 1:dim(comparison)[1]){
+    other_subset_maxes <- c(other_subset_maxes, max(signatures(other_subset)[,index]))
+  }
+  maxes <- pmax(result_subset_maxes, other_subset_maxes) * 100
+  
+  if (same_scale == TRUE){
+    maxes <- rep(max(maxes), length(maxes))
+  }
+  
+  .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   res1_name = result_name,
-                                  res2_name = "COSMIC Signatures (V2)")
+                                  res2_name = "COSMIC Signatures (V3)",
+                                  decimals = decimals, maxes = maxes, same_scale = same_scale)
+  
   return(comparison)
 }
+
 
 #' Input a cancer subtype to return a list of related COSMIC signatures
 #'
@@ -235,20 +292,29 @@ cosmic_v2_subtype_map <- function(tumor_type) {
 }
 
 
-.plot_compare_result_signatures <- function(res1, res2,
-                                            res1_name = "", res2_name = "") {
-  res1_plot <- plot_signatures(res1, legend = TRUE) +
-    ggplot2::ggtitle(res1_name)
-  legend <- cowplot::get_legend(res1_plot)
-  res1_plot <- res1_plot + theme(legend.position = "none")
+.plot_compare_result_signatures <- function(res1, res2, comparison,
+                                            res1_name = "", res2_name = "", 
+                                            decimals, maxes, same_scale) {
   
-  res2_plot <- plot_signatures(res2, legend = FALSE) +
-    ggplot2::ggtitle(res2_name)
+  CS_annotations <- paste("CS = ", round(comparison$cosine, decimals), sep = "")
+  
+  res1_plot <- plot_signatures(res1, annotation = CS_annotations, 
+                               y_max = maxes, same_scale = FALSE) 
+  res1_plot <- ggpubr::annotate_figure(res1_plot, 
+                               top = ggpubr::text_grob(res1_name, face = "bold"))
+  
+  res2_plot <- plot_signatures(res2, y_max = maxes, 
+                               show_y_labels = FALSE, same_scale = FALSE)
+  res2_plot <- ggpubr::annotate_figure(res2_plot, 
+                                       top = ggpubr::
+                                         text_grob(res2_name, face = "bold"))
   
   layout <- matrix(seq(2), ncol = 2, nrow = 9, byrow = TRUE)
   layout <- rbind(layout, c(3, 3))
-  g <- gridExtra::grid.arrange(res1_plot, res2_plot, legend,
-                          layout_matrix = layout, ncol = 3,
-                          widths = c(0.45, 0.45, 0.1))
+  g <- gridExtra::grid.arrange(res1_plot, res2_plot,
+                               layout_matrix = layout, ncol = 2,
+                               widths = c(0.45, 0.4)) 
+  
   return(g)
+  
 }
