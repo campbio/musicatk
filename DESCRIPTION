@@ -19,7 +19,6 @@ Depends:
 Imports:
     SummarizedExperiment,
     VariantAnnotation,
-    cowplot,
     Biostrings,
     base,
     methods,
@@ -53,7 +52,6 @@ Imports:
     decompTumor2Sig,
     topicmodels,
     ggrepel,
-    withr,
     plotly,
     utils,
     factoextra,
@@ -62,7 +60,9 @@ Imports:
     philentropy,
     maftools,
     shiny,
-    stringi
+    stringi,
+    tidyverse,
+    ggpubr
 Suggests:
     TCGAbiolinks,
     shinyBS,
@@ -80,6 +80,8 @@ Suggests:
     XVector,
     qpdf,
     covr,
-    shinyWidgets
+    shinyWidgets,
+    cowplot,
+    withr
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
