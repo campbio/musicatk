@@ -19,7 +19,6 @@ Depends:
 Imports:
     SummarizedExperiment,
     VariantAnnotation,
-    cowplot,
     Biostrings,
     base,
     methods,
@@ -53,25 +52,26 @@ Imports:
     decompTumor2Sig,
     topicmodels,
     ggrepel,
-    withr,
     plotly,
     utils,
     factoextra,
     cluster,
     ComplexHeatmap,
     philentropy,
-    shinydashboard,
-    sortable,
     maftools,
     shiny,
-    shinyjs,
+    stringi,
+    tidyverse,
+    ggpubr
+Suggests:
+    TCGAbiolinks,
+    shinyBS,
     shinyalert,
     shinybusy,
-    shinyBS,
-    TCGAbiolinks,
+    shinydashboard,
+    shinyjs,
     shinyjqui,
-    stringi
-Suggests:
+    sortable,
     testthat,
     BiocStyle,
     knitr,
@@ -80,6 +80,8 @@ Suggests:
     XVector,
     qpdf,
     covr,
-    shinyWidgets
-RoxygenNote: 7.1.1
+    shinyWidgets,
+    cowplot,
+    withr
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
