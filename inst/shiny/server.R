@@ -6,7 +6,7 @@ library(shinyalert)
 library(TCGAbiolinks)
 library(shinyjqui)
 
-#options(shiny.maxRequestSize = 10000 * 1024 ^ 2)
+options(shiny.maxRequestSize = 10000 * 1024 ^ 2)
 
 server <- function(input, output, session) {
 #################### GENERAL ##################################################
@@ -1379,7 +1379,7 @@ parse_delete_event <- function(idstr) {
                                    paste0(input$select_result_b, "-Index"),
                                    paste0(input$select_result_a, "-Signature"),
                                    paste0(input$select_result_b, "-Signature"))
-    # generate table containig comparison statistics.
+    # generate table containing comparison statistics.
     if (!is.null(isolate(vals$comparison))) {
       output$compare_table <- renderDataTable({
         isolate(vals$comparison)
@@ -1555,7 +1555,7 @@ parse_delete_event <- function(idstr) {
       id <- paste0("sig", i)
       if (input$rename) {
         insertUI(
-          selector = "#sig_name",
+          selector = "#signame",
           ui = textInput(inputId = id, paste0("Signature", i))
         )
       }
@@ -1575,14 +1575,18 @@ parse_delete_event <- function(idstr) {
       }
       name_signatures(result = vals$result_objects[[input$selected_res1]], ids)
     }
-    legend <- input$legend1
+    #legend <- input$legend1
     text_size <- input$text_size1
-    facet_size <- input$facet_size
+    #facet_size <- input$facet_size
     show_x_labels <- input$xlab1
+    show_y_labels <- input$ylab1
     same_scale <- input$scale1
     plotly <- input$plotly1
-    options <- list(legend, text_size, facet_size,
-                    show_x_labels, same_scale, plotly)
+    options <- list(
+      #legend, 
+      text_size, 
+      #facet_size,
+                    show_x_labels, show_y_labels, same_scale, plotly)
     return(options)
   }
 
@@ -1592,7 +1596,7 @@ parse_delete_event <- function(idstr) {
     result <- vals$result_objects[[input$selected_res1]]
     n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     height <- paste0(as.character(n * 90), "px")
-    if (options[[6]]) {
+    if (options[[5]]) {
       #disable resizable
       jqui_resizable("#sigplot_plotly", operation = "destroy")
       jqui_resizable("#sigplot_plot", operation = "destroy")
@@ -1606,12 +1610,13 @@ parse_delete_event <- function(idstr) {
       output$sigplot_plotly <- renderPlotly(
         plot_signatures(
           result = result,
-          legend = options[[1]],
-          plotly = options[[6]],
-          text_size = options[[2]],
-          facet_size = options[[3]],
-          show_x_labels = options[[4]],
-          same_scale = options[[5]]
+          #legend = options[[1]],
+          plotly = options[[5]],
+          text_size = options[[1]],
+          #facet_size = options[[3]],
+          show_x_labels = options[[2]],
+          show_y_labels = options[[3]],
+          same_scale = options[[4]]
         )
       )
       #enable resizable
@@ -1629,12 +1634,13 @@ parse_delete_event <- function(idstr) {
       output$sigplot_plot <- renderPlot(
         plot_signatures(
           result = result,
-          legend = options[[1]],
-          plotly = options[[6]],
-          text_size = options[[2]],
-          facet_size = options[[3]],
-          show_x_labels = options[[4]],
-          same_scale = options[[5]]
+          #legend = options[[1]],
+          plotly = options[[5]],
+          text_size = options[[1]],
+          #facet_size = options[[3]],
+          show_x_labels = options[[2]],
+          show_y_labels = options[[3]],
+          same_scale = options[[4]]
         )
       )
       jqui_resizable("#sigplot_plot")
