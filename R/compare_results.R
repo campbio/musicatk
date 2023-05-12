@@ -44,7 +44,12 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
   comparison <- comparison[order(comparison[[metric_name]], decreasing = TRUE), 
                            ]
-  return(comparison)
+  split_comparison <- split(comparison, comparison$x_sig_name)
+  best_comparison <- lapply(split_comparison, function(df) df[which.max(df$cosine), ])
+  best_comparison <- do.call(rbind, best_comparison)
+  best_comparison <- best_comparison[order(best_comparison[[metric_name]], decreasing = TRUE), 
+  ]
+  return(best_comparison)
 }
 
 
