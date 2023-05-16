@@ -1,19 +1,24 @@
 NULL
 
 
-sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
-                        threshold=0.9) {
+sig_compare <- function(sig1,
+                        sig2,
+                        metric = c("cosine", "jsd"),
+                        threshold = 0.9,
+                        type = c("best", "threshold")) {
   metric <- match.arg(metric)
-  
+  type <- match.arg(type)
   sig1_names <- colnames(sig1)
   sig2_names <- colnames(sig2)
   if (nrow(sig1) != nrow(sig2)) {
     stop("Signatures must have the same number of motifs.")
   }
   if (!is.null(rownames(sig1)) && !is.null(rownames(sig2)) &&
-     !all(rownames(sig1) == rownames(sig2))) {
-    warning("The names of the motifs in signature matrix one do not equal the ",
-    "names of the motifs in signature matrix two.")
+      !all(rownames(sig1) == rownames(sig2))) {
+    warning(
+      "The names of the motifs in signature matrix one do not equal the ",
+      "names of the motifs in signature matrix two."
+    )
   }
   if (metric == "jsd") {
     matches <- .jsd(sig1, sig2)
@@ -25,11 +30,12 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   
   comparison <- NULL
   for (row in seq_len(nrow(matches))) {
-    line <- which(matches[row, ] > threshold)
+    line <- which(matches[row,] > threshold)
     if (length(line) > 0) {
       for (match in line) {
-        comparison <- rbind(comparison, c(matches[row, match], row, match,
-                                          sig1_names[row], sig2_names[match]))
+        comparison <- rbind(comparison,
+                            c(matches[row, match], row, match,
+                              sig1_names[row], sig2_names[match]))
       }
     }
   }
@@ -37,19 +43,31 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
     stop("No matches found, try lowering threshold.")
   }
   comparison <- data.frame(comparison, stringsAsFactors = FALSE)
-  colnames(comparison) <- c(metric_name, "x_sig_index", "y_sig_index", 
-                            "x_sig_name", "y_sig_name")
+  colnames(comparison) <-
+    c(metric_name,
+      "x_sig_index",
+      "y_sig_index",
+      "x_sig_name",
+      "y_sig_name")
   comparison[[metric_name]] <- as.numeric(comparison[[metric_name]])
   comparison$x_sig_index <- as.numeric(comparison$x_sig_index)
   comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
-  comparison <- comparison[order(comparison[[metric_name]], decreasing = TRUE), 
-                           ]
-  split_comparison <- split(comparison, comparison$x_sig_name)
-  best_comparison <- lapply(split_comparison, function(df) df[which.max(df$cosine), ])
-  best_comparison <- do.call(rbind, best_comparison)
-  best_comparison <- best_comparison[order(best_comparison[[metric_name]], decreasing = TRUE), 
-  ]
-  return(best_comparison)
+  comparison <-
+    comparison[order(comparison[[metric_name]], decreasing = TRUE),]
+  if (type == "threshold") {
+    final_comparison <- comparison
+  } else {
+    split_comparison <- split(comparison, comparison$x_sig_name)
+    best_comparison <-
+      lapply(split_comparison, function(df)
+        df[which.max(df$cosine),])
+    best_comparison <- do.call(rbind, best_comparison)
+    final_comparison <-
+      best_comparison[order(best_comparison[[metric_name]], decreasing = TRUE),]
+  }
+  
+  
+  return(final_comparison)
 }
 
 
@@ -60,6 +78,8 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
+#' @param type One of \code{"threshold"} for all results above threshold or 
+#' \code{"best"} for the best match results above threshold
 #' @param result_name title for plot of first result signatures
 #' @param other_result_name title for plot of second result signatures
 #' @return Returns the comparisons
@@ -68,12 +88,13 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 #' compare_results(res, res, threshold = 0.8)
 #' @export
 compare_results <- function(result, other_result, threshold = 0.9,
-                             metric = "cosine", result_name =
+                             metric = "cosine", type = "threshold", result_name =
                               deparse(substitute(result)), other_result_name =
                               deparse(substitute(other_result))) {
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, sig2 = signatures(other_result),
-                            threshold = threshold, metric = metric)
+                            threshold = threshold, metric = metric, type = type)
+  
   result_subset <- methods::new("musica_result",
                                 signatures = 
                                   signatures(result)[, comparison$x_sig_index, 
@@ -116,6 +137,8 @@ compare_results <- function(result, other_result, threshold = 0.9,
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
+#' @param type One of \code{"threshold"} for all results above threshold or 
+#' \code{"best"} for the best match results above threshold
 #' @param result_name title for plot user result signatures
 #' @param decimals Specifies rounding for similarity metric displayed. Default
 #' \code{2}.
@@ -128,7 +151,7 @@ compare_results <- function(result, other_result, threshold = 0.9,
 #' compare_cosmic_v3(res, "SBS", "genome", threshold = 0.8)
 #' @export
 compare_cosmic_v3 <- function(result, variant_class, sample_type, 
-                              metric = "cosine", threshold = 0.9,
+                              metric = "cosine", threshold = 0.9, type = "threshold",
                               result_name = deparse(substitute(result)),
                               decimals = 2, same_scale = FALSE) {
   if (sample_type == "exome") {
@@ -154,7 +177,7 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   }
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, sig2 = signatures(cosmic_res),
-                            threshold = threshold, metric = metric)
+                            threshold = threshold, metric = metric, type = type)
   result_subset <- methods::new(
     "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
                                                      drop = FALSE],
@@ -197,6 +220,8 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
+#' @param type One of \code{"threshold"} for all results above threshold or 
+#' \code{"best"} for the best match results above threshold
 #' @param result_name title for plot user result signatures
 #' @param decimals Specifies rounding for similarity metric displayed. Default
 #' \code{2}.
@@ -208,14 +233,14 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' data(res)
 #' compare_cosmic_v2(res, threshold = 0.7)
 #' @export
-compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
+compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine", type = "threshold", 
                               result_name = deparse(substitute(result)),
                               decimals = 2, same_scale = FALSE) {
   
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, 
                             sig2 = signatures(musicatk::cosmic_v2_sigs),
-                            threshold = threshold, metric = metric)
+                            threshold = threshold, metric = metric, type = type)
   result_subset <- methods::new("musica_result",
                        signatures =
                          signatures(result)[, comparison$x_sig_index, 

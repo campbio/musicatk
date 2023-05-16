@@ -9,6 +9,7 @@ compare_results(
   other_result,
   threshold = 0.9,
   metric = "cosine",
+  type = "threshold",
   result_name = deparse(substitute(result)),
   other_result_name = deparse(substitute(other_result))
 )
@@ -22,6 +23,9 @@ compare_results(
 
 \item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
+
+\item{type}{One of \code{"threshold"} for all results above threshold or 
+\code{"best"} for the best match results above threshold}
 
 \item{result_name}{title for plot of first result signatures}
 

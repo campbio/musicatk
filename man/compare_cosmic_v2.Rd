@@ -9,6 +9,7 @@ compare_cosmic_v2(
   result,
   threshold = 0.9,
   metric = "cosine",
+  type = "threshold",
   result_name = deparse(substitute(result)),
   decimals = 2,
   same_scale = FALSE
@@ -21,6 +22,9 @@ compare_cosmic_v2(
 
 \item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
+
+\item{type}{One of \code{"threshold"} for all results above threshold or 
+\code{"best"} for the best match results above threshold}
 
 \item{result_name}{title for plot user result signatures}
 
