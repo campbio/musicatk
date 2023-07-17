@@ -93,6 +93,45 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
                      overwrite = overwrite)
   return(tab)
 }
+#' Generate standard SBS96 color schema
+#' @return Returns the created SBS96 color schema object
+create_sbs96_color_schema <- function() {
+  forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
+  b1 <- rep(rep(c("A", "C", "G", "T"), each = 4), 6)
+  b2 <- rep(c("C", "T"), each = 48)
+  b3 <- rep(c("A", "C", "G", "T"), 24)
+  mut_trinuc <- apply(cbind(b1, b2, b3), 1, paste, collapse = "")
+  mut <- rep(forward_change, each = 16)
+  annotation <- data.frame(
+    "motif" = paste0(mut, "_", mut_trinuc),
+    "mutation" = mut,
+    "context" = mut_trinuc
+  )
+  
+  rownames(annotation) <- annotation$motif
+  color_mapping <- c(
+    "C>A" = "#5ABCEBFF",
+    "C>G" = "#050708FF",
+    "C>T" = "#D33C32FF",
+    "T>A" = "#CBCACBFF",
+    "T>C" = "#ABCD72FF",
+    "T>G" = "#E7C9C6FF"
+  )
+  color_variable = "mutation"
+  description = paste0("Single Base Substitution table with",
+                       " one base upstream and downstream")
+  tab <-
+    .create_schema(
+      name = "SBS96",
+      annotation = annotation,
+      color_variable = color_variable,
+      color_mapping = color_mapping,
+      description = description
+    )
+  
+  return(tab)
+}
+
 
 #' Uses a genome object to find context and generate standard SBS192 table
 #' using transcript strand
@@ -206,6 +245,61 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
                              return_table = TRUE, overwrite = overwrite)
   return(tab)
 }
+#' Generate standard SBS192 color schema
+#' using transcript strand
+#' @param strand_type Transcript_Strand or Replication_Strand
+#' @return  Returns the created SBS192 color schema object built using either
+#' transcript strand or replication strand
+create_sbs192_color_schema <- function(strand_type) {
+  b1 <- rep(rep(c("A", "C", "G", "T"), each = 24), 2)
+  b2 <-  rep(rep(c("C", "T"), each = 12), 8)
+  b3 <- rep(c("A", "C", "G", "T"), 48)
+  forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
+  mut_trinuc <- apply(cbind(b1, b2, b3), 1, paste, collapse = "")
+  mut_type <- rep(rep(rep(forward_change, each = 4), 4), 2)
+  if (strand_type == "Transcript_Strand") {
+    mut_strand <- rep(c("T", "U"), each = 96)
+  } else if (strand_type == "Replication_Strand") {
+    mut_strand <- rep(c("leading", "lagging"), each = 96)
+  }
+  mut_id <- apply(cbind(mut_type, mut_trinuc, mut_strand), 1, paste,
+                  collapse = "_")
+  
+  
+  annotation <- data.frame(
+    motif = mut_id,
+    mutation =
+      unlist(lapply(strsplit(mut_id, "_"), "[[", 1)),
+    context = paste(unlist(lapply(
+      strsplit(mut_id, "_"),
+      "[[", 2
+    )),
+    unlist(lapply(
+      strsplit(mut_id, "_"),
+      "[[", 3
+    )), sep = "_"),
+    row.names = mut_id
+  )
+  color_mapping <-
+    .gg_color_hue(length(unique(annotation$mutation)))
+  names(color_mapping) <- unique(annotation$mutation)
+  description = paste0(
+    "Single Base Substitution table with",
+    " one base upstream and downstream and",
+    " transcript strand"
+  )
+  color_variable = "mutation"
+  tab <- .create_schema(
+    name = "SBS192",
+    annotation = annotation,
+    color_variable = color_variable,
+    color_mapping = color_mapping,
+    description = description
+  )
+  
+  return(tab)
+}
+
 
 #' Creates and adds a table for standard doublet base subsitution (DBS)
 #'
@@ -314,6 +408,78 @@ create_dbs78_table <- function(musica, overwrite = overwrite, verbose) {
 .gg_color_hue <- function(n) {
   hues <- base::seq(15, 375, length = n + 1)
   return(grDevices::hcl(h = hues, l = 65, c = 100)[seq_len(n)])
+}
+#' Creates color schema for standard doublet base subsitution (DBS)
+#' @return Returns the created DBS83 color schema object
+create_dbs78_color_schema <- function() {
+  full_motif <-
+    c(
+      paste0(
+        "AC>NN",
+        "_",
+        c("CA", "CG", "CT", "GA", "GG", "GT",
+          "TA", "TG", "TT")
+      ),
+      paste0("AT>NN", "_", c("CA", "CC", "CG", "GA", "GC", "TA")),
+      paste0(
+        "CC>NN",
+        "_",
+        c("AA", "AG", "AT", "GA", "GG", "GT", "TA",
+          "TG", "TT")
+      ),
+      paste0("CG>NN", "_", c("AT", "GC", "GT", "TA", "TC", "TT")),
+      paste0(
+        "CT>NN",
+        "_",
+        c("AA", "AC", "AG", "GA", "GC", "GG", "TA",
+          "TC", "TG")
+      ),
+      paste0("GC>NN", "_", c("AA", "AG", "AT", "CA", "CG", "TA")),
+      paste0("TA>NN", "_", c("AT", "CG", "CT", "GC", "GG", "GT")),
+      paste0(
+        "TC>NN",
+        "_",
+        c("AA", "AG", "AT", "CA", "CG", "CT", "GA",
+          "GG", "GT")
+      ),
+      paste0(
+        "TG>NN",
+        "_",
+        c("AA", "AC", "AT", "CA", "CC", "CT", "GA",
+          "GC", "GT")
+      ),
+      paste0(
+        "TT>NN",
+        "_",
+        c("AA", "AC", "AG", "CA", "CC", "CG", "GA",
+          "GC", "GG")
+      )
+    )
+  annotation <- data.frame(
+    motif = full_motif,
+    mutation =
+      unlist(lapply(strsplit(full_motif, "_"), "[[", 1)),
+    context = unlist(lapply(strsplit(full_motif, "_"),
+                            "[[", 2)),
+    row.names = full_motif
+  )
+  color_mapping <-
+    .gg_color_hue(length(unique(annotation$mutation)))
+  names(color_mapping) <- unique(annotation$mutation)
+  description = paste0("Standard count table for ",
+                       "double base substitutions",
+                       "using COSMIC v3 schema")
+  color_variable <- 'mutation'
+  tab <-
+    .create_schema(
+      name = "DBS78",
+      annotation = annotation,
+      color_variable = color_variable,
+      color_mapping = color_mapping,
+      description = description
+    )
+  return(tab)
+  
 }
 
 #' Reverse complement of a string using biostrings
@@ -527,6 +693,49 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   return(tab)
 }
 
+create_ind83_color_schema <- function(count_table = FALSE) {
+  full_motif <- c(paste0("DEL_C_1", "_", c("0","1","2","3","4","5+")),
+                  paste0("DEL_T_1", "_", c("0","1","2","3","4","5+")),
+                  paste0("INS_C_1", "_", c("0","1","2","3","4","5+")),
+                  paste0("INS_T_1", "_", c("0","1","2","3","4","5+")),
+                  paste0("DEL_repeats_2", "_", c("0","1","2","3","4","5+")),
+                  paste0("DEL_repeats_3", "_", c("0","1","2","3","4","5+")),
+                  paste0("DEL_repeats_4", "_", c("0","1","2","3","4","5+")),
+                  paste0("DEL_repeats_5+", "_", c("0","1","2","3","4","5+")),
+                  paste0("INS_repeats_2", "_", c("0","1","2","3","4","5+")),
+                  paste0("INS_repeats_3", "_", c("0","1","2","3","4","5+")),
+                  paste0("INS_repeats_4", "_", c("0","1","2","3","4","5+")),
+                  paste0("INS_repeats_5+", "_", c("0","1","2","3","4","5+")),
+                  paste0("DEL_MH_2", "_", c("1")),
+                  paste0("DEL_MH_3", "_", c("1","2")),
+                  paste0("DEL_MH_4", "_", c("1","2","3")),
+                  paste0("DEL_MH_5+", "_", c("1","2","3","4","5+"))
+  )
+  extract_after_third_underscore <- function(x) {
+    parts <- strsplit(x, "_")[[1]]
+    paste(parts[4:length(parts)])
+  }
+  
+  extract_first_three <- function(x) {
+    parts <- strsplit(x, "_")[[1]]
+    paste(parts[1:3], collapse = "_")
+  }
+  annotation <- data.frame(motif = full_motif, mutation = unlist(lapply(full_motif, extract_first_three), "[[", 1),
+                           context = unlist(lapply(full_motif, extract_after_third_underscore), "[[", 1) ,
+                           row.names = full_motif)
+  color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
+  names(color_mapping) <- unique(annotation$mutation)
+  color_variable = "mutation"
+  description = paste0("Standard count table for ",
+                       "small insertions and",
+                       " deletions") 
+  tab <- .create_schema("IND83", annotation = annotation,color_variable = color_variable,
+                        color_mapping = color_mapping, 
+                        description = description)
+  
+  return(tab)
+}
+
 .get_indel_motifs <- function(indel, ins, plus) {
   if (indel == "bp1") {
     return(paste(ifelse(ins, "INS", "DEL"), c("C", "C", "C", "C", "C", "C", "T",
@@ -704,3 +913,30 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     }
   }
 }
+.create_schema <- function(name,annotation = NULL,
+                           color_variable = NULL, color_mapping = NULL,
+                           description = NULL){
+  if (!is.null(color_mapping)) {
+    if (is.null(annotation)) {
+      stop("In order to set 'color_mapping', the 'annotation' data ",
+           "frame must be supplied.")
+    }
+    # checks for color_variable
+  }
+  if (!is.null(color_mapping) & !is.null(color_variable) &
+      !is.null(annotation)) {
+    no_match <- setdiff(names(color_mapping), annotation[, color_variable])
+    if (length(no_match) > 0) {
+      #warning()
+    }
+  }  
+  tab <- new("schema", name = name, 
+             annotation = annotation, 
+             color_variable = color_variable,
+             color_mapping = color_mapping, 
+             description = description)
+  tab <- list(tab)
+  names(tab) <- name
+  
+  return(tab)
+  }
