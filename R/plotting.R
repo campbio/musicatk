@@ -15,13 +15,27 @@ NULL
 #' @param table_name Name of table used for plotting counts. If \code{NULL},
 #' then the first table in the \code{\linkS4class{musica}} object will be used.
 #' Default \code{NULL}.
+#' @param text_size Size of axis text. Default \code{10}.
+#' @param show_x_labels If \code{TRUE}, the labels for the mutation types
+#' on the x-axis will be shown. Default \code{TRUE}.
+#' @param show_y_labels If \code{TRUE}, the y-axis ticks and labels will be 
+#' shown. Default \code{TRUE}.
+#' @param same_scale If \code{TRUE}, the scale of the y-axis for each
+#' sample will be the same. If \code{FALSE}, then the scale of the y-axis
+#' will be adjusted for each sample. Default \code{TRUE}.
+#' @param annotation Vector of annotations to be displayed in the top right
+#' corner of each sample. Vector length must be equivalent to the number of
+#' samples. Default \code{NULL}.
 #' @return Generates a ggplot object
 #' @examples
 #' data(musica_sbs96)
 #' plot_sample_counts(musica_sbs96, sample_names = 
 #' sample_names(musica_sbs96)[1])
 #' @export
-plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
+plot_sample_counts <- function(musica, sample_names, table_name = NULL, 
+                               text_size = 10,
+                               show_x_labels = TRUE, show_y_labels = TRUE,
+                               same_scale = TRUE, annotation = NULL) {
 
   if (is.null(table_name)) {
    table_name <- names(tables(musica))[1]
@@ -47,7 +61,9 @@ plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
                           signatures = sample_counts, exposures = matrix(),
                           algorithm = "sample", musica = musica,
                           table_name = table_name)
-  g <- plot_signatures(result) + ggplot2::ylab("Mutation Counts")
+  g <- plot_signatures(result, percent = FALSE, text_size = text_size,
+                       show_x_labels = show_x_labels, show_y_labels = show_y_labels,
+                       same_scale = same_scale, annotation = annotation)
   return(g)
 }
 
@@ -89,6 +105,8 @@ plot_sample_counts <- function(musica, sample_names, table_name = NULL) {
 #' @param annotation Vector of annotations to be displayed in the top right
 #' corner of each signature. Vector length must be equivalent to the number of
 #' signatures. Default \code{NULL}.
+#' @param percent If \code{TRUE}, the y-axis will be represented in percent 
+#' format instead of mutation counts. Default \code{TRUE}.
 #' @return Generates a ggplot or plotly object
 #' @examples
 #' data(res)
@@ -98,7 +116,8 @@ plot_signatures <- function(result, plotly = FALSE,
                             color_variable = NULL, color_mapping = NULL,
                             text_size = 10, 
                             show_x_labels = TRUE, show_y_labels = TRUE,
-                            same_scale = TRUE, y_max = NULL, annotation = NULL) {
+                            same_scale = TRUE, y_max = NULL, annotation = NULL,
+                            percent = TRUE) {
   
   loc_num <- NULL
   mutation_color <- NULL
@@ -136,7 +155,7 @@ plot_signatures <- function(result, plotly = FALSE,
     annotation_text <- data.frame(
       label = annotation,
       signature = names(plot_dat$names),
-      mutation_color = c("T>G")
+      mutation_color = names(color_mapping)[length(names(color_mapping))] 
     )
   }
   
@@ -144,26 +163,35 @@ plot_signatures <- function(result, plotly = FALSE,
   sig_name_labels <- data.frame(
     label = sig_names,
     signature = names(plot_dat$names),
-    mutation_color = c("C>A")
+    mutation_color = names(color_mapping)[1]
   )
   
   # Add potential forced y-axis max
   plot_dat$df$ymax <- rep(y_max, length(unique(plot_dat$df$motif)))
   
   # Convert exposure probabilities to percentages
-  plot_dat$df$exposure <- plot_dat$df$exposure * 100
+  if (percent == TRUE){
+    plot_dat$df$exposure <- plot_dat$df$exposure * 100
+    y_axis_label = "Percent of Mutations"
+    y_axis_spacing = c("  ", "  ")
+  }
+  else{
+    y_axis_label = "Mutation Counts"
+    max_num_digits <- floor(log10(max(plot_dat$df$exposure))) + 1
+    y_axis_spacing = rep(strrep(" ", max_num_digits), 2)
+  }
   
   # Plot signatures
   plot_dat$df %>%
     ggplot(aes_string(y = "exposure", x = "motif", fill = "mutation_color")) +
     geom_bar(stat = "identity") +
     facet_grid(factor(signature) ~ ., scales = scales) +
-    ggplot2::xlab("Motifs") + ggplot2::ylab("Percent of Mutations") +
+    ggplot2::xlab("Motifs") + ggplot2::ylab(y_axis_label) +
     ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1)) +
     ggplot2::scale_fill_manual(values = color_mapping) +
     ggplot2::scale_x_discrete(labels = annot$context) +
     ggplot2::scale_y_continuous(expand = expansion(mult = c(0, 0.2)), 
-                                limits = c(0, NA), n.breaks = 4) +
+                                limits = c(0, NA), n.breaks = 5) +
     ggplot2::geom_text(data = sig_name_labels, 
                        mapping = aes_string(x = -Inf, y = Inf, label = "label"), 
                        hjust = -0.075, vjust = 1.5, 
@@ -182,6 +210,13 @@ plot_signatures <- function(result, plotly = FALSE,
     p <- p + geom_blank(aes_string(y = "ymax")) 
   }
   
+  # If SBS, need to change color of labels so one is white
+  if (table_name == "SBS96"){
+    label_colors <- c("black", "white", rep("black", 4))
+  }else{
+    label_colors <- c(rep("black", length(color_mapping)))
+  }
+  
   # Plot motif labels
   plot_dat$df$exposure_null <- rep(0, dim(plot_dat$df)[1])
   plot_dat$df %>%
@@ -189,7 +224,7 @@ plot_signatures <- function(result, plotly = FALSE,
     geom_bar(stat = "identity") +
     ggplot2::scale_y_continuous(expand = expansion(mult = c(0, 0)), 
                                 limits = c(0, NA), breaks = c(0, 0.01), 
-                                labels = c("  ","  "), n.breaks = 4) +
+                                labels = y_axis_spacing, n.breaks = 4) +
     ggplot2::ylab("") +
     ggplot2::geom_rect(data = motif_label_locations, 
                        aes(xmin = x, xmax = xend, ymin = max(y), ymax = max(yend)), 
@@ -199,7 +234,7 @@ plot_signatures <- function(result, plotly = FALSE,
                        aes(x=x+(xend-x)/2, y=y+(yend-y)/2, 
                            label = stringr::str_to_title(mutation_color)), 
                        fontface = "bold", size = 4, 
-                       color = c("black", "white", rep("black", 4))) -> p2
+                       color = label_colors) -> p2 
   
   
   # Adjust theme
