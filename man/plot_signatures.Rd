@@ -14,7 +14,8 @@ plot_signatures(
   show_y_labels = TRUE,
   same_scale = TRUE,
   y_max = NULL,
-  annotation = NULL
+  annotation = NULL,
+  percent = TRUE
 )
 }
 \arguments{
@@ -57,6 +58,9 @@ Vector length must be 1 or equivalent to the number of signatures. Default
 \item{annotation}{Vector of annotations to be displayed in the top right
 corner of each signature. Vector length must be equivalent to the number of
 signatures. Default \code{NULL}.}
+
+\item{percent}{If \code{TRUE}, the y-axis will be represented in percent 
+format instead of mutation counts. Default \code{TRUE}.}
 }
 \value{
 Generates a ggplot or plotly object
