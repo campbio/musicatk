@@ -128,6 +128,12 @@ reference:
   - '`count_table-class`'
   - '`musica_result-class`'
   - '`musica_result_grid-class`'
+  - '`built_tables`'
+  - '`musicatk`'
+  - '`rc`'
+  - '`table_selected`'
+
+
 
 
 
