@@ -2,7 +2,7 @@ shiny_panel_import <- fluidPage(
           fluidRow(box(width = 6,
               div(fileInput("file", "Select file:",
                   multiple = TRUE,
-                  accept = c(".maf", ".vcf"))),
+                  accept = c(".maf", ".vcf", ".txt"))),
           actionButton("upload", "Add samples"))),
           fluidRow(box(width = 6, HTML(paste0("<b>","Added files:","</b>")),
           tags$div(id = "file_id", DT::dataTableOutput("dtable"),
