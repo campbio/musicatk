@@ -356,13 +356,45 @@ server <- function(input, output, session) {
   observeEvent(input$import, {
     req(input$file)
     file_name <- vals$data$datapath
-    if (all(tools::file_ext(file_name) != c("maf", "vcf"))) {
+    summaries_list <- list()
+    if (all(tools::file_ext(file_name) != c("maf", "vcf", "txt"))) {
       shinyalert::shinyalert(paste0("Error: File format not supported! ",
                                     "Please upload .maf or .vcf files"))
     }
+    if (all(tools::file_ext(file_name) == c("txt"))){
+      shinybusy::show_spinner()
+      vals$var <- extract_variants_from_maf_file(c(file_name))
+      shinybusy::hide_spinner()
+      showNotification("Import successfully completed!")  
+    }
+    
     else{
         shinybusy::show_spinner()
-        vals$var <- extract_variants(c(file_name))
+      for (i in seq_along(file_name)) {
+        # Try to read the file
+        result <- tryCatch({
+          # Attempt to read the VCF file
+          vcf <- extract_variants(file_name[i])
+          
+          
+        }, error = function(e) {
+          # If there is an error, return NULL or an error message
+          message(paste("Error reading file:", file_name[i], "\nError message:", e$message))
+          return(NULL)
+        })
+        
+        # If result is not NULL, add it to the list
+        if (!is.null(result)) {
+          summaries_list[[i]] <- result
+        }
+      }
+      
+      # Combine the list of data frames into one data frame
+         do.call(rbind, summaries_list)
+    
+  
+
+        vals$var <- do.call(rbind, summaries_list)
         shinybusy::hide_spinner()
         showNotification("Import successfully completed!")
         }
@@ -523,17 +555,30 @@ server <- function(input, output, session) {
 #Displaying musica result/object summary table
   output$musica_upload <- renderDataTable({
     req(vals$musica_upload)
-    return(head(vals$musica_upload@musica@variants))
+    if(input$musica_button == "result")
+      {return(head(vals$musica_upload@musica@variants))
+    }else{
+      return(head(vals$musica_upload@variants))
+      }
+    
     shinyjs::show(id = "musica_upload")
     js$enableTabs();
   })
   output$musica_upload_summary <- renderText({
     req(vals$musica_upload)
+    if(input$musica_button == "result"){
     vt <- unique(vals$musica_upload@musica@variants$Variant_Type) #variant types
     nvt <- table(vals$musica_upload@musica@variants$Variant_Type)
     ns <- length(vals$musica_upload@musica@variants$sample) #sample length
     mylist <- c("No. of Samples:\n", ns, "\n", "Variant types", vt, "\n", nvt)
     return(mylist)
+    }else{
+      vt <- unique(vals$musica_upload@variants$Variant_Type) #variant types
+      nvt <- table(vals$musica_upload@variants$Variant_Type)
+      ns <- length(vals$musica_upload@variants$sample) #sample length
+      mylist <- c("No. of Samples:\n", ns, "\n", "Variant types", vt, "\n", nvt)
+      return(mylist)
+    }
     shinyjs::show(id = "musica_upload_summary")
     js$enableTabs();
   })
@@ -559,8 +604,12 @@ server <- function(input, output, session) {
       paste("musica_variants", ".csv", sep = "")
     },
     content = function(file) {
+      if(input$musica_button == "result"){
       write.csv(vals$musica_upload@musica@variants, file, row.names = FALSE)
-    }
+      }else{
+      write.csv(vals$musica_upload@variants, file, row.names = FALSE)
+      }
+        }
   )
 
   output$download_musica_object <- downloadHandler(
@@ -680,6 +729,7 @@ parse_delete_event <- function(idstr) {
   # rep_range needed for SBS192 replication strand
   data(rep_range)
   # needed to predict cosmic sigs
+  data("cosmic_v2_sigs")
   data("cosmic_v3_sbs_sigs")
   data("cosmic_v3_dbs_sigs")
   data("cosmic_v3_indel_sigs")
@@ -831,7 +881,8 @@ parse_delete_event <- function(idstr) {
 
   cosmic_objects <- list("cosmic_v3_sbs_sigs" = cosmic_v3_sbs_sigs,
                       "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
-                      "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs)
+                      "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs,
+                      "cosmic_v2_sigs" = cosmic_v2_sigs)
 
   # Update musica object list whenever a result or musica object is altered
   output$annotation_musica_list <- renderUI({
@@ -1216,7 +1267,9 @@ parse_delete_event <- function(idstr) {
                     choices = list("Cosmic" = list(
                       "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
                       "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
-                      "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs")),
+                      "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
+                      "Cosmic V2 Signatures" = "cosmic_v2_sigs"
+                      )),
                     selected = "cosmic_v3_sbs_sigs"),
         bsTooltip("predicted_result",
                   "Result object containing the signatures to predict",
@@ -1228,7 +1281,8 @@ parse_delete_event <- function(idstr) {
                   choices = list("Cosmic" = list(
                     "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
                     "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
-                    "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs"),
+                    "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
+                    "Cosmic V2 Signatures" = "cosmic_v2_sigs"),
                                  "your signatures" = other),
                   selected = "cosmic_v3_sbs_sigs"),
       bsTooltip("predicted_result",
