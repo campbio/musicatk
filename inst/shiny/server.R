@@ -6,6 +6,7 @@ library(shinyalert)
 library(TCGAbiolinks)
 library(shinyjqui)
 
+
 options(shiny.maxRequestSize = 10000 * 1024 ^ 2)
 
 server <- function(input, output, session) {
@@ -306,6 +307,8 @@ server <- function(input, output, session) {
     hr()
     #Extracting TCGA tumors and formatting it to display only the abbreviations
     projects <- TCGAbiolinks:::getGDCprojects()
+    matches <- grepl("TCGA", projects$id)
+    projects <- projects[matches,]
     project.name <- paste0(projects$id, ": ", projects$name)
     p <- projects$id
     names(p) <- project.name
@@ -332,7 +335,7 @@ server <- function(input, output, session) {
                   data.type = "Masked Somatic Mutation",
                   workflow.type = "Aliquot Ensemble Somatic Variant Merging and Masking",
                   experimental.strategy = "WXS",
-                  data.format = "maf")
+                  data.format = "MAF")
       GDCdownload(query)
       maf <- GDCprepare(query)
       vals$var <- extract_variants_from_maf_file(maf)
