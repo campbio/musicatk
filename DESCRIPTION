@@ -63,7 +63,7 @@ Imports:
     stringi,
     tidyverse,
     ggpubr,
-    Matrix (== 1.6.4)
+    Matrix (>= 1.6.4)
 Suggests:
     TCGAbiolinks,
     shinyBS,
