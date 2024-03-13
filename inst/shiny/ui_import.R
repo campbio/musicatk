@@ -2,7 +2,7 @@ shiny_panel_import <- fluidPage(
           fluidRow(box(width = 6,
               div(fileInput("file", "Select file:",
                   multiple = TRUE,
-                  accept = c(".maf", ".vcf"))),
+                  accept = c(".maf", ".vcf", ".txt"))),
           actionButton("upload", "Add samples"))),
           fluidRow(box(width = 6, HTML(paste0("<b>","Added files:","</b>")),
           tags$div(id = "file_id", DT::dataTableOutput("dtable"),
@@ -35,4 +35,10 @@ shiny_panel_import <- fluidPage(
                     you made in the Sample List",
                     placement = "bottom", trigger = "hover",
                     options = NULL),
+          fluidRow(
+            box(
+              width = 12,
+              HTML('<p> For more information, visit <a href="https://camplab.net/musicatk/v1.6.0/articles/articles/tutorial_tcga_ui.html">this link</a>.</p>')
+            )
+          )
 )

@@ -24,6 +24,14 @@ ui <- fluidPage(
   shinyalert::useShinyalert(),
   shinybusy::add_busy_spinner(),
   shinyjs::useShinyjs(),
+  tags$head(
+    tags$script(HTML("
+      $(document).on('shiny:sessioninitialized', function(event) {
+        // Code to expand all menu items
+        $('.treeview-menu').css('display', 'block');
+      });
+    "))
+  ),
   dashboardPage(
     dashboardHeader(title = "musicatk"),
     dashboardSidebar(sidebarMenu(

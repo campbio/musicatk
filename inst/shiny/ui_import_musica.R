@@ -9,7 +9,7 @@ shiny_panel_result <- fluidPage(
               fileInput("musica_file",
                         "Upload Musica Result or Object:",
                         multiple = TRUE,
-                        accept = c(".rda", "rds")),
+                        accept = c(".rda", "rds", ".RDS")),
               hr(),
               uiOutput("musica_result_name"),
               actionButton(inputId = "upload_musica", label = "Upload"),

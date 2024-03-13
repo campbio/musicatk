@@ -62,7 +62,8 @@ Imports:
     shiny,
     stringi,
     tidyverse,
-    ggpubr
+    ggpubr,
+    Matrix (>= 1.6.4)
 Suggests:
     TCGAbiolinks,
     shinyBS,
@@ -83,5 +84,5 @@ Suggests:
     shinyWidgets,
     cowplot,
     withr
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 VignetteBuilder: knitr
