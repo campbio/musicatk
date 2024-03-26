@@ -1,6 +1,14 @@
 library(plotly)
 library(shinyBS)
 musicaresultvisualization <- fluidPage(
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "https://use.fontawesome.com/releases/v5.15.4/css/all.css"),
+    tags$script(HTML('
+            $(document).ready(function(){
+             $("[data-toggle=\'popover\']").popover();
+            });
+             '))
+  ),
   h2("Visualize Signatures & Exposures"),
   #actionButton(inputId = "get_res", label = "Get Results"),
   fluidRow(
@@ -8,7 +16,7 @@ musicaresultvisualization <- fluidPage(
       title = "",
       id = "tabset1",
       width = NULL,
-      tabPanel(
+      tabPanel(style = "position: relative;",
         title = "Signatures",
         h3("Settings"),
         uiOutput(outputId = "select_res1"),
@@ -24,6 +32,17 @@ musicaresultvisualization <- fluidPage(
         #textInput(inputID = "ymax1", label = "Y-axis Maximums", value = "", width = "50%"),
         #textInput(inputID = "annotation1", label = "Signature Annotations", value = "", width = "50%"),
         actionButton(inputId = "get_plot1", label = "Make Plot"),
+        tags$a(href = "#", 
+               tags$i(class = "fas fa-question-circle"),
+               title = "Need help?", 
+               `data-toggle` = "popover", 
+               `data-trigger` = "focus", 
+               `data-content` = "Bar plots can be used to display the probability of each type of mutation within each signature.
+               By default, signatures are named by numbers, but an option of renaming signatures is provided if you want to rename 
+               them according to their possible etiology (e.g. Smoking) or closest correlation to COSMIC (e.g. SBS4).",
+               `data-html` = "true",
+               `data-placement` = "left",
+               style = "position: absolute; top: 5px; right: 5px; cursor: pointer;"),    
         tags$div(id = "plot_div1"),
         bsTooltip(id = "rename", title = "If checked, the names of signatures can be customized.",
                   placement = "right", options = list(container = "body")),
@@ -78,7 +97,16 @@ musicaresultvisualization <- fluidPage(
                        inline = TRUE,
                        selected = "signature"
                      ),
-                     tags$div(id = "insert_annot")
+                     tags$div(id = "insert_annot"),
+                     tags$a(href = "#", 
+                            tags$i(class = "fas fa-question-circle"),
+                            title = "Need help?", 
+                            `data-toggle` = "popover", 
+                            `data-trigger` = "focus", 
+                            `data-content` = "Bar plots, box plots, violin plots and scatter plots can be used to visualize the exposure levels of each signature in each sample.",
+                            `data-html` = "true",
+                            `data-placement` = "left",
+                            style = "position: absolute; top: 5px; right: 5px; cursor: pointer;")
                    )
                  )
                ),

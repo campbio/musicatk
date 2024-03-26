@@ -1,6 +1,27 @@
 shiny_panel_musica <- fluidPage(
- fluidRow(box(uiOutput("genome_list"),
+ fluidRow(
+   tags$head(
+     tags$link(rel = "stylesheet", type = "text/css", href = "https://use.fontawesome.com/releases/v5.15.4/css/all.css"),
+     tags$script(HTML('
+            $(document).ready(function(){
+             $("[data-toggle=\'popover\']").popover();
+            });
+             '))
+   ),   
+   div(style = "position: relative;",
+       box(uiOutput("genome_list"),
     textOutput("genome_select"),
+    tags$a(href = "#", 
+           tags$i(class = "fas fa-question-circle"),
+           title = "Need help?", 
+           `data-toggle` = "popover", 
+           `data-trigger` = "focus", 
+           `data-content` = "The reference genome can be selected from the drop down menu labeled “Choose Genome” that matches the genome build of the variants 
+           and the ‘Create Musica Object’ button can then be clicked. Once it’s done, a completion notification message at the bottom right and a variant summary 
+           table will appear. The musica object can be downloaded by clicking the ‘Download Musica Object’ button and re-uploaded to save time in subsequent sessions.",
+           `data-html` = "true",
+           `data-placement` = "left",
+           style = "position: absolute; top: 5px; right: 5px; cursor: pointer;"),    
     column(width = 12,
            h3("Settings"),
            #Adding checkbox input ui
@@ -51,5 +72,5 @@ shiny_panel_musica <- fluidPage(
                      "Press button to dwownload the musica variants.",
                      placement = "bottom", trigger = "hover",
                      options = NULL)
-           )))
+           ))))
     )
