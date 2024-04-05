@@ -119,12 +119,12 @@ plot_signatures <- function(result, plotly = FALSE,
                             same_scale = TRUE, y_max = NULL, annotation = NULL,
                             percent = TRUE) {
   
-  loc_num <- NULL
-  mutation_color <- NULL
-  x <- NULL
-  xend <- NULL
-  y <- NULL
-  yend <- NULL
+  #loc_num <- NULL
+  #mutation_color <- NULL
+  #x <- NULL
+  #xend <- NULL
+  #y <- NULL
+  #yend <- NULL
   
   signatures <- signatures(result)
   sig_names <- colnames(signatures)
@@ -178,7 +178,13 @@ plot_signatures <- function(result, plotly = FALSE,
   else{
     y_axis_label = "Mutation Counts"
     max_num_digits <- floor(log10(max(plot_dat$df$exposure))) + 1
-    y_axis_spacing = rep(strrep(" ", max_num_digits), 2)
+    
+    if (max(plot_dat$df$exposure) < 1){
+      max_num_digits <- 2
+      y_axis_label = "Mutation Probability"
+    }
+    
+    y_axis_spacing = rep(strrep("  ", max_num_digits), 2)
   }
   
   # Plot signatures
@@ -200,14 +206,14 @@ plot_signatures <- function(result, plotly = FALSE,
   # Add annotations, if necessary
   if (exists("annotation_text") == TRUE){
     p <- p + ggplot2::geom_text(data = annotation_text,
-                                mapping = aes_string(x = Inf, y = Inf, label = "label"),
+                                mapping = aes(x = Inf, y = Inf, label = label),
                                 hjust = 1.075, vjust = 1.5, 
                                 fontface = "bold")
   }
   
   # Change y-axis scale, if necessary
   if (!is.null(y_max)){
-    p <- p + geom_blank(aes_string(y = "ymax")) 
+    p <- p + geom_blank(aes(y = ymax)) 
   }
   
   # If SBS, need to change color of labels so one is white
@@ -333,7 +339,7 @@ plot_sample_reconstruction_error <- function(result, sample,
                                  "-", seq(ncol(signatures)))
   names(sig_names) <- colnames(signatures)
     
-  # Rormat signature matrix into long data.frame
+  # Reformat signature matrix into long data.frame
   signatures %>%
     as.data.frame %>%
     tibble::rownames_to_column(var = "motif") %>%
