@@ -245,7 +245,7 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
   
   .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   res1_name = result_name,
-                                  res2_name = "COSMIC Signatures (V3)",
+                                  res2_name = "COSMIC Signatures (V2)",
                                   decimals = decimals, maxes = maxes, same_scale = same_scale)
   
   return(comparison)
