@@ -47,7 +47,6 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   return(comparison)
 }
 
-
 #' Compare two result files to find similar signatures
 #'
 #' @param result A \code{\linkS4class{musica_result}} object.
@@ -55,6 +54,26 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
+#' @return Returns the comparisons
+#' @examples
+#' data(res)
+#' compare_results(res, res, threshold = 0.8)
+#' @export
+compare_results <- function(result, other_result, threshold = 0.9,
+                            metric = "cosine") {
+  
+  comparison <- sig_compare(sig1 = signatures(result), sig2 = signatures(other_result),
+                            threshold = threshold, metric = metric)
+  return(comparison)
+  
+}
+
+#' Plot the comparison of two result files
+#'
+#' @param comparison A matrix detailing the comparison between the two result files.
+#' For example, the output of the \code{compare_results} function.
+#' @param result A \code{\linkS4class{musica_result}} object.
+#' @param other_result A second \code{\linkS4class{musica_result}} object.
 #' @param result_name title for plot of first result signatures
 #' @param other_result_name title for plot of second result signatures
 #' @param decimals Specifies rounding for similarity metric displayed. Default
@@ -62,19 +81,17 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 #' @param same_scale If \code{TRUE}, the scale of the probability for each
 #' comparison will be the same. If \code{FALSE}, then the scale of the y-axis
 #' will be adjusted for each comparison. Default \code{TRUE}.
-#' @return Returns the comparisons
+#' @return Returns the comparison plot
 #' @examples
 #' data(res)
-#' compare_results(res, res, threshold = 0.8)
+#' comparison <- compare_results(res, res, threshold = 0.8)
+#' plot_comparison(comparison, res, res)
 #' @export
-compare_results <- function(result, other_result, threshold = 0.9,
-                             metric = "cosine", result_name =
-                              deparse(substitute(result)), other_result_name =
-                              deparse(substitute(other_result)),
-                            decimals = 2, same_scale = FALSE) {
-  signatures <- signatures(result)
-  comparison <- sig_compare(sig1 = signatures, sig2 = signatures(other_result),
-                            threshold = threshold, metric = metric)
+plot_comparison <- function(comparison, result, other_result, 
+                            result_name = deparse(substitute(result)), 
+                            other_result_name = deparse(substitute(other_result)),
+                            decimals = 2, same_scale = TRUE) {
+  
   result_subset <- methods::new("musica_result",
                                 signatures = 
                                   signatures(result)[, comparison$x_sig_index, 
@@ -93,10 +110,10 @@ compare_results <- function(result, other_result, threshold = 0.9,
   
   result_subset_maxes <- NULL
   other_subset_maxes <- NULL
-  for (index in 1:dim(comparison)[1]){
+  for (index in seq_len(dim(comparison)[1])){
     result_subset_maxes <- c(result_subset_maxes, max(signatures(result_subset)[,index]))
   }
-  for (index in 1:dim(comparison)[1]){
+  for (index in seq_len(dim(comparison)[1])){
     other_subset_maxes <- c(other_subset_maxes, max(signatures(other_subset)[,index]))
   }
   maxes <- pmax(result_subset_maxes, other_subset_maxes) * 100
@@ -105,12 +122,12 @@ compare_results <- function(result, other_result, threshold = 0.9,
     maxes <- rep(max(maxes), length(maxes))
   }
 
-  .plot_compare_result_signatures(result_subset, other_subset, comparison,
+  plot <- .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   res1_name = result_name,
                                   res2_name = other_result_name, 
                                   decimals = decimals, same_scale = same_scale,
                                   maxes = maxes)
-  return(comparison)
+  return(plot)
 }
 
 #' Compare a result object to COSMIC V3 Signatures; Select exome or genome for
