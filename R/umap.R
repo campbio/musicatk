@@ -23,8 +23,8 @@
 #' \code{\link[uwot]{umap}} for more information on the individual parameters
 #' for generating UMAPs. 
 #' @examples
-#' data(res_annot)
-#' create_umap(result = res_annot)
+#' #data(res_annot)
+#' #create_umap(result = res_annot)
 #' @export
 create_umap <- function(result, n_neighbors = 30,
                         min_dist = 0.75, spread = 1) {
@@ -92,9 +92,9 @@ create_umap <- function(result, n_neighbors = 30,
 #' @return Generates a ggplot or plotly object
 #' @seealso See \link{create_umap} to generate a UMAP in a musica result.
 #' @examples
-#' data(res_annot)
-#' create_umap(res_annot, "Tumor_Subtypes")
-#' plot_umap(res_annot, "none")
+#' #data(res_annot)
+#' #create_umap(res_annot, "Tumor_Subtypes")
+#' #plot_umap(res_annot, "none")
 #' @export
 plot_umap <- function(result, color_by = c("signatures", "annotation", 
                                            "cluster", "none"),

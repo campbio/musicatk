@@ -80,9 +80,9 @@ Plots samples on a UMAP scatterplot. Samples can be colored by
 the levels of mutational signatures or by a annotation variable.
 }
 \examples{
-data(res_annot)
-create_umap(res_annot, "Tumor_Subtypes")
-plot_umap(res_annot, "none")
+#data(res_annot)
+#create_umap(res_annot, "Tumor_Subtypes")
+#plot_umap(res_annot, "none")
 }
 \seealso{
 See \link{create_umap} to generate a UMAP in a musica result.

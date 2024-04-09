@@ -119,12 +119,12 @@ plot_signatures <- function(result, plotly = FALSE,
                             same_scale = TRUE, y_max = NULL, annotation = NULL,
                             percent = TRUE) {
   
-  #loc_num <- NULL
-  #mutation_color <- NULL
-  #x <- NULL
-  #xend <- NULL
-  #y <- NULL
-  #yend <- NULL
+  loc_num <- NULL
+  mutation_color <- NULL
+  x <- NULL
+  xend <- NULL
+  y <- NULL
+  yend <- NULL
   
   signatures <- signatures(result)
   sig_names <- colnames(signatures)
