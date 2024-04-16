@@ -110,7 +110,7 @@ exposure_differential_analysis <- function(musica_result, annotation,
   } else if (method == "kruskal") {
     header <- c("K-W chi-squared", "df", "p-value", "fdr")
     diff.out <- matrixTests::row_kruskalwallis(exposures, annotations, ...) %>%
-      dplyr::select(.data$statistic, .data$df, .data$pvalue)
+      dplyr::select("statistic", "df", "pvalue")
     diff.out$fdr <- p.adjust(diff.out$pvalue, method = "BH")
     colnames(diff.out) <- header
     rownames(diff.out) <- rownames(exposures)

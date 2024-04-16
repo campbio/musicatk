@@ -7,6 +7,8 @@
 create_musica(
   x,
   genome,
+  count_table,
+  variant_class,
   check_ref_chromosomes = TRUE,
   check_ref_bases = TRUE,
   chromosome_col = "chr",
@@ -27,6 +29,11 @@ the variant information.}
 
 \item{genome}{A \linkS4class{BSgenome} object indicating which genome
 reference the variants and their coordinates were derived from.}
+
+\item{count_table}{A data.table, matrix, or data.frame that contains 
+mutation count data, with samples as columns and mutation types as rows.}
+
+\item{variant_class}{Mutations are SBS, DBS, or Indel.}
 
 \item{check_ref_chromosomes}{Whether to peform a check to ensure that
 the chromosomes in the \code{variant} object match the reference
