@@ -669,15 +669,15 @@ create_musica <- function(x, genome,
                          convert_dbs = TRUE,
                          verbose = TRUE) {
   
-  # first argument set
   all_var <- ! any(missing(x), missing(genome))
-  # second argument set
   all_count <- ! any(missing(count_table), missing(variant_class))
 
+  # ensure one of two possible parameter options are met (variants or counts)
   if (!(xor(all_var, all_count))){
     stop("Provide either 'x' and 'genome' or 'count_table' and 'variant_type'.", call. = FALSE)
   }
   
+  # if inputs are for count table
   if (all_count){
     
     if (canCoerce(count_table, "matrix")) {
@@ -738,6 +738,7 @@ create_musica <- function(x, genome,
     }
   }
 
+  # if inputs are for variants
   if (all_var){
     
     used_fields <- c(.required_musica_headers(), extra_fields)
