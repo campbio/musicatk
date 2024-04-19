@@ -10,7 +10,9 @@ compare_results(
   threshold = 0.9,
   metric = "cosine",
   result_name = deparse(substitute(result)),
-  other_result_name = deparse(substitute(other_result))
+  other_result_name = deparse(substitute(other_result)),
+  decimals = 2,
+  same_scale = FALSE
 )
 }
 \arguments{
