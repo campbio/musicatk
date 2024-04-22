@@ -79,6 +79,10 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
                           legend = TRUE, 
                           plotly = FALSE) {
   
+  # dummy variables
+  exposure <- NULL
+  color <- NULL
+  
   group_by <- match.arg(group_by, c("none", "annotation", "signature"))
   color_by <- match.arg(color_by)
   plot_type <- match.arg(plot_type)
@@ -171,23 +175,23 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
   # Create base ggplot object
   if (plot_type == "box" & group_by == "annotation") {
     p <- ggplot(plot_dat,
-                aes_string(x = "signature", y = "exposure", fill = "color"))
+                aes(x = signature, y = exposure, fill = color))
     p <- p +  ggplot2::geom_boxplot() + ggplot2::xlab("")  
   } else if (plot_type == "box" & group_by == "signature") {
     p <- ggplot(plot_dat,
-                aes_string(x = "annotation", y = "exposure", fill = "color"))
+                aes(x = annotation, y = exposure, fill = color))
     p <- p +  ggplot2::geom_boxplot() + ggplot2::xlab("")  
   } else if (plot_type == "violin" & group_by == "annotation") {
     p <- ggplot(plot_dat,
-                aes_string(x = "signature", y = "exposure", fill = "color"))
+                aes(x = signature, y = exposure, fill = color))
     p <- p +  ggplot2::geom_violin(alpha = 0.75) + ggplot2::xlab("")  
   } else if (plot_type == "violin" & group_by == "signature") {
     p <- ggplot(plot_dat,
-                aes_string(x = "annotation", y = "exposure", fill = "color"))
+                aes(x = annotation, y = exposure, fill = color))
     p <- p +  ggplot2::geom_violin(alpha = 0.75) + ggplot2::xlab("")  
   } else {
     p <- ggplot(plot_dat,
-                aes_string(x = "sample", y = "exposure", fill = "color"))
+                aes(x = sample, y = exposure, fill = color))
     p <- p + ggplot2::geom_bar(stat = "identity") + ggplot2::xlab("Samples")  
   }
   
