@@ -1052,7 +1052,7 @@ parse_delete_event <- function(idstr) {
                          input$combined_table_name)
     }, error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
-      shinybuys::hide_spinner()
+      shinybusy::hide_spinner()
     })
     shinybusy::hide_spinner()
     showNotification("Table created.")
