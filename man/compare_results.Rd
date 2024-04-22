@@ -10,7 +10,9 @@ compare_results(
   threshold = 0.9,
   metric = "cosine",
   result_name = deparse(substitute(result)),
-  other_result_name = deparse(substitute(other_result))
+  other_result_name = deparse(substitute(other_result)),
+  decimals = 2,
+  same_scale = FALSE
 )
 }
 \arguments{
@@ -26,6 +28,13 @@ for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 \item{result_name}{title for plot of first result signatures}
 
 \item{other_result_name}{title for plot of second result signatures}
+
+\item{decimals}{Specifies rounding for similarity metric displayed. Default
+\code{2}.}
+
+\item{same_scale}{If \code{TRUE}, the scale of the probability for each
+signature will be the same. If \code{FALSE}, then the scale of the y-axis
+will be adjusted for each signature. Default \code{FALSE}.}
 }
 \value{
 Returns the comparisons

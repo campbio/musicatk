@@ -57,6 +57,11 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
 #' @param result_name title for plot of first result signatures
 #' @param other_result_name title for plot of second result signatures
+#' @param decimals Specifies rounding for similarity metric displayed. Default
+#' \code{2}.
+#' @param same_scale If \code{TRUE}, the scale of the probability for each
+#' signature will be the same. If \code{FALSE}, then the scale of the y-axis
+#' will be adjusted for each signature. Default \code{FALSE}.
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
@@ -65,7 +70,8 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 compare_results <- function(result, other_result, threshold = 0.9,
                              metric = "cosine", result_name =
                               deparse(substitute(result)), other_result_name =
-                              deparse(substitute(other_result))) {
+                              deparse(substitute(other_result)),
+                            decimals = 2, same_scale = FALSE) {
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, sig2 = signatures(other_result),
                             threshold = threshold, metric = metric)
@@ -94,11 +100,16 @@ compare_results <- function(result, other_result, threshold = 0.9,
     other_subset_maxes <- c(other_subset_maxes, max(signatures(other_subset)[,index]))
   }
   maxes <- pmax(result_subset_maxes, other_subset_maxes) * 100
-  maxes <- rep(max(maxes), length(maxes))
+  
+  if (same_scale == TRUE){
+    maxes <- rep(max(maxes), length(maxes))
+  }
 
   .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   res1_name = result_name,
-                                  res2_name = other_result_name, maxes = maxes)
+                                  res2_name = other_result_name, 
+                                  decimals = decimals, same_scale = same_scale,
+                                  maxes = maxes)
   return(comparison)
 }
 
@@ -180,7 +191,8 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   res1_name = result_name,
                                   res2_name = "COSMIC Signatures (V3)",
-                                  decimals = decimals, maxes = maxes, same_scale = same_scale)
+                                  decimals = decimals, maxes = maxes, 
+                                  same_scale = same_scale)
   return(comparison)
   
 }
@@ -245,7 +257,7 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
   
   .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   res1_name = result_name,
-                                  res2_name = "COSMIC Signatures (V3)",
+                                  res2_name = "COSMIC Signatures (V2)",
                                   decimals = decimals, maxes = maxes, same_scale = same_scale)
   
   return(comparison)
@@ -296,15 +308,21 @@ cosmic_v2_subtype_map <- function(tumor_type) {
                                             res1_name = "", res2_name = "", 
                                             decimals, maxes, same_scale) {
   
-  CS_annotations <- paste("CS = ", round(comparison$cosine, decimals), sep = "")
+  if (colnames(comparison)[1] == "cosine"){
+    annotations <- paste("CS = ", round(comparison$cosine, decimals), sep = "")
+  }
   
-  res1_plot <- plot_signatures(res1, annotation = CS_annotations, 
-                               y_max = maxes, same_scale = FALSE) 
+  if (colnames(comparison)[1] == "1_minus_jsd"){
+    annotations <- paste("1 - JSD = ", round(comparison$"1_minus_jsd", decimals), sep = "")
+  }
+  
+  res1_plot <- plot_signatures(res1, annotation = annotations, 
+                               y_max = maxes, same_scale = same_scale) 
   res1_plot <- ggpubr::annotate_figure(res1_plot, 
                                top = ggpubr::text_grob(res1_name, face = "bold"))
   
   res2_plot <- plot_signatures(res2, y_max = maxes, 
-                               show_y_labels = FALSE, same_scale = FALSE)
+                               show_y_labels = FALSE, same_scale = same_scale)
   res2_plot <- ggpubr::annotate_figure(res2_plot, 
                                        top = ggpubr::
                                          text_grob(res2_name, face = "bold"))
