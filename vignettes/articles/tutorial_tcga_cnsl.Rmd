@@ -345,20 +345,20 @@ It is almost always worthwhile to manually assess and confirm the signatures pre
 
 ```{r plot_SBS4_vs_SBS24}
 e <- exposures(result_cosmic_auto)
-plot(e["Signature4",], e["Signature24",], xlab="SBS4", ylab="SBS24")
+plot(e["SBS4",], e["SBS24",], xlab="SBS4", ylab="SBS24")
 ```
 
 Therefore, we will want to remove Signature 24 from our final prediction model. [Signature 18](https://cancer.sanger.ac.uk/signatures/media/images/v2_signature_profile_18.original.png) is another one with a high prevalence of C>A transversion at specific trinucleotide contexts. However, at least a few samples have high levels of Signature 18 without correspondingly high levels of Signature 4:
 
 ```{r plot_SBS4_vs_SBS18}
-plot(e["Signature4",], e["Signature18",], xlab="SBS4", ylab="SBS18")
-plot_exposures(result_cosmic_auto, num_samples = 25, sort_samples = "Signature18")
+plot(e["SBS4",], e["SBS18",], xlab="SBS4", ylab="SBS18")
+plot_exposures(result_cosmic_auto, num_samples = 25, sort_samples = "SBS18")
 ```
 
 Additionally, 2 of the 3 samples are skin cancers where the smoking signature is not usually expected:
 
 ```{r high_sig18}
-high.sbs18 <- tail(sort(e["Signature18",]), n = 3)
+high.sbs18 <- tail(sort(e["SBS18",]), n = 3)
 annot[names(high.sbs18),]
 ```
 
@@ -430,7 +430,7 @@ plot_heatmap(result_cosmic_final, annotation = "Tumor_Type")
 The heatmap shows that Signature 4 and Signature 7 are largely mutually exclusive from one another and can be used to separate lung and skin cancers. Additionally, subsets of signatures or samples can be displayed. For example, if we only want to examine signatures involved in mismatch repair, we can select signatures 6, 15, and 26:
 
 ```{r exposure_heatmap_sigs}
-plot_heatmap(result_cosmic_final, annotation = "Tumor_Type", subset_signatures = c("Signature6", "Signature15", "Signature26"))
+plot_heatmap(result_cosmic_final, annotation = "Tumor_Type", subset_signatures = c("SBS6", "SBS15", "SBS26"))
 ```
 
 In this heatmap, we can see that only a small subset of distinct samples have relatively higher levels of these signatures. 
