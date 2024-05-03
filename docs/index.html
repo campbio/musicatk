@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.11.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.14.0</span>
       </span>
     </div>
 
@@ -96,6 +96,375 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
+
+<div class="section level1">
+<div class="page-header"><h1 id="mutational-signature-comprehensive-analysis-toolkit">Mutational Signature Comprehensive Analysis Toolkit<a class="anchor" aria-label="anchor" href="#mutational-signature-comprehensive-analysis-toolkit"></a>
+</h1></div>
+</div>
+<div class="section level1">
+<h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h1>
+<p>A variety of exogenous exposures or endogenous biological processes can contribute to the overall mutational load observed in human tumors. Many different mutational patterns, or “mutational signatures”, have been identified across different tumor types. These signatures can provide a record of environmental exposure and can give clues about the etiology of carcinogenesis. The Mutational Signature Comprehensive Analysis Toolkit (musicatk) has utilities for extracting variants from a variety of file formats, contains multiple methods for discovery of novel signatures or prediction of known signatures, as well as many types of downstream visualizations for exploratory analysis. This package has the ability to parse and combine multiple motif classes in the mutational signature discovery or prediction processes. Mutation motifs include single base substitutions (SBS), double base substitutions (DBS), insertions (INS) and deletions (DEL).</p>
+</div>
+<div class="section level1">
+<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h1>
+<p>Currently musicatk can be installed from on Bioconductor using the following code:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span><span class="op">}</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"musicatk"</span><span class="op">)</span></span></code></pre></div>
+<p>To install the latest version from Github, use the following code:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"devtools"</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span><span class="op">}</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"campbio/musicatk"</span><span class="op">)</span></span></code></pre></div>
+<p>The package can be loaded using the <code>library</code> command.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">musicatk</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level1">
+<h1 id="setting-up-a-musica-object">Setting up a musica object<a class="anchor" aria-label="anchor" href="#setting-up-a-musica-object"></a>
+</h1>
+<p>In order to discover or predict mutational signatures, we must first set up our musica object by 1) extracting variants from files or objects such as VCFs and MAFs, 2) selecting the appropriate reference genome 3) creating a musica object, and 4) building a count tables for our variants of interest.</p>
+<div class="section level2">
+<h2 id="extracting-variants">Extracting variants<a class="anchor" aria-label="anchor" href="#extracting-variants"></a>
+</h2>
+<p>Variants can be extracted from various formats using the following functions:</p>
+<ul>
+<li>The <code><a href="reference/extract_variants_from_vcf_file.html">extract_variants_from_vcf_file()</a></code> function will extract variants from a <a href="https://samtools.github.io/hts-specs/" class="external-link">VCF</a> file. The file will be imported using the readVcf function from the <a href="https://bioconductor.org/packages/release/bioc/html/VariantAnnotation.html" class="external-link">VariantAnnotation</a> package and then the variant information will be extracted from this object.</li>
+<li>The <code><a href="reference/extract_variants_from_vcf.html">extract_variants_from_vcf()</a></code> function extracts variants from a <code>CollapsedVCF</code> or <code>ExpandedVCF</code> object from the <a href="https://bioconductor.org/packages/release/bioc/html/VariantAnnotation.html" class="external-link">VariantAnnotation</a> package.</li>
+<li>The <code><a href="reference/extract_variants_from_maf_file.html">extract_variants_from_maf_file()</a></code> function will extract variants from a file in <a href="https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/" class="external-link">Mutation Annotation Format (MAF)</a> used by TCGA.</li>
+<li>The <code><a href="reference/extract_variants_from_maf.html">extract_variants_from_maf()</a></code> function will extract variants from a MAF object created by the <a href="https://www.bioconductor.org/packages/release/bioc/html/maftools.html" class="external-link">maftools</a> package.</li>
+<li>The <code><a href="reference/extract_variants_from_matrix.html">extract_variants_from_matrix()</a></code> function will get the information from a matrix or data.frame like object that has columns for the chromosome, start position, end position, reference allele, mutation allele, and sample name.</li>
+<li>The <code><a href="reference/extract_variants.html">extract_variants()</a></code> function will extract variants from a list of objects. These objects can be any combination of VCF files, VariantAnnotation objects, MAF files, MAF objects, and data.frame objects.</li>
+</ul>
+<p>Below are some examples of extracting variants from MAF and VCF files:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Extract variants from a MAF File</span></span>
+<span><span class="va">lusc_maf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"public_TCGA.LUSC.maf"</span>, package <span class="op">=</span> <span class="st">"musicatk"</span><span class="op">)</span> </span>
+<span><span class="va">lusc.variants</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_variants_from_maf_file.html">extract_variants_from_maf_file</a></span><span class="op">(</span>maf_file <span class="op">=</span> <span class="va">lusc_maf</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Extract variants from an individual VCF file</span></span>
+<span><span class="va">luad_vcf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"public_LUAD_TCGA-97-7938.vcf"</span>, </span>
+<span>                         package <span class="op">=</span> <span class="st">"musicatk"</span><span class="op">)</span></span>
+<span><span class="va">luad.variants</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_variants_from_vcf_file.html">extract_variants_from_vcf_file</a></span><span class="op">(</span>vcf_file <span class="op">=</span> <span class="va">luad_vcf</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Extract variants from multiple files and/or objects</span></span>
+<span><span class="va">melanoma_vcfs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"musicatk"</span><span class="op">)</span>, </span>
+<span>                           pattern <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/glob2rx.html" class="external-link">glob2rx</a></span><span class="op">(</span><span class="st">"*SKCM*vcf"</span><span class="op">)</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">variants</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_variants.html">extract_variants</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">lusc_maf</span>, <span class="va">luad_vcf</span>, <span class="va">melanoma_vcfs</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="do">##   |                                                                              |                                                                      |   0%  |                                                                              |==============                                                        |  20%  |                                                                              |============================                                          |  40%  |                                                                              |==========================================                            |  60%  |                                                                              |========================================================              |  80%  |                                                                              |======================================================================| 100%</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="choosing-a-genome">Choosing a genome<a class="anchor" aria-label="anchor" href="#choosing-a-genome"></a>
+</h2>
+<p>musicatk uses <a href="https://bioconductor.org/packages/release/bioc/html/BSgenome.html" class="external-link">BSgenome</a> objects to access genome sequence information that flanks each mutation which is used bases for generating mutation count tables. BSgenome objects store full genome sequences for different organisms. A full list of supported organisms can be obtained by running <code>available.genomes()</code> after loading the BSgenome library. Custom genomes can be forged as well (see <a href="https://bioconductor.org/packages/release/bioc/html/BSgenome.html" class="external-link">BSgenome</a> documentation). musicatk provides a utility function called <code><a href="reference/select_genome.html">select_genome()</a></code> to allow users to quickly select human genome build versions “hg19” and “hg38” or mouse genome builds “mm9” and “mm10”. The reference sequences for these genomes are in UCSC format (e.g. chr1).</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/select_genome.html">select_genome</a></span><span class="op">(</span><span class="st">"hg38"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="creating-a-musica-object">Creating a musica object<a class="anchor" aria-label="anchor" href="#creating-a-musica-object"></a>
+</h2>
+<p>The last preprocessing step is to create an object with the variants and the genome using the <code>create_musica</code> function. This function will perform checks to ensure that the chromosome names and reference alleles in the input variant object match those in supplied BSgenome object. These checks can be turned off by setting <code>check_ref_chromosomes = FALSE</code> and <code>check_ref_bases = FALSE</code>, respectively. This function also looks for adjacent single base substitutions (SBSs) and will convert them to double base substitutions (DBSs). To disable this automatic conversion, set <code>convert_dbs = FALSE</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">musica</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/create_musica.html">create_musica</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">variants</span>, genome <span class="op">=</span> <span class="va">g</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="do">## Checking that chromosomes in the 'variant' object match chromosomes in the 'genome' object.</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="do">## Checking that the reference bases in the 'variant' object match the reference bases in the 'genome' object.</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="do">## Warning in .check_variant_ref_in_genome(dt = dt, genome = genome): Reference</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="do">## bases for 6 out of 911 variants did not match the reference base in the</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="do">## 'genome'. Make sure the genome reference is correct.</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="do">## Standardizing INS/DEL style</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="do">## Converting 7 insertions</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="do">## Converting 1 deletions</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="do">## Converting adjacent SBS into DBS</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="do">## 5 SBS converted to DBS</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level1">
+<h1 id="creating-mutation-count-tables">Creating mutation count tables<a class="anchor" aria-label="anchor" href="#creating-mutation-count-tables"></a>
+</h1>
+<p>Motifs are the building blocks of mutational signatures. Motifs themselves are a mutation combined with other genomic information. For instance, <strong>SBS96</strong> motifs are constructed from an SBS mutation and one upstream and one downstream base sandwiched together. We build tables by counting these motifs for each sample.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/build_standard_table.html">build_standard_table</a></span><span class="op">(</span><span class="va">musica</span>, g <span class="op">=</span> <span class="va">g</span>, table_name <span class="op">=</span> <span class="st">"SBS96"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">## Building count table from SBS with SBS96 schema</span></span></code></pre></div>
+<p>Here is a list of mutation tables that can be created by setting the <code>table_name</code> parameter in the <code>build_standard_table</code> function:</p>
+<ul>
+<li>SBS96 - Motifs are the six possible single base pair mutation types times the four possibilities each for upstream and downstream context bases (4<em>6</em>4 = 96 motifs)</li>
+<li>SBS192_Trans - Motifs are an extension of SBS96 multiplied by the transcriptional strand (translated/untranslated), can be specified with <code>"Transcript_Strand"</code>.</li>
+<li>SBS192_Rep - Motifs are an extension of SBS96 multiplied by the replication strand (leading/lagging), can be specified with <code>"Replication_Strand"</code>.</li>
+<li>DBS - Motifs are the 78 possible double-base-pair substitutions</li>
+<li>INDEL - Motifs are 83 categories intended to capture different categories of indels based on base-pair change, repeats, or microhomology, insertion or deletion, and length.</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">dbs_musica</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/build_standard_table.html">build_standard_table</a></span><span class="op">(</span><span class="va">dbs_musica</span>, <span class="va">g</span>, <span class="st">"SBS96"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="do">## Building count table from SBS with SBS96 schema</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="do">## Warning in .table_exists_warning(musica, "SBS96", overwrite): Overwriting counts</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="do">## table: SBS96</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/build_standard_table.html">build_standard_table</a></span><span class="op">(</span><span class="va">dbs_musica</span>, <span class="va">g</span>, <span class="st">"DBS78"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="do">## Building count table from DBS with DBS78 schema</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="do">## Warning in .table_exists_warning(musica, "DBS78", overwrite): Overwriting counts</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="do">## table: DBS78</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#Subset SBS table to DBS samples so they cam be combined</span></span>
+<span><span class="va">count_tables</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/tables.html">tables</a></span><span class="op">(</span><span class="va">dbs_musica</span><span class="op">)</span></span>
+<span><span class="va">overlap_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">count_tables</span><span class="op">$</span><span class="va">SBS96</span><span class="op">@</span><span class="va">count_table</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span></span>
+<span>                           <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">count_tables</span><span class="op">$</span><span class="va">DBS78</span><span class="op">@</span><span class="va">count_table</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">count_tables</span><span class="op">$</span><span class="va">SBS96</span><span class="op">@</span><span class="va">count_table</span> <span class="op">&lt;-</span> <span class="va">count_tables</span><span class="op">$</span><span class="va">SBS96</span><span class="op">@</span><span class="va">count_table</span><span class="op">[</span>, <span class="va">overlap_samples</span><span class="op">]</span></span>
+<span><span class="fu"><a href="reference/tables.html">tables</a></span><span class="op">(</span><span class="va">dbs_musica</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">count_tables</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/combine_count_tables.html">combine_count_tables</a></span><span class="op">(</span>musica <span class="op">=</span> <span class="va">dbs_musica</span>, to_comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SBS96"</span>, <span class="st">"DBS78"</span><span class="op">)</span>, </span>
+<span>                     name <span class="op">=</span> <span class="st">"sbs_dbs"</span>, description <span class="op">=</span> <span class="st">"An example combined </span></span>
+<span><span class="st">                     table, combining SBS96 and DBS"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/annotate_transcript_strand.html">annotate_transcript_strand</a></span><span class="op">(</span><span class="va">musica</span>, <span class="st">"19"</span>, build_table <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="do">##   403 genes were dropped because they have exons located on both strands</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="do">##   of the same reference sequence or on more than one reference sequence,</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="do">##   so cannot be represented by a single genomic range.</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="do">##   Use 'single.strand.genes.only=FALSE' to get all the genes in a</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="do">##   GRangesList object, or use suppressMessages() to suppress this message.</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/build_custom_table.html">build_custom_table</a></span><span class="op">(</span>musica <span class="op">=</span> <span class="va">musica</span>, variant_annotation <span class="op">=</span> <span class="st">"Transcript_Strand"</span>, </span>
+<span>                   name <span class="op">=</span> <span class="st">"Transcript_Strand"</span>, </span>
+<span>                   description <span class="op">=</span> <span class="st">"A table of transcript strand of variants"</span>, </span>
+<span>                   data_factor <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"T"</span>, <span class="st">"U"</span><span class="op">)</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>Different count tables can be combined into one using the <code>combine_count_tables</code> function. For example, the SBS96 and the DBS tables could be combined and mutational signature discovery could be performed across both mutations modalities. Tables with information about the same types of variants (e.g.  two related SBS tables) should generally not be combined and used together.</p>
+<p>Custom count tables can be created from user-defined mutation-level annotations using the <code>build_custom_table</code> function.</p>
+</div>
+<div class="section level1">
+<h1 id="discovering-signatures-and-exposures">Discovering Signatures and Exposures<a class="anchor" aria-label="anchor" href="#discovering-signatures-and-exposures"></a>
+</h1>
+<p>Mutational signature discovery is the process of deconvoluting a matrix containing counts for each mutation type in each sample into two matrices: 1) a <strong>signature</strong> matrix containing the probability of each mutation motif in signature and 2) an <strong>exposure</strong> matrix containing the estimated counts of each signature in each sample. Discovery and prediction results are save in a <code>musica_result</code> object that includes both the signatures and sample exposures.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/discover_signatures.html">discover_signatures</a></span><span class="op">(</span>musica <span class="op">=</span> <span class="va">musica</span>, table_name <span class="op">=</span> <span class="st">"SBS96"</span>, </span>
+<span>                              num_signatures <span class="op">=</span> <span class="fl">3</span>, algorithm <span class="op">=</span> <span class="st">"nmf"</span>, </span>
+<span>                              nstart <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p>Supported signature discovery algorithms include:</p>
+<ul>
+<li>Non-negative matrix factorization (nmf)</li>
+<li>Latent Dirichlet Allocation (lda)</li>
+</ul>
+<p>Both have built-in <code>seed</code> capabilities for reproducible results, <code>nstarts</code> for multiple independent chains from which the best final result will be chosen. NMF also allows for parallel processing via <code>par_cores</code>.</p>
+<p>To get the signatures or exposures from the result object, the following functions can be used:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Extract the exposure matrix</span></span>
+<span><span class="va">expos</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exposures.html">exposures</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<span><span class="va">expos</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="do">##            TCGA-56-7582-01A-11D-2042-08 TCGA-77-7335-01A-11D-2042-08</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="do">## Signature1                 9.910392e+00                 2.963251e-09</span></span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="do">## Signature2                 2.860983e-07                 1.610374e+02</span></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="do">## Signature3                 1.800896e+02                 1.069626e+02</span></span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a><span class="do">##            TCGA-94-7557-01A-11D-2122-08</span></span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a><span class="do">## Signature1                 1.030442e+00</span></span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a><span class="do">## Signature2                 1.159696e+02</span></span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="do">## Signature3                 2.886599e-13</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Extract the signature matrix</span></span>
+<span><span class="va">sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/signatures.html">signatures</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<span><span class="va">sigs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="do">##           Signature1  Signature2   Signature3</span></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="do">## C&gt;A_ACA 7.561675e-11 0.013628647 1.254321e-02</span></span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a><span class="do">## C&gt;A_ACC 7.684567e-11 0.007898625 1.641794e-02</span></span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a><span class="do">## C&gt;A_ACG 8.596657e-11 0.010725916 8.347563e-11</span></span></code></pre></div>
+</div>
+<div class="section level1">
+<h1 id="plotting">Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a>
+</h1>
+<div class="section level2">
+<h2 id="signatures">Signatures<a class="anchor" aria-label="anchor" href="#signatures"></a>
+</h2>
+<p>Barplots showing the probability of each mutation type in each signature can be plotted with the <code>plot_signatures</code> function:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_signatures.html">plot_signatures</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/plot_sigs-1.png"><!-- --></p>
+<p>By default, the scales on the y-axis are forced to be the same across all signatures. This behavior can be turned off by setting <code>same_scale = FALSE</code>. Signatures can be re-named based on prior knowledge and displayed in the plots:</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/name_signatures.html">name_signatures</a></span><span class="op">(</span><span class="va">result</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smoking"</span>, <span class="st">"APOBEC"</span>, <span class="st">"UV"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_signatures.html">plot_signatures</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/name_sigs-1.png"><!-- --></p>
+</div>
+<div class="section level2">
+<h2 id="exposures">Exposures<a class="anchor" aria-label="anchor" href="#exposures"></a>
+</h2>
+<p>Barplots showing the exposures in each sample can be plotted with the <code>plot_exposures</code> function:</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_exposures.html">plot_exposures</a></span><span class="op">(</span><span class="va">result</span>, plot_type <span class="op">=</span> <span class="st">"bar"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/exposures_raw-1.png"><!-- --></p>
+<p>The proportion of each exposure in each tumor can be shown by setting <code>proportional = TRUE</code>:</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_exposures.html">plot_exposures</a></span><span class="op">(</span><span class="va">result</span>, plot_type <span class="op">=</span> <span class="st">"bar"</span>, proportional <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/exposures_prop-1.png"><!-- --></p>
+<p>Counts for individual samples can also be plotted with the <code>plot_sample_counts</code> function:</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sample_names.html">sample_names</a></span><span class="op">(</span><span class="va">musica</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_sample_counts.html">plot_sample_counts</a></span><span class="op">(</span><span class="va">musica</span>, sample_names <span class="op">=</span> <span class="va">samples</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span><span class="op">]</span>, table_name <span class="op">=</span> <span class="st">"SBS96"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/sample_counts-1.png"><!-- --></p>
+</div>
+<div class="section level2">
+<h2 id="comparison-to-external-signatures-eg-cosmic">Comparison to external signatures (e.g. COSMIC)<a class="anchor" aria-label="anchor" href="#comparison-to-external-signatures-eg-cosmic"></a>
+</h2>
+<p>A common analysis is to compare the signatures estimated in a dataset to those generated in other datasets or to those in the <a href="https://cancer.sanger.ac.uk/cosmic/signatures" class="external-link">COSMIC database</a>. We have a set of functions that can be used to easily perform pairwise correlations between signatures. The <code>compare_results</code> functions compares the signatures between two <code>musica_result</code> objects. The <code>compare_cosmic_v2</code> will correlate the signatures between a <code>musica_result</code> object and the SBS signatures in COSMIC V2. For example:</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/compare_cosmic_v2.html">compare_cosmic_v2</a></span><span class="op">(</span><span class="va">result</span>, threshold <span class="op">=</span> <span class="fl">0.75</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/compare_cosmic-1.png"><!-- --></p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="do">##      cosine x_sig_index y_sig_index x_sig_name  y_sig_name</span></span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a><span class="do">## 1 0.9733111           1           7    Smoking  Signature7</span></span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a><span class="do">## 4 0.7906308           3           4         UV  Signature4</span></span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a><span class="do">## 2 0.7720306           1          11    Smoking Signature11</span></span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a><span class="do">## 3 0.7547538           1          30    Smoking Signature30</span></span></code></pre></div>
+<p>In this example, our Signatures 1 and 2 were most highly correlated to COSMIC Signature 7 and 4, respectively, so this may indicate that samples in our dataset were exposed to UV radiation or cigarette smoke. Only pairs of signatures who have a correlation above the <code>threshold</code> parameter will be returned. If no pairs of signatures are found, then you may want to consider lowering the threshold. The default correlation metric is the cosine similarity, but this can be changed to using 1 - Jensen-Shannon Divergence by setting <code>metric = "jsd"</code> Signatures can also be correlated to those in the COSMIC V3 database using the <code>compare_cosmic_v3</code> function.</p>
+</div>
+</div>
+<div class="section level1">
+<h1 id="predicting-exposures-using-pre-existing-signatures">Predicting exposures using pre-existing signatures<a class="anchor" aria-label="anchor" href="#predicting-exposures-using-pre-existing-signatures"></a>
+</h1>
+<p>Instead of discovering mutational signatures and exposures from a dataset <em>de novo</em>, one might get better results by predicting the exposures of signatures that have been previously estimated in other datasets. We incorporate several methods for estimating exposures given a set of pre-existing signatures. For example, we can predict exposures for COSMIC signatures 1, 4, 7, and 13 in our current dataset:</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Load COSMIC V2 data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"cosmic_v2_sigs"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Predict pre-existing exposures using the "lda" method</span></span>
+<span><span class="va">pred_cosmic</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/predict_exposure.html">predict_exposure</a></span><span class="op">(</span>musica <span class="op">=</span> <span class="va">musica</span>, table_name <span class="op">=</span> <span class="st">"SBS96"</span>,</span>
+<span>                               signature_res <span class="op">=</span> <span class="va">cosmic_v2_sigs</span>,</span>
+<span>                               signatures_to_use <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">4</span>, <span class="fl">7</span>, <span class="fl">13</span><span class="op">)</span>,</span>
+<span>                               algorithm <span class="op">=</span> <span class="st">"lda"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot exposures</span></span>
+<span><span class="fu"><a href="reference/plot_exposures.html">plot_exposures</a></span><span class="op">(</span><span class="va">pred_cosmic</span>, plot_type <span class="op">=</span> <span class="st">"bar"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/predict_cosmic-1.png"><!-- --></p>
+<p>The <code>cosmic_v2_sigs</code> object is just a <code>musica_result</code> object containing COSMIC V2 signatures without any sample or exposure information. Note that if <code>signatures_to_use</code> is not supplied by the user, then exposures for all signatures in the result object will be estimated. We can predict exposures for samples in any <code>musica</code> object from any <code>musica_result</code> object as long as the same mutation schema was utilized.</p>
+<p>We can list which signatures are present in each tumor type according to the <a href="https://cancer.sanger.ac.uk/cosmic/signatures_v2.tt" class="external-link">COSMIC V2 database</a>. For example, we can find which signatures are present in lung cancers:</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/cosmic_v2_subtype_map.html">cosmic_v2_subtype_map</a></span><span class="op">(</span><span class="st">"lung"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="do">## lung adeno</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a><span class="do">## 124561317</span></span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a><span class="do">## lung  small cell</span></span>
+<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a><span class="do">## 14515</span></span>
+<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a></span>
+<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a><span class="do">## lung  squamous</span></span>
+<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" tabindex="-1"></a><span class="do">## 124513</span></span></code></pre></div>
+<p>We can predict exposures for samples in a <code>musica</code> object using the signatures from any <code>musica_result</code> object. Just for illustration, we will predict exposures using the estimated signatures from <code>musica_result</code> object we created earlier:</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pred_our_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/predict_exposure.html">predict_exposure</a></span><span class="op">(</span>musica <span class="op">=</span> <span class="va">musica</span>, table_name <span class="op">=</span> <span class="st">"SBS96"</span>,</span>
+<span>                                 signature_res <span class="op">=</span> <span class="va">result</span>, algorithm <span class="op">=</span> <span class="st">"lda"</span><span class="op">)</span></span></code></pre></div>
+<p>Of course, this example is not very useful because we are predicting exposures using signatures that were learned on the same set of samples. Most of the time, you want to give the <code>signature_res</code> parameter a <code>musica_result</code> object that wss generated using independent samples from those in the <code>musica</code> object. As mentioned above, different signatures in different result objects can be compared to each other using the <code>compare_results</code> function:</p>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/compare_results.html">compare_results</a></span><span class="op">(</span>result <span class="op">=</span> <span class="va">pred_cosmic</span>, other_result <span class="op">=</span> <span class="va">pred_our_sigs</span>, </span>
+<span>                threshold <span class="op">=</span> <span class="fl">0.60</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/predict_compare-1.png"><!-- --></p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a><span class="do">##      cosine x_sig_index y_sig_index  x_sig_name y_sig_name</span></span>
+<span id="cb36-2"><a href="#cb36-2" tabindex="-1"></a><span class="do">## 2 0.9733111           3           1  Signature7    Smoking</span></span>
+<span id="cb36-3"><a href="#cb36-3" tabindex="-1"></a><span class="do">## 1 0.7906308           2           3  Signature4         UV</span></span>
+<span id="cb36-4"><a href="#cb36-4" tabindex="-1"></a><span class="do">## 3 0.7412271           4           2 Signature13     APOBEC</span></span></code></pre></div>
+</div>
+<div class="section level1">
+<h1 id="comparing-samples-between-groups-using-sample-annotations">Comparing samples between groups using Sample Annotations<a class="anchor" aria-label="anchor" href="#comparing-samples-between-groups-using-sample-annotations"></a>
+</h1>
+<div class="section level2">
+<h2 id="adding-sample-annotations">Adding sample annotations<a class="anchor" aria-label="anchor" href="#adding-sample-annotations"></a>
+</h2>
+<p>We first must add an annotation to the <code>musica</code> or <code>musica_result</code> object</p>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">annot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"sample_annotations.txt"</span>, </span>
+<span>                                package <span class="op">=</span> <span class="st">"musicatk"</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">"\t"</span>, header<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/samp_annot.html">samp_annot</a></span><span class="op">(</span><span class="va">result</span>, <span class="st">"Tumor_Subtypes"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">annot</span><span class="op">$</span><span class="va">Tumor_Subtypes</span></span></code></pre></div>
+<p>Note that the annotations can also be added directly the <code>musica</code> object in the beginning using the same function: <code>samp_annot(musica, "Tumor_Subtypes") &lt;- annot$Tumor_Subtypes</code>. These annotations will then automatically be included in any down-stream result object.</p>
+<ul>
+<li>
+<strong>Be sure that the annotation vector being supplied is in the same order as the samples in the <code>musica</code> or <code>musica_result</code> object.</strong> You can view the sample order with the <code>sample_names</code> function:</li>
+</ul>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/sample_names.html">sample_names</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="do">## [1] TCGA-56-7582-01A-11D-2042-08 TCGA-77-7335-01A-11D-2042-08</span></span>
+<span id="cb39-2"><a href="#cb39-2" tabindex="-1"></a><span class="do">## [3] TCGA-94-7557-01A-11D-2122-08 TCGA-97-7938-01A-11D-2167-08</span></span>
+<span id="cb39-3"><a href="#cb39-3" tabindex="-1"></a><span class="do">## [5] TCGA-EE-A3J5-06A-11D-A20D-08 TCGA-ER-A197-06A-32D-A197-08</span></span>
+<span id="cb39-4"><a href="#cb39-4" tabindex="-1"></a><span class="do">## [7] TCGA-ER-A19O-06A-11D-A197-08</span></span>
+<span id="cb39-5"><a href="#cb39-5" tabindex="-1"></a><span class="do">## 7 Levels: TCGA-56-7582-01A-11D-2042-08 ... TCGA-ER-A19O-06A-11D-A197-08</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="plotting-exposures-by-a-sample-annotation">Plotting exposures by a Sample Annotation<a class="anchor" aria-label="anchor" href="#plotting-exposures-by-a-sample-annotation"></a>
+</h2>
+<p>As mentioned previously, the <code>plot_exposures</code> function can plot sample exposures in a <code>musica_result</code> object. It can group exposures by either a sample annotation or by a signature by setting the <code>group_by</code> parameter. Here will will group the exposures by the <code>Tumor_Subtype</code> annotation:</p>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_exposures.html">plot_exposures</a></span><span class="op">(</span><span class="va">result</span>, plot_type <span class="op">=</span> <span class="st">"bar"</span>, group_by <span class="op">=</span> <span class="st">"annotation"</span>, </span>
+<span>               annotation <span class="op">=</span> <span class="st">"Tumor_Subtypes"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/plot_exposures_by_subtype-1.png"><!-- --></p>
+<p>The distribution of exposures with respect to annotation can be viewed using boxplots by setting <code>plot_type = "box"</code> and <code>group_by = "annotation"</code>:</p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_exposures.html">plot_exposures</a></span><span class="op">(</span><span class="va">result</span>, plot_type <span class="op">=</span> <span class="st">"box"</span>, group_by <span class="op">=</span> <span class="st">"annotation"</span>, annotation <span class="op">=</span> <span class="st">"Tumor_Subtypes"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/plot_exposures_box_annot-1.png"><!-- --></p>
+<p>Note that the name of the annotation must be supplied via the <code>annotation</code> parameter. Boxplots can be converted to violin plots by setting <code>plot_type = "violin"</code>. To compare the level of each exposure across sample groups within a signature, we can set <code>group_by = "signature"</code> and <code>color_by = "annotation"</code>:</p>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_exposures.html">plot_exposures</a></span><span class="op">(</span><span class="va">result</span>, plot_type <span class="op">=</span> <span class="st">"box"</span>, group_by <span class="op">=</span> <span class="st">"signature"</span>, </span>
+<span>               color_by <span class="op">=</span> <span class="st">"annotation"</span>, annotation <span class="op">=</span> <span class="st">"Tumor_Subtypes"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/plot_exposures_box_sig-1.png"><!-- --></p>
+</div>
+<div class="section level2">
+<h2 id="visualizing-samples-in-2d-using-umap">Visualizing samples in 2D using UMAP<a class="anchor" aria-label="anchor" href="#visualizing-samples-in-2d-using-umap"></a>
+</h2>
+<p>The <code>create_umap</code> function embeds samples in 2 dimensions using the <code>umap</code> function from the <a href="https://cran.r-project.org/web/packages/uwot/index.html" class="external-link">uwot</a> package. The major parameters for fine tuning the UMAP are <code>n_neighbors</code>, <code>min_dist</code>, and <code>spread</code>. See <code><a href="https://jlmelville.github.io/uwot/reference/umap.html" class="external-link">?uwot::umap</a></code> for more information on these parameters.</p>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/create_umap.html">create_umap</a></span><span class="op">(</span>result <span class="op">=</span> <span class="va">result</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" tabindex="-1"></a><span class="do">## The parameter 'n_neighbors' cannot be bigger than the total number of samples. Setting 'n_neighbors' to 7.</span></span></code></pre></div>
+<p>The <code>plot_umap</code> function will generate a scatter plot of the UMAP coordinates. The points of plot will be colored by the level of a signature by default:</p>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_umap.html">plot_umap</a></span><span class="op">(</span>result <span class="op">=</span> <span class="va">result</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/umap_plot-1.png"><!-- --></p>
+<p>By default, the exposures for each sample will share the same color scale. However, exposures for some signatures may have really high levels compared to others. To make a plot where exposures for each signature will have their own color scale, you can set <code>same_scale = FALSE</code>:</p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_umap.html">plot_umap</a></span><span class="op">(</span>result <span class="op">=</span> <span class="va">result</span>, same_scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/umap_plot_same_scale-1.png"><!-- --></p>
+<p>Lastly, points can be colored by a Sample Annotation by setting <code>color_by = "annotation"</code> and <code>annotation</code> to the name of the annotation:</p>
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_umap.html">plot_umap</a></span><span class="op">(</span>result <span class="op">=</span> <span class="va">result</span>, color_by <span class="op">=</span> <span class="st">"annotation"</span>, </span>
+<span>          annotation <span class="op">=</span> <span class="st">"Tumor_Subtypes"</span>, add_annotation_labels <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/umap_plot_annot-1.png"><!-- --></p>
+<p>When <code>add_annotation_labels = TRUE</code>, the centroid of each group is identified using medians and the labels are plotted on top of the centroid.</p>
+</div>
+</div>
+<div class="section level1">
+<h1 id="use-of-plotly-in-plotting">Use of Plotly in plotting<a class="anchor" aria-label="anchor" href="#use-of-plotly-in-plotting"></a>
+</h1>
+<p>plot_signatures, plot_exposures, and plot_umap, all have builty in ggplotly capabilities. Simply specifying <code>plotly = TRUE</code> enables interactive plots that allows examination of individuals sections, zooming and resizing, and turning on and off annotation types and legend values.</p>
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_signatures.html">plot_signatures</a></span><span class="op">(</span><span class="va">result</span>, plotly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/plotly-1.png"><!-- --></p>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_exposures.html">plot_exposures</a></span><span class="op">(</span><span class="va">result</span>, plotly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/plotly-2.png"><!-- --></p>
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_umap.html">plot_umap</a></span><span class="op">(</span><span class="va">result</span>, plotly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="articles/figures/plotly-3.png"><!-- --></p>
+</div>
+<div class="section level1">
+<h1 id="note-on-reproducibility">Note on reproducibility<a class="anchor" aria-label="anchor" href="#note-on-reproducibility"></a>
+</h1>
+<p>Several functions make use of stochastic algorithms or procedures which require the use of random number generator (RNG) for simulation or sampling. To maintain reproducibility, all these functions should be called using <code>set_seed(1)</code> or <code>withr::with_seed(seed, function())</code> to make sure same results are generatedeach time one of these functions is called. Using with_seed for reproducibility has the advantage of not interfering with any other user seeds, but using one or the other is important for several functions including <em>discover_signatures</em>, <em>predict_exposure</em>, and <em>create_umap</em>, as these functions use stochastic processes that may produce different results when run multiple times with the same settings.</p>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span><span class="va">reproducible_prediction</span> <span class="op">&lt;-</span> <span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_seed.html" class="external-link">with_seed</a></span><span class="op">(</span><span class="va">seed</span>, </span>
+<span>                                            <span class="fu"><a href="reference/predict_exposure.html">predict_exposure</a></span><span class="op">(</span>musica <span class="op">=</span> <span class="va">musica</span>, </span>
+<span>                                                         table_name <span class="op">=</span> <span class="st">"SBS96"</span>,</span>
+<span>                                 signature_res <span class="op">=</span> <span class="va">result</span>, algorithm <span class="op">=</span> <span class="st">"lda"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -126,8 +495,8 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Aaron Chevalier <br><small class="roles"> Maintainer </small>  </li>
-<li>Joshua D. Campbell <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0003-0780-8662" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Aaron Chevalier <br><small class="roles"> Author </small>  </li>
+<li>Joshua D. Campbell <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0003-0780-8662" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
 <li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
@@ -135,7 +504,7 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/campbio/musicatk/actions" class="external-link"><img src="https://github.com/campbio/musicatk/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://github.com/campbio/musicatk/actions" class="external-link"><img src="https://github.com/campbio/musicatk/workflows/R-CMD-check/badge.svg?branch=devel" alt="R-CMD-check"></a></li>
 </ul>
 </div>
 

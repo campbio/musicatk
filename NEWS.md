@@ -1,3 +1,7 @@
+# musicatk 1.14.0 (2024-05-03)
+* Updated version number to match Bioconductor 
+* Fixed some minor bugs and dependencies
+
 # musicatk 1.10.0 (2023-10-16)
 * Updated version number to match Bioconductor
 

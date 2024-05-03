@@ -18,7 +18,7 @@ or more samples."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.11.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.14.0</span>
       </span>
     </div>
 
@@ -83,7 +83,16 @@ or more samples.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_sample_counts</span><span class="op">(</span><span class="va">musica</span>, <span class="va">sample_names</span>, table_name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_sample_counts</span><span class="op">(</span></span>
+<span>  <span class="va">musica</span>,</span>
+<span>  <span class="va">sample_names</span>,</span>
+<span>  table_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  text_size <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  show_x_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  show_y_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  same_scale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  annotation <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -100,6 +109,32 @@ or more samples.</p>
 <dd><p>Name of table used for plotting counts. If <code>NULL</code>,
 then the first table in the <code><a href="musica-class.html">musica</a></code> object will be used.
 Default <code>NULL</code>.</p></dd>
+
+
+<dt>text_size</dt>
+<dd><p>Size of axis text. Default <code>10</code>.</p></dd>
+
+
+<dt>show_x_labels</dt>
+<dd><p>If <code>TRUE</code>, the labels for the mutation types
+on the x-axis will be shown. Default <code>TRUE</code>.</p></dd>
+
+
+<dt>show_y_labels</dt>
+<dd><p>If <code>TRUE</code>, the y-axis ticks and labels will be 
+shown. Default <code>TRUE</code>.</p></dd>
+
+
+<dt>same_scale</dt>
+<dd><p>If <code>TRUE</code>, the scale of the y-axis for each
+sample will be the same. If <code>FALSE</code>, then the scale of the y-axis
+will be adjusted for each sample. Default <code>TRUE</code>.</p></dd>
+
+
+<dt>annotation</dt>
+<dd><p>Vector of annotations to be displayed in the top right
+corner of each sample. Vector length must be equivalent to the number of
+samples. Default <code>NULL</code>.</p></dd>
 
 </dl></div>
     <div id="value">

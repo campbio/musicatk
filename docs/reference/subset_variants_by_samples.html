@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.11.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.14.0</span>
       </span>
     </div>
 
@@ -105,19 +105,21 @@
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">musica</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">subset_variants_by_samples</span><span class="op">(</span><span class="va">musica</span>, <span class="st">"TCGA-94-7557-01A-11D-2122-08"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        chr     start       end ref alt                       sample</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                                                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 116: chr19  54255365  54255365   G   A TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 117: chr20  49028576  49028576   C   T TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 118: chr21  25881519  25881519   C   G TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 119:  chrX  12886189  12886189   A   G TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 120:  chrX 153950810 153950810   C   T TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         chr     start       end    ref    alt                       sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;fctr&gt;     &lt;num&gt;     &lt;num&gt; &lt;char&gt; &lt;char&gt;                       &lt;fctr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1:   chr1  11020563  11020563      C      A TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2:   chr1  43430030  43430030      G      T TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3:   chr1  58682403  58682403      A      G TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4:   chr1 109508295 109508295      C      G TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5:   chr1 156384826 156384826      A      C TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 116:  chr19  54255365  54255365      G      A TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 117:  chr20  49028576  49028576      C      T TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 118:  chr21  25881519  25881519      C      G TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 119:   chrX  12886189  12886189      A      G TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 120:   chrX 153950810 153950810      C      T TCGA-94-7557-01A-11D-2122-08</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Variant_Type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            &lt;char&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1:          SBS</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2:          SBS</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3:          SBS</span>

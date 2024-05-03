@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.11.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.14.0</span>
       </span>
     </div>
 
@@ -93,7 +93,7 @@
 
       
 
-      </header><script src="installation_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip></h1>
@@ -109,21 +109,40 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Mutational signatures are carcinogenic exposures or aberrant cellular processes that can cause alterations to the genome. We created musicatk (MUtational SIgnature Comprehensive Analysis ToolKit) to address shortcomings in versatility and ease of use in other pre-existing computational tools. Although many different types of mutational data have been generated, current software packages do not have a flexible framework to allow users to mix and match different types of mutations in the mutational signature inference process. Musicatk enables users to count and combine multiple mutation types, including SBS, DBS, and indels. Musicatk calculates replication strand, transcription strand and combinations of these features along with discovery from unique and proprietary genomic feature associated with any mutation type. Musicatk also implements several methods for discovery of new signatures as well as methods to infer exposure given an existing set of signatures. Musicatk provides functions for visualization and downstream exploratory analysis including the ability to compare signatures between cohorts and find matching signatures in COSMIC V2 or COSMIC V3.</p>
+<p>Mutational signatures are carcinogenic exposures or aberrant cellular
+processes that can cause alterations to the genome. We created musicatk
+(MUtational SIgnature Comprehensive Analysis ToolKit) to address
+shortcomings in versatility and ease of use in other pre-existing
+computational tools. Although many different types of mutational data
+have been generated, current software packages do not have a flexible
+framework to allow users to mix and match different types of mutations
+in the mutational signature inference process. Musicatk enables users to
+count and combine multiple mutation types, including SBS, DBS, and
+indels. Musicatk calculates replication strand, transcription strand and
+combinations of these features along with discovery from unique and
+proprietary genomic feature associated with any mutation type. Musicatk
+also implements several methods for discovery of new signatures as well
+as methods to infer exposure given an existing set of signatures.
+Musicatk provides functions for visualization and downstream exploratory
+analysis including the ability to compare signatures between cohorts and
+find matching signatures in COSMIC V2 or COSMIC V3.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>To install the latest stable release of <strong>musicatk</strong> from <a href="http://bioconductor.org/packages/musicatk/" class="external-link">Bioconductor</a>:</p>
+<p>To install the latest stable release of <strong>musicatk</strong>
+from <a href="http://bioconductor.org/packages/musicatk/" class="external-link">Bioconductor</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"musicatk"</span><span class="op">)</span></span></code></pre></div>
-<p>The latest stable version of <strong>musicatk</strong> can be installed from GitHub using <code>devtools</code>:</p>
+<p>The latest stable version of <strong>musicatk</strong> can be
+installed from GitHub using <code>devtools</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"campbio/musicatk"</span><span class="op">)</span></span></code></pre></div>
-<p>The development version of <strong>musicatk</strong> can also be installed from GitHub using <code>devtools</code>:</p>
+<p>The development version of <strong>musicatk</strong> can also be
+installed from GitHub using <code>devtools</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"campbio/musicatk@devel"</span><span class="op">)</span></span></code></pre></div>

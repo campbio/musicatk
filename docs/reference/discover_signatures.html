@@ -27,7 +27,7 @@ build_standard_table.'><!-- mathjax --><script src="https://cdnjs.cloudflare.com
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">musicatk</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.11.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.14.0</span>
       </span>
     </div>
 
@@ -292,19 +292,21 @@ signatures and exposures.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Slot "musica":</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> An object of class "musica"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Slot "variants":</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        chr     start       end ref alt                       sample</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1:  chr1  11020563  11020563   C   A TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2:  chr1  43430030  43430030   G   T TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3:  chr1  58682403  58682403   A   G TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4:  chr1 109508295 109508295   C   G TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5:  chr1 156384826 156384826   A   C TCGA-94-7557-01A-11D-2122-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                                                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 907: chr19  54885292  54885292   G   A TCGA-ER-A19O-06A-11D-A197-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 908: chr20  49374328  49374328   A   T TCGA-ER-A19O-06A-11D-A197-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 909:  chrX  73213768  73213768   T   G TCGA-ER-A19O-06A-11D-A197-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 910:  chrX 101292834 101292834   G   A TCGA-ER-A19O-06A-11D-A197-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 911:  chrX 107526690 107526690   C   T TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         chr     start       end    ref    alt                       sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;fctr&gt;     &lt;num&gt;     &lt;num&gt; &lt;char&gt; &lt;char&gt;                       &lt;fctr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1:   chr1  11020563  11020563      C      A TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2:   chr1  43430030  43430030      G      T TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3:   chr1  58682403  58682403      A      G TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4:   chr1 109508295 109508295      C      G TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5:   chr1 156384826 156384826      A      C TCGA-94-7557-01A-11D-2122-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 907:  chr19  54885292  54885292      G      A TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 908:  chr20  49374328  49374328      A      T TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 909:   chrX  73213768  73213768      T      G TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 910:   chrX 101292834 101292834      G      A TCGA-ER-A19O-06A-11D-A197-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 911:   chrX 107526690 107526690      C      T TCGA-ER-A19O-06A-11D-A197-08</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Variant_Type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            &lt;char&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1:          SBS</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2:          SBS</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3:          SBS</span>
@@ -363,6 +365,7 @@ signatures and exposures.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Slot "sample_annotations":</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                         Samples Tumor_Subtypes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          &lt;fctr&gt;         &lt;char&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1: TCGA-94-7557-01A-11D-2122-08           Lung</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2: TCGA-56-7582-01A-11D-2042-08           Lung</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3: TCGA-77-7335-01A-11D-2042-08           Lung</span>
