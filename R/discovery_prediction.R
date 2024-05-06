@@ -10,9 +10,10 @@ NULL
 #' 2) an "exposure" matrix containing the estimated counts for each signature
 #' in each sample. Before mutational discovery can be performed,
 #' variants from samples first need to be stored in a 
-#' \code{\linkS4class{musica}} object using the \link{create_musica} function 
+#' \code{\linkS4class{musica}} object using the \link{create_musica_from_variants}
+#' or \link{create_musica_from_counts} function 
 #' and mutation count tables need to be created using functions such as
-#' \link{build_standard_table}.
+#' \link{build_standard_table} if \link{create_musica_from_counts} was not used.
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param table_name Name of the table to use for signature discovery. Needs
 #' to be the same name supplied to the table building functions such as

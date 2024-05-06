@@ -11,9 +11,6 @@ create_musica_from_counts(x, variant_class)
 types for each sample, with samples as columns.}
 
 \item{variant_class}{Mutations are SBS, DBS, or Indel.}
-
-\item{verbose}{Whether to print status messages during error checking.
-Default \code{TRUE}.}
 }
 \value{
 Returns a musica object
@@ -26,7 +23,7 @@ is used as input to the mutational signature discovery and prediction
 algorithms.
 }
 \examples{
-maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-package = "musicatk")
-musica <- create_musica_from_counts(x = count_table, variant_class = "SBS96")
+#maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+#package = "musicatk")
+#musica <- create_musica_from_counts(x = count_table, variant_class = "SBS96")
 }

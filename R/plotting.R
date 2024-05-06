@@ -125,6 +125,8 @@ plot_signatures <- function(result, plotly = FALSE,
   xend <- NULL
   y <- NULL
   yend <- NULL
+  label <- NULL
+  ymax <- NULL
   
   signatures <- signatures(result)
   sig_names <- colnames(signatures)

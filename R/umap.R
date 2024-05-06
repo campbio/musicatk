@@ -28,6 +28,10 @@
 #' @export
 create_umap <- function(result, n_neighbors = 30,
                         min_dist = 0.75, spread = 1) {
+  
+  # dummy call to Matrix
+  Matrix::Matrix()
+  
   samples <- exposures(result)
   samples <- sweep(samples, 2, colSums(samples), FUN = "/")
   
