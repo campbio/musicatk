@@ -613,9 +613,6 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' the variant information.
 #' @param genome A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
-#' @param count_table A data.table, matrix, or data.frame that contains 
-#' mutation count data, with samples as columns and mutation types as rows.
-#' @param variant_class Mutations are SBS, DBS, or Indel.
 #' @param check_ref_chromosomes Whether to peform a check to ensure that
 #' the chromosomes in the \code{variant} object match the reference
 #' chromosomes in the \code{genome} object. If there are mismatches, this
@@ -652,223 +649,231 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' package = "musicatk")
 #' variants <- extract_variants_from_maf_file(maf_file)
 #' g <- select_genome("38")
-#' musica <- create_musica(x = variants, genome = g)
+#' musica <- create_musica_from_variants(x = variants, genome = g)
 #' @export
-create_musica <- function(x, genome, 
-                          count_table, variant_class,
-                         check_ref_chromosomes = TRUE,
-                         check_ref_bases = TRUE,
-                         chromosome_col = "chr",
-                         start_col = "start",
-                         end_col = "end",
-                         ref_col = "ref",
-                         alt_col = "alt",
-                         sample_col = "sample",
-                         extra_fields = NULL,
-                         standardize_indels = TRUE,
-                         convert_dbs = TRUE,
-                         verbose = TRUE) {
+create_musica_from_variants <- function(x, genome,
+                                        check_ref_chromosomes = TRUE,
+                                        check_ref_bases = TRUE,
+                                        chromosome_col = "chr",
+                                        start_col = "start",
+                                        end_col = "end",
+                                        ref_col = "ref",
+                                        alt_col = "alt",
+                                        sample_col = "sample",
+                                        extra_fields = NULL,
+                                        standardize_indels = TRUE,
+                                        convert_dbs = TRUE,
+                                        verbose = TRUE) {
   
-  all_var <- ! any(missing(x), missing(genome))
-  all_count <- ! any(missing(count_table), missing(variant_class))
-
-  # ensure one of two possible parameter options are met (variants or counts)
-  if (!(xor(all_var, all_count))){
-    stop("Provide either 'x' and 'genome' or 'count_table' and 'variant_type'.", call. = FALSE)
+  
+    
+  used_fields <- c(.required_musica_headers(), extra_fields)
+  if (canCoerce(x, "data.table")) {
+    dt <- data.table::as.data.table(x)
+  } else {
+    stop("'x' needs to be an object which can be coerced to a data.table. ",
+         "Valid classes include but are not limited to 'matrix', 'data.frame'",
+         " and 'data.table'.")
   }
-  
-  # if inputs are for count table
-  if (all_count){
-    
-    if (canCoerce(count_table, "matrix")) {
-      count_table <- as.matrix(count_table)
-    } else {
-      stop("'count_table' needs to be an object which can be coerced to a matrix. ")
-    }
-    
-    # create empty musica object
-    musica <- new("musica")
-    
-    if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      
-      if (nrow(count_table) != 96){
-        stop("SBS96 'count_table' must have 96 rows.")
-      }
-      
-      # create SBS mutation type list
-      forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
-      b1 <- rep(rep(c("A", "C", "G", "T"), each = 4), 6)
-      b2 <- rep(c("C", "T"), each = 48)
-      b3 <- rep(c("A", "C", "G", "T"), 24)
-      mut_trinuc <- apply(cbind(b1, b2, b3), 1, paste, collapse = "")
-      mut <- rep(forward_change, each = 16)
-      annotation <- data.frame("motif" = paste0(mut, "_", mut_trinuc),
-                               "mutation" = mut,
-                               "context" = mut_trinuc)
-      rownames(annotation) <- annotation$motif
-      
-      # color mapping for mutation types
-      color_mapping <- c("C>A" = "#5ABCEBFF",
-                         "C>G" = "#050708FF",
-                         "C>T" = "#D33C32FF",
-                         "T>A" = "#CBCACBFF",
-                         "T>C" = "#ABCD72FF",
-                         "T>G" = "#E7C9C6FF")
-      
-      # update count table rownames with SBS96 standard naming
-      rownames(count_table) <- annotation$motif
-      
-      # create count table object
-      tab <- new("count_table", name = "SBS96", count_table = count_table,
-                 annotation = annotation, features = as.data.frame(annotation$motif[1]),
-                 type = S4Vectors::Rle("SBS"), color_variable = "mutation",
-                 color_mapping = color_mapping, description = paste0("Single Base Substitution table with",
-                                                                     " one base upstream and downstream"))
-      
-      # add count table to musica object
-      tables(musica)[["SBS96"]] <- tab
-      
-    } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
-      stop("Not yet supproted.")
-    } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
-                                    "ID")) {
-      stop("Not yet supported.")
-    } else {
-      stop("Only SBS, DBS, and Indel classes are supported")
-    }
+  if (!inherits(genome, "BSgenome")) {
+    stop("'genome' needs to be a 'BSgenome' object containing the genome ",
+         "reference that was used when calling the variants.")
   }
 
-  # if inputs are for variants
-  if (all_var){
-    
-    used_fields <- c(.required_musica_headers(), extra_fields)
-    if (canCoerce(x, "data.table")) {
-      dt <- data.table::as.data.table(x)
-    } else {
-      stop("'x' needs to be an object which can be coerced to a data.table. ",
-           "Valid classes include but are not limited to 'matrix', 'data.frame'",
-           " and 'data.table'.")
+  # Check for necessary columns and change column names to stardard object
+  dt <- .check_headers(dt,
+                 chromosome = chromosome_col,
+                 start = start_col,
+                 end = end_col,
+                 ref = ref_col,
+                 alt = alt_col,
+                 sample = sample_col,
+                 update_fields = TRUE)
+
+  # Subset to necessary columns and add variant type
+  all_fields <- c(.required_musica_headers(), extra_fields)
+  dt <- dt[, all_fields, with = FALSE]
+  dt <- add_variant_type(dt)
+
+  # Some non-variants are included (e.g. T>T). These will be removed
+  non_variant <- which(dt$ref == dt$alt)
+  if (length(non_variant) > 0) {
+    warning(length(non_variant), " variants has the same reference and ",
+            "alternate allele. These variants were excluded.")
+    dt <- dt[-non_variant, ]
+  }
+
+  if (isTRUE(check_ref_chromosomes)) {
+    # Check for genome style and attempt to convert variants to reference
+    # genome if they don't match
+    if (isTRUE(verbose)) {
+      message("Checking that chromosomes in the 'variant' object match ",
+              "chromosomes in the 'genome' object.")
     }
-    if (!inherits(genome, "BSgenome")) {
-      stop("'genome' needs to be a 'BSgenome' object containing the genome ",
-           "reference that was used when calling the variants.")
+    dt <- .check_variant_genome(dt = dt, genome = genome)
+  }
+
+  if (isTRUE(check_ref_bases)) {
+    if (isTRUE(verbose)) {
+      message("Checking that the reference bases in the 'variant' object ",
+              "match the reference bases in the 'genome' object.")
     }
-  
-    # Check for necessary columns and change column names to stardard object
-    dt <- .check_headers(dt,
-                   chromosome = chromosome_col,
-                   start = start_col,
-                   end = end_col,
-                   ref = ref_col,
-                   alt = alt_col,
-                   sample = sample_col,
-                   update_fields = TRUE)
-  
-    # Subset to necessary columns and add variant type
-    all_fields <- c(.required_musica_headers(), extra_fields)
-    dt <- dt[, all_fields, with = FALSE]
-    dt <- add_variant_type(dt)
-  
-    # Some non-variants are included (e.g. T>T). These will be removed
-    non_variant <- which(dt$ref == dt$alt)
-    if (length(non_variant) > 0) {
-      warning(length(non_variant), " variants has the same reference and ",
-              "alternate allele. These variants were excluded.")
-      dt <- dt[-non_variant, ]
+    .check_variant_ref_in_genome(dt = dt, genome = genome)
+  }
+
+  if (isTRUE(standardize_indels)) {
+    if (isTRUE(verbose)) {
+      message("Standardizing INS/DEL style")
     }
-  
-    if (isTRUE(check_ref_chromosomes)) {
-      # Check for genome style and attempt to convert variants to reference
-      # genome if they don't match
-      if (isTRUE(verbose)) {
-        message("Checking that chromosomes in the 'variant' object match ",
-                "chromosomes in the 'genome' object.")
-      }
-      dt <- .check_variant_genome(dt = dt, genome = genome)
-    }
-  
-    if (isTRUE(check_ref_bases)) {
-      if (isTRUE(verbose)) {
-        message("Checking that the reference bases in the 'variant' object ",
-                "match the reference bases in the 'genome' object.")
-      }
-      .check_variant_ref_in_genome(dt = dt, genome = genome)
-    }
-  
-    if (isTRUE(standardize_indels)) {
-      if (isTRUE(verbose)) {
-        message("Standardizing INS/DEL style")
-      }
-      comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% 
-                          c("A", "T", "G", "C", "-"))
-      if (length(comp_ins > 0)) {
-        message("Removing ", length(comp_ins), " compound insertions")
-        dt <- dt[-comp_ins, ]
-      }
-      
-      comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% 
-                          c("A", "T", "G", "C", "-"))
-      if (length(comp_del > 0)) {
-        message("Removing ", length(comp_del), " compound deletions")
-        dt <- dt[-comp_del, ]
-      }
-      
-      ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
-                     c("A", "T", "G", "C"))
-      if (length(ins)) {
-        message("Converting ", length(ins), " insertions")
-        dt$ref[ins] <- "-"
-        ins_alt <- dt$alt[ins]
-        dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
-      }
-      
-      ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
-                     c("A", "T", "G", "C"))
-      if (length(ins)) {
-        message("Converting ", length(ins), " insertions")
-        dt$ref[ins] <- "-"
-        ins_alt <- dt$alt[ins]
-        dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
-      }
-      
-      del <- which(dt$Variant_Type == "DEL" & dt$alt %in% 
-                     c("A", "T", "G", "C"))
-      if (length(del)) {
-        message("Converting ", length(del), " deletions")
-        dt$alt[del] <- "-"
-        del_ref <- dt$ref[del]
-        dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
-      }
+    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% 
+                        c("A", "T", "G", "C", "-"))
+    if (length(comp_ins > 0)) {
+      message("Removing ", length(comp_ins), " compound insertions")
+      dt <- dt[-comp_ins, ]
     }
     
-    if (isTRUE(convert_dbs)) {
-      if (isTRUE(verbose)) {
-        message("Converting adjacent SBS into DBS")
-      }
-      sbs <- which(dt$Variant_Type == "SBS")
-      adjacent <- which(diff(dt$start) == 1)
-      dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent+1 %in% sbs & 
-                                  dt$chr[adjacent] == dt$chr[adjacent+1])]
-      if (length(dbs_ind) > 0) {
-        message(length(dbs_ind), " SBS converted to DBS")
-        dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
-        dt$ref[dbs_ind] <- paste0(dt$ref[dbs_ind], dt$ref[dbs_ind + 1])
-        dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
-        dt$Variant_Type[dbs_ind] <- "DBS"
-        dt <- dt[-(dbs_ind + 1), ]
-      }
+    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% 
+                        c("A", "T", "G", "C", "-"))
+    if (length(comp_del > 0)) {
+      message("Removing ", length(comp_del), " compound deletions")
+      dt <- dt[-comp_del, ]
     }
     
-    # Create and return a musica object
-    s <- gtools::mixedsort(unique(dt$sample))
-    annot <- data.frame(Samples = factor(s, levels = s))
-    dt$sample <- factor(dt$sample, levels = s)
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
+                   c("A", "T", "G", "C"))
+    if (length(ins)) {
+      message("Converting ", length(ins), " insertions")
+      dt$ref[ins] <- "-"
+      ins_alt <- dt$alt[ins]
+      dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
+    }
     
-    musica <- new("musica", variants = dt, sample_annotations = annot)
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
+                   c("A", "T", "G", "C"))
+    if (length(ins)) {
+      message("Converting ", length(ins), " insertions")
+      dt$ref[ins] <- "-"
+      ins_alt <- dt$alt[ins]
+      dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
+    }
+    
+    del <- which(dt$Variant_Type == "DEL" & dt$alt %in% 
+                   c("A", "T", "G", "C"))
+    if (length(del)) {
+      message("Converting ", length(del), " deletions")
+      dt$alt[del] <- "-"
+      del_ref <- dt$ref[del]
+      dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
+    }
+  }
+  
+  if (isTRUE(convert_dbs)) {
+    if (isTRUE(verbose)) {
+      message("Converting adjacent SBS into DBS")
+    }
+    sbs <- which(dt$Variant_Type == "SBS")
+    adjacent <- which(diff(dt$start) == 1)
+    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent+1 %in% sbs & 
+                                dt$chr[adjacent] == dt$chr[adjacent+1])]
+    if (length(dbs_ind) > 0) {
+      message(length(dbs_ind), " SBS converted to DBS")
+      dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
+      dt$ref[dbs_ind] <- paste0(dt$ref[dbs_ind], dt$ref[dbs_ind + 1])
+      dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
+      dt$Variant_Type[dbs_ind] <- "DBS"
+      dt <- dt[-(dbs_ind + 1), ]
+    }
+  }
+  
+  # Create and return a musica object
+  s <- gtools::mixedsort(unique(dt$sample))
+  annot <- data.frame(Samples = factor(s, levels = s))
+  dt$sample <- factor(dt$sample, levels = s)
+  
+  musica <- new("musica", variants = dt, sample_annotations = annot)
+  
+  return(musica)
+}
+
+#' Creates a musica object from a mutation count table
+#'
+#' This function creates a \linkS4class{musica} object from a mutation count
+#' table or matrix. The \linkS4class{musica} class stores variants information,
+#' variant-level annotations, sample-level annotations, and count tables and
+#' is used as input to the mutational signature discovery and prediction
+#' algorithms.
+#' 
+#' @param x A data.table, matrix, or data.frame that contains counts of mutation
+#' types for each sample, with samples as columns.
+#' @param variant_class Mutations are SBS, DBS, or Indel.
+#' @return Returns a musica object
+#' @examples
+#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+#' package = "musicatk")
+#' musica <- create_musica_from_counts(x = count_table, variant_class = "SBS96")
+#' @export
+create_musica_from_counts <- function(x, variant_class) {
+  
+  if (canCoerce(count_table, "matrix")) {
+    count_table <- as.matrix(count_table)
+  } else {
+    stop("'count_table' needs to be an object which can be coerced to a matrix. ")
+  }
+  
+  # create empty musica object
+  musica <- new("musica")
+  
+  if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
+    
+    if (nrow(count_table) != 96){
+      stop("SBS96 'count_table' must have 96 rows.")
+    }
+    
+    # create SBS mutation type list
+    forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
+    b1 <- rep(rep(c("A", "C", "G", "T"), each = 4), 6)
+    b2 <- rep(c("C", "T"), each = 48)
+    b3 <- rep(c("A", "C", "G", "T"), 24)
+    mut_trinuc <- apply(cbind(b1, b2, b3), 1, paste, collapse = "")
+    mut <- rep(forward_change, each = 16)
+    annotation <- data.frame("motif" = paste0(mut, "_", mut_trinuc),
+                             "mutation" = mut,
+                             "context" = mut_trinuc)
+    rownames(annotation) <- annotation$motif
+    
+    # color mapping for mutation types
+    color_mapping <- c("C>A" = "#5ABCEBFF",
+                       "C>G" = "#050708FF",
+                       "C>T" = "#D33C32FF",
+                       "T>A" = "#CBCACBFF",
+                       "T>C" = "#ABCD72FF",
+                       "T>G" = "#E7C9C6FF")
+    
+    # update count table rownames with SBS96 standard naming
+    rownames(count_table) <- annotation$motif
+    
+    # create count table object
+    tab <- new("count_table", name = "SBS96", count_table = count_table,
+               annotation = annotation, features = as.data.frame(annotation$motif[1]),
+               type = S4Vectors::Rle("SBS"), color_variable = "mutation",
+               color_mapping = color_mapping, description = paste0("Single Base Substitution table with",
+                                                                   " one base upstream and downstream"))
+    
+    # add count table to musica object
+    tables(musica)[["SBS96"]] <- tab
+    
+  } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
+    stop("Not yet supproted.")
+  } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
+                                  "ID")) {
+    stop("Not yet supported.")
+  } else {
+    stop("Only SBS, DBS, and Indel classes are supported")
   }
   
   return(musica)
 }
+
 
 
 
