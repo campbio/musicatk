@@ -122,3 +122,33 @@
 #' @keywords datasets
 #'
 "res_annot"
+
+#' synthetic_breast_counts
+#'
+#' A data.frame containing the SBS96 mutation counts for a synthetic breast 
+#' cancer dataset with 214 samples.
+#'
+#' @docType data
+#'
+#' @usage data(synthetic_breast_counts)
+#'
+#' @format An object of class \code{data.frame}
+#'
+#' @keywords datasets
+#'
+"synthetic_breast_counts"
+
+#' synthetic_breast_true_exposures
+#'
+#' A data.frame containing true signature exposure levels for a synthetic 
+#' breast cancer dataset with 214 samples and 8 signatures.
+#'
+#' @docType data
+#'
+#' @usage data(synthetic_breast_true_exposures)
+#'
+#' @format An object of class \code{data.frame}
+#'
+#' @keywords datasets
+#'
+"synthetic_breast_true_exposures"
