@@ -808,14 +808,14 @@ create_musica_from_variants <- function(x, genome,
 #' @param variant_class Mutations are SBS, DBS, or Indel.
 #' @return Returns a musica object
 #' @examples
-#' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-#' package = "musicatk")
-#' musica <- create_musica_from_counts(x = count_table, variant_class = "SBS96")
+#' #maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+#' #package = "musicatk")
+#' #musica <- create_musica_from_counts(x = count_table, variant_class = "SBS96")
 #' @export
 create_musica_from_counts <- function(x, variant_class) {
   
-  if (canCoerce(count_table, "matrix")) {
-    count_table <- as.matrix(count_table)
+  if (canCoerce(x, "matrix")) {
+    x <- as.matrix(x)
   } else {
     stop("'count_table' needs to be an object which can be coerced to a matrix. ")
   }
@@ -825,7 +825,7 @@ create_musica_from_counts <- function(x, variant_class) {
   
   if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
     
-    if (nrow(count_table) != 96){
+    if (nrow(x) != 96){
       stop("SBS96 'count_table' must have 96 rows.")
     }
     
@@ -850,10 +850,10 @@ create_musica_from_counts <- function(x, variant_class) {
                        "T>G" = "#E7C9C6FF")
     
     # update count table rownames with SBS96 standard naming
-    rownames(count_table) <- annotation$motif
+    rownames(x) <- annotation$motif
     
     # create count table object
-    tab <- new("count_table", name = "SBS96", count_table = count_table,
+    tab <- new("count_table", name = "SBS96", count_table = x,
                annotation = annotation, features = as.data.frame(annotation$motif[1]),
                type = S4Vectors::Rle("SBS"), color_variable = "mutation",
                color_mapping = color_mapping, description = paste0("Single Base Substitution table with",
@@ -863,7 +863,50 @@ create_musica_from_counts <- function(x, variant_class) {
     tables(musica)[["SBS96"]] <- tab
     
   } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
-    stop("Not yet supproted.")
+    if (nrow(x) != 78){
+      stop("DBS78 'count_table' must have 78 rows.")
+    }
+    
+    full_motif <- c(paste0("AC>NN", "_", c("CA", "CG", "CT", "GA", "GG", "GT",
+                                           "TA", "TG", "TT")),
+                    paste0("AT>NN", "_", c("CA", "CC", "CG", "GA", "GC", "TA")),
+                    paste0("CC>NN", "_", c("AA", "AG", "AT", "GA", "GG", "GT", "TA",
+                                           "TG", "TT")),
+                    paste0("CG>NN", "_", c("AT", "GC", "GT", "TA", "TC", "TT")),
+                    paste0("CT>NN", "_", c("AA", "AC", "AG", "GA", "GC", "GG", "TA",
+                                           "TC", "TG")),
+                    paste0("GC>NN", "_", c("AA", "AG", "AT", "CA", "CG", "TA")),
+                    paste0("TA>NN", "_", c("AT", "CG", "CT", "GC", "GG", "GT")),
+                    paste0("TC>NN", "_", c("AA", "AG", "AT", "CA", "CG", "CT", "GA",
+                                           "GG", "GT")),
+                    paste0("TG>NN", "_", c("AA", "AC", "AT", "CA", "CC", "CT", "GA",
+                                           "GC", "GT")),
+                    paste0("TT>NN", "_", c("AA", "AC", "AG", "CA", "CC", "CG", "GA",
+                                           "GC", "GG")))
+    
+    annotation <- data.frame(motif = full_motif, mutation =
+                               unlist(lapply(strsplit(full_motif, "_"), "[[", 1)),
+                             context = unlist(lapply(strsplit(full_motif, "_"),
+                                                     "[[", 2)),
+                             row.names = full_motif)
+    
+    color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
+    names(color_mapping) <- unique(annotation$mutation)
+    
+    rownames(x) <- annotation$motif
+    
+    # create count table object
+    tab <- new("count_table", name = "DBS78", count_table = x,
+               annotation = annotation, features = as.data.frame(annotation$motif[1]),
+               type = S4Vectors::Rle("DBS"), color_variable = "mutation",
+               color_mapping = color_mapping, description = paste0("Standard count table for ",
+                                                                   "double base substitutions", 
+                                                                   "using COSMIC v3 schema"))
+    
+    # add count table to musica object
+    tables(musica)[["DBS78"]] <- tab
+    
+    
   } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
                                   "ID")) {
     stop("Not yet supported.")
