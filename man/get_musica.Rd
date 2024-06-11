@@ -17,7 +17,7 @@ a mutational discovery or prediction tool.}
 A \code{\linkS4class{musica}} musica object
 }
 \description{
-The \code{\linkS4class{musica}} musica contains variants, 
+The \code{\linkS4class{musica}} musica contains variants,
 count tables, and sample annotations
 }
 \examples{
