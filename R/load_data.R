@@ -917,7 +917,32 @@ create_musica_from_counts <- function(x, variant_class) {
   return(musica)
 }
 
-
+#' Create a musica_result object
+#' 
+#' This function creates a \linkS4class{musica_result} object from signatures,
+#' exposures, and a mutation count table.
+#'
+#' @param signatures A matrix or data.frame of signatures by mutational motifs
+#' @param exposures A matrix or data.frame of samples by signature weights
+#' @param count_table Summary table with per-sample unnormalized motif counts
+#' @param algorithm Describes how the signatures/weights were generated
+#'
+#' @return A \linkS4class{musica_result} object
+#' @export
+create_musica_result <- function(signatures, exposures, count_table, algorithm = NULL){
+  
+  # create musica result object with given exposures and signatures
+  musica_result <- new("musica_result", signatures = as.matrix(signatures), 
+                       exposures = as.matrix(exposures), table_name = "SBS96",
+                       musica = create_musica_from_counts(count_table, "SBS96"))
+  
+  if (hasArg(algorithm)){
+    musica_result@algorithm <- algorithm
+  }
+  
+  return(musica_result)
+  
+}
 
 
 .check_variant_genome <- function(dt, genome) {

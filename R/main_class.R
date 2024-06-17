@@ -314,3 +314,71 @@ get_count_type <- function(count_table) {
 get_color_mapping <- function(count_table) {
   return(count_table@color_mapping)
 }
+
+# Full Benchmark object/methods -------------------------------
+
+#' Object that contains information for a full benchmarking analysis where
+#' multiple predictions may be benchmarked
+#' 
+#' @slot ground_truth musica_result
+#' @slot method_view_summary matrix
+#' @slot sig_view_summary matrix
+#' @slot indv_benchmarks list
+#' @export
+#' @exportClass full_benchmark
+
+setClass(
+  "full_benchmark",
+  slots = list(
+    ground_truth = "musica_result",
+    method_view_summary = "matrix",
+    sig_view_summary = "matrix",
+    indv_benchmarks = "list"
+  )
+)
+
+# Single Benchmark object/methods -------------------------------
+
+#' @title character or NULL class union
+#' @description class to allow either NULL or character
+#' @keywords internal
+#' @noRd
+setClassUnion("CharOrNULL", c("character", "NULL"))
+
+#' Object that contains information for a full benchmarking analysis where
+#' multiple predictions may be benchmarked
+#' 
+#' @slot initial_pred musica_result
+#' @slot intermediate_pred musica_result
+#' @slot final_pred musica_result
+#' @slot initial_comparison data.frame
+#' @slot intermediate_comparison data.frame
+#' @slot final_comparison data.frame
+#' @slot single_summary matrix
+#' @slot method_id character
+#' @slot threshold numeric
+#' @slot adjustment_threshold numeric
+#' @slot description CharOrNULL
+#' @export
+#' @exportClass single_benchmark
+
+setClass(
+  "single_benchmark",
+  slots = list(
+    initial_pred = "musica_result",
+    intermediate_pred = "musica_result",
+    final_pred = "musica_result",
+    initial_comparison = "data.frame",
+    intermediate_comparison = "data.frame",
+    final_comparison = "data.frame",
+    single_summary = "matrix",
+    method_id = "character",
+    threshold = "numeric",
+    adjustment_threshold = "numeric",
+    description = "CharOrNULL"
+  )
+)
+
+
+
+

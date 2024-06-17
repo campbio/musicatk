@@ -152,3 +152,33 @@
 #' @keywords datasets
 #'
 "synthetic_breast_true_exposures"
+
+#' example_predicted_sigs
+#'
+#' A matrix containing the predicted signatures for a synthetic breast cancer
+#' dataset with 214 samples, generated using NMF and k=8 signatures.
+#'
+#' @docType data
+#'
+#' @usage data(example_predicted_sigs)
+#'
+#' @format An object of class \code{matrix}
+#'
+#' @keywords datasets
+#'
+"example_predicted_sigs"
+
+#' example_predicted_exp
+#'
+#' A matrix containing the predicted signature exposure levels for a synthetic 
+#' breast cancer dataset with 214 samples, generated using NMF and k=8 signatures.
+#'
+#' @docType data
+#'
+#' @usage data(example_predicted_exp)
+#'
+#' @format An object of class \code{matrix}
+#'
+#' @keywords datasets
+#'
+"example_predicted_exp"
