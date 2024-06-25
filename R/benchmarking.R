@@ -4,13 +4,14 @@
 #'
 #' @param true_signatures A matrix of true signatures by mutational motifs
 #' @param true_exposures A matrix of samples by true signature weights
+#' @param count_table Summary table with per-sample unnormalized motif counts
 #'
 #' @return A \code{\linkS4class{full_benchmark}} object
 #' @export
-create_benchmark <- function(true_signatures, true_exposures){
+create_benchmark <- function(true_signatures, true_exposures, count_table){
   
   # create musica result object to hold true exposures and signatures
-  truth <- create_musica_result(true_signatures, true_exposures)
+  truth <- create_musica_result(true_signatures, true_exposures, count_table)
   
   # create benchmark object
   full_benchmark <- new("full_benchmark", ground_truth = truth)
@@ -189,8 +190,8 @@ benchmark <- function(full_benchmark, prediction, method_id = NULL,
     #benchmark_plot_exposures(full_benchmark, method_id, prediction = "Initial")
     
     #message("\nDuplicate signature exposures before/afters...\n")
-    benchmark_plot_duplicate_exposures(full_benchmark, method_id)
-    #print(duplicate_plot)
+    duplicate_plot <- benchmark_plot_duplicate_exposures(full_benchmark, method_id)
+    print(duplicate_plot)
     
     #message("\nIntermediate Signatures...\n")
     intermediate_sig_plot <- benchmark_plot_signatures(full_benchmark, method_id, prediction = "Intermediate", same_scale = FALSE)
@@ -201,8 +202,8 @@ benchmark <- function(full_benchmark, prediction, method_id = NULL,
     #benchmark_plot_exposures(full_benchmark, method_id, prediction = "Intermediate")
     
     #message("\nComposite signature exposures before/afters...\n")
-    benchmark_plot_composite_exposures(full_benchmark, method_id)
-    #print(composite_plot)
+    composite_plot <- benchmark_plot_composite_exposures(full_benchmark, method_id)
+    print(composite_plot)
     
     #message("\nFinal Signatures...\n")
     final_sig_plot <- benchmark_plot_signatures(full_benchmark, method_id, prediction = "Final", same_scale = FALSE)
@@ -224,6 +225,73 @@ benchmark <- function(full_benchmark, prediction, method_id = NULL,
   }
   
   
+  
+}
+
+#' Predict and benchmark
+#' 
+#' This function will discover signatures from a musica object using a given
+#' algorithm and a range of k values. A new discovery is done for each k value.
+#' As each discovery is completed, the prediction is benchmarked.
+#' 
+#' @param musica A \code{\linkS4class{musica}} object.
+#' @param table_name Name of the table to use for signature discovery. Needs
+#' to be the same name supplied to the table building functions such as
+#' \link{build_standard_table}.
+#' @param algorithm Method to use for mutational signature discovery. One of 
+#' \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.
+#' @param k_min Minimum number of singatures to predict
+#' @param k_max Maximum number of signatures to predict
+#' @param full_benchmark An object of class \code{\linkS4class{full_benchmark}}
+#' created with the \link{create_benchmark} function or returned from a previous
+#' \code{benchmark} run.
+#' @param threshold Cosine similarity cutoff for comparing preidcted and true
+#' signatures. Default \code{0.8}.
+#' @param adjustment_threshold Cosine similarity value of high confidence.
+#' Comparisons that meet this cutoff are assumed to be likely,
+#' while those that fall below the cutoff will be disregarded if the predicted
+#' signature is already captured above the threshold. Default \code{0.9}.
+#' @param plot If \code{FALSE}, plots will be suppressed. Default \code{TRUE}.
+#' @param seed Seed to be used for the random number generators in the
+#' signature discovery algorithms. Default \code{1}.
+#' @param nstart Number of independent random starts used in the mutational
+#' signature algorithms. Default \code{10}.
+#' @param par_cores Number of parallel cores to use. Only used if
+#' \code{method = "nmf"}. Default \code{1}. 
+#'
+#' @return If \code{make_copy == TRUE}, a new \code{full_benchmark} object is
+#' returned. If \code{make_copy == FALSE}, nothing is returned.
+#' @export
+predict_and_benchmark <- function(musica, table_name, algorithm = "lda", k_min, 
+                                  k_max, full_benchmark, threshold = 0.8,
+                                  adjustment_threshold = 0.9, plot = FALSE, 
+                                  seed = 1, nstart = 10, par_cores = 1){
+  
+  
+  for (k in c(k_min:k_max)){
+    
+    message("Discovering signatures for k = ", k, "...")
+    
+    prediction <- discover_signatures(musica = musica, table_name = table_name,
+                                      num_signatures = k, algorithm = algorithm,
+                                      seed = seed, nstart = nstart, 
+                                      par_cores = par_cores)
+    
+    message("Benchmarking prediction for k = ", k, "...\n")
+    
+    full_benchmark <- benchmark(full_benchmark = full_benchmark, 
+                                prediction = prediction, 
+                                method_id = paste(algorithm, k, sep = ""),
+                                threshold = threshold, 
+                                adjustment_threshold = adjustment_threshold,
+                                description = paste("Prediction from predict_and_benchmark function. Algorithm: ", algorithm, ". K = ", k, ".", sep = ""),
+                                plot = plot, make_copy = TRUE)
+  }
+  
+  
+  print(full_benchmark@method_view_summary)
+  
+  return(full_benchmark)
   
 }
 
@@ -560,12 +628,14 @@ benchmark_plot_exposures <- function(full_benchmark, method_id, prediction){
   predicted <- c()
   true <- c()
   sig <- c()
+  index <- 1
   for (true_sig in comparison$y_sig_name){
     predicted_sig <- 
-      comparison[comparison$y_sig_name == true_sig,4]
+      comparison[index,4]
     predicted <- c(predicted, exposures(prediction)[predicted_sig,])
     true <- c(true, exposures(truth)[,true_sig])
     sig <- c(sig, rep(true_sig, dim(exposures(truth))[1]))
+    index <- index + 1
   }
   
   plot_df <- data.frame(Predicted = predicted, True = true, Sig = sig)
@@ -600,7 +670,7 @@ benchmark_plot_exposures <- function(full_benchmark, method_id, prediction){
 #' @param method_id The identifier for the \code{\linkS4class{single_benchmark}}
 #' object of interest
 #'
-#' @return Two ggplot images are displayed
+#' @return A ggplot object
 #' @export
 benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
   
@@ -630,6 +700,8 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
   
   freq <- table(comparison$y_sig_name)
   duplicated_signatures <- names(freq[freq > 1])
+  
+  count <- 1
   
   for (duplicated_sig in duplicated_signatures){
     
@@ -666,7 +738,7 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
       geom_smooth(method = "lm") +
       theme(legend.title=element_blank())
     
-    print(before_plot)
+    #print(before_plot)
     
     new_sig_name <- "Merged Signature ("
     for (sig in sigs_to_merge){
@@ -700,8 +772,26 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
       geom_smooth(method = "lm") +
       theme(legend.title=element_blank())
     
-    print(after_plot)
+    #print(after_plot)
+    figure <- ggpubr::ggarrange(before_plot, after_plot, ncol = 2, nrow = 1)
     
+    if (count == 1){
+      full_figure <- figure
+    }
+    else{
+      full_figure <- ggpubr::ggarrange(full_figure, figure, ncol = 1, heights = c(count - 1,1))
+    }
+    
+    count <- count + 1
+    
+    #print(figure)
+    
+    
+  }
+  
+  #print(full_figure)
+  if (count != 1){
+    return(full_figure)
   }
   
 }
@@ -719,7 +809,7 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
 #' @param method_id The identifier for the \code{\linkS4class{single_benchmark}}
 #' object of interest
 #'
-#' @return Two ggplot images are displayed
+#' @return A ggplot object
 #' @export
 benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
@@ -749,6 +839,8 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
   freq <- table(comparison$x_sig_name)
   composite_signatures <- names(freq[freq > 1])
+  
+  count <- 1
   
   for (composite_sig in composite_signatures){
     
@@ -830,10 +922,24 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
     
     print(after_plot)
     
+    figure <- ggpubr::ggarrange(before_plot, after_plot, ncol = 2, nrow = 1)
+    
+    if (count == 1){
+      full_figure <- figure
+    }
+    else{
+      full_figure <- ggpubr::ggarrange(full_figure, figure, ncol = 1, heights = c(count - 1,1))
+    }
+    
+    count <- count + 1
   }
   
   #combined_plot<- gridExtra::grid.arrange(before_plot, after_plot, ncol = 2)
   #return(combined_plot)
+  
+  if (count != 1){
+    return(full_figure)
+  }
 
   
 }

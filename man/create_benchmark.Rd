@@ -4,12 +4,14 @@
 \alias{create_benchmark}
 \title{Create a full_benchmark object}
 \usage{
-create_benchmark(true_signatures, true_exposures)
+create_benchmark(true_signatures, true_exposures, count_table)
 }
 \arguments{
 \item{true_signatures}{A matrix of true signatures by mutational motifs}
 
 \item{true_exposures}{A matrix of samples by true signature weights}
+
+\item{count_table}{Summary table with per-sample unnormalized motif counts}
 }
 \value{
 A \code{\linkS4class{full_benchmark}} object
