@@ -670,7 +670,7 @@ benchmark_plot_exposures <- function(full_benchmark, method_id, prediction){
 #' @param method_id The identifier for the \code{\linkS4class{single_benchmark}}
 #' object of interest
 #'
-#' @return A ggplot object
+#' @return A list of ggplot objects
 #' @export
 benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
   
@@ -701,7 +701,7 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
   freq <- table(comparison$y_sig_name)
   duplicated_signatures <- names(freq[freq > 1])
   
-  count <- 1
+  final_figures <- list()
   
   for (duplicated_sig in duplicated_signatures){
     
@@ -773,26 +773,14 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
       theme(legend.title=element_blank())
     
     #print(after_plot)
+    
     figure <- ggpubr::ggarrange(before_plot, after_plot, ncol = 2, nrow = 1)
     
-    if (count == 1){
-      full_figure <- figure
-    }
-    else{
-      full_figure <- ggpubr::ggarrange(full_figure, figure, ncol = 1, heights = c(count - 1,1))
-    }
-    
-    count <- count + 1
-    
-    #print(figure)
-    
+    final_figures <- append(final_figures, list(figure))
     
   }
   
-  #print(full_figure)
-  if (count != 1){
-    return(full_figure)
-  }
+  return(final_figures)
   
 }
 
@@ -809,7 +797,7 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
 #' @param method_id The identifier for the \code{\linkS4class{single_benchmark}}
 #' object of interest
 #'
-#' @return A ggplot object
+#' @return A list of ggplot objects
 #' @export
 benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
@@ -841,6 +829,8 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   composite_signatures <- names(freq[freq > 1])
   
   count <- 1
+  
+  final_figures <- list()
   
   for (composite_sig in composite_signatures){
     
@@ -879,7 +869,7 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
       geom_smooth(method = "lm") +
       theme(legend.title=element_blank())
     
-    print(before_plot)
+    #print(before_plot)
     
     colnames <- NULL
     for (component in sig_components){
@@ -920,27 +910,15 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
       geom_smooth(method = "lm") +
       theme(legend.title=element_blank())
     
-    print(after_plot)
+    #print(after_plot)
     
     figure <- ggpubr::ggarrange(before_plot, after_plot, ncol = 2, nrow = 1)
     
-    if (count == 1){
-      full_figure <- figure
-    }
-    else{
-      full_figure <- ggpubr::ggarrange(full_figure, figure, ncol = 1, heights = c(count - 1,1))
-    }
-    
-    count <- count + 1
-  }
-  
-  #combined_plot<- gridExtra::grid.arrange(before_plot, after_plot, ncol = 2)
-  #return(combined_plot)
-  
-  if (count != 1){
-    return(full_figure)
-  }
+    final_figures <- append(final_figures, list(figure))
 
+  }
+  
+  return(final_figures)
   
 }
 
@@ -1311,22 +1289,30 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   high_threshold_comp <- comparison[comparison$cosine > adjustment_threshold,]
   
   indexes_to_keep <- c()
-  for (index in 1:dim(low_threshold_comp)[1]){
-    if (low_threshold_comp[index,4] %in% high_threshold_comp$x_sig_name == FALSE){
-      indexes_to_keep <- c(indexes_to_keep, index)
-    }
-    else{
-      existing_cs <- high_threshold_comp[high_threshold_comp$x_sig_name == low_threshold_comp[index,4], 1][1]
-      diff <- abs(existing_cs - low_threshold_comp[index,1])
-      if (diff < 0.05){
+  if (dim(low_threshold_comp)[1] > 0){
+    for (index in 1:dim(low_threshold_comp)[1]){
+      if (low_threshold_comp[index,4] %in% high_threshold_comp$x_sig_name == FALSE){
         indexes_to_keep <- c(indexes_to_keep, index)
       }
+      else{
+        existing_cs <- high_threshold_comp[high_threshold_comp$x_sig_name == low_threshold_comp[index,4], 1][1]
+        diff <- abs(existing_cs - low_threshold_comp[index,1])
+        if (diff < 0.05){
+          indexes_to_keep <- c(indexes_to_keep, index)
+        }
+      }
     }
-  }
+  
   
   comparison_adj <- rbind(high_threshold_comp, low_threshold_comp[indexes_to_keep,])
   
   return(comparison_adj)
+  
+  }
+  
+  else{
+    return(comparison)
+  }
   
 }
 

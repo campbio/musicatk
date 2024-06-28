@@ -14,7 +14,7 @@ benchmarking analysis}
 object of interest}
 }
 \value{
-Two ggplot images are displayed
+A list of ggplot objects
 }
 \description{
 After a prediction has been benchmarked with the \link{benchmark} function,

@@ -79,7 +79,7 @@ count_table <- synthetic_breast_counts
 musica <- create_musica_from_counts(count_table, "SBS96")
 
 # prediction
-res2 <- discover_signatures(musica, "SBS96", num_signatures = 9, algorithm = "nmf")
+res2 <- discover_signatures(musica, "SBS96", num_signatures = 8, algorithm = "nmf")
 
 ```
 
