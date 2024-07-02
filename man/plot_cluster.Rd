@@ -42,14 +42,14 @@ data(res_annot)
 #Get clustering result
 clust_out <- cluster_exposure(result = res_annot, nclust = 2)
 #UMAP
-create_umap(result = res_annot)
-#generate cluster X signature plot
-plot_cluster(result = res_annot, clusters = clust_out, group = "signature")
-#generate cluster X annotation plot
-plot_cluster(result = res_annot, clusters = clust_out, group = "annotation",
-            annotation = "Tumor_Subtypes")
-#generate a single UMAP plot
-plot_cluster(result = res_annot, clusters = clust_out, group = "none")
+#create_umap(result = res_annot)
+##generate cluster X signature plot
+#plot_cluster(result = res_annot, clusters = clust_out, group = "signature")
+##generate cluster X annotation plot
+#plot_cluster(result = res_annot, clusters = clust_out, group = "annotation",
+#             annotation = "Tumor_Subtypes")
+##generate a single UMAP plot
+#plot_cluster(result = res_annot, clusters = clust_out, group = "none")
 }
 \seealso{
 \link{create_umap}

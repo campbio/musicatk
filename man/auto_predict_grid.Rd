@@ -26,7 +26,7 @@ auto_predict_grid(
 \item{signature_res}{Signatures to automatically subset from for prediction}
 
 \item{algorithm}{Algorithm to use for prediction. Choose from
-"lda_posterior", decompTumor2Sig, and deconstructSigs}
+"lda_posterior" and decompTumor2Sig}
 
 \item{sample_annotation}{Annotation to grid across, if none given,
 prediction subsetting on all samples together}

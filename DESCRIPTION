@@ -14,7 +14,7 @@ biocViews:
     SomaticMutation,
     VariantAnnotation
 Depends:
-    R (>= 4.0.0), 
+    R (>= 4.0.0),
     NMF
 Imports:
     SummarizedExperiment,
@@ -48,7 +48,6 @@ Imports:
     BSgenome.Hsapiens.UCSC.hg38,
     BSgenome.Mmusculus.UCSC.mm9,
     BSgenome.Mmusculus.UCSC.mm10,
-    deconstructSigs,
     decompTumor2Sig,
     topicmodels,
     ggrepel,
@@ -63,7 +62,9 @@ Imports:
     stringi,
     tidyverse,
     ggpubr,
-    Matrix (>= 1.6.1)
+    Matrix (>= 1.6.4),
+    scales,
+    lsei
 Suggests:
     TCGAbiolinks,
     shinyBS,

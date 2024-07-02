@@ -48,9 +48,10 @@ matrix containing the probability of each mutation type in each sample and
 2) an "exposure" matrix containing the estimated counts for each signature
 in each sample. Before mutational discovery can be performed,
 variants from samples first need to be stored in a 
-\code{\linkS4class{musica}} object using the \link{create_musica} function 
+\code{\linkS4class{musica}} object using the \link{create_musica_from_variants}
+or \link{create_musica_from_counts} function 
 and mutation count tables need to be created using functions such as
-\link{build_standard_table}.
+\link{build_standard_table} if \link{create_musica_from_counts} was not used.
 }
 \examples{
 data(musica)

@@ -31,12 +31,12 @@ A \code{\linkS4class{musica_result}} object with a new UMAP
 stored in the \code{UMAP} slot.
 }
 \description{
-Proportional sample exposures will be used as input into the 
+Proportional sample exposures will be used as input into the
 \code{\link[uwot]{umap}} function to generate a two dimensional UMAP.
 }
 \examples{
-data(res_annot)
-create_umap(result = res_annot)
+#data(res_annot)
+#create_umap(result = res_annot)
 }
 \seealso{
 See \link{plot_umap} to display the UMAP and

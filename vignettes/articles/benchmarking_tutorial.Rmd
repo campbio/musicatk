@@ -1,0 +1,200 @@
+---
+title: "Benchmarking signaure predictions against a ground truth"
+date: "Compiled `r format(Sys.time(), '%B %d, %Y')`"
+author: "Natasha Gurevich, Joshua Campbell"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, fig.align='center')
+```
+# Introduction
+write something here.....
+
+```{r setup}
+library(musicatk)
+```
+
+# Step 1. Initializing the Benchmarking Structure
+
+Results from all analyses related to the same ground truth signatures and loadings can be stored in one `full_benchmark` object. Benchmarking can be performed on multiple prediction instances and stored in one place, allowing for easy comparison between discovery methods or discovery parameters. 
+
+The `full_benchmark` object is initialized using the ground truth signatures and loadings, both of which must be a matrix. The signatures matrix should contain signatures as columns mutation types as rows. Each cell details that mutation type's percent contribution to the given signature. The loadings matrix should contain signatures as columns and samples as rows. Each cell details the number of mutations in the sample that are attributed to the given signature. 
+
+The example below prepares a `full_benchmark` object using a snythetic breast cancer dataset provided in the package.
+
+```{r prepare ground truth}
+
+# prepare true signatures
+true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18", "SBS26")
+true_signatures <- signatures(cosmic_v2_sigs)[,true_sigs]
+
+# load true exposures
+true_exposures <- synthetic_breast_true_exposures
+
+# load count table
+count_table <- synthetic_breast_counts
+
+```
+
+``` {r initialize full_benchmark object}
+
+# initialize full benchmark object with ground truth
+full_benchmark <- create_benchmark(true_signatures, true_exposures, count_table)
+
+```
+
+# Step 2. Prepare prediction to benchmark
+
+In order to benchmark the results of signature discovery, the prediction results must be stored in a  `musica_result` object. 
+
+## If signature discovery has already been completed externally
+
+If signature discovery has already been performed and therefore predicted signatures and predicted loadings already exist, this information must be stored in a `musica_result` object using the `create_musica_result` function. Example data is used here.
+
+```{r create musica result object}
+
+# read in predicted signatures
+predicted_sigs <- example_predicted_sigs
+
+# read in predicted loadings
+predicted_loadings <- example_predicted_exp
+
+# store in a musica result object
+res1 <- create_musica_result(predicted_sigs, predicted_loadings, count_table)
+
+```
+
+## If signature discovery has not yet been performed
+
+If signature discovery has not yet been performed, it cane be done via the NMF or LDA algorithms within the musicatk package. Mutation data can be read in and stored in a `musica` object either from a file of variants or from a 
+count table using the standard procedure.
+
+In this example, mutation data is stored in a count table, which is used to create a `musica` object. Signature 
+discovery is then performed using the NMF algorithm and 8 signatures.
+
+```{r perform signature discovery}
+
+# create musica object from count table
+count_table <- synthetic_breast_counts
+musica <- create_musica_from_counts(count_table, "SBS96")
+
+# prediction
+res2 <- discover_signatures(musica, "SBS96", num_signatures = 8, algorithm = "nmf")
+
+```
+
+# Step 3. Perform benchmarking
+
+Once the prediction is stored in a `musica_resut` object, and the ground truth is stored in a `full_benchmark` object, benchmarking can be performed for the prediction. To perform benchmarking in the simplest form with all default parameters, the following command is used. The inputted `full_benchmark` object is updated within the function, and nothing is returned. Since no `method_id` is supplied, it is automatically generated based on the variable name of the provided prediction.
+
+```{r perform benchmarking}
+
+benchmark(full_benchmark, res2)
+
+```
+
+## Returning a new object from the benchmarking process
+
+If a new `full_benchmark` object is desired, the `make_copy` argument can be used to return a new object, leaving the inputted one unchanged. Below, the res1 prediction will be benchmarked and the result is saved to a new object. For better readability, all plots are suppressed.
+
+```{r perform benchmarking}
+
+new_benchmark <- benchmark(full_benchmark, res1, plot = FALSE)
+
+```
+
+# Step 4: Downstream analyses and visualization
+
+Any element of the `full_benchmark` or `single_benchmark` objects can be easily extracted for further individualized analysis, and all plots generated during the benchmarking process can be recreated.
+
+## Summary Tables
+
+Summary tables can easily be extracted from a `full_benchmark` object to visualize the results of the full analysis.
+
+```{r view summary}
+
+method_view_summary(full_benchmark)
+
+```
+
+```{r view sig view summary}
+
+sig_view_summary(full_benchmark)
+
+```
+
+## Accessing individual benchmark results or predictions
+
+Functions to access an individual benchmark from the full object, or to specifically access a prediction at an any step within a benchmarking process make individualized downstream analyses easier.
+
+```{r extract a single benchmark}
+
+# pull out the single benchmark object for res2 from the full_benchmark object
+res2_benchmark <- benchmark_get_entry(full_benchmark, "res2")
+
+```
+
+Once a single benchmark object has been extracted, the three different predictions within it can be extracted. These include (1) the prediction (predicted signatures and exposures) before any benchmarking adjustments have been made, (2) the prediction after duplicate signatures have been adjusted, and (3) the final prediction, after both duplicate and composite signatures have been adjusted.
+
+```{r extract a prediction}
+
+# extract the res2 prediction before becnhamrking adjustments have been made
+res2_initial_prediction <- benchmark_get_prediction(res2_benchmark, "initial")
+
+# extract the res2 prediction after duplicate signatures have been corrected, but before composites have been corrected
+res2_initial_prediction <- benchmark_get_prediction(res2_benchmark, "intermediate")
+
+# extract the res2 prediction at the end of its benchmarking process
+res2_final_prediction <- benchmark_get_prediction(res2_benchmark, "final")
+
+```
+
+## Comparison table between true and predicted signatures
+
+To extract a comparison between the predicted and true signatures from any step in the benchmarking process, the `benchmark_compare_results` function can be used.
+
+``` {r compare results}
+
+benchmark_compare_results(full_benchmark, "res2", "Initial")
+
+```
+
+## Recreating plots generated during the benchmarking process
+
+A comparison between predicted and true signatures from any step in the benchmarking process can be plotted with the `benchmark_plot_comparison` function.
+
+```{r plot signature comparison}
+
+benchmark_plot_comparison(full_benchmark, "res2", "Initial")
+
+```
+
+Predicted signatures from any step in the benchmarking process can be plotted with the `benchmark_plot_signatures` function. All of the customization options found in the generic `plot_signatures` function, such as `same_scale`, `show_x_labels`, `show_y_labels`, etc are valid.
+
+```{r plot signatures}
+
+benchmark_plot_signatures(full_benchmark, "res2", "Intermediate", same_scale = FALSE)
+
+```
+
+A comparison between predicted and true exposures from any step in the benchmarking process can be plotted with the `benchmark_plot_exposures` function.
+
+```{r plot exposure comparison}
+
+benchmark_plot_exposures(full_benchmark, "res2", "Initial")
+
+```
+
+To recreate the before/after plots comparing predicted and true exposures before/after duplicate or composite signatures are corrected, the `benchmark_plot_duplicate_exposures` and `benchmark_plot_composite_exposures` functions can be used, respectively.
+
+```{r plot duplicate/composite exposures before/after adjustment}
+
+benchmark_plot_duplicate_exposures(full_benchmark, "res2")
+benchmark_plot_composite_exposures(full_benchmark, "res2")
+
+```
+
+
+
+
+

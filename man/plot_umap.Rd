@@ -26,9 +26,9 @@ a mutational discovery or prediction tool.}
 
 \item{color_by}{One of \code{"signatures"}, \code{"annotation"}, or
 \code{"none"}. If \code{"signatures"}, then one UMAP scatterplot will be
-generated for each signature and points will be colored by the level of 
-that signature in each sample. If \code{annotation}, a single UMAP will 
-be generated colored by the annotation selected using the parameter 
+generated for each signature and points will be colored by the level of
+that signature in each sample. If \code{annotation}, a single UMAP will
+be generated colored by the annotation selected using the parameter
 \code{annotation}. If \code{"none"}, a single UMAP scatterplot will be
 generated with no coloring. Default \code{"signature"}.}
 
@@ -45,21 +45,21 @@ when \code{color_by = "annotation"}. Default \code{NULL}.}
 scale in each signature subplot. If \code{FALSE}, then each signature subplot
 will be colored by a different scale with different maximum values. Only
 used when \code{color_by = "signature"}. Setting to \code{FALSE} is most
-useful when the maximum value of various signatures are vastly different 
+useful when the maximum value of various signatures are vastly different
 from one another. Default \code{TRUE}.}
 
 \item{add_annotation_labels}{If \code{TRUE}, labels for each group in the
 \code{annotation} variable will be displayed. Only used if
-code{color_by = "annotation"}. This not recommended if the annotation is
+\code{color_by = "annotation"}. This not recommended if the annotation is
 a continuous variable. The label is plotting using the centriod of each
 group within the \code{annotation} variable. Default \code{FALSE}.}
 
-\item{annotation_label_size}{Size of annotation labels. Only used if 
-code{color_by = "annotation"} and \code{add_annotation_labels = TRUE}.
+\item{annotation_label_size}{Size of annotation labels. Only used if
+\code{color_by = "annotation"} and \code{add_annotation_labels = TRUE}.
 Default \code{3}.}
 
 \item{annotation_text_box}{Place a white box around the annotation labels
-to improve readability. Only used if code{color_by = "annotation"} and
+to improve readability. Only used if \code{color_by = "annotation"} and
 \code{add_annotation_labels = TRUE}. Default \code{TRUE}.}
 
 \item{plotly}{If \code{TRUE}, the the plot will be made interactive
@@ -80,9 +80,9 @@ Plots samples on a UMAP scatterplot. Samples can be colored by
 the levels of mutational signatures or by a annotation variable.
 }
 \examples{
-data(res_annot)
-create_umap(res_annot, "Tumor_Subtypes")
-plot_umap(res_annot, "none")
+#data(res_annot)
+#create_umap(res_annot, "Tumor_Subtypes")
+#plot_umap(res_annot, "none")
 }
 \seealso{
 See \link{create_umap} to generate a UMAP in a musica result.
