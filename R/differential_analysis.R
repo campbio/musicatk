@@ -30,6 +30,12 @@ exposure_differential_analysis <- function(musica_result, annotation,
                                   method = c("wilcox", "kruskal", "glm.nb"),
                                   group1 = NULL, group2 = NULL,
                                   ...) {
+  
+  # dummy variables
+  statistic <- NULL
+  df <- NULL
+  pvalue <- NULL
+  
   method <- match.arg(method)
   if (!methods::is(musica_result, "musica_result")) {
     stop("Input to exposure_differential_analysis must be a musica_result
