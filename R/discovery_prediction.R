@@ -110,19 +110,15 @@ discover_signatures <- function(musica, table_name, num_signatures,
 #' @description Exposures for samples will be predicted using an existing set
 #' of signatures stored in a \code{\linkS4class{musica_result}} object. 
 #' Algorithms available for prediction include a modify version of \code{"lda"},
-#' \code{"decompTumor2Sig"}, and \code{"deconstructSigs"}.
+#' and \code{"decompTumor2Sig"}.
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param g A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from. Only used
-#' if \code{algorithm = "deconstructSigs"}
 #' @param table_name Name of table used for posterior prediction.
 #' Must match the table type used to generate the prediction signatures
 #' @param signature_res Signatures used to predict exposures for the samples
 #' \code{musica} object. Existing signatures need to stored in a
 #' \code{\linkS4class{musica_result}} object.
 #' @param algorithm Algorithm to use for prediction of exposures. One of
-#' \code{"lda"}, \code{"decompTumor2Sig"}, or
-#' \code{"deconstructSigs"}.
+#' \code{"lda"} or \code{"decompTumor2Sig"}.
 #' @param signatures_to_use Which signatures in the \code{signature_res} result
 #' object to use. Default is to use all signatures.
 #' @param verbose If \code{TRUE}, progress will be printing. Only used if
@@ -143,9 +139,8 @@ discover_signatures <- function(musica, table_name, num_signatures,
 #' predict_exposure(musica = musica, table_name = "SBS96",
 #' signature_res = cosmic_v2_sigs, algorithm = "lda")
 #' @export
-predict_exposure <- function(musica, g, table_name, signature_res, 
-                             algorithm = c("lda", "decompTumor2Sig", 
-                                           "deconstructSigs"),
+predict_exposure <- function(musica, table_name, signature_res, 
+                             algorithm = c("lda", "decompTumor2Sig"),
                              signatures_to_use = seq_len(ncol(
                                signatures(signature_res))), verbose = FALSE) {
   algorithm <- match.arg(algorithm)
@@ -165,30 +160,6 @@ predict_exposure <- function(musica, g, table_name, signature_res,
     colnames(exposures) <- colnames(counts_table)
     rownames(exposures) <- colnames(signature)
     algorithm_name <- "decompTumor2Sig"
-  }else if (algorithm %in% c("ds", "deconstruct", "deconstructSigs")) {
-    sigs.input <- deconstructSigs::mut.to.sigs.input(mut.ref = variants(musica),
-                              sample.id = "sample", chr = "chr", pos = "start", 
-                              ref = "ref", alt = "alt", bsg = g)
-    sig_all <- t(signature)
-    middle <- unlist(lapply(strsplit(colnames(sig_all), "_"), "[", 1))
-    context <- lapply(strsplit(colnames(sig_all), "_"), "[", 2)
-    first <- unlist(lapply(context, substr, 1, 1))
-    last <- unlist(lapply(context, substr, 3, 3))
-    new_cols <- paste(first, "[", middle, "]", last, sep = "")
-    colnames(sig_all) <- new_cols
-
-    ds_res <- vapply(rownames(sigs.input), function(x) {
-      ds_result <- whichSignatures(tumor_ref = sigs.input,
-                                   contexts_needed = TRUE,
-                                   signatures_limit = ncol(signature),
-                                   tri_counts_method = "default",
-                                   sample_id = x, signatures_ref = sig_all)
-      return(as.matrix(ds_result$weights))
-    }, FUN.VALUE = rep(0, ncol(signature)))
-    exposures <- ds_res
-    colnames(exposures) <- colnames(counts_table)
-    rownames(exposures) <- colnames(signature)
-    algorithm_name <- "deconstructSigs"
   } else {
     stop("Type must be lda or decomp")
   }
@@ -298,128 +269,6 @@ predict_decompTumor2Sig <- function(sample_mat, signature_mat) {
   message(dim(motif96))
   message(dim(rflank))
   message(dim(lflank))
-}
-
-whichSignatures <- function(tumor_ref = NA,
-                           sample_id,
-                           signatures_ref,
-                           associated = c(),
-                           signatures_limit = NA,
-                           signature_cutoff = 0.06,
-                           contexts_needed = FALSE,
-                           tri_counts_method = "default") {
-  if (is(tumor_ref, 'matrix')) {
-    stop(paste("Input tumor.ref needs to be a data frame or location of ", 
-               "input text file", sep = ""))
-  }
-
-  if (exists("tumor.ref", mode = "list") | is(tumor_ref, "data.frame")) {
-    tumor     <- tumor_ref
-    if(contexts_needed == TRUE) {
-      tumor   <- deconstructSigs::getTriContextFraction(mut.counts.ref = tumor,
-                                                        trimer.counts.method =
-                                                          tri_counts_method)
-    }
-  } else {
-    if (file.exists(tumor_ref)) {
-      tumor   <- utils::read.table(tumor_ref, sep = "\t", header = TRUE,
-                                   as.is = TRUE, check.names = FALSE)
-      if (contexts_needed == TRUE) {
-        tumor <- deconstructSigs::getTriContextFraction(tumor,
-                                                        trimer.counts.method =
-                                                          tri_counts_method)
-      }
-    } else {
-      message("tumor.ref is neither a file nor a loaded data frame")
-    }
-  }
-
-  if (missing(sample_id) && nrow(tumor) == 1) {
-    sample_id <- rownames(tumor)[1]
-  }
-  # Take patient id given
-  tumor <- as.matrix(tumor)
-  if (!sample_id %in% rownames(tumor)) {
-    stop(paste(sample_id, " not found in rownames of tumor.ref", sep = ""))
-  }
-  tumor <- subset(tumor, rownames(tumor) == sample_id)
-  if (round(rowSums(tumor), digits = 1) != 1) {
-    stop(paste0("Sample: ", sample_id, " is not normalized. Consider using ", 
-    "contexts.needed = TRUE", sep = " "))
-  }
-  signatures <- signatures_ref
-
-  signatures    <- as.matrix(signatures)
-  original_sigs <- signatures
-
-  # Check column names are formatted correctly
-  if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < 
-      length(colnames(signatures))) {
-    colnames(tumor) <- deconstructSigs::changeColumnNames(colnames(tumor))
-    if (length(colnames(tumor)[colnames(tumor) %in% colnames(signatures)]) < 
-        length(colnames(signatures))) {
-      stop("Check column names on input file")
-    }
-  }
-
-  # Ensure that columns in tumor match the order of those in signatures
-  tumor <- tumor[, colnames(signatures), drop = FALSE]
-
-  #Take a subset of the signatures
-  if (!is.null(associated)) {
-    signatures <- signatures[rownames(signatures) %in% associated, ]
-  }
-
-  if (is.na(signatures_limit)) {
-    signatures_limit <- nrow(signatures)
-  }
-
-  #Set the weights matrix to 0
-  weights         <- matrix(0, nrow = nrow(tumor), ncol = nrow(signatures),
-                            dimnames = list(rownames(tumor),
-                                           rownames(signatures)))
-
-  seed            <- deconstructSigs::findSeed(tumor, signatures)
-  weights[seed]   <- 1
-  w               <- weights * 10
-
-  error_diff      <- Inf
-  error_threshold <- 1e-3
-
-  num <- 0
-  while (error_diff > error_threshold) {
-    num        <- num + 1
-    #message(num)
-    error_pre  <- deconstructSigs::getError(tumor, signatures, w)
-    if (error_pre == 0) {
-      break
-    }
-    w          <- deconstructSigs::updateW_GR(tumor, signatures, w,
-                                              signatures.limit =
-                                                signatures_limit)
-    error_post <- deconstructSigs::getError(tumor, signatures, w)
-    error_diff <- (error_pre - error_post) / error_pre
-  }
-
-  weights <- w / sum(w)
-  unknown <- 0
-
-  ## filtering on a given threshold value (0.06 default)
-  weights[weights < signature_cutoff] <- 0
-  unknown <- 1 - sum(weights)
-
-  product <- weights %*% signatures
-  diff    <- tumor - product
-
-  x       <- matrix(data = 0, nrow = 1, ncol = nrow(original_sigs),
-                    dimnames = list(rownames(weights), rownames(original_sigs)))
-  x       <- data.frame(x)
-  x[colnames(weights)] <- weights
-  weights <- x
-
-  out        <- list(weights, tumor, product, diff, unknown)
-  names(out) <- c("weights", "tumor", "product", "diff", "unknown")
-  return(out)
 }
 
 #' Generate result_grid from musica based on annotation and range of k
@@ -538,7 +387,7 @@ reconstruct_sample <- function(result, sample_number) {
 #' @param table_name Name of table used for posterior prediction (e.g. SBS96)
 #' @param signature_res Signatures to automatically subset from for prediction
 #' @param algorithm Algorithm to use for prediction. Choose from
-#' "lda_posterior", decompTumor2Sig, and deconstructSigs
+#' "lda_posterior", and decompTumor2Sig
 #' @param sample_annotation Annotation to grid across, if none given,
 #' prediction subsetting on all samples together
 #' @param min_exists Threshold to consider a signature active in a sample
@@ -611,7 +460,7 @@ auto_predict_grid <- function(musica, table_name, signature_res, algorithm,
 #' @param table_name Name of table used for posterior prediction (e.g. SBS96)
 #' @param signature_res Signatures to automatically subset from for prediction
 #' @param algorithm Algorithm to use for prediction. Choose from
-#' "lda_posterior", decompTumor2Sig, and deconstructSigs
+#' "lda_posterior" and decompTumor2Sig
 #' @param min_exists Threshold to consider a signature active in a sample
 #' @param proportion_samples Threshold of samples to consider a signature
 #' active in the cohort

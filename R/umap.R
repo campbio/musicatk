@@ -78,14 +78,14 @@ create_umap <- function(result, n_neighbors = 30,
 #' from one another. Default \code{TRUE}.
 #' @param add_annotation_labels If \code{TRUE}, labels for each group in the
 #' \code{annotation} variable will be displayed. Only used if
-#' code{color_by = "annotation"}. This not recommended if the annotation is
+#' \code{color_by = "annotation"}. This not recommended if the annotation is
 #' a continuous variable. The label is plotting using the centriod of each
 #' group within the \code{annotation} variable. Default \code{FALSE}.
 #' @param annotation_label_size Size of annotation labels. Only used if 
-#' code{color_by = "annotation"} and \code{add_annotation_labels = TRUE}.
+#' \code{color_by = "annotation"} and \code{add_annotation_labels = TRUE}.
 #' Default \code{3}.
 #' @param annotation_text_box Place a white box around the annotation labels
-#' to improve readability. Only used if code{color_by = "annotation"} and
+#' to improve readability. Only used if \code{color_by = "annotation"} and
 #' \code{add_annotation_labels = TRUE}. Default \code{TRUE}.
 #' @param plotly If \code{TRUE}, the the plot will be made interactive
 #' using \code{\link[plotly]{plotly}}. Not used if \code{color_by = "signature"}

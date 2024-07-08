@@ -22,7 +22,7 @@ auto_subset_sigs(
 \item{signature_res}{Signatures to automatically subset from for prediction}
 
 \item{algorithm}{Algorithm to use for prediction. Choose from
-"lda_posterior", decompTumor2Sig, and deconstructSigs}
+"lda_posterior" and decompTumor2Sig}
 
 \item{min_exists}{Threshold to consider a signature active in a sample}
 

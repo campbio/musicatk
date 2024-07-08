@@ -48,7 +48,6 @@ Imports:
     BSgenome.Hsapiens.UCSC.hg38,
     BSgenome.Mmusculus.UCSC.mm9,
     BSgenome.Mmusculus.UCSC.mm10,
-    deconstructSigs,
     decompTumor2Sig,
     topicmodels,
     ggrepel,
