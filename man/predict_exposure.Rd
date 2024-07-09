@@ -6,20 +6,15 @@
 \usage{
 predict_exposure(
   musica,
-  g,
   table_name,
   signature_res,
-  algorithm = c("lda", "decompTumor2Sig", "deconstructSigs"),
+  algorithm = c("lda", "decompTumor2Sig"),
   signatures_to_use = seq_len(ncol(signatures(signature_res))),
   verbose = FALSE
 )
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
-
-\item{g}{A \linkS4class{BSgenome} object indicating which genome
-reference the variants and their coordinates were derived from. Only used
-if \code{algorithm = "deconstructSigs"}}
 
 \item{table_name}{Name of table used for posterior prediction.
 Must match the table type used to generate the prediction signatures}
@@ -29,8 +24,7 @@ Must match the table type used to generate the prediction signatures}
 \code{\linkS4class{musica_result}} object.}
 
 \item{algorithm}{Algorithm to use for prediction of exposures. One of
-\code{"lda"}, \code{"decompTumor2Sig"}, or
-\code{"deconstructSigs"}.}
+\code{"lda"} or \code{"decompTumor2Sig"}.}
 
 \item{signatures_to_use}{Which signatures in the \code{signature_res} result
 object to use. Default is to use all signatures.}
@@ -47,7 +41,7 @@ predicted from these signatures.
 Exposures for samples will be predicted using an existing set
 of signatures stored in a \code{\linkS4class{musica_result}} object. 
 Algorithms available for prediction include a modify version of \code{"lda"},
-\code{"decompTumor2Sig"}, and \code{"deconstructSigs"}.
+and \code{"decompTumor2Sig"}.
 }
 \examples{
 data(musica)
