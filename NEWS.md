@@ -1,3 +1,6 @@
+# musicatk 1.14.1 (2024-07-13)
+* Removed deconstructSigs
+
 # musicatk 1.14.0 (2024-05-03)
 * Updated version number to match Bioconductor 
 * Fixed some minor bugs and dependencies
