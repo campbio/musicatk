@@ -64,7 +64,7 @@
 #' data(res_annot)
 #' plot_exposures(res_annot, plot_type = "bar", annotation = "Tumor_Subtypes")
 #' @export
-plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
+plot_exposures <- function(musica, plot_type = c("bar", "box", "violin"),
                           proportional = FALSE,
                           group_by = "none",
                           color_by = c("signature", "annotation"),
@@ -77,11 +77,19 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
                           point_size = 2,
                           label_x_axis = FALSE,
                           legend = TRUE, 
+                          result_name = NULL,
+                          result_modality = NULL,
+                          result_model = NULL,
                           plotly = FALSE) {
   
   # dummy variables
   exposure <- NULL
   color <- NULL
+  
+  # Get result object from musica object
+  result <- musica_result(musica, name = result_name,
+                          modality = result_modality,
+                          model = result_model)
   
   group_by <- match.arg(group_by, c("none", "annotation", "signature"))
   color_by <- match.arg(color_by)
@@ -93,8 +101,8 @@ plot_exposures <- function(result, plot_type = c("bar", "box", "violin"),
          "then the 'annotation' parameter must be supplied.")
   }
   
-  # Retreive exposures. Need to eventually make an S4 getter
-  exposures <- result@exposures
+  # Retrieve exposures. Need to eventually make an S4 getter
+  exposures <- exposures(result)
   total <- colSums(exposures)
   
   y_label <- "counts"
