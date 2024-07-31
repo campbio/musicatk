@@ -267,6 +267,22 @@ setClass("musica_result_grid", representation(grid_params = "data.table",
                                        result_list = "list",
                                        grid_table = "data.table"))
 
+
+#' The Result Collection object that contains modality, input parameters, prior hyperparameters
+#' @slot modality a list contains model results for different modality
+#' @slot parameter a list contains input parameters
+#' @slot hyperparameter a list contains prior and tuning parameters
+#' @importFrom S4Vectors SimpleList
+#' @exportClass result_collection
+#' @export
+setClass("result_collection", slots = c(modality = "SimpleList", 
+                                        parameter = "list", 
+                                        hyperparameter= "list"),
+         prototype = list(Modality = SimpleList(), 
+                          input = list(), 
+                          hyperparameter = list())
+)
+
 get_grid_params <- function(result_grid) {
   return(result_grid@grid_params)
 }
