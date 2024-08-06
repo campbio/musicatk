@@ -63,7 +63,7 @@ plot_signatures <- function(musica,
                             result_modality = NULL,
                             result_model = NULL,
                             percent = TRUE, 
-                            plotly = FALSE,
+                            plotly = FALSE
 ) {
     
     # dummy variables

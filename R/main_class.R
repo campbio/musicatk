@@ -142,8 +142,8 @@ setClass("musica_result_grid", representation(grid_params = "data.table",
 setClass("result_collection", slots = c(modality = "SimpleList", 
                                         parameter = "list", 
                                         hyperparameter= "list"),
-         prototype = list(Modality = SimpleList(), 
-                          input = list(), 
+         prototype = list(modality = S4Vectors::SimpleList(), 
+                          parameter = list(), 
                           hyperparameter = list())
 )
 
