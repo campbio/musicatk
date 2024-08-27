@@ -9,6 +9,8 @@ predict_exposure(
   table_name,
   signature_res,
   algorithm = c("lda", "decompTumor2Sig"),
+  result_name = "result_exposure",
+  model_id = NULL,
   signatures_to_use = seq_len(ncol(signatures(signature_res))),
   verbose = FALSE
 )
@@ -21,10 +23,17 @@ Must match the table type used to generate the prediction signatures}
 
 \item{signature_res}{Signatures used to predict exposures for the samples
 \code{musica} object. Existing signatures need to stored in a
-\code{\linkS4class{musica_result}} object.}
+\code{\linkS4class{result_model}} object.}
 
 \item{algorithm}{Algorithm to use for prediction of exposures. One of
 \code{"lda"} or \code{"decompTumor2Sig"}.}
+
+\item{result_name}{Name for result_list entry to save the results to. Default
+\code{"result_exposure"}.}
+
+\item{model_id}{Identifier for the result. If \code{NULL}, will be
+automatically set to the algorithm and number of signatures. Default
+\code{NULL}.}
 
 \item{signatures_to_use}{Which signatures in the \code{signature_res} result
 object to use. Default is to use all signatures.}
@@ -33,13 +42,13 @@ object to use. Default is to use all signatures.}
 \code{algorithm = "lda"}. Default \code{FALSE}.}
 }
 \value{
-Returns a A \code{\linkS4class{musica_result}} object containing
-signatures given by the \code{signature_res} parameter and exposures
+Returns the \code{\linkS4class{musica}} object, updated to contain
+the signatures given by the \code{signature_res} parameter and exposures
 predicted from these signatures.
 }
 \description{
 Exposures for samples will be predicted using an existing set
-of signatures stored in a \code{\linkS4class{musica_result}} object. 
+of signatures stored in a \code{\linkS4class{result_model}} object. 
 Algorithms available for prediction include a modify version of \code{"lda"},
 and \code{"decompTumor2Sig"}.
 }
