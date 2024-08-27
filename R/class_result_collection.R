@@ -10,8 +10,8 @@
 setClass("result_collection", slots = c(modality = "SimpleList", 
                                         parameter = "list", 
                                         hyperparameter= "list"),
-         prototype = list(Modality = SimpleList(), 
-                          input = list(), 
+         prototype = list(modality = SimpleList(), 
+                          parameter = list(), 
                           hyperparameter = list())
 )
 
@@ -158,7 +158,7 @@ setMethod(
 #' data(result)
 #' hyperparameter(result)
 setGeneric(
-  name = "<-",
+  name = "hyperparameter<-",
   def = function(x, ..., value)
   {
     standardGeneric("hyperparameter<-")
