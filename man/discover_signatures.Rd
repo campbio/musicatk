@@ -9,6 +9,8 @@ discover_signatures(
   table_name,
   num_signatures,
   algorithm = "lda",
+  result_name = "result",
+  model_id = NULL,
   seed = 1,
   nstart = 10,
   par_cores = 1
@@ -26,6 +28,13 @@ to be the same name supplied to the table building functions such as
 \item{algorithm}{Method to use for mutational signature discovery. One of 
 \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.}
 
+\item{result_name}{Name for result_list entry to save the results to. Default
+\code{"result"}.}
+
+\item{model_id}{Identifier for the result. If \code{NULL}, will be
+automatically set to the algorithm and number of signatures. Default
+\code{NULL}.}
+
 \item{seed}{Seed to be used for the random number generators in the
 signature discovery algorithms. Default \code{1}.}
 
@@ -36,8 +45,8 @@ signature algorithms. Default \code{10}.}
 \code{method = "nmf"}. Default \code{1}.}
 }
 \value{
-Returns a A \code{\linkS4class{musica_result}} object containing
-signatures and exposures.
+Returns the \code{\linkS4class{musica}} object, updated to contain
+the new signatures and exposures results.
 }
 \description{
 Mutational signatures and exposures will be discovered using

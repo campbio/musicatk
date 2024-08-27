@@ -20,14 +20,19 @@ NULL
 #' @param num_signatures Number of signatures to discover.
 #' @param algorithm Method to use for mutational signature discovery. One of 
 #' \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.
+#' @param result_name Name for result_list entry to save the results to. Default
+#' \code{"result"}.
+#' @param model_id Identifier for the result. If \code{NULL}, will be
+#' automatically set to the algorithm and number of signatures. Default
+#' \code{NULL}.
 #' @param seed Seed to be used for the random number generators in the
 #' signature discovery algorithms. Default \code{1}.
 #' @param nstart Number of independent random starts used in the mutational
 #' signature algorithms. Default \code{10}.
 #' @param par_cores Number of parallel cores to use. Only used if
 #' \code{method = "nmf"}. Default \code{1}.
-#' @return Returns a A \code{\linkS4class{musica_result}} object containing
-#' signatures and exposures.
+#' @return Returns the \code{\linkS4class{musica}} object, updated to contain
+#' the new signatures and exposures results.
 #' @examples
 #' data(musica)
 #' g <- select_genome("19")
@@ -36,7 +41,8 @@ NULL
 #' num_signatures = 3, algorithm = "lda", seed = 12345, nstart = 1)
 #' @export
 discover_signatures <- function(musica, table_name, num_signatures,
-                                algorithm = "lda", seed = 1, nstart = 10,
+                                algorithm = "lda", result_name = "result",
+                                model_id = NULL, seed = 1, nstart = 10,
                                 par_cores = 1) {
   if (!methods::is(musica, "musica")) {
     stop("Input to discover_signatures must be a 'musica' object.")
@@ -48,6 +54,10 @@ discover_signatures <- function(musica, table_name, num_signatures,
   }
   present_samples <- which(colSums(counts_table) > 0)
   counts_table <- counts_table[, present_samples]
+  
+  if (is.null(model_id)){
+    model_id <- paste(algorithm, num_signatures, sep = "")
+  }
 
   if (algorithm  == "lda") {
     lda_counts_table <- t(counts_table)
@@ -68,10 +78,12 @@ discover_signatures <- function(musica, table_name, num_signatures,
     rownames(weights) <- paste0("Signature", seq_len(num_signatures))
     colnames(weights) <- rownames(lda_counts_table)
 
-    result <- methods::new("musica_result", signatures = lda_sigs,
-                               table_name = table_name,
-                               exposures = weights, algorithm = "LDA", 
-                           musica = musica)
+    result <- methods::new("result_model", signatures = lda_sigs,
+                           exposures = weights, num_signatures = num_signatures,
+                           other_parameters = S4Vectors::SimpleList(),
+                           credible_intervals = S4Vectors::SimpleList(),
+                           metrics = S4Vectors::SimpleList(), umap = matrix(),
+                           model_id = model_id, modality = table_name)
     exposures(result) <- sweep(exposures(result), 2, colSums(exposures(result)),
                               FUN = "/")
   } else if (algorithm  == "nmf") {
@@ -86,10 +98,12 @@ discover_signatures <- function(musica, table_name, num_signatures,
                                  sep = "")
     colnames(decomp@fit@W) <- paste("Signature", seq_len(num_signatures),
                                     sep = "")
-    result <- methods::new("musica_result", signatures = decomp@fit@W,
-                               table_name = table_name,
-                               exposures = decomp@fit@H, algorithm = "NMF",
-                               musica = musica)
+    result <- methods::new("result_model", signatures = decomp@fit@W,
+                           exposures = decomp@fit@H, num_signatures= num_signatures,
+                           other_parameters = S4Vectors::SimpleList(),
+                           credible_intervals = S4Vectors::SimpleList(),
+                           metrics = S4Vectors::SimpleList(), umap = matrix(),
+                           model_id = model_id, modality = table_name)
     signatures(result) <- sweep(signatures(result), 2, 
                                 colSums(signatures(result)), FUN = "/")
     exposures(result) <- sweep(exposures(result), 2, colSums(exposures(result)),
@@ -103,12 +117,30 @@ discover_signatures <- function(musica, table_name, num_signatures,
   matched <- match(colnames(counts_table), names(sample_counts))
   exposures(result) <- sweep(exposures(result), 2, sample_counts[matched],
                             FUN = "*")
-  return(result)
+  
+  # if this result name does not exist in result_list
+  if (is.null(result_list(musica)[[result_name]])){
+    
+    # make new list entry with the desired name and assign a new result_collection object
+    result_list(musica)[[result_name]] <- new("result_collection", modality = SimpleList(),
+                                          parameter = list(), hyperparameter = list())
+  }
+    
+  # if modality does not exist, create entry
+  if(is.null(get_modality(musica, result_name, table_name))){
+    result_list(musica)[[result_name]]@modality[[table_name]] <- list()
+  }
+  
+  # add result_model object in the list for the proper modality
+  result_list(musica)[[result_name]]@modality[[table_name]][[model_id]] <- result
+
+  return(musica)
+  
 }
 
 #' @title Prediction of exposures in new samples using pre-existing signatures
 #' @description Exposures for samples will be predicted using an existing set
-#' of signatures stored in a \code{\linkS4class{musica_result}} object. 
+#' of signatures stored in a \code{\linkS4class{result_model}} object. 
 #' Algorithms available for prediction include a modify version of \code{"lda"},
 #' and \code{"decompTumor2Sig"}.
 #' @param musica A \code{\linkS4class{musica}} object.
@@ -116,15 +148,20 @@ discover_signatures <- function(musica, table_name, num_signatures,
 #' Must match the table type used to generate the prediction signatures
 #' @param signature_res Signatures used to predict exposures for the samples
 #' \code{musica} object. Existing signatures need to stored in a
-#' \code{\linkS4class{musica_result}} object.
+#' \code{\linkS4class{result_model}} object.
 #' @param algorithm Algorithm to use for prediction of exposures. One of
 #' \code{"lda"} or \code{"decompTumor2Sig"}.
+#' @param result_name Name for result_list entry to save the results to. Default
+#' \code{"result_exposure"}.
+#' @param model_id Identifier for the result. If \code{NULL}, will be
+#' automatically set to the algorithm and number of signatures. Default
+#' \code{NULL}.
 #' @param signatures_to_use Which signatures in the \code{signature_res} result
 #' object to use. Default is to use all signatures.
 #' @param verbose If \code{TRUE}, progress will be printing. Only used if
 #' \code{algorithm = "lda"}. Default \code{FALSE}.
-#' @return Returns a A \code{\linkS4class{musica_result}} object containing
-#' signatures given by the \code{signature_res} parameter and exposures
+#' @return Returns the \code{\linkS4class{musica}} object, updated to contain
+#' the signatures given by the \code{signature_res} parameter and exposures
 #' predicted from these signatures.
 #' @examples
 #' data(musica)
@@ -141,6 +178,7 @@ discover_signatures <- function(musica, table_name, num_signatures,
 #' @export
 predict_exposure <- function(musica, table_name, signature_res, 
                              algorithm = c("lda", "decompTumor2Sig"),
+                             result_name = "result_exposure", model_id = NULL,
                              signatures_to_use = seq_len(ncol(
                                signatures(signature_res))), verbose = FALSE) {
   algorithm <- match.arg(algorithm)
@@ -163,16 +201,39 @@ predict_exposure <- function(musica, table_name, signature_res,
   } else {
     stop("Type must be lda or decomp")
   }
-  result <- methods::new("musica_result", signatures = signature, 
-                         exposures = exposures, algorithm = algorithm_name, 
-                         musica = musica, table_name = table_name)
+  
+  if (is.null(model_id)){
+    model_id <- paste(algorithm, length(signatures_to_use), sep = "")
+  }
+  
+  result <- methods::new("result_model", signatures = signature,
+                         exposures = exposures, num_signatures = length(signatures_to_use),
+                         model_id = model_id, modality = table_name)
 
   # Multiply Weights by sample counts
   sample_counts <- colSums(counts_table)
   matched <- match(colnames(counts_table), names(sample_counts))
   exposures(result) <- sweep(exposures(result), 2, sample_counts[matched], 
                              FUN = "*")
+  
+  # if this result name does not exist in result_list
+  if (is.null(result_list(musica)[[result_name]])){
+    
+    # make new list entry with the desired name and assign a new result_collection object
+    result_list(musica)[[result_name]] <- new("result_collection", modality = SimpleList(),
+                                              parameter = list(), hyperparameter = list())
+  }
+  
+  # if modality does not exist, create entry
+  if(is.null(get_modality(musica, result_name, table_name))){
+    result_list(musica)[[result_name]]@modality[[table_name]] <- list()
+  }
+  
+  # add result_model object in the list for the proper modality
+  result_list(musica)[[result_name]]@modality[[table_name]][[model_id]] <- result
+  
   return(result)
+  
 }
 
 lda_posterior <- function(counts_table, signature, max.iter = 100,
