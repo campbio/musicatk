@@ -100,9 +100,6 @@ discover_signatures <- function(musica, table_name, num_signatures,
                                     sep = "")
     result <- methods::new("result_model", signatures = decomp@fit@W,
                            exposures = decomp@fit@H, num_signatures= num_signatures,
-                           other_parameters = S4Vectors::SimpleList(),
-                           credible_intervals = S4Vectors::SimpleList(),
-                           metrics = S4Vectors::SimpleList(), umap = matrix(),
                            model_id = model_id, modality = table_name)
     signatures(result) <- sweep(signatures(result), 2, 
                                 colSums(signatures(result)), FUN = "/")
@@ -122,17 +119,17 @@ discover_signatures <- function(musica, table_name, num_signatures,
   if (is.null(result_list(musica)[[result_name]])){
     
     # make new list entry with the desired name and assign a new result_collection object
-    result_list(musica)[[result_name]] <- new("result_collection", modality = SimpleList(),
+    musica@result_list[[result_name]] <- new("result_collection", modality = SimpleList(),
                                           parameter = list(), hyperparameter = list())
   }
     
-  # if modality does not exist, create entry
+  # if desired modality does not exist, create entry
   if(is.null(get_modality(musica, result_name, table_name))){
-    result_list(musica)[[result_name]]@modality[[table_name]] <- list()
+    musica@result_list[[result_name]]@modality[[table_name]] <- list()
   }
   
   # add result_model object in the list for the proper modality
-  result_list(musica)[[result_name]]@modality[[table_name]][[model_id]] <- result
+  musica@result_list[[result_name]]@modality[[table_name]][[model_id]] <- result
 
   return(musica)
   
@@ -220,17 +217,17 @@ predict_exposure <- function(musica, table_name, signature_res,
   if (is.null(result_list(musica)[[result_name]])){
     
     # make new list entry with the desired name and assign a new result_collection object
-    result_list(musica)[[result_name]] <- new("result_collection", modality = SimpleList(),
+    musica@result_list[[result_name]] <- new("result_collection", modality = SimpleList(),
                                               parameter = list(), hyperparameter = list())
   }
   
   # if modality does not exist, create entry
   if(is.null(get_modality(musica, result_name, table_name))){
-    result_list(musica)[[result_name]]@modality[[table_name]] <- list()
+    musica@result_list[[result_name]]@modality[[table_name]] <- list()
   }
   
   # add result_model object in the list for the proper modality
-  result_list(musica)[[result_name]]@modality[[table_name]][[model_id]] <- result
+  musica@result_list[[result_name]]@modality[[table_name]][[model_id]] <- result
   
   return(result)
   
