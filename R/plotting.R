@@ -177,8 +177,7 @@ plot_signatures <- function(result, plotly = FALSE,
     plot_dat$df$exposure <- plot_dat$df$exposure * 100
     y_axis_label = "Percent of Mutations"
     y_axis_spacing = c("  ", "  ")
-  }
-  else{
+  }else{
     y_axis_label = "Mutation Counts"
     max_num_digits <- floor(log10(max(plot_dat$df$exposure))) + 1
     
@@ -198,7 +197,7 @@ plot_signatures <- function(result, plotly = FALSE,
     ggplot2::xlab("Motifs") + ggplot2::ylab(y_axis_label) +
     ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1)) +
     ggplot2::scale_fill_manual(values = color_mapping) +
-    ggplot2::scale_x_discrete(labels = annot$context) +
+    ggplot2::scale_x_discrete(limits = plot_dat$df$motif, labels = plot_dat$df$context) +
     ggplot2::scale_y_continuous(expand = expansion(mult = c(0, 0.2)), 
                                 limits = c(0, NA), n.breaks = 5) +
     ggplot2::geom_text(data = sig_name_labels, 
@@ -235,16 +234,26 @@ plot_signatures <- function(result, plotly = FALSE,
                                 limits = c(0, NA), breaks = c(0, 0.01), 
                                 labels = y_axis_spacing, n.breaks = 4) +
     ggplot2::ylab("") +
-    ggplot2::geom_rect(data = motif_label_locations, 
+    ggplot2::geom_rect(data = motif_label_locations %>% arrange(x), 
                        aes(xmin = x, xmax = xend, ymin = max(y), ymax = max(yend)), 
-                       fill = color_mapping, color = "black", 
-                       linewidth = 0.25, inherit.aes = FALSE) +
-    ggplot2::geom_text(data=motif_label_locations, 
-                       aes(x=x+(xend-x)/2, y=y+(yend-y)/2, 
-                           label = stringr::str_to_title(mutation_color)), 
-                       fontface = "bold", size = 4, 
-                       color = label_colors) -> p2 
+                       fill = factor(color_mapping, levels = color_mapping), color = "black", 
+                       linewidth = 0.25, inherit.aes = FALSE) -> p2 
   
+  # adjust motif label direction if indel signature
+  if (table_name %in% c("IND83", "INDEL83", "INDEL", "IND", "indel", 
+                        "Indel")){
+    p2 <- p2 + ggplot2::geom_text(data=motif_label_locations, 
+                                  aes(x=x+(xend-x)/2, y=y+(yend-y)/2, 
+                                      label = stringr::str_to_title(mutation_color)), 
+                                  fontface = "bold", size = 4, 
+                                  color = label_colors, angle = 90)
+  }else{
+    p2 <- p2 + ggplot2::geom_text(data=motif_label_locations, 
+                                  aes(x=x+(xend-x)/2, y=y+(yend-y)/2, 
+                                      label = stringr::str_to_title(mutation_color)), 
+                                  fontface = "bold", size = 4, 
+                                  color = label_colors)
+  }
   
   # Adjust theme
   p <- .gg_default_theme(p, text_size = text_size) +
@@ -276,8 +285,15 @@ plot_signatures <- function(result, plotly = FALSE,
                      axis.title.y = element_blank())
   }
   
+  # adjust height of motif lables if indel signature
+  if (table_name %in% c("IND83", "INDEL83", "INDEL", "IND", "indel", 
+                        "Indel")){
+    height <- 5
+  }else{
+    height <- 1
+  }
   
-  figure <- ggpubr::ggarrange(p2, p, ncol = 1, nrow = 2, heights = c(1,15))
+  figure <- ggpubr::ggarrange(p2, p, ncol = 1, nrow = 2, heights = c(height,15))
   
   if (isTRUE(plotly)) {
     figure <- plotly::ggplotly(p)
