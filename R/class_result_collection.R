@@ -187,5 +187,39 @@ setReplaceMethod(
 ) 
 
 
+#' @title Retrieve model from a result collection object
+#' @description 
+#' @param x 
+#' @rdname get_model
+#' @return
+#' @export
+setGeneric(
+  name = "get_model",
+  def = function(x, ...)
+  {
+    standardGeneric("get_model")
+  }
+)
+
+#' @rdname get_model
+setMethod(
+  f = "get_model",
+  signature = "musica",
+  definition = function(x, result, modality, model_name) {
+    return(x@result_list[[result]]@modality[[modality]][[model_name]])
+  }
+)
+
+#' @rdname get_model
+setMethod(
+  f = "get_model",
+  signature = "result_collection",
+  definition = function(x, modality, model_name) {
+    return(x@modality[[modality]][[model_name]])
+  }
+)
+
+
+
 
 
