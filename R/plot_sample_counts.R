@@ -57,11 +57,10 @@ plot_sample_counts <- function(musica, sample_names, table_name = NULL,
     }
     sample_counts <- tab[, ix, drop = FALSE]
     
-    result <- methods::new("musica_result",
+    result <- methods::new("result_model",
                            signatures = sample_counts, exposures = matrix(),
-                           algorithm = "sample", musica = musica,
-                           table_name = table_name)
-    g <- plot_signatures(result, percent = FALSE, text_size = text_size,
+                           modality = table_name)
+    g <- .plot_result_model_signatures(result, musica, percent = FALSE, text_size = text_size,
                          show_x_labels = show_x_labels, show_y_labels = show_y_labels,
                          same_scale = same_scale, annotation = annotation)
     return(g)
