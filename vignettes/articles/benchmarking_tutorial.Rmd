@@ -1,26 +1,34 @@
 ---
 title: "Benchmarking signaure predictions against a ground truth"
-date: "Compiled `r format(Sys.time(), '%B %d, %Y')`"
 author: "Natasha Gurevich, Joshua Campbell"
+date: "Compiled `r format(Sys.time(), '%B %d, %Y')`"
+output: word_document
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(warning = FALSE, fig.align='center')
 ```
 # Introduction
-write something here.....
 
-```{r setup}
+There are many different tools available to perform mutational signatures analysis. In order to compare their performances, or to benchmark a new tool against existing methods, there needs to be a standard way to evaluate how accurate the results are. To evaluate result accuracy, we must have the ground truth signatures and exposures. Then, the predicted signatures and exposures can be compared to the truth, and the differences can be quantified. 
+
+Comparing prediction to ground truth necessitates mapping predicted signatures to true signatures. In order to achieve a one-to-one matching of predicted and true signatures, several artifacts need to be accounted for. This includes duplicate signatures, where multiple predicted signatures have similarity to the same true signature, and composite signatures, where one predicted signature has similarity to multiple true signatures. Missing signatures (true signatures that were not recovered in the prediction) and spurious signatures (predicted signatures that do not correlate to any true signature) must also be noted.
+
+In the benchmarking procedure below, these artifacts are addressed and plots and summary tables are generated to qualitatively and quantitatively assess how accurate the predicted results are compared to the ground truth. The process can be run multiple times for different predictions, and the summary tables will aggregate the results from the multiple runs, allowing for easy comparison between different tools or methods.
+
+```{r load package}
+
 library(musicatk)
+
 ```
 
 # Step 1. Initializing the Benchmarking Structure
 
-Results from all analyses related to the same ground truth signatures and loadings can be stored in one `full_benchmark` object. Benchmarking can be performed on multiple prediction instances and stored in one place, allowing for easy comparison between discovery methods or discovery parameters. 
+Results from all analyses related to the same ground truth signatures and exposures can be stored in one `full_benchmark` object. Benchmarking can be performed on multiple prediction instances and stored in one place, allowing for easy comparison between discovery methods or discovery parameters. 
 
-The `full_benchmark` object is initialized using the ground truth signatures and loadings, both of which must be a matrix. The signatures matrix should contain signatures as columns mutation types as rows. Each cell details that mutation type's percent contribution to the given signature. The loadings matrix should contain signatures as columns and samples as rows. Each cell details the number of mutations in the sample that are attributed to the given signature. 
+The `full_benchmark` object is initialized using the ground truth signatures and exposures, both of which must be a matrix. The signatures matrix should contain signatures as columns and mutation types as rows. Each cell details that mutation type's percent contribution to the given signature. The exposures matrix should contain signatures as columns and samples as rows. Each cell details the number of mutations in the sample that are attributed to the given signature. 
 
-The example below prepares a `full_benchmark` object using a snythetic breast cancer dataset provided in the package.
+The example below prepares a `full_benchmark` object using a synthetic breast cancer dataset provided in the package.
 
 ```{r prepare ground truth}
 
@@ -29,9 +37,11 @@ true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18", "SBS26
 true_signatures <- signatures(cosmic_v2_sigs)[,true_sigs]
 
 # load true exposures
+data("synthetic_breast_true_exposures")
 true_exposures <- synthetic_breast_true_exposures
 
 # load count table
+data("synthetic_breast_counts")
 count_table <- synthetic_breast_counts
 
 ```
@@ -45,28 +55,28 @@ full_benchmark <- create_benchmark(true_signatures, true_exposures, count_table)
 
 # Step 2. Prepare prediction to benchmark
 
-In order to benchmark the results of signature discovery, the prediction results must be stored in a  `musica_result` object. 
+In order to benchmark the results of signature discovery, the prediction results must be stored in a `musica_result` object. 
 
 ## If signature discovery has already been completed externally
 
-If signature discovery has already been performed and therefore predicted signatures and predicted loadings already exist, this information must be stored in a `musica_result` object using the `create_musica_result` function. Example data is used here.
+If signature discovery has already been performed and therefore predicted signatures and predicted exposures already exist, this information must be stored in a `musica_result` object using the `create_musica_result` function. Example data is used here.
 
 ```{r create musica result object}
 
 # read in predicted signatures
 predicted_sigs <- example_predicted_sigs
 
-# read in predicted loadings
-predicted_loadings <- example_predicted_exp
+# read in predicted exposures
+predicted_exposures <- example_predicted_exp
 
 # store in a musica result object
-res1 <- create_musica_result(predicted_sigs, predicted_loadings, count_table)
+res1 <- create_musica_result(predicted_sigs, predicted_exposures, count_table)
 
 ```
 
 ## If signature discovery has not yet been performed
 
-If signature discovery has not yet been performed, it cane be done via the NMF or LDA algorithms within the musicatk package. Mutation data can be read in and stored in a `musica` object either from a file of variants or from a 
+Alternatively, if signature discovery has not yet been performed, it cane be done via the NMF or LDA algorithms within the musicatk package. Mutation data can be read in and stored in a `musica` object either from a file of variants or from a 
 count table using the standard procedure.
 
 In this example, mutation data is stored in a count table, which is used to create a `musica` object. Signature 
@@ -97,9 +107,9 @@ benchmark(full_benchmark, res2)
 
 If a new `full_benchmark` object is desired, the `make_copy` argument can be used to return a new object, leaving the inputted one unchanged. Below, the res1 prediction will be benchmarked and the result is saved to a new object. For better readability, all plots are suppressed.
 
-```{r perform benchmarking}
+```{r perform benchmarking with copy}
 
-new_benchmark <- benchmark(full_benchmark, res1, plot = FALSE)
+new_benchmark <- benchmark(full_benchmark, res1, make_copy = TRUE, plot = FALSE)
 
 ```
 
@@ -111,7 +121,7 @@ Any element of the `full_benchmark` or `single_benchmark` objects can be easily 
 
 Summary tables can easily be extracted from a `full_benchmark` object to visualize the results of the full analysis.
 
-```{r view summary}
+```{r view method view summary}
 
 method_view_summary(full_benchmark)
 
@@ -134,15 +144,15 @@ res2_benchmark <- benchmark_get_entry(full_benchmark, "res2")
 
 ```
 
-Once a single benchmark object has been extracted, the three different predictions within it can be extracted. These include (1) the prediction (predicted signatures and exposures) before any benchmarking adjustments have been made, (2) the prediction after duplicate signatures have been adjusted, and (3) the final prediction, after both duplicate and composite signatures have been adjusted.
+Once a single benchmark object has been extracted, the three different predictions within it can be extracted. These include (1) the initial prediction, before any benchmarking adjustments have been made, (2) the intermediate prediction, after duplicate signatures have been adjusted, and (3) the final prediction, after both duplicate and composite signatures have been adjusted.
 
 ```{r extract a prediction}
 
-# extract the res2 prediction before becnhamrking adjustments have been made
+# extract the res2 prediction before benchamrking adjustments have been made
 res2_initial_prediction <- benchmark_get_prediction(res2_benchmark, "initial")
 
 # extract the res2 prediction after duplicate signatures have been corrected, but before composites have been corrected
-res2_initial_prediction <- benchmark_get_prediction(res2_benchmark, "intermediate")
+res2_intermediate_prediction <- benchmark_get_prediction(res2_benchmark, "intermediate")
 
 # extract the res2 prediction at the end of its benchmarking process
 res2_final_prediction <- benchmark_get_prediction(res2_benchmark, "final")
@@ -185,7 +195,7 @@ benchmark_plot_exposures(full_benchmark, "res2", "Initial")
 
 ```
 
-To recreate the before/after plots comparing predicted and true exposures before/after duplicate or composite signatures are corrected, the `benchmark_plot_duplicate_exposures` and `benchmark_plot_composite_exposures` functions can be used, respectively.
+To recreate the plots comparing predicted and true exposures before/after duplicate or composite signatures are corrected, the `benchmark_plot_duplicate_exposures` and `benchmark_plot_composite_exposures` functions can be used, respectively. There are no duplicate or composite signatures for this example, so no plots are produced here.
 
 ```{r plot duplicate/composite exposures before/after adjustment}
 
