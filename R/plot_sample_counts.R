@@ -12,7 +12,7 @@ NULL
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param sample_names Names of the samples to plot.
-#' @param table_name Name of table used for plotting counts. If \code{NULL},
+#' @param modality Name of table used for plotting counts. If \code{NULL},
 #' then the first table in the \code{\linkS4class{musica}} object will be used.
 #' Default \code{NULL}.
 #' @param text_size Size of axis text. Default \code{10}.
@@ -32,25 +32,25 @@ NULL
 #' plot_sample_counts(musica_sbs96, sample_names = 
 #' sample_names(musica_sbs96)[1])
 #' @export
-plot_sample_counts <- function(musica, sample_names, table_name = NULL, 
+plot_sample_counts <- function(musica, sample_names, modality = NULL, 
                                text_size = 10,
                                show_x_labels = TRUE, show_y_labels = TRUE,
                                same_scale = TRUE, annotation = NULL) {
     
-    if (is.null(table_name)) {
-        table_name <- names(tables(musica))[1]
+    if (is.null(modality)) {
+        modality <- names(tables(musica))[1]
     }  
     
     # Extract counts for specific samples
-    tab <- .extract_count_table(musica, table_name)
+    tab <- .extract_count_table(musica, modality)
     ix <- match(sample_names, colnames(tab))
     if (all(is.na(ix))) {
         stop("The values in 'sample_names' did not match any sample IDs in table '",
-             table_name, "'.")
+             modality, "'.")
     }
     else if (anyNA(ix)) {
         warning("The following samples in 'sample_names' were not found  in ",
-                "table '", table_name, 
+                "table '", modality, 
                 "' and will ", "be exlcuded from the plot: ",
                 paste(sample_names[is.na(ix)], collapse = ", "))
         ix <- ix[!is.na(ix)]
@@ -59,7 +59,7 @@ plot_sample_counts <- function(musica, sample_names, table_name = NULL,
     
     result <- methods::new("result_model",
                            signatures = sample_counts, exposures = matrix(),
-                           modality = table_name)
+                           modality = modality)
     g <- .plot_result_model_signatures(result, musica, percent = FALSE, text_size = text_size,
                          show_x_labels = show_x_labels, show_y_labels = show_y_labels,
                          same_scale = same_scale, annotation = annotation)
