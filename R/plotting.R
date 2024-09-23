@@ -175,11 +175,13 @@ plot_signatures <- function(result, plotly = FALSE,
   # Convert exposure probabilities to percentages
   if (percent == TRUE){
     plot_dat$df$exposure <- plot_dat$df$exposure * 100
+    max_num_digits <- floor(log10(max(plot_dat$df$exposure) * 1.2)) + 1
     y_axis_label = "Percent of Mutations"
-    y_axis_spacing = c("  ", "  ")
+    y_axis_spacing = rep(strrep(" ", max_num_digits), 2)
+    
   }else{
     y_axis_label = "Mutation Counts"
-    max_num_digits <- floor(log10(max(plot_dat$df$exposure))) + 1
+    max_num_digits <- floor(log10(max(plot_dat$df$exposure) * 1.2)) + 1
     
     if (max(plot_dat$df$exposure) < 1){
       max_num_digits <- 2
@@ -187,6 +189,10 @@ plot_signatures <- function(result, plotly = FALSE,
     }
     
     y_axis_spacing = rep(strrep("  ", max_num_digits), 2)
+  }
+  
+  if (is.null(plot_dat$df$context)){
+    plot_dat$df$context <- annot$context
   }
   
   # Plot signatures
