@@ -37,9 +37,9 @@ plot_sample_counts <- function(musica, sample_names, modality = NULL,
                                show_x_labels = TRUE, show_y_labels = TRUE,
                                same_scale = TRUE, annotation = NULL) {
     
-    if (is.null(modality)) {
-        modality <- names(tables(musica))[1]
-    }  
+    if (is.null(modality)){
+      modality <- names(get_result_list_entry(musica, result_name)@modality)[1]
+    }
     
     # Extract counts for specific samples
     tab <- .extract_count_table(musica, modality)

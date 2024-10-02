@@ -41,7 +41,14 @@ plot_sample_reconstruction_error <- function(musica, result_name = NULL,
   
   # check if valid result_name
   if (!(result_name %in% names(result_list(musica)))){
-    stop(result_name, " does not exist in the result_list.")
+    stop(result_name, " does not exist in the result_list. Current names are ",
+         paste(names(result_list(musica)), collapse = ", "))
+  }
+  
+  # if no modality supplied, use first entry
+  if (is.null(modality)){
+    modality <- names(get_result_list_entry(musica, result_name)@modality)[1]
+    note("Using modality:", modality)
   }
   
   # check if valid modality
@@ -51,7 +58,8 @@ plot_sample_reconstruction_error <- function(musica, result_name = NULL,
   
   # check if valid model_name
   if (!(model_name %in% names(get_modality(musica, result_name, result_modality)))){
-    stop(model_name, " is not a valid model_name.")
+    stop(model_name, " is not a valid model_name. Current model names are ",
+         paste(names(get_modality(musica, result_name, result_modality)), collapse = ", "))
   }
   
   signatures <- .extract_count_table(musica, result_modality)[, sample, 
