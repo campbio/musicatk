@@ -6,11 +6,14 @@
 #' @importFrom dplyr rename
 #' @title Compare exposures of annotated samples
 #' @description \code{exposure_differential_analysis} is used to run
-#' differential analysis on the signature exposures of annotated samples within
-#' the \code{\linkS4class{musica_result}} object.
-#' @param musica_result A \code{\linkS4class{musica_result}} object
+#' differential analysis on the signature exposures of annotated samples.
+#' @param musica A \code{\linkS4class{musica}} object.
+#' @param model_name The name of the model.
 #' @param annotation Column in the sample_annotations table of the
-#' \code{\linkS4class{musica_result}} object
+#' \code{\linkS4class{musica}} object
+#' @param modality The modality. Must be "SBS96", "DBS78", or "IND83". Default
+#' \code{"SBS96"}.
+#' @param result_name Name of the result list entry. Default \code{"result"}.
 #' @param method Any method in \code{c("wilcox", "kruskal", "glm.nb")}
 #' used to perform differential analysis on signature exposures
 #' @param group1 character vector used in the Wilcox test. Elements in
@@ -24,12 +27,32 @@
 #' on the chosen method
 #' @examples
 #' data("res_annot")
-#' exposure_differential_analysis(res_annot, "Tumor_Subtypes", method="wilcox")
+#' exposure_differential_analysis(res_annot, model_name = "res_annot",
+#' annotation = "Tumor_Subtypes", method="wilcox")
 #' @export
-exposure_differential_analysis <- function(musica_result, annotation,
-                                  method = c("wilcox", "kruskal", "glm.nb"),
-                                  group1 = NULL, group2 = NULL,
-                                  ...) {
+exposure_differential_analysis <- function(musica, model_name, annotation,
+                                           modality = "SBS96", 
+                                           result_name = "result", 
+                                           method = c("wilcox", "kruskal", "glm.nb"),
+                                           group1 = NULL, group2 = NULL, ...) {
+  
+  # check if valid result_name
+  if (!(result_name %in% names(result_list(musica)))){
+    stop(result_name, " does not exist in the result_list. Current names are: ",
+         paste(names(result_list(musica)), collapse = ", "))
+  }
+  
+  # check if valid modality
+  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
+    stop(modality, " is not a valid modality. Current modalities are: ", 
+         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  }
+  
+  # check if valid model_name
+  if (!(model_name %in% names(get_modality(musica, result_name, modality)))){
+    stop(model_name, " is not a valid model_name. Current model names are: ",
+         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  }
   
   # dummy variables
   statistic <- NULL
@@ -37,15 +60,13 @@ exposure_differential_analysis <- function(musica_result, annotation,
   pvalue <- NULL
   
   method <- match.arg(method)
-  if (!methods::is(musica_result, "musica_result")) {
-    stop("Input to exposure_differential_analysis must be a musica_result
-         object.")
-  }
-  annotations <- samp_annot(musica_result)[[annotation]]
+  model <- get_model(musica, result_name, modality, model_name)
+
+  annotations <- samp_annot(musica)[[annotation]]
   if (is.null(annotations)) {
-    stop(annotation, " does not exist in musica_result.")
+    stop(annotation, " does not exist.")
   }
-  exposures <- exposures(musica_result)
+  exposures <- exposures(model)
   groups <- unique(annotations) %>% sort()
   annotations <- factor(annotations)
   if (length(groups) < 2) {
@@ -83,7 +104,7 @@ exposure_differential_analysis <- function(musica_result, annotation,
       group1 <- groups[1]
       group2 <- groups[2]
     }
-    n_sigs <- dim(signatures(musica_result))[2]
+    n_sigs <- dim(signatures(model))[2]
     header <- data.frame(x = group1, y = group2) %>%
       dplyr::mutate(p = paste0(.data$x, "-", .data$y, "(Pr(>|z|))"),
                     adj = paste0(.data$x, "-", .data$y, "(fdr)"))
@@ -148,6 +169,7 @@ exposure_differential_analysis <- function(musica_result, annotation,
   return(diff.out)
 }
 
+
 #' @title Compare exposures of annotated samples
 #' @description \code{plot_differential_analysis} is used to plot
 #' differential analysis created by \code{exposure_differential_analysis}.
@@ -157,8 +179,8 @@ exposure_differential_analysis <- function(musica_result, annotation,
 #' @return Generates a ggplot object
 #' @examples
 #' data("res_annot")
-#' analysis <- exposure_differential_analysis(res_annot, "Tumor_Subtypes", 
-#' method="wilcox")
+#' analysis <- exposure_differential_analysis(res_annot, model_name = "res_annot",
+#' annotation = "Tumor_Subtypes", method="wilcox")
 #' plot_differential_analysis(analysis, "glm", 2)
 #' @export
 plot_differential_analysis <- function(analysis, analysis_type, samp_num) {

@@ -649,22 +649,24 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' package = "musicatk")
 #' variants <- extract_variants_from_maf_file(maf_file)
 #' g <- select_genome("38")
-#' musica <- create_musica(x = variants, genome = g)
+#' musica <- create_musica_from_variants(x = variants, genome = g)
 #' @export
-create_musica <- function(x, genome,
-                         check_ref_chromosomes = TRUE,
-                         check_ref_bases = TRUE,
-                         chromosome_col = "chr",
-                         start_col = "start",
-                         end_col = "end",
-                         ref_col = "ref",
-                         alt_col = "alt",
-                         sample_col = "sample",
-                         extra_fields = NULL,
-                         standardize_indels = TRUE,
-                         convert_dbs = TRUE,
-                         verbose = TRUE) {
-
+create_musica_from_variants <- function(x, genome,
+                                        check_ref_chromosomes = TRUE,
+                                        check_ref_bases = TRUE,
+                                        chromosome_col = "chr",
+                                        start_col = "start",
+                                        end_col = "end",
+                                        ref_col = "ref",
+                                        alt_col = "alt",
+                                        sample_col = "sample",
+                                        extra_fields = NULL,
+                                        standardize_indels = TRUE,
+                                        convert_dbs = TRUE,
+                                        verbose = TRUE) {
+  
+  
+  
   used_fields <- c(.required_musica_headers(), extra_fields)
   if (canCoerce(x, "data.table")) {
     dt <- data.table::as.data.table(x)
@@ -677,22 +679,22 @@ create_musica <- function(x, genome,
     stop("'genome' needs to be a 'BSgenome' object containing the genome ",
          "reference that was used when calling the variants.")
   }
-
+  
   # Check for necessary columns and change column names to stardard object
   dt <- .check_headers(dt,
-                 chromosome = chromosome_col,
-                 start = start_col,
-                 end = end_col,
-                 ref = ref_col,
-                 alt = alt_col,
-                 sample = sample_col,
-                 update_fields = TRUE)
-
+                       chromosome = chromosome_col,
+                       start = start_col,
+                       end = end_col,
+                       ref = ref_col,
+                       alt = alt_col,
+                       sample = sample_col,
+                       update_fields = TRUE)
+  
   # Subset to necessary columns and add variant type
   all_fields <- c(.required_musica_headers(), extra_fields)
   dt <- dt[, all_fields, with = FALSE]
   dt <- add_variant_type(dt)
-
+  
   # Some non-variants are included (e.g. T>T). These will be removed
   non_variant <- which(dt$ref == dt$alt)
   if (length(non_variant) > 0) {
@@ -700,7 +702,7 @@ create_musica <- function(x, genome,
             "alternate allele. These variants were excluded.")
     dt <- dt[-non_variant, ]
   }
-
+  
   if (isTRUE(check_ref_chromosomes)) {
     # Check for genome style and attempt to convert variants to reference
     # genome if they don't match
@@ -710,7 +712,7 @@ create_musica <- function(x, genome,
     }
     dt <- .check_variant_genome(dt = dt, genome = genome)
   }
-
+  
   if (isTRUE(check_ref_bases)) {
     if (isTRUE(verbose)) {
       message("Checking that the reference bases in the 'variant' object ",
@@ -718,7 +720,7 @@ create_musica <- function(x, genome,
     }
     .check_variant_ref_in_genome(dt = dt, genome = genome)
   }
-
+  
   if (isTRUE(standardize_indels)) {
     if (isTRUE(verbose)) {
       message("Standardizing INS/DEL style")
@@ -789,8 +791,162 @@ create_musica <- function(x, genome,
   dt$sample <- factor(dt$sample, levels = s)
   
   musica <- new("musica", variants = dt, sample_annotations = annot)
+  
   return(musica)
 }
+
+#' Creates a musica object from a mutation count table
+#'
+#' This function creates a \linkS4class{musica} object from a mutation count
+#' table or matrix. The \linkS4class{musica} class stores variants information,
+#' variant-level annotations, sample-level annotations, and count tables and
+#' is used as input to the mutational signature discovery and prediction
+#' algorithms.
+#' 
+#' @param x A data.table, matrix, or data.frame that contains counts of mutation
+#' types for each sample, with samples as columns.
+#' @param variant_class Mutations are SBS, DBS, or Indel.
+#' @return Returns a musica object
+#' @examples
+#' data(musica)
+#' count_table <- get_count_table(extract_count_tables(musica)$SBS96)
+#' musica <- create_musica_from_counts(count_table, "SBS96")
+#' @export
+create_musica_from_counts <- function(x, variant_class) {
+  
+  if (canCoerce(x, "matrix")) {
+    x <- as.matrix(x)
+  } else {
+    stop("'count_table' needs to be an object which can be coerced to a matrix. ")
+  }
+  
+  # create empty musica object
+  musica <- new("musica")
+  
+  if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
+    
+    if (nrow(x) != 96){
+      stop("SBS96 'count_table' must have 96 rows.")
+    }
+    
+    # create SBS mutation type list
+    forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
+    b1 <- rep(rep(c("A", "C", "G", "T"), each = 4), 6)
+    b2 <- rep(c("C", "T"), each = 48)
+    b3 <- rep(c("A", "C", "G", "T"), 24)
+    mut_trinuc <- apply(cbind(b1, b2, b3), 1, paste, collapse = "")
+    mut <- rep(forward_change, each = 16)
+    annotation <- data.frame("motif" = paste0(mut, "_", mut_trinuc),
+                             "mutation" = mut,
+                             "context" = mut_trinuc)
+    rownames(annotation) <- annotation$motif
+    
+    # color mapping for mutation types
+    color_mapping <- c("C>A" = "#5ABCEBFF",
+                       "C>G" = "#050708FF",
+                       "C>T" = "#D33C32FF",
+                       "T>A" = "#CBCACBFF",
+                       "T>C" = "#ABCD72FF",
+                       "T>G" = "#E7C9C6FF")
+    
+    # update count table rownames with SBS96 standard naming
+    rownames(x) <- annotation$motif
+    
+    # create count table object
+    tab <- new("count_table", name = "SBS96", count_table = x,
+               annotation = annotation, features = as.data.frame(annotation$motif[1]),
+               type = S4Vectors::Rle("SBS"), color_variable = "mutation",
+               color_mapping = color_mapping, description = paste0("Single Base Substitution table with",
+                                                                   " one base upstream and downstream"))
+    
+    # add count table to musica object
+    tables(musica)[["SBS96"]] <- tab
+    
+  } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
+    if (nrow(x) != 78){
+      stop("DBS78 'count_table' must have 78 rows.")
+    }
+    
+    full_motif <- c(paste0("AC>NN", "_", c("CA", "CG", "CT", "GA", "GG", "GT",
+                                           "TA", "TG", "TT")),
+                    paste0("AT>NN", "_", c("CA", "CC", "CG", "GA", "GC", "TA")),
+                    paste0("CC>NN", "_", c("AA", "AG", "AT", "GA", "GG", "GT", "TA",
+                                           "TG", "TT")),
+                    paste0("CG>NN", "_", c("AT", "GC", "GT", "TA", "TC", "TT")),
+                    paste0("CT>NN", "_", c("AA", "AC", "AG", "GA", "GC", "GG", "TA",
+                                           "TC", "TG")),
+                    paste0("GC>NN", "_", c("AA", "AG", "AT", "CA", "CG", "TA")),
+                    paste0("TA>NN", "_", c("AT", "CG", "CT", "GC", "GG", "GT")),
+                    paste0("TC>NN", "_", c("AA", "AG", "AT", "CA", "CG", "CT", "GA",
+                                           "GG", "GT")),
+                    paste0("TG>NN", "_", c("AA", "AC", "AT", "CA", "CC", "CT", "GA",
+                                           "GC", "GT")),
+                    paste0("TT>NN", "_", c("AA", "AC", "AG", "CA", "CC", "CG", "GA",
+                                           "GC", "GG")))
+    
+    annotation <- data.frame(motif = full_motif, mutation =
+                               unlist(lapply(strsplit(full_motif, "_"), "[[", 1)),
+                             context = unlist(lapply(strsplit(full_motif, "_"),
+                                                     "[[", 2)),
+                             row.names = full_motif)
+    
+    color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
+    names(color_mapping) <- unique(annotation$mutation)
+    
+    rownames(x) <- annotation$motif
+    
+    # create count table object
+    tab <- new("count_table", name = "DBS78", count_table = x,
+               annotation = annotation, features = as.data.frame(annotation$motif[1]),
+               type = S4Vectors::Rle("DBS"), color_variable = "mutation",
+               color_mapping = color_mapping, description = paste0("Standard count table for ",
+                                                                   "double base substitutions", 
+                                                                   "using COSMIC v3 schema"))
+    
+    # add count table to musica object
+    tables(musica)[["DBS78"]] <- tab
+    
+    
+  } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
+                                  "ID")) {
+    stop("Not yet supported.")
+  } else {
+    stop("Only SBS and DBS classes are supported")
+  }
+  
+  return(musica)
+}
+
+
+
+#' Load an external model into a result_model object
+#' 
+#' This function creates a \linkS4class{result_model} object from signatures,
+#' exposures, and a mutation count table.
+#'
+#' @param signatures A matrix or data.frame of signatures by mutational motifs
+#' @param exposures A matrix or data.frame of samples by signature weights
+#' @param model_id Name of model
+#' @param modality Modality of the model
+#'
+#' @return A \linkS4class{result_model} object
+#' @examples
+#' signatures <- signatures(res, "result", "SBS96", "res")
+#' exposures <- exposures(res, "result", "SBS96", "res")
+#' model <- create_result_model(signatures, exposures, "example_model", "SBS96")
+#' @export
+create_result_model <- function(signatures, exposures, model_id, modality){
+  
+  # create musica result object with given exposures and signatures
+  model_result <- new("result_model", signatures = as.matrix(signatures), 
+                      exposures = as.matrix(exposures), 
+                      num_signatures = dim(signatures)[2], 
+                      model_id = model_id, modality = modality)
+  
+  return(model_result)
+  
+}
+
 
 
 .check_variant_genome <- function(dt, genome) {

@@ -5,29 +5,47 @@
 \title{Compare two result files to find similar signatures}
 \usage{
 compare_results(
-  result,
-  other_result,
+  musica,
+  model_id,
+  other_model_id,
+  modality = "SBS96",
+  result_name = "result",
+  other_musica = NULL,
+  other_result_name = "result",
   threshold = 0.9,
   metric = "cosine",
-  result_name = deparse(substitute(result)),
-  other_result_name = deparse(substitute(other_result)),
+  result_rename = deparse(substitute(model_id)),
+  other_result_rename = deparse(substitute(other_model_id)),
   decimals = 2,
   same_scale = FALSE
 )
 }
 \arguments{
-\item{result}{A \code{\linkS4class{musica_result}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{other_result}{A second \code{\linkS4class{musica_result}} object.}
+\item{model_id}{The name of the first model to compare.}
+
+\item{other_model_id}{The name of the second model to compare.}
+
+\item{modality}{Modality of results being compared. Default \code{"SBS96"}.}
+
+\item{result_name}{Name of the result list entry for the first result to
+compare. Default \code{"result"}.}
+
+\item{other_musica}{A second \code{\linkS4class{musica}} object. If null, the
+provided musica object is used twice. Default \code{NULL}.}
+
+\item{other_result_name}{Name of the result list entry for the second result
+to compare. Default \code{"result"}.}
 
 \item{threshold}{threshold for similarity}
 
 \item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 
-\item{result_name}{title for plot of first result signatures}
+\item{result_rename}{title for plot of first result signatures}
 
-\item{other_result_name}{title for plot of second result signatures}
+\item{other_result_rename}{title for plot of second result signatures}
 
 \item{decimals}{Specifies rounding for similarity metric displayed. Default
 \code{2}.}
@@ -44,5 +62,6 @@ Compare two result files to find similar signatures
 }
 \examples{
 data(res)
-compare_results(res, res, threshold = 0.8)
+compare_results(res, model_id = "res", other_model_id = "res",
+modality = "SBS96", threshold = 0.8)
 }

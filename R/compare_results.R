@@ -47,16 +47,23 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
   return(comparison)
 }
 
-
 #' Compare two result files to find similar signatures
 #'
-#' @param result A \code{\linkS4class{musica_result}} object.
-#' @param other_result A second \code{\linkS4class{musica_result}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
+#' @param model_id The name of the first model to compare.
+#' @param other_model_id The name of the second model to compare.
+#' @param modality Modality of results being compared. Default \code{"SBS96"}.
+#' @param result_name Name of the result list entry for the first result to
+#' compare. Default \code{"result"}.
+#' @param other_musica A second \code{\linkS4class{musica}} object. If null, the
+#' provided musica object is used twice. Default \code{NULL}.
+#' @param other_result_name Name of the result list entry for the second result
+#' to compare. Default \code{"result"}.
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
-#' @param result_name title for plot of first result signatures
-#' @param other_result_name title for plot of second result signatures
+#' @param result_rename title for plot of first result signatures
+#' @param other_result_rename title for plot of second result signatures
 #' @param decimals Specifies rounding for similarity metric displayed. Default
 #' \code{2}.
 #' @param same_scale If \code{TRUE}, the scale of the probability for each
@@ -65,31 +72,75 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
-#' compare_results(res, res, threshold = 0.8)
+#' compare_results(res, model_id = "res", other_model_id = "res",
+#' modality = "SBS96", threshold = 0.8)
 #' @export
-compare_results <- function(result, other_result, threshold = 0.9,
-                             metric = "cosine", result_name =
-                              deparse(substitute(result)), other_result_name =
-                              deparse(substitute(other_result)),
+compare_results <- function(musica, model_id, other_model_id, 
+                            modality = "SBS96", result_name = "result", 
+                            other_musica = NULL, other_result_name = "result",
+                            threshold = 0.9, metric = "cosine", result_rename =
+                            deparse(substitute(model_id)), other_result_rename =
+                            deparse(substitute(other_model_id)),
                             decimals = 2, same_scale = FALSE) {
+  
+  # check if valid result_name
+  if (!(result_name %in% names(result_list(musica)))){
+    stop(result_name, " does not exist in the result_list. Current names are: ",
+         paste(names(result_list(musica)), collapse = ", "))
+  }
+  
+  # check if valid modality
+  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
+    stop(modality, " is not a valid modality. Current modalities are: ", 
+         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  }
+  
+  # check if valid model_id
+  if (!(model_id %in% names(get_modality(musica, result_name, modality)))){
+    stop(model_id, " is not a valid model_id. Current model names are: ",
+         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  }
+  
+  # if no second musica object provided, use the given one
+  if (is.null(other_musica)){
+    other_musica <- musica
+  }
+  
+  # check if valid other_result_name
+  if (!(other_result_name %in% names(result_list(other_musica)))){
+    stop(other_result_name, " does not exist in the result_list. Current names are: ",
+         paste(names(result_list(other_musica)), collapse = ", "))
+  }
+  
+  # check if valid modality
+  if (!(modality %in% names(get_result_list_entry(other_musica, other_result_name)@modality))){
+    stop(modality, " is not a valid modality. Current modalities are: ", 
+         paste(names(get_result_list_entry(other_musica, other_result_name)@modality), collapse = ", "))
+  }
+  
+  # check if valid model_id
+  if (!(other_model_id %in% names(get_modality(other_musica, other_result_name, modality)))){
+    stop(other_model_id, " is not a valid model_id. Current model names are: ",
+         paste(names(get_modality(other_musica, other_result_name, modality)), collapse = ", "))
+  }
+  
+  result <- get_model(musica, result_name, modality, model_id)
+  other_result <- get_model(other_musica, other_result_name, modality, other_model_id)
+  
   signatures <- signatures(result)
   comparison <- sig_compare(sig1 = signatures, sig2 = signatures(other_result),
                             threshold = threshold, metric = metric)
-  result_subset <- methods::new("musica_result",
+  result_subset <- methods::new("result_model",
                                 signatures = 
-                                  signatures(result)[, comparison$x_sig_index, 
-                                                     drop = FALSE], exposures =
-                                  matrix(), algorithm = "NMF", 
-                                musica = get_musica(result), 
-                                table_name = table_selected(result))
-  other_subset <- methods::new("musica_result",
+                                  signatures(result)[, comparison$x_sig_index, drop = FALSE], 
+                                exposures = matrix(), 
+                                num_signatures = dim(signatures)[2],
+                                modality = modality, model_id = "result_subset")
+  other_subset <- methods::new("result_model",
                                signatures = 
-                                 signatures(
-                                   other_result)[, comparison$y_sig_index, 
-                                                 drop = FALSE], 
-                               exposures = matrix(), algorithm = "NMF",
-                               musica = get_musica(other_result), 
-                               table_name = table_selected(other_result))
+                                 signatures(other_result)[, comparison$y_sig_index, drop = FALSE], 
+                               exposures = matrix(), modality = modality, 
+                               model_id = "result_subset")
   
   result_subset_maxes <- NULL
   other_subset_maxes <- NULL
@@ -105,9 +156,9 @@ compare_results <- function(result, other_result, threshold = 0.9,
     maxes <- rep(max(maxes), length(maxes))
   }
 
-  .plot_compare_result_signatures(result_subset, other_subset, comparison,
-                                  res1_name = result_name,
-                                  res2_name = other_result_name, 
+  .plot_compare_result_signatures(result_subset, other_subset, comparison, musica,
+                                  res1_name = result_rename,
+                                  res2_name = other_result_rename, 
                                   decimals = decimals, same_scale = same_scale,
                                   maxes = maxes)
   return(comparison)
@@ -116,13 +167,15 @@ compare_results <- function(result, other_result, threshold = 0.9,
 #' Compare a result object to COSMIC V3 Signatures; Select exome or genome for
 #' SBS and only genome for DBS or Indel classes
 #'
-#' @param result A \code{\linkS4class{musica_result}} object.
-#' @param variant_class Compare to SBS, DBS, or Indel
+#' @param musica A \code{\linkS4class{musica}} object.
+#' @param model_id The name of the model containing the signatures to compare.
 #' @param sample_type exome (SBS only) or genome
+#' @param modality Compare to SBS, DBS, or Indel. Default \code{"SBS96"}
+#' @param result_name Name of the result list entry. Default \code{"result"}.
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
-#' @param result_name title for plot user result signatures
+#' @param result_rename title for plot user result signatures
 #' @param decimals Specifies rounding for similarity metric displayed. Default
 #' \code{2}.
 #' @param same_scale If \code{TRUE}, the scale of the probability for each
@@ -131,25 +184,46 @@ compare_results <- function(result, other_result, threshold = 0.9,
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
-#' compare_cosmic_v3(res, "SBS", "genome", threshold = 0.8)
+#' compare_cosmic_v3(res, model_id = "res", modality = "SBS96",
+#' sample_type = "genome", threshold = 0.8)
 #' @export
-compare_cosmic_v3 <- function(result, variant_class, sample_type, 
-                              metric = "cosine", threshold = 0.9,
-                              result_name = deparse(substitute(result)),
+compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
+                              result_name = "result", metric = "cosine", 
+                              threshold = 0.9,
+                              result_rename = deparse(substitute(model_id)),
                               decimals = 2, same_scale = FALSE) {
+  
+  # check if valid result_name
+  if (!(result_name %in% names(result_list(musica)))){
+    stop(result_name, " does not exist in the result_list. Current names are: ",
+         paste(names(result_list(musica)), collapse = ", "))
+  }
+  
+  # check if valid modality
+  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
+    stop(modality, " is not a valid modality. Current modalities are: ", 
+         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  }
+  
+  # check if valid model_id
+  if (!(model_id %in% names(get_modality(musica, result_name, modality)))){
+    stop(model_id, " is not a valid model_id. Current model names are: ",
+         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  }
+  
   if (sample_type == "exome") {
-    if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
+    if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       cosmic_res <- musicatk::cosmic_v3_sbs_sigs_exome
     } else {
       stop(paste("Only SBS class is available for whole-exome, please choose",
                  " `genome` for DBS or Indel", sep = ""))
     }
   } else if (sample_type == "genome") {
-    if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
+    if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       cosmic_res <- musicatk::cosmic_v3_sbs_sigs
-    } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
+    } else if (modality %in% c("DBS", "dbs", "doublet")) {
       cosmic_res <- musicatk::cosmic_v3_dbs_sigs
-    } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
+    } else if (modality %in% c("INDEL", "Indel", "indel", "ind", "IND",
                                     "ID")) {
       cosmic_res <- musicatk::cosmic_v3_indel_sigs
     } else {
@@ -158,21 +232,21 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
   } else {
     stop("Sample type must be exome or genome")
   }
-  signatures <- signatures(result)
+  
+  signatures <- signatures(get_model(musica, result_name, modality, model_id))
   comparison <- sig_compare(sig1 = signatures, sig2 = signatures(cosmic_res),
                             threshold = threshold, metric = metric)
   result_subset <- methods::new(
-    "musica_result", signatures = signatures(result)[, comparison$x_sig_index,
+    "result_model", signatures = signatures[, comparison$x_sig_index,
                                                      drop = FALSE],
-    exposures = matrix(), algorithm = "NMF", 
-    table_name = table_selected(result), musica = get_musica(result))
-  other_subset <- methods::new("musica_result", signatures =
+    exposures = matrix(), num_signatures = dim(signatures)[2],
+    modality = modality, model_id = "result_subset")
+  other_subset <- methods::new("result_model", signatures =
                                  signatures(cosmic_res)[, 
                                                         comparison$y_sig_index, 
                                                         drop = FALSE],
-                               exposures = matrix(), algorithm = "NMF",
-                               table_name = table_selected(cosmic_res),
-                               musica = get_musica(cosmic_res))
+                               exposures = matrix(), modality = modality, 
+                               model_id = "other_subset")
   
   result_subset_maxes <- NULL
   other_subset_maxes <- NULL
@@ -188,8 +262,8 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
     maxes <- rep(max(maxes), length(maxes))
   }
   
-  .plot_compare_result_signatures(result_subset, other_subset, comparison,
-                                  res1_name = result_name,
+  .plot_compare_result_signatures(result_subset, other_subset, comparison, musica,
+                                  res1_name = result_rename,
                                   res2_name = "COSMIC Signatures (V3)",
                                   decimals = decimals, maxes = maxes, 
                                   same_scale = same_scale)
@@ -200,11 +274,14 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' Compare a result object to COSMIC V2 SBS Signatures (combination whole-exome
 #' and whole-genome)
 #'
-#' @param result A \code{\linkS4class{musica_result}} object.
+#' @param musica A \code{\linkS4class{musica}} object.
+#' @param model_id The name of the model containing the signatures to compare.
+#' @param modality Compare to SBS, DBS, or Indel. Default \code{"SBS96"}
+#' @param result_name Name of the result list entry. Default \code{"result"}.
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 #' for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.
-#' @param result_name title for plot user result signatures
+#' @param result_rename title for plot user result signatures
 #' @param decimals Specifies rounding for similarity metric displayed. Default
 #' \code{2}.
 #' @param same_scale If \code{TRUE}, the scale of the probability for each
@@ -213,32 +290,47 @@ compare_cosmic_v3 <- function(result, variant_class, sample_type,
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
-#' compare_cosmic_v2(res, threshold = 0.7)
+#' compare_cosmic_v2(res, model_id = "res", threshold = 0.7)
 #' @export
-compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
-                              result_name = deparse(substitute(result)),
+compare_cosmic_v2 <- function(musica, model_id, modality = "SBS96",
+                              result_name = "result", metric = "cosine", 
+                              threshold = 0.9,
+                              result_rename = deparse(substitute(result)),
                               decimals = 2, same_scale = FALSE) {
   
-  signatures <- signatures(result)
+  # check if valid result_name
+  if (!(result_name %in% names(result_list(musica)))){
+    stop(result_name, " does not exist in the result_list. Current names are: ",
+         paste(names(result_list(musica)), collapse = ", "))
+  }
+  
+  # check if valid modality
+  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
+    stop(modality, " is not a valid modality. Current modalities are: ", 
+         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  }
+  
+  # check if valid model_id
+  if (!(model_id %in% names(get_modality(musica, result_name, modality)))){
+    stop(model_id, " is not a valid model_id. Current model names are: ",
+         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  }
+  
+  signatures <- signatures(get_model(musica, result_name, modality, model_id))
   comparison <- sig_compare(sig1 = signatures, 
                             sig2 = signatures(musicatk::cosmic_v2_sigs),
                             threshold = threshold, metric = metric)
-  result_subset <- methods::new("musica_result",
-                       signatures =
-                         signatures(result)[, comparison$x_sig_index, 
-                                            drop = FALSE], exposures =
-                         matrix(), algorithm = get_result_alg(result), 
-                       musica = get_musica(result), 
-                       table_name = table_selected(result))
-  other_subset <- methods::new("musica_result",
-                      signatures = 
-                        signatures(
-                          musicatk::cosmic_v2_sigs)[, comparison$y_sig_index, 
-                                                    drop = FALSE],
-                      exposures = matrix(), algorithm = "NMF",
-                      musica = get_musica(musicatk::cosmic_v2_sigs),
-                      table_name = 
-                        table_selected(musicatk::cosmic_v2_sigs))
+  result_subset <- methods::new(
+    "result_model", signatures = signatures[, comparison$x_sig_index,
+                                            drop = FALSE],
+    exposures = matrix(), num_signatures = dim(signatures)[2],
+    modality = modality, model_id = "result_subset")
+  other_subset <- methods::new("result_model", signatures =
+                                 signatures(musicatk::cosmic_v2_sigs)[, 
+                                                        comparison$y_sig_index, 
+                                                        drop = FALSE],
+                               exposures = matrix(), modality = modality, 
+                               model_id = "other_subset")
   
   
   result_subset_maxes <- NULL
@@ -255,8 +347,8 @@ compare_cosmic_v2 <- function(result, threshold = 0.9, metric = "cosine",
     maxes <- rep(max(maxes), length(maxes))
   }
   
-  .plot_compare_result_signatures(result_subset, other_subset, comparison,
-                                  res1_name = result_name,
+  .plot_compare_result_signatures(result_subset, other_subset, comparison, musica,
+                                  res1_name = result_rename,
                                   res2_name = "COSMIC Signatures (V2)",
                                   decimals = decimals, maxes = maxes, same_scale = same_scale)
   
@@ -304,7 +396,7 @@ cosmic_v2_subtype_map <- function(tumor_type) {
 }
 
 
-.plot_compare_result_signatures <- function(res1, res2, comparison,
+.plot_compare_result_signatures <- function(res1, res2, comparison, musica,
                                             res1_name = "", res2_name = "", 
                                             decimals, maxes, same_scale) {
   
@@ -316,12 +408,12 @@ cosmic_v2_subtype_map <- function(tumor_type) {
     annotations <- paste("1 - JSD = ", round(comparison$"1_minus_jsd", decimals), sep = "")
   }
   
-  res1_plot <- plot_signatures(res1, annotation = annotations, 
+  res1_plot <- .plot_result_model_signatures(res1, musica, annotation = annotations, 
                                y_max = maxes, same_scale = same_scale) 
   res1_plot <- ggpubr::annotate_figure(res1_plot, 
                                top = ggpubr::text_grob(res1_name, face = "bold"))
   
-  res2_plot <- plot_signatures(res2, y_max = maxes, 
+  res2_plot <- .plot_result_model_signatures(res2, musica, y_max = maxes, 
                                show_y_labels = FALSE, same_scale = same_scale)
   res2_plot <- ggpubr::annotate_figure(res2_plot, 
                                        top = ggpubr::

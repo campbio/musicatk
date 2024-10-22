@@ -5,14 +5,14 @@
 \alias{res}
 \title{res}
 \format{
-An object of class \code{musica_result}
+An object of class \code{musica}
 See [discover_signatures()].
 }
 \usage{
 data(res)
 }
 \description{
-A musica result created for testing that includes SBS variants with 
-discovered exposures and signatures
+A musica created for testing that includes SBS variants with discovered
+exposures and signatures
 }
 \keyword{datasets}

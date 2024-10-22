@@ -41,7 +41,8 @@ extract_count_tables <- function(musica) {
   #Check that object is a musica
   if (!methods::is(musica, "musica")) {
     stop(strwrap(prefix = " ", initial = "", "The input object is not a
-    'musica' object, please use 'create_musica' to create one."))
+    'musica' object, please use 'create_musica_from_variants' or 
+                 'create_musica_from_counts' to create one."))
   }
 
   counts_table <- tables(musica)

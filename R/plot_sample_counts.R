@@ -12,9 +12,7 @@ NULL
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param sample_names Names of the samples to plot.
-#' @param table_name Name of table used for plotting counts. If \code{NULL},
-#' then the first table in the \code{\linkS4class{musica}} object will be used.
-#' Default \code{NULL}.
+#' @param modality Name of table used for plotting counts. Default \code{"SBS96"}.
 #' @param text_size Size of axis text. Default \code{10}.
 #' @param show_x_labels If \code{TRUE}, the labels for the mutation types
 #' on the x-axis will be shown. Default \code{TRUE}.
@@ -32,38 +30,39 @@ NULL
 #' plot_sample_counts(musica_sbs96, sample_names = 
 #' sample_names(musica_sbs96)[1])
 #' @export
-plot_sample_counts <- function(musica, sample_names, table_name = NULL, 
+plot_sample_counts <- function(musica, sample_names, modality = "SBS96", 
                                text_size = 10,
                                show_x_labels = TRUE, show_y_labels = TRUE,
                                same_scale = TRUE, annotation = NULL) {
     
-    if (is.null(table_name)) {
-        table_name <- names(tables(musica))[1]
-    }  
-    
-    # Extract counts for specific samples
-    tab <- .extract_count_table(musica, table_name)
-    ix <- match(sample_names, colnames(tab))
-    if (all(is.na(ix))) {
-        stop("The values in 'sample_names' did not match any sample IDs in table '",
-             table_name, "'.")
-    }
-    else if (anyNA(ix)) {
-        warning("The following samples in 'sample_names' were not found  in ",
-                "table '", table_name, 
-                "' and will ", "be exlcuded from the plot: ",
-                paste(sample_names[is.na(ix)], collapse = ", "))
-        ix <- ix[!is.na(ix)]
-    }
-    sample_counts <- tab[, ix, drop = FALSE]
-    
-    result <- methods::new("musica_result",
-                           signatures = sample_counts, exposures = matrix(),
-                           algorithm = "sample", musica = musica,
-                           table_name = table_name)
-    g <- plot_signatures(result, percent = FALSE, text_size = text_size,
-                         show_x_labels = show_x_labels, show_y_labels = show_y_labels,
-                         same_scale = same_scale, annotation = annotation)
-    return(g)
+  # check if valid modality
+  if (!(modality %in% names(extract_count_tables(musica)))){
+    stop(modality, " is not a valid modality. Current modalities are: ", 
+         paste(names(extract_count_tables(musica)), collapse = ", "))
+  }
+  
+  # Extract counts for specific samples
+  tab <- .extract_count_table(musica, modality)
+  ix <- match(sample_names, colnames(tab))
+  if (all(is.na(ix))) {
+      stop("The values in 'sample_names' did not match any sample IDs in table '",
+           modality, "'.")
+  }
+  else if (anyNA(ix)) {
+      warning("The following samples in 'sample_names' were not found  in ",
+              "table '", modality, 
+              "' and will ", "be exlcuded from the plot: ",
+              paste(sample_names[is.na(ix)], collapse = ", "))
+      ix <- ix[!is.na(ix)]
+  }
+  sample_counts <- tab[, ix, drop = FALSE]
+  
+  result <- methods::new("result_model",
+                         signatures = sample_counts, exposures = matrix(),
+                         modality = modality)
+  g <- .plot_result_model_signatures(result, musica, percent = FALSE, text_size = text_size,
+                       show_x_labels = show_x_labels, show_y_labels = show_y_labels,
+                       same_scale = same_scale, annotation = annotation)
+  return(g)
 }
 

@@ -48,7 +48,7 @@ setClass(
 #' @export
 #' @examples
 #' data(res)
-#' exposures(res)
+#' exposures(res, "result", "SBS96", "res")
 setGeneric(
   name = "exposures",
   def = function(x, ...)
@@ -96,14 +96,15 @@ setMethod(
 #' @param model_id Model identifier to assign the exposures. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
+#' @param ... Other inputs
 #' @param value A matrix of samples by signature exposures
 #' @export
 #' @examples
 #' data(res)
-#' exposures(res) <- matrix()
+#' exposures(res, "result", "SBS96", "res") <- matrix()
 setGeneric(
   name = "exposures<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("exposures<-")
   }
@@ -113,7 +114,7 @@ setGeneric(
 setReplaceMethod(
   f = "exposures",
   signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@exposures <- value
     return(x)
@@ -124,7 +125,7 @@ setReplaceMethod(
 setReplaceMethod(
   f = "exposures",
   signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@exposures <- value
     return(x)
@@ -163,7 +164,7 @@ setReplaceMethod(
 #' @export
 #' @examples
 #' data(res)
-#' signatures(res)
+#' signatures(res, "result", "SBS96", "res")
 setGeneric(
   name = "signatures",
   def = function(x, ...)
@@ -211,14 +212,15 @@ setMethod(
 #' @param model_id Model identifier to assign the signatures. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
+#' @param ... Other inputs
 #' @param value A matrix of motifs counts by samples
 #' @export
 #' @examples
 #' data(res)
-#' signatures(res) <- matrix()
+#' signatures(res, "result", "SBS96", "res") <- matrix()
 setGeneric(
   name = "signatures<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("signatures<-")
   }
@@ -228,7 +230,7 @@ setGeneric(
 setReplaceMethod(
   f = "signatures",
   signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@signatures <- value
     return(x)
@@ -239,7 +241,7 @@ setReplaceMethod(
 setReplaceMethod(
   f = "signatures",
   signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@signatures <- value
     return(x)
@@ -277,7 +279,7 @@ setReplaceMethod(
 #' @export
 #' @examples
 #' data(res)
-#' num_signatures(res)
+#' num_signatures(res, "result", "SBS96", "res")
 setGeneric(
   name = "num_signatures",
   def = function(x, ...)
@@ -325,11 +327,12 @@ setMethod(
 #' @param model_id Model identifier to assign the num_signatures. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
+#' @param ... Other inputs
 #' @param value Number of signatures in the model
 #' @export
 setGeneric(
   name = "num_signatures<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("num_signatures<-")
   }
@@ -339,7 +342,7 @@ setGeneric(
 setReplaceMethod(
   f = "num_signatures",
   signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@num_signatures <- value
     return(x)
@@ -350,7 +353,7 @@ setReplaceMethod(
 setReplaceMethod(
   f = "num_signatures",
   signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@num_signatures <- value
     return(x)
@@ -388,7 +391,7 @@ setReplaceMethod(
 #' @export
 #' @examples
 #' data(res)
-#' other_parameters(res)
+#' other_parameters(res, "result", "SBS96", "res")
 setGeneric(
   name = "other_parameters",
   def = function(x, ...)
@@ -436,11 +439,12 @@ setMethod(
 #' @param model_id Model identifier to assign the other_parameters. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
+#' @param ... Other inputs
 #' @param value List of other parameters
 #' @export
 setGeneric(
   name = "other_parameters<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("other_parameters<-")
   }
@@ -450,7 +454,7 @@ setGeneric(
 setReplaceMethod(
   f = "other_parameters",
   signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@other_parameters <- value
     return(x)
@@ -461,7 +465,7 @@ setReplaceMethod(
 setReplaceMethod(
   f = "other_parameters",
   signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@other_parameters <- value
     return(x)
@@ -499,7 +503,7 @@ setReplaceMethod(
 #' @export
 #' @examples
 #' data(res)
-#' credible_intervals(res)
+#' credible_intervals(res, "result", "SBS96", "res")
 setGeneric(
   name = "credible_intervals",
   def = function(x, ...)
@@ -548,11 +552,12 @@ setMethod(
 #' @param model_id Model identifier to assign the credible_intervals. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
+#' @param ... Other inputs
 #' @param value List of credible intervals
 #' @export
 setGeneric(
   name = "credible_intervals<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("credible_intervals<-")
   }
@@ -562,7 +567,7 @@ setGeneric(
 setReplaceMethod(
   f = "credible_intervals",
   signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@credible_intervals <- value
     return(x)
@@ -573,7 +578,7 @@ setReplaceMethod(
 setReplaceMethod(
   f = "credible_intervals",
   signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@credible_intervals <- value
     return(x)
@@ -611,7 +616,7 @@ setReplaceMethod(
 #' @export
 #' @examples
 #' data(res)
-#' metrics(res)
+#' metrics(res, "result", "SBS96", "res")
 setGeneric(
   name = "metrics",
   def = function(x, ...)
@@ -659,11 +664,12 @@ setMethod(
 #' @param model_id Model identifier to assign the metrics. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
+#' @param ... Other inputs
 #' @param value List of metrics
 #' @export
 setGeneric(
   name = "metrics<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("metrics<-")
   }
@@ -672,8 +678,8 @@ setGeneric(
 #' @rdname metrics
 setReplaceMethod(
   f = "metrics",
-  signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  signature = c("musica", "SimpleList"),
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@metrics <- value
     return(x)
@@ -683,8 +689,8 @@ setReplaceMethod(
 #' @rdname metrics
 setReplaceMethod(
   f = "metrics",
-  signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  signature = c("result_collection", "SimpleList"),
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@metrics <- value
     return(x)
@@ -694,7 +700,7 @@ setReplaceMethod(
 #' @rdname metrics
 setReplaceMethod(
   f = "metrics",
-  signature = c("result_model", "matrix"),
+  signature = c("result_model", "SimpleList"),
   definition = function(x, value)
   {
     x@metrics <- value
@@ -721,7 +727,7 @@ setReplaceMethod(
 #' @export
 #' @examples
 #' data(res)
-#' umap(res)
+#' umap(res, "result", "SBS96", "res")
 setGeneric(
   name = "umap",
   def = function(x, ...)
@@ -769,11 +775,12 @@ setMethod(
 #' @param model_id Model identifier to assign the umap. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
+#' @param ... Other inputs
 #' @param value A list of umap dataframes
 #' @export
 setGeneric(
   name = "umap<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("umap<-")
   }
@@ -783,7 +790,7 @@ setGeneric(
 setReplaceMethod(
   f = "umap",
   signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@umap <- value
     return(x)
@@ -794,7 +801,7 @@ setReplaceMethod(
 setReplaceMethod(
   f = "umap",
   signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@umap <- value
     return(x)
@@ -831,7 +838,7 @@ setReplaceMethod(
 #' @export
 #' @examples
 #' data(res)
-#' model_id(res)
+#' model_id(res, "result", "SBS96", "res")
 setGeneric(
   name = "model_id",
   def = function(x, ...)
@@ -879,11 +886,12 @@ setMethod(
 #' @param model_id Model identifier to assign the model_id. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
+#' @param ... Other inputs
 #' @param value Model identifier
 #' @export
 setGeneric(
   name = "model_id<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("model_id<-")
   }
@@ -893,7 +901,7 @@ setGeneric(
 setReplaceMethod(
   f = "model_id",
   signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@model_id <- value
     return(x)
@@ -904,7 +912,7 @@ setReplaceMethod(
 setReplaceMethod(
   f = "model_id",
   signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@model_id <- value
     return(x)
@@ -941,7 +949,7 @@ setReplaceMethod(
 #' @export
 #' @examples
 #' data(res)
-#' modality(res)
+#' modality(res, "result", "SBS96", "res")
 setGeneric(
   name = "modality",
   def = function(x, ...)
@@ -988,12 +996,13 @@ setMethod(
 #' \code{\linkS4class{result_collection}} object.
 #' @param model_id Model identifier to assign the modality. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
+#' @param ... Other inputs
 #' \code{\linkS4class{result_collection}} object.
 #' @param value A modality
 #' @export
 setGeneric(
   name = "modality<-",
-  def = function(x, value, ...)
+  def = function(x, ..., value)
   {
     standardGeneric("modality<-")
   }
@@ -1003,7 +1012,7 @@ setGeneric(
 setReplaceMethod(
   f = "modality",
   signature = c("musica", "matrix"),
-  definition = function(x, value, result, modality, model_id)
+  definition = function(x, result, modality, model_id, value)
   {
     x@result_list[[result]]@modality[[modality]][[model_id]]@modality <- value
     return(x)
@@ -1014,7 +1023,7 @@ setReplaceMethod(
 setReplaceMethod(
   f = "modality",
   signature = c("result_collection", "matrix"),
-  definition = function(x, value, modality, model_id)
+  definition = function(x, modality, model_id, value)
   {
     x@modality[[modality]][[model_id]]@modality <- value
     return(x)
@@ -1031,3 +1040,31 @@ setReplaceMethod(
     return(x)
   }
 ) 
+
+#' @title Retrieve table name used for plotting from a result_model object
+#' @description  The table name
+#' @param result A \code{\linkS4class{result_model}} object generated by
+#' a mutational discovery or prediction tool.
+#' @rdname table_selected
+#' @return Table name used for plotting
+#' @export
+#' @examples
+#' data(res)
+#' model <- get_model(res, "result", "SBS96", "res")
+#' table_selected(model)
+setGeneric(
+  name = "table_selected",
+  def = function(result)
+  {
+    standardGeneric("table_selected")
+  }
+)
+
+#' @rdname table_selected
+setMethod(
+  f = "table_selected",
+  signature = "result_model",
+  definition = function(result) {
+    return(result@modality)
+  }
+)
