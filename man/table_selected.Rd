@@ -21,5 +21,6 @@ The table name
 }
 \examples{
 data(res)
-table_selected(res)
+model <- get_model(res, "result", "SBS96", "res")
+table_selected(model)
 }

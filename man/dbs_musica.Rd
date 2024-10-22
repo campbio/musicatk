@@ -6,7 +6,7 @@
 \title{dbs_musica}
 \format{
 An object of class \code{musica}
-See [create_musica()].
+See [create_musica_from_variants()] and [create_musica_from_counts()].
 }
 \usage{
 data(dbs_musica)

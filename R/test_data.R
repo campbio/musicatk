@@ -7,7 +7,7 @@
 #' @usage data(musica)
 #'
 #' @format An object of class \code{musica}
-#' See [create_musica()].
+#' See [create_musica_from_variants()] and [create_musica_from_counts()].
 #'
 #' @keywords datasets
 #'
@@ -23,7 +23,7 @@
 #' @usage data(musica_annot)
 #'
 #' @format An object of class \code{musica}
-#' See [create_musica()].
+#' See [create_musica_from_variants()] and [create_musica_from_counts()].
 #'
 #' @keywords datasets
 #'
@@ -70,7 +70,7 @@
 #' @usage data(dbs_musica)
 #'
 #' @format An object of class \code{musica}
-#' See [create_musica()].
+#' See [create_musica_from_variants()] and [create_musica_from_counts()].
 #'
 #' @keywords datasets
 #'
@@ -85,7 +85,7 @@
 #' @usage data(indel_musica)
 #'
 #' @format An object of class \code{musica}
-#' See [create_musica()].
+#' See [create_musica_from_variants()] and [create_musica_from_counts()].
 #'
 #' @keywords datasets
 #'

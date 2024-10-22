@@ -6,27 +6,26 @@
 \usage{
 plot_sample_reconstruction_error(
   musica,
-  result_name = NULL,
-  result_modality,
-  model_name,
   sample,
+  model_id,
+  modality = "SBS96",
+  result_name = "result",
   plotly = FALSE
 )
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{result_name}{Name of the result list entry to use.
-If null, the first entry is selected. Default \code{NULL}.}
+\item{sample}{Name of the sample within the \code{\linkS4class{musica}}
+object.}
 
-\item{result_modality}{The modality to use. Must be "SBS96", "DBS78", or
-"IND83".}
+\item{model_id}{The name of the desired model.}
 
-\item{model_name}{The name of the \code{\linkS4class{result_model}} object to
-use.}
+\item{modality}{The modality of the model. Must be "SBS96", "DBS78",
+or "IND83". Default \code{"SBS96"}.}
 
-\item{sample}{Name of the sample within the
-\code{\linkS4class{musica_result}} object.}
+\item{result_name}{Name of the result list entry containing desired model.
+Default \code{"result"}.}
 
 \item{plotly}{If \code{TRUE}, the the plot will be made interactive
 using \code{\link[plotly]{plotly}}. Default \code{FALSE}.}
@@ -42,5 +41,5 @@ two distributions.
 }
 \examples{
 data(res)
-plot_sample_reconstruction_error(res, "TCGA-ER-A197-06A-32D-A197-08")
+plot_sample_reconstruction_error(res, "TCGA-ER-A197-06A-32D-A197-08", model_id = "res")
 }

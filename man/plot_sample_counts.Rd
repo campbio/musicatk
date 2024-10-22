@@ -7,7 +7,7 @@
 plot_sample_counts(
   musica,
   sample_names,
-  table_name = NULL,
+  modality = "SBS96",
   text_size = 10,
   show_x_labels = TRUE,
   show_y_labels = TRUE,
@@ -20,9 +20,7 @@ plot_sample_counts(
 
 \item{sample_names}{Names of the samples to plot.}
 
-\item{table_name}{Name of table used for plotting counts. If \code{NULL},
-then the first table in the \code{\linkS4class{musica}} object will be used.
-Default \code{NULL}.}
+\item{modality}{Name of table used for plotting counts. Default \code{"SBS96"}.}
 
 \item{text_size}{Size of axis text. Default \code{10}.}
 

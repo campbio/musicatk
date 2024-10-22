@@ -7,7 +7,7 @@
 \alias{hyperparameter<-}
 \alias{hyperparameter<-,musica,list-method}
 \alias{hyperparameter<-,result_collection,list-method}
-\title{Retrieve hyperparameter from a result_collection object}
+\title{Retrieve hyperparameter from a musica or result_collection object}
 \usage{
 hyperparameter(x, ...)
 
@@ -22,9 +22,14 @@ hyperparameter(x, ...) <- value
 \S4method{hyperparameter}{result_collection,list}(x) <- value
 }
 \arguments{
-\item{x}{A object generate by musicatk}
+\item{x}{A \code{\linkS4class{result_model}} or
+\code{\linkS4class{result_collection}} object}
 
-\item{value}{A \code{\linkS4class{list}} of hyperparamters for model}
+\item{...}{Other inputs}
+
+\item{result}{The name of the result_list entry.}
+
+\item{value}{A \code{\linkS4class{list}} of hyperparameters for model}
 }
 \value{
 A list of hyperparameters
@@ -34,7 +39,5 @@ The \code{hyperparameter} contain list of prior and tuning parameters
 }
 \examples{
 data(res)
-hyperparameter(res)
-data(result)
-hyperparameter(result)
+hyperparameter(res, "result")
 }

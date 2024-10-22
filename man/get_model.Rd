@@ -13,13 +13,26 @@ get_model(x, ...)
 \S4method{get_model}{result_collection}(x, modality, model)
 }
 \arguments{
-\item{x}{}
+\item{x}{A \code{\linkS4class{musica}} or
+\code{\linkS4class{result_collection}} object.}
+
+\item{...}{Other inputs}
+
+\item{result}{The name of the result_list entry.}
+
+\item{modality}{The modality.}
+
+\item{model}{The name of the model.}
 }
 \value{
 A \code{\linkS4class{result_model}} object
 }
 \description{
 Extract the \code{\linkS4class{result_model}} object from the
-\code{\linkS4class{musica}} or \code{\linkS4class{result_colelction}} object
-that contains thhe model.
+\code{\linkS4class{musica}} or \code{\linkS4class{result_collection}} object
+that contains the model.
+}
+\examples{
+data(res)
+get_model(res, "result", "SBS96", "res")
 }
