@@ -18,7 +18,8 @@ auto_predict_grid(
   rare_exposure = 0.4,
   verbose = TRUE,
   combine_res = TRUE,
-  make_copy = FALSE
+  make_copy = FALSE,
+  table_name = NULL
 )
 }
 \arguments{
@@ -57,10 +58,12 @@ found in a given annotation's set of samples}
 object is updated and nothing is returned. If \code{TRUE}, a new
 \code{\linkS4class{musica}} object is created and returned. Default
 \code{FALSE}.}
+
+\item{table_name}{Use modality instead}
 }
 \value{
-Returns nothing or a new \code{\linkS4class{musica}} object, depending
-on the \code{make_copy} parameter.
+Returns nothing or a new \code{\linkS4class{musica}} object,
+depending on the \code{make_copy} parameter.
 }
 \description{
 Automatic filtering of signatures for exposure prediction gridded across
@@ -69,8 +72,10 @@ specific annotation
 \examples{
 data(musica_annot)
 data(cosmic_v2_sigs)
-auto_predict_grid(musica = musica_annot, modality = "SBS96", 
-signature_res = cosmic_v2_sigs, algorithm = "lda",
-sample_annotation = "Tumor_Subtypes")
+auto_predict_grid(
+  musica = musica_annot, modality = "SBS96",
+  signature_res = cosmic_v2_sigs, algorithm = "lda",
+  sample_annotation = "Tumor_Subtypes"
+)
 auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda")
 }

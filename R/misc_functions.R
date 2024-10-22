@@ -15,8 +15,10 @@
   p <- prop.table(p + epsilon, margin = 2)
   q <- prop.table(q + epsilon, margin = 2)
 
-  res <- matrix(nrow = ncol(p), ncol = ncol(q), dimnames = list(colnames(p),
-                                                                colnames(q)))
+  res <- matrix(nrow = ncol(p), ncol = ncol(q), dimnames = list(
+    colnames(p),
+    colnames(q)
+  ))
   for (i in seq_len(ncol(p))) {
     for (j in seq_len(ncol(q))) {
       m <- (p[, i] + q[, j]) / 2
@@ -38,11 +40,10 @@
 .cosine <- function(x, y) {
   nX <- ncol(x)
   nY <- ncol(y)
-  if(nrow(x) != nrow(y)) {
+  if (nrow(x) != nrow(y)) {
     stop("The number of rows in 'x' and 'y' must be the same.")
   }
   temp <- t(cbind(x, y))
   res <- temp %*% t(temp) / (sqrt(rowSums(temp^2) %*% t(rowSums(temp^2))))
   return(res[seq(nX), -seq(nX)])
 }
-

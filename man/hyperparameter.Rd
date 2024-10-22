@@ -35,7 +35,8 @@ hyperparameter(x, ...) <- value
 A list of hyperparameters
 }
 \description{
-The \code{hyperparameter} contain list of prior and tuning parameters
+The \code{hyperparameter} contain list of prior and tuning
+parameters
 }
 \examples{
 data(res)

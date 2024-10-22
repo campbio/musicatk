@@ -27,38 +27,48 @@
 #' on the chosen method
 #' @examples
 #' data("res_annot")
-#' exposure_differential_analysis(res_annot, model_name = "res_annot",
-#' annotation = "Tumor_Subtypes", method="wilcox")
+#' exposure_differential_analysis(res_annot,
+#'   model_name = "res_annot",
+#'   annotation = "Tumor_Subtypes", method = "wilcox"
+#' )
 #' @export
 exposure_differential_analysis <- function(musica, model_name, annotation,
-                                           modality = "SBS96", 
-                                           result_name = "result", 
-                                           method = c("wilcox", "kruskal", "glm.nb"),
+                                           modality = "SBS96",
+                                           result_name = "result",
+                                           method = c("wilcox", "kruskal",
+                                                      "glm.nb"),
                                            group1 = NULL, group2 = NULL, ...) {
-  
   # check if valid result_name
-  if (!(result_name %in% names(result_list(musica)))){
-    stop(result_name, " does not exist in the result_list. Current names are: ",
-         paste(names(result_list(musica)), collapse = ", "))
+  if (!(result_name %in% names(result_list(musica)))) {
+    stop(
+      result_name, " does not exist in the result_list. Current names are: ",
+      paste(names(result_list(musica)), collapse = ", ")
+    )
   }
-  
+
   # check if valid modality
-  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
-    stop(modality, " is not a valid modality. Current modalities are: ", 
-         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  if (!(modality %in%
+        names(get_result_list_entry(musica, result_name)@modality))) {
+    stop(
+      modality, " is not a valid modality. Current modalities are: ",
+      paste(names(get_result_list_entry(musica, result_name)@modality),
+            collapse = ", ")
+    )
   }
-  
+
   # check if valid model_name
-  if (!(model_name %in% names(get_modality(musica, result_name, modality)))){
-    stop(model_name, " is not a valid model_name. Current model names are: ",
-         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  if (!(model_name %in% names(get_modality(musica, result_name, modality)))) {
+    stop(
+      model_name, " is not a valid model_name. Current model names are: ",
+      paste(names(get_modality(musica, result_name, modality)), collapse = ", ")
+    )
   }
-  
+
   # dummy variables
   statistic <- NULL
   df <- NULL
   pvalue <- NULL
-  
+
   method <- match.arg(method)
   model <- get_model(musica, result_name, modality, model_name)
 
@@ -106,12 +116,18 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
     }
     n_sigs <- dim(signatures(model))[2]
     header <- data.frame(x = group1, y = group2) %>%
-      dplyr::mutate(p = paste0(.data$x, "-", .data$y, "(Pr(>|z|))"),
-                    adj = paste0(.data$x, "-", .data$y, "(fdr)"))
-    group_cols <- c(lapply(group1, function(x) {
-      rep(x, n_sigs) }),
+      dplyr::mutate(
+        p = paste0(.data$x, "-", .data$y, "(Pr(>|z|))"),
+        adj = paste0(.data$x, "-", .data$y, "(fdr)")
+      )
+    group_cols <- c(
+      lapply(group1, function(x) {
+        rep(x, n_sigs)
+      }),
       lapply(group2, function(x) {
-        rep(x, n_sigs)})) %>%
+        rep(x, n_sigs)
+      })
+    ) %>%
       unlist() %>%
       cbind() %>%
       matrix(ncol = 2)
@@ -123,17 +139,20 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
         as.matrix()
       out <- matrixTests::row_wilcoxon_twosample(x, y, ...)$pvalue
       return(out)
-      }) %>%
+    }) %>%
       unlist() %>%
       matrix(ncol = 1)
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(group1) + 1):ncol(diff.out)],
-      method = "BH") %>%
+      method = "BH"
+    ) %>%
       matrix(ncol = 1, byrow = FALSE)
     diff.out <- cbind(group_cols, matrix(diff.out, ncol = 1), p) %>%
       as.data.frame()
-    colnames(diff.out) <- c("Signature", "Group1", "Group2", "Pr(>|z|)",
-                            "(fdr)")
+    colnames(diff.out) <- c(
+      "Signature", "Group1", "Group2", "Pr(>|z|)",
+      "(fdr)"
+    )
   } else if (method == "kruskal") {
     header <- c("K-W chi-squared", "df", "p-value", "fdr")
     diff.out <- matrixTests::row_kruskalwallis(exposures, annotations, ...) %>%
@@ -143,27 +162,36 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
     rownames(diff.out) <- rownames(exposures)
   } else if (method == "glm.nb") {
     header <- data.frame(y = groups) %>%
-      dplyr::mutate(coef = paste0(.data$y, "(coef)"),
-             sd = paste0(.data$y, "(Std. Error)"),
-             z = paste0(.data$y, "(z)"),
-             p = paste0(.data$y, "(Pr(>|z|))"),
-             adj = paste0(.data$y, "(fdr)"))
+      dplyr::mutate(
+        coef = paste0(.data$y, "(coef)"),
+        sd = paste0(.data$y, "(Std. Error)"),
+        z = paste0(.data$y, "(z)"),
+        p = paste0(.data$y, "(Pr(>|z|))"),
+        adj = paste0(.data$y, "(fdr)")
+      )
     diff.out <- apply(exposures, 1, FUN = function(y) {
       fit <- MASS::glm.nb(round(y) ~ annotations, ...)
-      out <- c(summary(fit)$coefficients,
-               anova(fit)["annotations", "Pr(>Chi)"])
+      out <- c(
+        summary(fit)$coefficients,
+        anova(fit)["annotations", "Pr(>Chi)"]
+      )
       return(out)
     }) %>% t()
     anova.out <- data.frame(anova = diff.out[, ncol(diff.out)])
     anova.out$fdr <- p.adjust(diff.out[, ncol(diff.out)], method = "BH")
     p <- p.adjust(
       diff.out[, (ncol(diff.out) - length(groups) + 1):ncol(diff.out)],
-                  method = "BH") %>% matrix(ncol = length(groups),
-                                            byrow = FALSE)
+      method = "BH"
+    ) %>% matrix(
+      ncol = length(groups),
+      byrow = FALSE
+    )
     diff.out <- cbind(diff.out[, -ncol(diff.out)], p)
     diff.out <- cbind(diff.out, anova.out)
-    colnames(diff.out) <- c(header$coef, header$sd, header$z, header$p,
-                            header$adj, "ANOVA(Pr(>Chi))", "ANOVA(fdr)")
+    colnames(diff.out) <- c(
+      header$coef, header$sd, header$z, header$p,
+      header$adj, "ANOVA(Pr(>Chi))", "ANOVA(fdr)"
+    )
     rownames(diff.out) <- rownames(exposures)
   }
   return(diff.out)
@@ -179,18 +207,24 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
 #' @return Generates a ggplot object
 #' @examples
 #' data("res_annot")
-#' analysis <- exposure_differential_analysis(res_annot, model_name = "res_annot",
-#' annotation = "Tumor_Subtypes", method="wilcox")
+#' analysis <- exposure_differential_analysis(res_annot,
+#'   model_name = "res_annot",
+#'   annotation = "Tumor_Subtypes", method = "wilcox"
+#' )
 #' plot_differential_analysis(analysis, "glm", 2)
 #' @export
 plot_differential_analysis <- function(analysis, analysis_type, samp_num) {
+  # dummy variables
+  rn <- NULL
+  value <- NULL
+  variable <- NULL
+
   if (analysis_type == "glm") {
-    dt <- data.table::melt(data.table::setDT(analysis[, seq_len(samp_num)], 
+    dt <- data.table::melt(data.table::setDT(analysis[, seq_len(samp_num)],
                                              keep.rownames = TRUE), "rn")
     dt$signif <- ifelse(dt$value < 0.01, 1, 0)
-    p <- ggplot2::ggplot(dt, aes_string(fill = "rn", y = "value", 
-                                        x = "variable")) + 
-      geom_bar(position="dodge", stat="identity")
+    p <- ggplot2::ggplot(dt, aes(fill = rn, y = value, x = variable)) +
+      geom_bar(position = "dodge", stat = "identity")
     p <- .gg_default_theme(p)
     p <- p + theme(legend.title = element_blank())
     return(p)

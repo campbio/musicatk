@@ -12,7 +12,7 @@ See [build_standard_table()].
 data(musica_sbs96)
 }
 \description{
-A musica created for testing that includes SBS variants and a build counts 
+A musica created for testing that includes SBS variants and a build counts
 table for them
 }
 \keyword{datasets}

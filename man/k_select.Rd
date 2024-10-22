@@ -17,7 +17,8 @@ k_select(
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object containing a mutational
-discovery or prediction. A two-dimensional UMAP has to be stored in this object.}
+discovery or prediction. A two-dimensional UMAP has to be stored in this
+object.}
 
 \item{model_name}{The name of the desired model.}
 
@@ -27,33 +28,37 @@ discovery or prediction. A two-dimensional UMAP has to be stored in this object.
 \item{result_name}{Name of the result list entry containing desired model.
 Default \code{"result"}.}
 
-\item{method}{A single character string indicating which statistic to use for plot. 
-Options are "wss" (total within cluster sum of squares), "silhouette" (average silhouette 
-coefficient), and "gap_stat" (gap statistic). Default is "wss".}
+\item{method}{A single character string indicating which statistic to use for
+plot. Options are "wss" (total within cluster sum of squares), "silhouette"
+(average silhouette coefficient), and "gap_stat" (gap statistic). Default is
+"wss".}
 
-\item{clust.method}{A character string indicating clustering method. Options are "kmeans" 
-(default), "hclust" (hierarchical clustering), "hkmeans", "pam", and "clara".}
+\item{clust.method}{A character string indicating clustering method. Options
+are "kmeans" (default), "hclust" (hierarchical clustering), "hkmeans", "pam",
+and "clara".}
 
-\item{n}{An integer indicating maximum number of clusters to test. Default is 10.}
+\item{n}{An integer indicating maximum number of clusters to test. Default is
+10.}
 
-\item{proportional}{Logical, indicating if proportional exposure (default) will be used for clustering.}
+\item{proportional}{Logical, indicating if proportional exposure (default)
+will be used for clustering.}
 }
 \value{
 A ggplot object.
 }
 \description{
-To help decide the number of cluster, three different methods 
-are provided: total within cluster sum of squares, average silhouette coefficient, 
-and gap statistics.
+To help decide the number of cluster, three different methods
+are provided: total within cluster sum of squares, average silhouette
+coefficient, and gap statistics.
 }
 \examples{
 data(res_annot)
 set.seed(123)
-#Make an elbow plot
+# Make an elbow plot
 k_select(res_annot, model_name = "res_annot", method = "wss", n = 6)
-#Plot average silhouette coefficient against number of clusters
+# Plot average silhouette coefficient against number of clusters
 k_select(res_annot, model_name = "res_annot", method = "silhouette", n = 6)
-#Plot gap statistics against number of clusters
+# Plot gap statistics against number of clusters
 k_select(res_annot, model_name = "res_annot", method = "gap_stat", n = 6)
 }
 \seealso{

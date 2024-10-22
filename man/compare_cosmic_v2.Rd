@@ -26,7 +26,7 @@ compare_cosmic_v2(
 
 \item{result_name}{Name of the result list entry. Default \code{"result"}.}
 
-\item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+\item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"}
 for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 
 \item{threshold}{threshold for similarity}

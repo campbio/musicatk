@@ -34,12 +34,13 @@ using \code{\link[plotly]{plotly}}. Default \code{FALSE}.}
 Generates a ggplot or plotly object
 }
 \description{
-Displays the observed distribution of counts for each mutation type, 
-the distribution of reconstructed counts for each mutation type using 
-the inferred mutational signatures, and the difference between the 
+Displays the observed distribution of counts for each mutation type,
+the distribution of reconstructed counts for each mutation type using
+the inferred mutational signatures, and the difference between the
 two distributions.
 }
 \examples{
 data(res)
-plot_sample_reconstruction_error(res, "TCGA-ER-A197-06A-32D-A197-08", model_id = "res")
+plot_sample_reconstruction_error(res, "TCGA-ER-A197-06A-32D-A197-08",
+model_id = "res")
 }

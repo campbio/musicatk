@@ -48,7 +48,7 @@ stored in the \code{UMAP} slot of the \code{\linkS4class{result_model}}
 object for the model.
 }
 \description{
-Proportional sample exposures will be used as input into the 
+Proportional sample exposures will be used as input into the
 \code{\link[uwot]{umap}} function to generate a two dimensional UMAP.
 }
 \examples{

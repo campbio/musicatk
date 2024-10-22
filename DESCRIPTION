@@ -14,7 +14,7 @@ biocViews:
     SomaticMutation,
     VariantAnnotation
 Depends:
-    R (>= 4.0.0), 
+    R (>= 4.4.0), 
     NMF
 Imports:
     SummarizedExperiment,
@@ -63,7 +63,8 @@ Imports:
     tidyverse,
     ggpubr,
     Matrix (>= 1.6.1),
-    scales
+    scales,
+    conclust
 Suggests:
     TCGAbiolinks,
     shinyBS,

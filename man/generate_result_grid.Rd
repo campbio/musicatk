@@ -16,7 +16,8 @@ generate_result_grid(
   seed = NULL,
   par_cores = FALSE,
   verbose = FALSE,
-  make_copy = FALSE
+  make_copy = FALSE,
+  table_name = NULL
 )
 }
 \arguments{
@@ -48,16 +49,20 @@ posterior loglikihood}
 object is updated and nothing is returned. If \code{TRUE}, a new
 \code{\linkS4class{musica}} object is created and returned. Default
 \code{FALSE}.}
+
+\item{table_name}{Use modality instead}
 }
 \value{
-Returns nothing or a new \code{\linkS4class{musica}} object, depending
-on the \code{make_copy} parameter.
+Returns nothing or a new \code{\linkS4class{musica}} object,
+depending on the \code{make_copy} parameter.
 }
 \description{
 Generate result_grid from musica based on annotation and range of k
 }
 \examples{
 data(musica_sbs96)
-grid <- generate_result_grid(musica_sbs96, "SBS96", "lda", k_start = 2, 
-k_end = 5)
+grid <- generate_result_grid(musica_sbs96, "SBS96", "lda",
+  k_start = 2,
+  k_end = 5
+)
 }

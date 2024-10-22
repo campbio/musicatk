@@ -10,8 +10,8 @@ NULL
 #' g <- select_genome(x = "hg38")
 #' @export
 select_genome <- function(x) {
-  #Choose genome build version
-  #Keep for now as a helper function
+  # Choose genome build version
+  # Keep for now as a helper function
   if (tolower(x) %in% c("hg19", "19", "grch37")) {
     g <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
   } else if (tolower(x) %in% c("hg38", "38", "grch38")) {
@@ -21,10 +21,12 @@ select_genome <- function(x) {
   } else if (tolower(x) %in% c("mm9", "mgscv37")) {
     g <- BSgenome.Mmusculus.UCSC.mm9::BSgenome.Mmusculus.UCSC.mm9
   } else {
-    stop("That genome build is not currently selectable with this function. ",
-         "Run BSgenome::available.genomes() to get a full list of availble ",
-         "genomes or use BSgenome::forgeBSgenomeDataPkg to create a ",
-         "custome genome package.")
+    stop(
+      "That genome build is not currently selectable with this function. ",
+      "Run BSgenome::available.genomes() to get a full list of availble ",
+      "genomes or use BSgenome::forgeBSgenomeDataPkg to create a ",
+      "custome genome package."
+    )
   }
   return(g)
 }
@@ -102,11 +104,14 @@ select_genome <- function(x) {
 #' @examples
 #' # Get loations of two vcf files and a maf file
 #' luad_vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
-#' package = "musicatk")
+#'   package = "musicatk"
+#' )
 #' lusc_maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-#' package = "musicatk")
+#'   package = "musicatk"
+#' )
 #' melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
-#'   pattern = glob2rx("*SKCM*vcf"), full.names = TRUE)
+#'   pattern = glob2rx("*SKCM*vcf"), full.names = TRUE
+#' )
 #'
 #' # Read all files in at once
 #' inputs <- c(luad_vcf_file, melanoma_vcfs, lusc_maf_file)
@@ -134,8 +139,6 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
                              alt_col = "alt",
                              sample_col = "sample",
                              verbose = TRUE) {
-
-
   if (!is(inputs, "list")) {
     inputs <- as.list(inputs)
   }
@@ -145,74 +148,92 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
   multiallele <- match.arg(multiallele)
   if (!is.null(rename)) {
     if (length(rename) != length(input_list)) {
-      stop("The length of 'rename' must be the same as the length of 'input'.",
-           " Only vcf object or file.vcf inputs will be renamed.")
+      stop(
+        "The length of 'rename' must be the same as the length of 'input'.",
+        " Only vcf object or file.vcf inputs will be renamed."
+      )
     }
   } else {
     rename <- rep(NULL, length(input_list))
   }
   if (!is.null(id)) {
     if (length(id) != length(input_list)) {
-      stop("The lenght of 'rename' must be the same as the length of 'input'.",
-           " This only applies to vcf object or file.vcf inputs.")
+      stop(
+        "The lenght of 'rename' must be the same as the length of 'input'.",
+        " This only applies to vcf object or file.vcf inputs."
+      )
     }
   } else {
     id <- rep(NULL, length(input_list))
   }
 
-  pb <- utils::txtProgressBar(min = 0, max = length(input_list), initial = 0,
-                                style = 3)
+  pb <- utils::txtProgressBar(
+    min = 0, max = length(input_list), initial = 0,
+    style = 3
+  )
   for (i in seq_along(inputs)) {
     input <- inputs[[i]]
 
     if (inherits(input, c("CollapsedVCF", "ExpandedVCF"))) {
-      dt <- extract_variants_from_vcf(vcf = input,
-                                    id = id[i],
-                                    rename = rename[i],
-                                    sample_field = sample_field,
-                                    filter = filter,
-                                    multiallele = multiallele,
-                                    extra_fields = extra_fields)
+      dt <- extract_variants_from_vcf(
+        vcf = input,
+        id = id[i],
+        rename = rename[i],
+        sample_field = sample_field,
+        filter = filter,
+        multiallele = multiallele,
+        extra_fields = extra_fields
+      )
     } else if (is(input, "MAF")) {
       dt <- extract_variants_from_maf(maf = input, extra_fields = extra_fields)
     } else if (inherits(input, c("matrix", "data.frame"))) {
-      dt <- extract_variants_from_matrix(mat = input,
-                                         extra_fields = extra_fields,
-                                         chromosome_col = chromosome_col,
-                                         start_col = start_col,
-                                         end_col = end_col,
-                                         ref_col = ref_col,
-                                         alt_col = alt_col,
-                                         sample_col = sample_col)
+      dt <- extract_variants_from_matrix(
+        mat = input,
+        extra_fields = extra_fields,
+        chromosome_col = chromosome_col,
+        start_col = start_col,
+        end_col = end_col,
+        ref_col = ref_col,
+        alt_col = alt_col,
+        sample_col = sample_col
+      )
     } else if (is(input, "character")) {
       if (tools::file_ext(input) %in% c("vcf", "vcf.gz")) {
-        dt <- extract_variants_from_vcf_file(vcf_file = input,
-                                             id = id[i],
-                                             rename = rename[i],
-                                             sample_field = sample_field,
-                                             filename_as_id = filename_as_id,
-                                             strip_extension = strip_extension,
-                                             filter = filter,
-                                             multiallele = multiallele,
-                                             extra_fields = extra_fields,
-                                             fix_vcf_errors = fix_vcf_errors)
+        dt <- extract_variants_from_vcf_file(
+          vcf_file = input,
+          id = id[i],
+          rename = rename[i],
+          sample_field = sample_field,
+          filename_as_id = filename_as_id,
+          strip_extension = strip_extension,
+          filter = filter,
+          multiallele = multiallele,
+          extra_fields = extra_fields,
+          fix_vcf_errors = fix_vcf_errors
+        )
       } else if (tools::file_ext(input) %in% c("maf", "maf.gz")) {
-        dt <- extract_variants_from_maf_file(maf_file = input,
-                           extra_fields = extra_fields)
+        dt <- extract_variants_from_maf_file(
+          maf_file = input,
+          extra_fields = extra_fields
+        )
       } else {
         stop("Input file could not be automatically parsed: ", input, " ")
       }
     } else {
-      stop("Each input must be a collapedVCF/expandedVCF object, MAF object ",
-          "file.vcf, file.maf, or a matrix/data.frame object.",
-         "Item ", input, " is of class '", class(input), "'")
+      stop(
+        "Each input must be a collapedVCF/expandedVCF object, MAF object ",
+        "file.vcf, file.maf, or a matrix/data.frame object.",
+        "Item ", input, " is of class '", class(input), "'"
+      )
     }
     input_list[[i]] <- dt
 
     utils::setTxtProgressBar(pb, i)
     if (isTRUE(verbose)) {
-      message("Extracted ", i, " out of ", length(inputs), " inputs: ",
-              input)
+      message(
+        "Extracted ", i, " out of ", length(inputs), " inputs: ",
+        input
+      )
     }
   }
 
@@ -222,9 +243,9 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 
 #' Extracts variants from a VariantAnnotation VCF object
 #'
-#' Aaron - Need to describe differnce between ID, and name in the header, and rename in
-#' terms of naming the sample. Need to describe differences in multiallelic
-#' choices. Also need to describe the automatic error fixing
+#' Aaron - Need to describe differnce between ID, and name in the header, and
+#' rename in terms of naming the sample. Need to describe differences in
+#' multiallelic choices. Also need to describe the automatic error fixing
 #'
 #' @param vcf Location of vcf file
 #' @param id ID of the sample to select from VCF. If \code{NULL}, then the
@@ -249,16 +270,17 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 #' @return Returns a data.table of variants from a vcf
 #' @examples
 #' vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
-#'   package = "musicatk")
+#'   package = "musicatk"
+#' )
 #'
 #' library(VariantAnnotation)
 #' vcf <- readVcf(vcf_file)
 #' variants <- extract_variants_from_vcf(vcf = vcf)
 #' @export
 extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
-                      sample_field = NULL, filter = TRUE,
-                      multiallele = c("expand", "exclude"),
-                      extra_fields = NULL) {
+                                      sample_field = NULL, filter = TRUE,
+                                      multiallele = c("expand", "exclude"),
+                                      extra_fields = NULL) {
   multiallele <- match.arg(multiallele)
 
   # Process MultiAllelic Sites
@@ -278,9 +300,11 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
     id <- vcf_samples[1]
   } else {
     if (!(id %in% vcf_samples)) {
-      stop("The value for id, '", id, "', was not found among the list of,",
-           " samples in the VCF: ",
-           paste(vcf_samples, collapse = ", "))
+      stop(
+        "The value for id, '", id, "', was not found among the list of,",
+        " samples in the VCF: ",
+        paste(vcf_samples, collapse = ", ")
+      )
     }
   }
 
@@ -291,13 +315,17 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
   } else if (!is.null(sample_field)) {
     df <- VariantAnnotation::meta(VariantAnnotation::header(vcf))$SAMPLE
     if (!(id %in% rownames(df))) {
-      stop("The value for id, '", id, "' was not found in the 'SAMPLE' ",
-           "metadata within the VCF.")
+      stop(
+        "The value for id, '", id, "' was not found in the 'SAMPLE' ",
+        "metadata within the VCF."
+      )
     }
     if (!sample_field %in% colnames(df)) {
-      stop("The value for header_sample_name_field, '",
-           sample_field, "' was not found ",
-           "in the 'SAMPLE' metadata within the VCF.")
+      stop(
+        "The value for header_sample_name_field, '",
+        sample_field, "' was not found ",
+        "in the 'SAMPLE' metadata within the VCF."
+      )
     }
     vcf_name <- as.character(df[id, sample_field])
   }
@@ -307,8 +335,10 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
     # Remove filtered rows
     pass <- which(SummarizedExperiment::rowRanges(vcf)$FILTER == "PASS")
     if (length(pass) == 0) {
-      warning("No variants passed the filter for VCF with the id/name: ",
-              id, "/", vcf_name)
+      warning(
+        "No variants passed the filter for VCF with the id/name: ",
+        id, "/", vcf_name
+      )
       return(NULL)
     }
     vcf <- vcf[pass, ]
@@ -318,12 +348,15 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
   pass <- stringr::str_detect(VariantAnnotation::geno(vcf)$GT[, id], "[1-9]")
   if (sum(pass) == 0) {
     if (id != vcf_name) {
-      warning("All variants matched the reference allele ",
-              "for: ", vcf_name, " (", id, ")")
-
+      warning(
+        "All variants matched the reference allele ",
+        "for: ", vcf_name, " (", id, ")"
+      )
     } else {
-      warning("All variants matched the reference allele ",
-              "for id: ", id)
+      warning(
+        "All variants matched the reference allele ",
+        "for id: ", id
+      )
     }
     return(NULL)
   }
@@ -331,21 +364,31 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 
   # What does this do?
   rows <- SummarizedExperiment::rowRanges(vcf)
-  dt <- cbind(data.table::as.data.table(rows)[, c("seqnames", "REF", "ALT",
-                                                 "start", "end")],
-              "sample" = vcf_name)
+  dt <- cbind(
+    data.table::as.data.table(rows)[, c(
+      "seqnames", "REF", "ALT",
+      "start", "end"
+    )],
+    "sample" = vcf_name
+  )
 
-  data.table::setnames(dt, c("seqnames", "start", "end",
-                             "REF", "ALT", "sample"),
-                       .required_musica_headers())
+  data.table::setnames(
+    dt, c(
+      "seqnames", "start", "end",
+      "REF", "ALT", "sample"
+    ),
+    .required_musica_headers()
+  )
 
   # Add extra columns if requested
   if (!is.null(extra_fields)) {
     info_field <- VariantAnnotation::info(vcf)
     temp <- setdiff(extra_fields, colnames(info_field))
     if (length(temp) > 0) {
-      warning("Values in extra_fields were not found in the INFO field within",
-              " the VCF: ", paste(temp, collapse = ", "))
+      warning(
+        "Values in extra_fields were not found in the INFO field within",
+        " the VCF: ", paste(temp, collapse = ", ")
+      )
     }
     temp <- intersect(extra_fields, colnames(info_field))
     dt <- cbind(dt, info_field[, temp])
@@ -390,20 +433,22 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 #' @return Returns a data.table of variants extracted from a vcf
 #' @examples
 #' vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
-#'   package = "musicatk")
+#'   package = "musicatk"
+#' )
 #' variants <- extract_variants_from_vcf_file(vcf_file = vcf)
 #' @export
 extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
                                            sample_field = NULL,
                                            filename_as_id = FALSE,
-                                           strip_extension = c(".vcf",
-                                                               ".vcf.gz",
-                                                               ".gz"),
+                                           strip_extension = c(
+                                             ".vcf",
+                                             ".vcf.gz",
+                                             ".gz"
+                                           ),
                                            filter = TRUE,
                                            multiallele = c("expand", "exclude"),
                                            extra_fields = NULL,
                                            fix_vcf_errors = TRUE) {
-
   vcf <- try(VariantAnnotation::readVcf(vcf_file), silent = TRUE)
 
   # Extract the filebase name and use it as the sample name
@@ -413,44 +458,58 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
       if (isTRUE(strip_extension)) {
         rename <- tools::file_path_sans_ext(rename)
       } else {
-        rename <- gsub(paste(paste0(strip_extension, "$"), collapse = "|"),
-                       "", rename)
+        rename <- gsub(
+          paste(paste0(strip_extension, "$"), collapse = "|"),
+          "", rename
+        )
       }
     }
   }
 
   # Automatically try to fix some types of errors in VCF files
   if (is(vcf, "try-error") && fix_vcf_errors) {
-    alt_input <- utils::read.table(vcf_file, stringsAsFactors = FALSE,
-                            check.names = FALSE, comment.char = "", skip = 7,
-                            header = TRUE)
+    alt_input <- utils::read.table(vcf_file,
+      stringsAsFactors = FALSE,
+      check.names = FALSE, comment.char = "", skip = 7,
+      header = TRUE
+    )
     sample_header_name <- names(alt_input[10])
-    vcf_columns <- c("#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER",
-                     "INFO", "FORMAT")
+    vcf_columns <- c(
+      "#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER",
+      "INFO", "FORMAT"
+    )
     if (!all(vcf_columns %in% names(alt_input))) {
       stop(paste("VCF File: ", vcf_file,
-                 " could not be recovered, please review.",
-                 " \nAdditional information: \n", vcf[1], sep = ""))
+        " could not be recovered, please review.",
+        " \nAdditional information: \n", vcf[1],
+        sep = ""
+      ))
     }
     non_letters <- rawToChar(as.raw(c(32:47, 58:64, 91, 93:96, 123:126)),
-                             multiple = TRUE)
-    malformed_rows <- c(which(alt_input$REF == 0), which(alt_input$ALT == 0),
-                        grep("#", alt_input$`#CHROM`))
+      multiple = TRUE
+    )
+    malformed_rows <- c(
+      which(alt_input$REF == 0), which(alt_input$ALT == 0),
+      grep("#", alt_input$`#CHROM`)
+    )
     if (length(malformed_rows) > 0) {
       alt_input <- alt_input[-malformed_rows, ]
     } else {
       stop(paste("VCF File: ", vcf_file,
-                 " could not be recovered, please review.",
-                 " \nAdditional information: \n", vcf[1], sep = ""))
+        " could not be recovered, please review.",
+        " \nAdditional information: \n", vcf[1],
+        sep = ""
+      ))
     }
     alt_input[, "End_Position"] <- alt_input[, "POS"]
-    alt_input <- alt_input[, colnames(alt_input)[c(seq_len(2), ncol(alt_input),
-                                                   seq(4, (ncol(alt_input) - 1))
-                                                   )]]
+    alt_input <- alt_input[, colnames(alt_input)[c(
+      seq_len(2), ncol(alt_input),
+      seq(4, (ncol(alt_input) - 1))
+    )]]
 
     # Needs to be changed so that it creates a VCF object which can be
     # passed to extract_variants_from_vcf
-    #dt <- cbind(data.table::as.data.table(alt_input[, c("#CHROM", "POS",
+    # dt <- cbind(data.table::as.data.table(alt_input[, c("#CHROM", "POS",
     #                                                    "End_Position", "REF",
     #                                                    "ALT", "QUAL",
     #                                                    "FILTER")]),
@@ -461,20 +520,24 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
     #                            "Tumor_Seq_Allele2" = "ALT", "Chromosome" =
     #                              "#CHROM", "Start_Position" = "POS",
     #                            "Alleles" = sample_header_name)
-    #warning(paste("\nVCF File: ", vcf_file,
+    # warning(paste("\nVCF File: ", vcf_file,
     #           " is malformed but could be recovered, review optional.",
     #           " \nAdditional information: \n", vcf[1],
     #           sep = ""))
   } else if (is(vcf, "try-error")) {
-    stop("VCF File: ", vcf_file,
-                  " is malformed and automatic error fixing is disabled.",
-                  " \nAdditional information: \n", vcf[1])
+    stop(
+      "VCF File: ", vcf_file,
+      " is malformed and automatic error fixing is disabled.",
+      " \nAdditional information: \n", vcf[1]
+    )
   } else {
-    dt <- extract_variants_from_vcf(vcf = vcf, id = id, rename = rename,
-                                    sample_field = sample_field,
-                                    multiallele = multiallele,
-                                    filter = filter,
-                                    extra_fields = extra_fields)
+    dt <- extract_variants_from_vcf(
+      vcf = vcf, id = id, rename = rename,
+      sample_field = sample_field,
+      multiallele = multiallele,
+      filter = filter,
+      extra_fields = extra_fields
+    )
   }
   return(dt)
 }
@@ -490,7 +553,8 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
 #' create a \code{musica} object.
 #' @examples
 #' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-#' package = "musicatk")
+#'   package = "musicatk"
+#' )
 #' library(maftools)
 #' maf <- read.maf(maf_file)
 #' variants <- extract_variants_from_maf(maf = maf)
@@ -501,13 +565,15 @@ extract_variants_from_maf <- function(maf, extra_fields = NULL) {
          from package 'maftools'")
   }
   dt <- rbind(maf@data, maf@maf.silent)
-  dt <- extract_variants_from_matrix(mat = dt, chromosome_col = "Chromosome",
-                                     start_col = "Start_Position",
-                                     end_col = "End_Position",
-                                     ref_col = "Tumor_Seq_Allele1",
-                                     alt_col = "Tumor_Seq_Allele2",
-                                     sample_col = "Tumor_Sample_Barcode",
-                                     extra_fields = extra_fields)
+  dt <- extract_variants_from_matrix(
+    mat = dt, chromosome_col = "Chromosome",
+    start_col = "Start_Position",
+    end_col = "End_Position",
+    ref_col = "Tumor_Seq_Allele1",
+    alt_col = "Tumor_Seq_Allele2",
+    sample_col = "Tumor_Sample_Barcode",
+    extra_fields = extra_fields
+  )
   return(dt)
 }
 
@@ -536,13 +602,16 @@ extract_variants_from_maf <- function(maf, extra_fields = NULL) {
 #' create a \code{musica} object.
 #' @examples
 #' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-#' package = "musicatk")
+#'   package = "musicatk"
+#' )
 #' library(maftools)
 #' maf <- read.maf(maf_file)
 #' variants <- extract_variants_from_maf(maf = maf)
-#' variants <- extract_variants_from_matrix(mat = variants, 
-#' chromosome_col = "chr", start_col = "start", end_col = "end", 
-#' ref_col = "ref", alt_col = "alt", sample_col = "sample")
+#' variants <- extract_variants_from_matrix(
+#'   mat = variants,
+#'   chromosome_col = "chr", start_col = "start", end_col = "end",
+#'   ref_col = "ref", alt_col = "alt", sample_col = "sample"
+#' )
 #' @export
 extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
                                          start_col = "Start_Position",
@@ -555,19 +624,22 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
     stop("'mat' needs to inherit classes 'matrix' or 'data.frame'")
   }
   dt <- .check_headers(data.table::as.data.table(mat),
-                       chromosome = chromosome_col,
-                       start = start_col,
-                       end = end_col,
-                       ref = ref_col,
-                       alt = alt_col,
-                       sample = sample_col)
+    chromosome = chromosome_col,
+    start = start_col,
+    end = end_col,
+    ref = ref_col,
+    alt = alt_col,
+    sample = sample_col
+  )
 
   # Add extra columns if requested
   if (!is.null(extra_fields)) {
     temp <- setdiff(extra_fields, colnames(dt))
     if (length(temp) > 0) {
-      warning("Values in 'extra_fields' were not found in column names in",
-              " the MAF object: ", paste(temp, collapse = ", "))
+      warning(
+        "Values in 'extra_fields' were not found in column names in",
+        " the MAF object: ", paste(temp, collapse = ", ")
+      )
     }
     extra_fields <- intersect(extra_fields, colnames(dt))
   }
@@ -588,7 +660,8 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
 #' @return Returns a data.table of variants from a maf
 #' @examples
 #' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-#' package = "musicatk")
+#'   package = "musicatk"
+#' )
 #' maf <- extract_variants_from_maf_file(maf_file = maf_file)
 #' @export
 extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
@@ -608,7 +681,7 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' can be mapped using the \code{chromosome_col}, \code{start_col},
 #' \code{end_col}, \code{ref_col}, \code{alt_col}, and
 #' \code{sample_col parameters}.
-#' 
+#'
 #' @param x A data.table, matrix, or data.frame that contains columns with
 #' the variant information.
 #' @param genome A \linkS4class{BSgenome} object indicating which genome
@@ -637,16 +710,17 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' id for each variant. Default \code{"sample"}.
 #' @param extra_fields Which additional fields to extract and include in
 #' the musica object. Default \code{NULL}.
-#' @param standardize_indels Flag to convert indel style (e.g. `C > CAT` 
+#' @param standardize_indels Flag to convert indel style (e.g. `C > CAT`
 #' becomes `- > AT` and `GCACA > G` becomes `CACA > -`)
-#' @param convert_dbs Flag to convert adjacent SBS into DBS (original SBS are 
+#' @param convert_dbs Flag to convert adjacent SBS into DBS (original SBS are
 #' removed)
 #' @param verbose Whether to print status messages during error checking.
 #' Default \code{TRUE}.
 #' @return Returns a musica object
 #' @examples
 #' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-#' package = "musicatk")
+#'   package = "musicatk"
+#' )
 #' variants <- extract_variants_from_maf_file(maf_file)
 #' g <- select_genome("38")
 #' musica <- create_musica_from_variants(x = variants, genome = g)
@@ -664,82 +738,90 @@ create_musica_from_variants <- function(x, genome,
                                         standardize_indels = TRUE,
                                         convert_dbs = TRUE,
                                         verbose = TRUE) {
-  
-  
-  
   used_fields <- c(.required_musica_headers(), extra_fields)
   if (canCoerce(x, "data.table")) {
     dt <- data.table::as.data.table(x)
   } else {
-    stop("'x' needs to be an object which can be coerced to a data.table. ",
-         "Valid classes include but are not limited to 'matrix', 'data.frame'",
-         " and 'data.table'.")
+    stop(
+      "'x' needs to be an object which can be coerced to a data.table. ",
+      "Valid classes include but are not limited to 'matrix', 'data.frame'",
+      " and 'data.table'."
+    )
   }
   if (!inherits(genome, "BSgenome")) {
-    stop("'genome' needs to be a 'BSgenome' object containing the genome ",
-         "reference that was used when calling the variants.")
+    stop(
+      "'genome' needs to be a 'BSgenome' object containing the genome ",
+      "reference that was used when calling the variants."
+    )
   }
-  
+
   # Check for necessary columns and change column names to stardard object
   dt <- .check_headers(dt,
-                       chromosome = chromosome_col,
-                       start = start_col,
-                       end = end_col,
-                       ref = ref_col,
-                       alt = alt_col,
-                       sample = sample_col,
-                       update_fields = TRUE)
-  
+    chromosome = chromosome_col,
+    start = start_col,
+    end = end_col,
+    ref = ref_col,
+    alt = alt_col,
+    sample = sample_col,
+    update_fields = TRUE
+  )
+
   # Subset to necessary columns and add variant type
   all_fields <- c(.required_musica_headers(), extra_fields)
   dt <- dt[, all_fields, with = FALSE]
   dt <- add_variant_type(dt)
-  
+
   # Some non-variants are included (e.g. T>T). These will be removed
   non_variant <- which(dt$ref == dt$alt)
   if (length(non_variant) > 0) {
-    warning(length(non_variant), " variants has the same reference and ",
-            "alternate allele. These variants were excluded.")
+    warning(
+      length(non_variant), " variants has the same reference and ",
+      "alternate allele. These variants were excluded."
+    )
     dt <- dt[-non_variant, ]
   }
-  
+
   if (isTRUE(check_ref_chromosomes)) {
     # Check for genome style and attempt to convert variants to reference
     # genome if they don't match
     if (isTRUE(verbose)) {
-      message("Checking that chromosomes in the 'variant' object match ",
-              "chromosomes in the 'genome' object.")
+      message(
+        "Checking that chromosomes in the 'variant' object match ",
+        "chromosomes in the 'genome' object."
+      )
     }
     dt <- .check_variant_genome(dt = dt, genome = genome)
   }
-  
+
   if (isTRUE(check_ref_bases)) {
     if (isTRUE(verbose)) {
-      message("Checking that the reference bases in the 'variant' object ",
-              "match the reference bases in the 'genome' object.")
+      message(
+        "Checking that the reference bases in the 'variant' object ",
+        "match the reference bases in the 'genome' object."
+      )
     }
     .check_variant_ref_in_genome(dt = dt, genome = genome)
   }
-  
+
   if (isTRUE(standardize_indels)) {
     if (isTRUE(verbose)) {
       message("Standardizing INS/DEL style")
     }
-    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% 
+    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in%
                         c("A", "T", "G", "C", "-"))
     if (length(comp_ins > 0)) {
       message("Removing ", length(comp_ins), " compound insertions")
       dt <- dt[-comp_ins, ]
     }
-    
-    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% 
+
+    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in%
                         c("A", "T", "G", "C", "-"))
     if (length(comp_del > 0)) {
       message("Removing ", length(comp_del), " compound deletions")
       dt <- dt[-comp_del, ]
     }
-    
-    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
+
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in%
                    c("A", "T", "G", "C"))
     if (length(ins)) {
       message("Converting ", length(ins), " insertions")
@@ -747,8 +829,8 @@ create_musica_from_variants <- function(x, genome,
       ins_alt <- dt$alt[ins]
       dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
     }
-    
-    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% 
+
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in%
                    c("A", "T", "G", "C"))
     if (length(ins)) {
       message("Converting ", length(ins), " insertions")
@@ -756,8 +838,8 @@ create_musica_from_variants <- function(x, genome,
       ins_alt <- dt$alt[ins]
       dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
     }
-    
-    del <- which(dt$Variant_Type == "DEL" & dt$alt %in% 
+
+    del <- which(dt$Variant_Type == "DEL" & dt$alt %in%
                    c("A", "T", "G", "C"))
     if (length(del)) {
       message("Converting ", length(del), " deletions")
@@ -766,15 +848,15 @@ create_musica_from_variants <- function(x, genome,
       dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
     }
   }
-  
+
   if (isTRUE(convert_dbs)) {
     if (isTRUE(verbose)) {
       message("Converting adjacent SBS into DBS")
     }
     sbs <- which(dt$Variant_Type == "SBS")
     adjacent <- which(diff(dt$start) == 1)
-    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent+1 %in% sbs & 
-                                dt$chr[adjacent] == dt$chr[adjacent+1])]
+    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent + 1 %in% sbs &
+                                dt$chr[adjacent] == dt$chr[adjacent + 1])]
     if (length(dbs_ind) > 0) {
       message(length(dbs_ind), " SBS converted to DBS")
       dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
@@ -784,14 +866,14 @@ create_musica_from_variants <- function(x, genome,
       dt <- dt[-(dbs_ind + 1), ]
     }
   }
-  
+
   # Create and return a musica object
   s <- gtools::mixedsort(unique(dt$sample))
   annot <- data.frame(Samples = factor(s, levels = s))
   dt$sample <- factor(dt$sample, levels = s)
-  
+
   musica <- new("musica", variants = dt, sample_annotations = annot)
-  
+
   return(musica)
 }
 
@@ -802,7 +884,7 @@ create_musica_from_variants <- function(x, genome,
 #' variant-level annotations, sample-level annotations, and count tables and
 #' is used as input to the mutational signature discovery and prediction
 #' algorithms.
-#' 
+#'
 #' @param x A data.table, matrix, or data.frame that contains counts of mutation
 #' types for each sample, with samples as columns.
 #' @param variant_class Mutations are SBS, DBS, or Indel.
@@ -813,22 +895,21 @@ create_musica_from_variants <- function(x, genome,
 #' musica <- create_musica_from_counts(count_table, "SBS96")
 #' @export
 create_musica_from_counts <- function(x, variant_class) {
-  
   if (canCoerce(x, "matrix")) {
     x <- as.matrix(x)
   } else {
-    stop("'count_table' needs to be an object which can be coerced to a matrix. ")
+    stop("'count_table' needs to be an object which can be coerced to a 
+         matrix. ")
   }
-  
+
   # create empty musica object
   musica <- new("musica")
-  
+
   if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-    
-    if (nrow(x) != 96){
+    if (nrow(x) != 96) {
       stop("SBS96 'count_table' must have 96 rows.")
     }
-    
+
     # create SBS mutation type list
     forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
     b1 <- rep(rep(c("A", "C", "G", "T"), each = 4), 6)
@@ -836,91 +917,120 @@ create_musica_from_counts <- function(x, variant_class) {
     b3 <- rep(c("A", "C", "G", "T"), 24)
     mut_trinuc <- apply(cbind(b1, b2, b3), 1, paste, collapse = "")
     mut <- rep(forward_change, each = 16)
-    annotation <- data.frame("motif" = paste0(mut, "_", mut_trinuc),
-                             "mutation" = mut,
-                             "context" = mut_trinuc)
+    annotation <- data.frame(
+      "motif" = paste0(mut, "_", mut_trinuc),
+      "mutation" = mut,
+      "context" = mut_trinuc
+    )
     rownames(annotation) <- annotation$motif
-    
+
     # color mapping for mutation types
-    color_mapping <- c("C>A" = "#5ABCEBFF",
-                       "C>G" = "#050708FF",
-                       "C>T" = "#D33C32FF",
-                       "T>A" = "#CBCACBFF",
-                       "T>C" = "#ABCD72FF",
-                       "T>G" = "#E7C9C6FF")
-    
+    color_mapping <- c(
+      "C>A" = "#5ABCEBFF",
+      "C>G" = "#050708FF",
+      "C>T" = "#D33C32FF",
+      "T>A" = "#CBCACBFF",
+      "T>C" = "#ABCD72FF",
+      "T>G" = "#E7C9C6FF"
+    )
+
     # update count table rownames with SBS96 standard naming
     rownames(x) <- annotation$motif
-    
+
     # create count table object
-    tab <- new("count_table", name = "SBS96", count_table = x,
-               annotation = annotation, features = as.data.frame(annotation$motif[1]),
-               type = S4Vectors::Rle("SBS"), color_variable = "mutation",
-               color_mapping = color_mapping, description = paste0("Single Base Substitution table with",
-                                                                   " one base upstream and downstream"))
-    
+    tab <- new("count_table",
+      name = "SBS96", count_table = x,
+      annotation = annotation, features = as.data.frame(annotation$motif[1]),
+      type = S4Vectors::Rle("SBS"), color_variable = "mutation",
+      color_mapping = color_mapping, description = paste0(
+        "Single Base Substitution table with",
+        " one base upstream and downstream"
+      )
+    )
+
     # add count table to musica object
     tables(musica)[["SBS96"]] <- tab
-    
   } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
-    if (nrow(x) != 78){
+    if (nrow(x) != 78) {
       stop("DBS78 'count_table' must have 78 rows.")
     }
-    
-    full_motif <- c(paste0("AC>NN", "_", c("CA", "CG", "CT", "GA", "GG", "GT",
-                                           "TA", "TG", "TT")),
-                    paste0("AT>NN", "_", c("CA", "CC", "CG", "GA", "GC", "TA")),
-                    paste0("CC>NN", "_", c("AA", "AG", "AT", "GA", "GG", "GT", "TA",
-                                           "TG", "TT")),
-                    paste0("CG>NN", "_", c("AT", "GC", "GT", "TA", "TC", "TT")),
-                    paste0("CT>NN", "_", c("AA", "AC", "AG", "GA", "GC", "GG", "TA",
-                                           "TC", "TG")),
-                    paste0("GC>NN", "_", c("AA", "AG", "AT", "CA", "CG", "TA")),
-                    paste0("TA>NN", "_", c("AT", "CG", "CT", "GC", "GG", "GT")),
-                    paste0("TC>NN", "_", c("AA", "AG", "AT", "CA", "CG", "CT", "GA",
-                                           "GG", "GT")),
-                    paste0("TG>NN", "_", c("AA", "AC", "AT", "CA", "CC", "CT", "GA",
-                                           "GC", "GT")),
-                    paste0("TT>NN", "_", c("AA", "AC", "AG", "CA", "CC", "CG", "GA",
-                                           "GC", "GG")))
-    
-    annotation <- data.frame(motif = full_motif, mutation =
-                               unlist(lapply(strsplit(full_motif, "_"), "[[", 1)),
-                             context = unlist(lapply(strsplit(full_motif, "_"),
-                                                     "[[", 2)),
-                             row.names = full_motif)
-    
+
+    full_motif <- c(
+      paste0("AC>NN", "_", c(
+        "CA", "CG", "CT", "GA", "GG", "GT",
+        "TA", "TG", "TT"
+      )),
+      paste0("AT>NN", "_", c("CA", "CC", "CG", "GA", "GC", "TA")),
+      paste0("CC>NN", "_", c(
+        "AA", "AG", "AT", "GA", "GG", "GT", "TA",
+        "TG", "TT"
+      )),
+      paste0("CG>NN", "_", c("AT", "GC", "GT", "TA", "TC", "TT")),
+      paste0("CT>NN", "_", c(
+        "AA", "AC", "AG", "GA", "GC", "GG", "TA",
+        "TC", "TG"
+      )),
+      paste0("GC>NN", "_", c("AA", "AG", "AT", "CA", "CG", "TA")),
+      paste0("TA>NN", "_", c("AT", "CG", "CT", "GC", "GG", "GT")),
+      paste0("TC>NN", "_", c(
+        "AA", "AG", "AT", "CA", "CG", "CT", "GA",
+        "GG", "GT"
+      )),
+      paste0("TG>NN", "_", c(
+        "AA", "AC", "AT", "CA", "CC", "CT", "GA",
+        "GC", "GT"
+      )),
+      paste0("TT>NN", "_", c(
+        "AA", "AC", "AG", "CA", "CC", "CG", "GA",
+        "GC", "GG"
+      ))
+    )
+
+    annotation <- data.frame(
+      motif = full_motif, mutation =
+        unlist(lapply(strsplit(full_motif, "_"), "[[", 1)),
+      context = unlist(lapply(
+        strsplit(full_motif, "_"),
+        "[[", 2
+      )),
+      row.names = full_motif
+    )
+
     color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
     names(color_mapping) <- unique(annotation$mutation)
-    
+
     rownames(x) <- annotation$motif
-    
+
     # create count table object
-    tab <- new("count_table", name = "DBS78", count_table = x,
-               annotation = annotation, features = as.data.frame(annotation$motif[1]),
-               type = S4Vectors::Rle("DBS"), color_variable = "mutation",
-               color_mapping = color_mapping, description = paste0("Standard count table for ",
-                                                                   "double base substitutions", 
-                                                                   "using COSMIC v3 schema"))
-    
+    tab <- new("count_table",
+      name = "DBS78", count_table = x,
+      annotation = annotation, features = as.data.frame(annotation$motif[1]),
+      type = S4Vectors::Rle("DBS"), color_variable = "mutation",
+      color_mapping = color_mapping, description = paste0(
+        "Standard count table for ",
+        "double base substitutions",
+        "using COSMIC v3 schema"
+      )
+    )
+
     # add count table to musica object
     tables(musica)[["DBS78"]] <- tab
-    
-    
-  } else if (variant_class %in% c("INDEL", "Indel", "indel", "ind", "IND",
-                                  "ID")) {
+  } else if (variant_class %in% c(
+    "INDEL", "Indel", "indel", "ind", "IND",
+    "ID"
+  )) {
     stop("Not yet supported.")
   } else {
     stop("Only SBS and DBS classes are supported")
   }
-  
+
   return(musica)
 }
 
 
 
 #' Load an external model into a result_model object
-#' 
+#'
 #' This function creates a \linkS4class{result_model} object from signatures,
 #' exposures, and a mutation count table.
 #'
@@ -928,29 +1038,27 @@ create_musica_from_counts <- function(x, variant_class) {
 #' @param exposures A matrix or data.frame of samples by signature weights
 #' @param model_id Name of model
 #' @param modality Modality of the model
-#'
 #' @return A \linkS4class{result_model} object
 #' @examples
 #' signatures <- signatures(res, "result", "SBS96", "res")
 #' exposures <- exposures(res, "result", "SBS96", "res")
 #' model <- create_result_model(signatures, exposures, "example_model", "SBS96")
 #' @export
-create_result_model <- function(signatures, exposures, model_id, modality){
-  
+create_result_model <- function(signatures, exposures, model_id, modality) {
   # create musica result object with given exposures and signatures
-  model_result <- new("result_model", signatures = as.matrix(signatures), 
-                      exposures = as.matrix(exposures), 
-                      num_signatures = dim(signatures)[2], 
-                      model_id = model_id, modality = modality)
-  
+  model_result <- new("result_model",
+    signatures = as.matrix(signatures),
+    exposures = as.matrix(exposures),
+    num_signatures = dim(signatures)[2],
+    model_id = model_id, modality = modality
+  )
+
   return(model_result)
-  
 }
 
 
 
 .check_variant_genome <- function(dt, genome) {
-
   chr_header <- .required_musica_headers()["chromosome"]
   if (!chr_header %in% colnames(dt)) {
     stop("The column '", chr_header, "' was not found in the data.table.")
@@ -962,62 +1070,74 @@ create_result_model <- function(signatures, exposures, model_id, modality){
 
   if (length(diff) > 0) {
     # Try to use GenomeInfoDb to determine style of variants and genome
-    g_error <- try(genome_style <-
-                     GenomeInfoDb::seqlevelsStyle(genome_u)[1],
-                   silent = TRUE)
-    v_error <- try(variant_style <-
-                     GenomeInfoDb::seqlevelsStyle(as.character(chr_u))[1],
-                   silent = TRUE)
+    g_error <- try(
+      genome_style <-
+        GenomeInfoDb::seqlevelsStyle(genome_u)[1],
+      silent = TRUE
+    )
+    v_error <- try(
+      variant_style <-
+        GenomeInfoDb::seqlevelsStyle(as.character(chr_u))[1],
+      silent = TRUE
+    )
 
     inter <- intersect(chr_u, genome_u)
     if (length(inter) == 0) {
       # Error 1: No matching of genome and variants
-      if (is(g_error, "try-error") & is(v_error, "try-error")) {
-        stop("The style of the genome references in the 'variant' and ",
-             "'genome' objects did not match each other or any style ",
-             "from the 'GenomeInfoDb' package. Please ensure that the entries ",
-             "in the'", chr_header, "' column in the variant table match ",
-             "entries in 'seqnames(genome)'. First five chromosomes:\n",
-             "variant: ", paste(head(chr_u, 5), collapse = ", "), "\n",
-             "genome: ", paste(head(genome_u, 5), collapse = ", "))
+      if (is(g_error, "try-error") && is(v_error, "try-error")) {
+        stop(
+          "The style of the genome references in the 'variant' and ",
+          "'genome' objects did not match each other or any style ",
+          "from the 'GenomeInfoDb' package. Please ensure that the entries ",
+          "in the'", chr_header, "' column in the variant table match ",
+          "entries in 'seqnames(genome)'. First five chromosomes:\n",
+          "variant: ", paste(head(chr_u, 5), collapse = ", "), "\n",
+          "genome: ", paste(head(genome_u, 5), collapse = ", ")
+        )
       } else if (is(g_error, "try-error")) {
-        stop("The style of the genome references in the 'variant' and ",
-             "'genome' objects did not match each other. The style for the ",
-             "variant table was determined to be ", variant_style, " by the ",
-             "'GenomeInfoDb' package. However, the 'genome' object did not ",
-             "match any known styles and therefore could not be automatically ",
-             "mapped. Please ensure that the entries ",
-             "in the'", chr_header, "' column in the variant table match ",
-             "entries in 'seqnames(genome)'. First five chromosomes:\n",
-             "variant: ", paste(head(chr_u, 5), collapse = ", "), "\n",
-             "genome: ", paste(head(genome_u, 5), collapse = ", "))
+        stop(
+          "The style of the genome references in the 'variant' and ",
+          "'genome' objects did not match each other. The style for the ",
+          "variant table was determined to be ", variant_style, " by the ",
+          "'GenomeInfoDb' package. However, the 'genome' object did not ",
+          "match any known styles and therefore could not be automatically ",
+          "mapped. Please ensure that the entries ",
+          "in the'", chr_header, "' column in the variant table match ",
+          "entries in 'seqnames(genome)'. First five chromosomes:\n",
+          "variant: ", paste(head(chr_u, 5), collapse = ", "), "\n",
+          "genome: ", paste(head(genome_u, 5), collapse = ", ")
+        )
       } else if (is(v_error, "try-error")) {
-        stop("The style of the genome references in the 'variant' and ",
-             "'genome' objects did not match each other. The style for the ",
-             "genome object was determined to be ", genome_style, " by the ",
-             "'GenomeInfoDb' package. However, the variant table did not ",
-             "match any known styles and therefore could not be automatically ",
-             "mapped. Please ensure that the entries ",
-             "in the'", chr_header, "' column in the variant table match ",
-             "entries in 'seqnames(genome)'. First five chromosomes:\n",
-             "variant: ", paste(head(chr_u, 5), collapse = ", "), "\n",
-             "genome: ", paste(head(genome_u, 5), collapse = ", "))
+        stop(
+          "The style of the genome references in the 'variant' and ",
+          "'genome' objects did not match each other. The style for the ",
+          "genome object was determined to be ", genome_style, " by the ",
+          "'GenomeInfoDb' package. However, the variant table did not ",
+          "match any known styles and therefore could not be automatically ",
+          "mapped. Please ensure that the entries ",
+          "in the'", chr_header, "' column in the variant table match ",
+          "entries in 'seqnames(genome)'. First five chromosomes:\n",
+          "variant: ", paste(head(chr_u, 5), collapse = ", "), "\n",
+          "genome: ", paste(head(genome_u, 5), collapse = ", ")
+        )
       } else {
         # Attempt to map variants to genome object
         new_chr <- as.character(chr)
         map_error <- try(GenomeInfoDb::seqlevelsStyle(new_chr) <-
                            genome_style, silent = TRUE)
         if (is(map_error, "try-error")) {
-          stop("The style of the genome references in the 'variant' and ",
-               "'genome' objects did not match each other. The style for the ",
-               "genome object was determined to be ", genome_style, " and the ",
-               "style of the variants was determined to be ", variant_style,
-               " by the 'GenomeInfoDb' package. However, they were not able ",
-               "to be automatically mapped. Please ensure that the entries ",
-               "in the'", chr_header, "' column in the variant table match ",
-               "entries in 'seqnames(genome)'. First five chromosomes:\n",
-               "variant: ", paste(head(chr_u, 5), collapse = ", "), "\n",
-               "genome: ", paste(head(genome_u, 5), collapse = ", "))
+          stop(
+            "The style of the genome references in the 'variant' and ",
+            "'genome' objects did not match each other. The style for the ",
+            "genome object was determined to be ", genome_style, " and the ",
+            "style of the variants was determined to be ", variant_style,
+            " by the 'GenomeInfoDb' package. However, they were not able ",
+            "to be automatically mapped. Please ensure that the entries ",
+            "in the'", chr_header, "' column in the variant table match ",
+            "entries in 'seqnames(genome)'. First five chromosomes:\n",
+            "variant: ", paste(head(chr_u, 5), collapse = ", "), "\n",
+            "genome: ", paste(head(genome_u, 5), collapse = ", ")
+          )
         } else {
           # Set new chromosomes
           dt[, eval(quote(chr_header))] <- new_chr
@@ -1032,7 +1152,8 @@ create_result_model <- function(signatures, exposures, model_id, modality){
             new.inter <- intersect(new_chr_u, genome_u)
             inter_sum <- sum(new_chr %in% genome_u)
             diff.sum <- sum(!new_chr %in% genome_u)
-            warning("The style of the genome references in the 'variant' and ",
+            warning(
+              "The style of the genome references in the 'variant' and ",
               "'genome' objects did not match each other. The style for the ",
               "genome object was determined to be ", genome_style, " and the ",
               "style of the variants was determined to be ", variant_style,
@@ -1041,18 +1162,20 @@ create_result_model <- function(signatures, exposures, model_id, modality){
               diff.sum, " variants were not able to be converted and ",
               "were excluded from the final variant table. Variant ",
               "chromosomes that were not able to be converted: \n",
-              paste(new_diff, collapse = ", "))
+              paste(new_diff, collapse = ", ")
+            )
           } else {
-            warning("The style of the genome references in the 'variant' and ",
+            warning(
+              "The style of the genome references in the 'variant' and ",
               "'genome' objects did not match each other. The style for the ",
               "genome object was determined to be ", genome_style, " and the ",
               "style of the variants was determined to be ", variant_style,
               " by the 'GenomeInfoDb' package. All variant chromosomes were ",
-              "automatically converted to those in the genome object.")
+              "automatically converted to those in the genome object."
+            )
           }
         }
       }
-
     }
   }
   return(dt)
@@ -1065,18 +1188,22 @@ create_result_model <- function(signatures, exposures, model_id, modality){
   end <- as.numeric(as.data.frame(dt)[, headers["end"]])
   ref <- as.character(as.data.frame(dt)[, headers["ref"]])
 
-  genome_ref <- BSgenome::getSeq(x = genome,
-                   names = chr, start = start, end = end,
-                   as.character = TRUE)
+  genome_ref <- BSgenome::getSeq(
+    x = genome,
+    names = chr, start = start, end = end,
+    as.character = TRUE
+  )
 
   # Only check references that have bases. For example maf files will have "-"
   # for all insertions which cannot be checked.
   ix <- grepl("[^ACGT]", ref)
   no_match_sum <- sum(ref[!ix] != genome_ref[!ix])
   if (no_match_sum > 0) {
-    warning("Reference bases for ", no_match_sum, " out of ",
-         length(ref), " variants did not match the reference base in the ",
-         "'genome'. Make sure the genome reference is correct.")
+    warning(
+      "Reference bases for ", no_match_sum, " out of ",
+      length(ref), " variants did not match the reference base in the ",
+      "'genome'. Make sure the genome reference is correct."
+    )
   }
 }
 .check_headers <- function(dt, chromosome = NULL,
@@ -1089,15 +1216,17 @@ create_result_model <- function(signatures, exposures, model_id, modality){
   if (!is.null(start)) rfields["start"] <- start
   if (!is.null(end)) rfields["end"] <- end
   if (!is.null(ref)) rfields["ref"] <- ref
-  if (!is.null(alt))  rfields["alt"] <- alt
-  if (!is.null(sample))  rfields["sample"] <- sample
+  if (!is.null(alt)) rfields["alt"] <- alt
+  if (!is.null(sample)) rfields["sample"] <- sample
 
   # Check for missing columns
   col.ix <- match(tolower(rfields), tolower(colnames(dt)))
   if (sum(is.na(col.ix) > 0)) {
     missing.cols <- rfields[is.na(col.ix)]
-    stop("Some required columns are missing in the maf: ",
-         paste(missing.cols, collapse = ", "))
+    stop(
+      "Some required columns are missing in the maf: ",
+      paste(missing.cols, collapse = ", ")
+    )
   }
 
   # Adjust column case if needed
@@ -1105,8 +1234,10 @@ create_result_model <- function(signatures, exposures, model_id, modality){
   colnames(dt)[col.ix] <- rfields
   mismatch_ix <- colnames(dt)[col.ix] != prev_col
   if (sum(mismatch_ix) > 0) {
-    warning("Some columns in maf had the wrong case and were automatically ",
-            "adjusted: ", paste(prev_col[mismatch_ix], collapse = ", "))
+    warning(
+      "Some columns in maf had the wrong case and were automatically ",
+      "adjusted: ", paste(prev_col[mismatch_ix], collapse = ", ")
+    )
   }
 
   # Change columns of data.table to match the required musica format
@@ -1117,12 +1248,16 @@ create_result_model <- function(signatures, exposures, model_id, modality){
 }
 
 .required_musica_headers <- function() {
-  return(c(chromosome = "chr", start = "start", end = "end", ref = "ref",
-           alt = "alt", sample = "sample"))
+  return(c(
+    chromosome = "chr", start = "start", end = "end", ref = "ref",
+    alt = "alt", sample = "sample"
+  ))
 }
 
 .required_maf_headers <- function() {
-  return(c(chromosome = "Chromosome", start = "Start_Position",
-           end = "End_Position", ref = "Tumor_Seq_Allele1",
-           alt = "Tumor_Seq_Allele2", sample = "Tumor_Sample_Barcode"))
+  return(c(
+    chromosome = "Chromosome", start = "Start_Position",
+    end = "End_Position", ref = "Tumor_Seq_Allele1",
+    alt = "Tumor_Seq_Allele2", sample = "Tumor_Sample_Barcode"
+  ))
 }

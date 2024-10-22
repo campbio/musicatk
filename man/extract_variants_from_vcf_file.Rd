@@ -66,6 +66,7 @@ Add Description
 }
 \examples{
 vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
-  package = "musicatk")
+  package = "musicatk"
+)
 variants <- extract_variants_from_vcf_file(vcf_file = vcf)
 }

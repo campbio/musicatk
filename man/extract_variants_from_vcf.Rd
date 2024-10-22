@@ -46,13 +46,14 @@ section of the VCF. Default \code{NULL}.}
 Returns a data.table of variants from a vcf
 }
 \description{
-Aaron - Need to describe differnce between ID, and name in the header, and rename in
-terms of naming the sample. Need to describe differences in multiallelic
-choices. Also need to describe the automatic error fixing
+Aaron - Need to describe differnce between ID, and name in the header, and
+rename in terms of naming the sample. Need to describe differences in
+multiallelic choices. Also need to describe the automatic error fixing
 }
 \examples{
 vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
-  package = "musicatk")
+  package = "musicatk"
+)
 
 library(VariantAnnotation)
 vcf <- readVcf(vcf_file)

@@ -52,6 +52,8 @@ differential analysis on the signature exposures of annotated samples.
 }
 \examples{
 data("res_annot")
-exposure_differential_analysis(res_annot, model_name = "res_annot",
-annotation = "Tumor_Subtypes", method="wilcox")
+exposure_differential_analysis(res_annot,
+  model_name = "res_annot",
+  annotation = "Tumor_Subtypes", method = "wilcox"
+)
 }

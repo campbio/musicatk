@@ -26,36 +26,51 @@ NULL
 #' list("tableA", comboTable = list("tableC", "tableD"))
 #' @importFrom S4Vectors Rle
 #' @export
-setClass("count_table", slots = c(name = "character",
-                                  count_table = "array",
-                                  annotation = "data.frame",
-                                  features = "data.frame",
-                                  type = "Rle",
-                                  color_variable = "character",
-                                  color_mapping = "character",
-                                  description = "character"))
+setClass("count_table", slots = c(
+  name = "character",
+  count_table = "array",
+  annotation = "data.frame",
+  features = "data.frame",
+  type = "Rle",
+  color_variable = "character",
+  color_mapping = "character",
+  description = "character"
+))
 
-setMethod("show", "count_table",
-          function(object)    cat("Count_Table: ", object@name,
-                                  c("\nMotifs:", dim(object@count_table)[1], 
-                                    "\nSamples:", dim(object@count_table)[2], 
-                                    "\n"),
-                                  "\n**Annotations: \n",
-                                  paste(capture.output(rbind(head(
-                                    object@annotation), "...")), 
-                                    collapse = "\n"),
-                                  "\n\n**Features: \n",
-                                  paste(capture.output(rbind(head(
-                                    object@features), "...")), 
-                                    collapse = "\n"),
-                                  "\n\n**Types: \n",
-                                  paste0(unique(object@type), "\n"),
-                                  "\n**Color Variable: \n",
-                                  paste0(object@color_variable, "\n"),
-                                  "\n**Color Mapping: \n",
-                                  paste0(object@color_mapping, "\n"),
-                                  "\n**Descriptions: \n",
-                                  paste0(object@description, "\n"))
+setMethod(
+  "show", "count_table",
+  function(object) {
+    cat(
+      "Count_Table: ", object@name,
+      c(
+        "\nMotifs:", dim(object@count_table)[1],
+        "\nSamples:", dim(object@count_table)[2],
+        "\n"
+      ),
+      "\n**Annotations: \n",
+      paste(
+        capture.output(rbind(head(
+          object@annotation
+        ), "...")),
+        collapse = "\n"
+      ),
+      "\n\n**Features: \n",
+      paste(
+        capture.output(rbind(head(
+          object@features
+        ), "...")),
+        collapse = "\n"
+      ),
+      "\n\n**Types: \n",
+      paste0(unique(object@type), "\n"),
+      "\n**Color Variable: \n",
+      paste0(object@color_variable, "\n"),
+      "\n**Color Mapping: \n",
+      paste0(object@color_mapping, "\n"),
+      "\n**Descriptions: \n",
+      paste0(object@description, "\n")
+    )
+  }
 )
 
 get_tab_name <- function(count_table) {

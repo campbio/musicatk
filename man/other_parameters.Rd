@@ -9,7 +9,7 @@
 \alias{other_parameters<-,musica,matrix-method}
 \alias{other_parameters<-,result_collection,matrix-method}
 \alias{other_parameters<-,result_model,matrix-method}
-\title{Retrieve other_parameters from a result_model, result_collection, or 
+\title{Retrieve other_parameters from a result_model, result_collection, or
 musica object}
 \usage{
 other_parameters(x, ...)

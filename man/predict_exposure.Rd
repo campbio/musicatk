@@ -13,7 +13,8 @@ predict_exposure(
   model_id = NULL,
   signatures_to_use = seq_len(ncol(signatures(signature_res))),
   verbose = FALSE,
-  make_copy = FALSE
+  make_copy = FALSE,
+  table_name = NULL
 )
 }
 \arguments{
@@ -46,14 +47,16 @@ object to use. Default is to use all signatures.}
 object is updated and nothing is returned. If \code{TRUE}, a new
 \code{\linkS4class{musica}} object is created and returned. Default
 \code{FALSE}.}
+
+\item{table_name}{Use modality instead}
 }
 \value{
-Returns nothing or a new \code{\linkS4class{musica}} object, depending
-on the \code{make_copy} parameter.
+Returns nothing or a new \code{\linkS4class{musica}} object,
+depending on the \code{make_copy} parameter.
 }
 \description{
 Exposures for samples will be predicted using an existing set
-of signatures stored in a \code{\linkS4class{result_model}} object. 
+of signatures stored in a \code{\linkS4class{result_model}} object.
 Algorithms available for prediction include a modify version of \code{"lda"},
 and \code{"decompTumor2Sig"}.
 }
@@ -62,11 +65,15 @@ data(musica)
 data(cosmic_v2_sigs)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
-result <- predict_exposure(musica = musica, modality = "SBS96",
-signature_res = cosmic_v2_sigs, algorithm = "lda")
+result <- predict_exposure(
+  musica = musica, modality = "SBS96",
+  signature_res = cosmic_v2_sigs, algorithm = "lda"
+)
 
 # Predict using LDA-like algorithm with seed set to 1
 set.seed(1)
-predict_exposure(musica = musica, modality = "SBS96",
-signature_res = cosmic_v2_sigs, algorithm = "lda")
+predict_exposure(
+  musica = musica, modality = "SBS96",
+  signature_res = cosmic_v2_sigs, algorithm = "lda"
+)
 }

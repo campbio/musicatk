@@ -17,7 +17,7 @@ combine_count_tables(
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{to_comb}{A vector of table names to combine. Each table must already 
+\item{to_comb}{A vector of table names to combine. Each table must already
 exist within the input musica object}
 
 \item{name}{Name of table build, must be a new name}

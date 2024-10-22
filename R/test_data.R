@@ -15,7 +15,7 @@
 
 #' musica_annot
 #'
-#' A musica created for testing that includes SBS variants and sample 
+#' A musica created for testing that includes SBS variants and sample
 #' annotations
 #'
 #' @docType data
@@ -31,7 +31,7 @@
 
 #' musica_sbs96
 #'
-#' A musica created for testing that includes SBS variants and a build counts 
+#' A musica created for testing that includes SBS variants and a build counts
 #' table for them
 #'
 #' @docType data
@@ -47,7 +47,7 @@
 
 #' musica_sbs96_tiny
 #'
-#' A very small musica created for testing that includes SBS variants and a 
+#' A very small musica created for testing that includes SBS variants and a
 #' build counts table for them
 #'
 #' @docType data

@@ -19,23 +19,28 @@ BiocStyle::markdown()
 knitr::opts_chunk$set(echo = TRUE, dev = "png")
 ```
 
-# Introduction
+# Vignettes
+Due to the range of features that are available in musicatk, we have prepared several vignettes to help you get started, which are all available at [https://www.camplab.net/musicatk/](https://www.camplab.net/musicatk/)
+
+#Introduction
 A variety of exogenous exposures or endogenous biological processes can contribute to the overall mutational load observed in human tumors. Many different mutational patterns, or “mutational signatures”, have been identified across different tumor types. These signatures can provide a record of environmental exposure and can give clues about the etiology of carcinogenesis. The Mutational Signature Comprehensive Analysis Toolkit (musicatk) has utilities for extracting variants from a variety of file formats, contains multiple methods for discovery of novel signatures or prediction of known signatures, as well as many types of downstream visualizations for exploratory analysis. This package has the ability to parse and combine multiple motif classes in the mutational signature discovery or prediction processes. Mutation motifs include single base substitutions (SBS), double base substitutions (DBS), insertions (INS) and deletions (DEL).
 
 # Installation
 Currently musicatk can be installed from on Bioconductor using the following code:
 
 ```{r, eval= FALSE}
-if (!requireNamespace("BiocManager", quietly=TRUE)){
-    install.packages("BiocManager")}
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
 BiocManager::install("musicatk")
 ```
 
 To install the latest version from Github, use the following code:
 
 ```{r, eval = FALSE}
-if (!requireNamespace("devtools", quietly=TRUE)){
-    install.packages("devtools")}
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
 
 library(devtools)
 install_github("campbio/musicatk")
@@ -52,6 +57,7 @@ In order to discover or predict mutational signatures, we must first set up
 our musica object by 1) extracting variants from files or objects such as
 VCFs and MAFs, 2) selecting the appropriate reference genome 3) creating a 
 musica object, and 4) building a count tables for our variants of interest.
+Alternatively, a musica object can be created directly from a count table.
 
 ## Extracting variants
 Variants can be extracted from various formats using the following functions:
@@ -67,17 +73,19 @@ Below are some examples of extracting variants from MAF and VCF files:
 
 ```{r extract_variants, message = FALSE}
 # Extract variants from a MAF File
-lusc_maf <- system.file("extdata", "public_TCGA.LUSC.maf", package = "musicatk") 
+lusc_maf <- system.file("extdata", "public_TCGA.LUSC.maf", package = "musicatk")
 lusc.variants <- extract_variants_from_maf_file(maf_file = lusc_maf)
 
 # Extract variants from an individual VCF file
-luad_vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf", 
-                         package = "musicatk")
+luad_vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
+  package = "musicatk"
+)
 luad.variants <- extract_variants_from_vcf_file(vcf_file = luad_vcf)
 
 # Extract variants from multiple files and/or objects
-melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"), 
-                           pattern = glob2rx("*SKCM*vcf"), full.names = TRUE)
+melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
+  pattern = glob2rx("*SKCM*vcf"), full.names = TRUE
+)
 variants <- extract_variants(c(lusc_maf, luad_vcf, melanoma_vcfs))
 ```
 
@@ -128,25 +136,30 @@ data(dbs_musica)
 build_standard_table(dbs_musica, g, "SBS96", overwrite = TRUE)
 build_standard_table(dbs_musica, g, "DBS78", overwrite = TRUE)
 
-#Subset SBS table to DBS samples so they cam be combined
+# Subset SBS table to DBS samples so they cam be combined
 count_tables <- tables(dbs_musica)
 overlap_samples <- which(colnames(count_tables$SBS96@count_table) %in%
                            colnames(count_tables$DBS78@count_table))
-count_tables$SBS96@count_table <- count_tables$SBS96@count_table[, overlap_samples]
+count_tables$SBS96@count_table <-
+  count_tables$SBS96@count_table[, overlap_samples]
 tables(dbs_musica) <- count_tables
 
-combine_count_tables(musica = dbs_musica, to_comb = c("SBS96", "DBS78"), 
-                     name = "sbs_dbs", description = "An example combined 
-                     table, combining SBS96 and DBS", overwrite = TRUE)
+combine_count_tables(
+  musica = dbs_musica, to_comb = c("SBS96", "DBS78"),
+  name = "sbs_dbs", description = "An example combined
+                     table, combining SBS96 and DBS", overwrite = TRUE
+)
 ```
 
 
 ```{r}
 annotate_transcript_strand(musica, "19", build_table = FALSE)
-build_custom_table(musica = musica, variant_annotation = "Transcript_Strand", 
-                   name = "Transcript_Strand", 
-                   description = "A table of transcript strand of variants", 
-                   data_factor = c("T", "U"), overwrite = TRUE)
+build_custom_table(
+  musica = musica, variant_annotation = "Transcript_Strand",
+  name = "Transcript_Strand",
+  description = "A table of transcript strand of variants",
+  data_factor = c("T", "U"), overwrite = TRUE
+)
 ```
 
 
@@ -159,6 +172,19 @@ two related SBS tables) should generally not be combined and used together.
 Custom count tables can be created from user-defined mutation-level annotations
 using the `build_custom_table` function.
 
+# Creating a musica object directly from a count table
+If a count table is already available, a musica object can be created directly
+without need for a variant file and building tables.
+
+```{r create_musica_from_counts}
+luad_count_table_path <- system.file("extdata", "luad_tcga_count_table.csv",
+  package = "musicatk"
+)
+luad_count_table <- as.matrix(read.csv(luad_count_table_path))
+
+musica_from_counts <- create_musica_from_counts(luad_count_table, "SBS96")
+```
+
 # Discovering Signatures and Exposures
 Mutational signature discovery is the process of deconvoluting a matrix
 containing counts for each mutation type in each sample into two matrices: 1)
@@ -168,10 +194,11 @@ signature in each sample. Discovery and prediction results are saved in the
 result_list slot of a `musica` object.
 
 ```{r discover_sigs}
-discover_signatures(musica = musica, modality = "SBS96", num_signatures = 3, 
-                    algorithm = "nmf", model_id = "ex_result", nstart = 10)
+discover_signatures(
+  musica = musica, modality = "SBS96", num_signatures = 3,
+  algorithm = "nmf", model_id = "ex_result", nstart = 10
+)
 ```
-
 
 Supported signature discovery algorithms include:
 
@@ -188,13 +215,26 @@ following functions can be used:
 ```{r result_accessors}
 # Extract the exposure matrix
 expos <- exposures(musica, "result", "SBS96", "ex_result")
-expos[1:3,1:3]
+expos[1:3, 1:3]
 
 # Extract the signature matrix
 sigs <- signatures(musica, "result", "SBS96", "ex_result")
-sigs[1:3,1:3]
+sigs[1:3, 1:3]
 ```
 
+## Determining an appropriate k value
+The k value is the number of signatures that are predicted from a discovery
+method. To help determine an appropriate k value, the `compare_k_vals` function
+can be used to compare to the stability and error associated with various k
+values. Generally, 100 replicates is suggested, as well as a larger span of k
+values to test. Here, fewer k values and replicates are used for simplicity.
+
+```{r compare_k_vals}
+k_comparison <- compare_k_vals(musica, "SBS96",
+  reps = 5, min_k = 2, max_k = 4,
+  algorithm = "nmf"
+)
+```
 
 # Plotting
 
@@ -234,7 +274,8 @@ Counts for individual samples can also be plotted with the `plot_sample_counts` 
 
 ```{r sample_counts}
 samples <- sample_names(musica)
-plot_sample_counts(musica, sample_names = samples[c(3,4,5)], modality = "SBS96")
+plot_sample_counts(musica, sample_names = samples[c(3, 4, 5)],
+                   modality = "SBS96")
 ```
 
 ## Comparison to external signatures (e.g. COSMIC)
@@ -252,14 +293,15 @@ In this example, our Signatures 1 and 2 were most highly correlated to COSMIC Si
 Instead of discovering mutational signatures and exposures from a dataset *de novo*, one might get better results by predicting the exposures of signatures that have been previously estimated in other datasets. We incorporate several methods for estimating exposures given a set of pre-existing signatures. For example, we can predict exposures for COSMIC signatures 1, 4, 7, and 13 in our current dataset:
 
 ```{r predict_cosmic}
-
 # Load COSMIC V2 data
 data("cosmic_v2_sigs")
 
 # Predict pre-existing exposures using the "lda" method
-predict_exposure(musica = musica, modality = "SBS96", 
-                 signature_res = cosmic_v2_sigs, model_id = "ex_pred_result",
-                 signatures_to_use =  c(1, 4, 7, 13), algorithm = "lda")
+predict_exposure(
+  musica = musica, modality = "SBS96",
+  signature_res = cosmic_v2_sigs, model_id = "ex_pred_result",
+  signatures_to_use = c(1, 4, 7, 13), algorithm = "lda"
+)
 
 # Plot exposures
 plot_exposures(musica, "ex_pred_result", plot_type = "bar")
@@ -277,16 +319,20 @@ We can predict exposures for samples in a `musica` object using the signatures f
 
 ```{r predict_previous}
 model <- get_model(musica, "result", "SBS96", "ex_result")
-predict_exposure(musica = musica, modality = "SBS96", 
-                 signature_res = model, algorithm = "lda",
-                 model_id = "pred_our_sigs")
+predict_exposure(
+  musica = musica, modality = "SBS96",
+  signature_res = model, algorithm = "lda",
+  model_id = "pred_our_sigs"
+)
 ```
 
 Of course, this example is not very useful because we are predicting exposures using signatures that were learned on the same set of samples. Most of the time, you want to give the `signature_res` parameter a `result_model` object that was generated using independent samples from those in the input `musica` object. As mentioned above, different signatures in different models can be compared to each other using the `compare_results` function:
 
 ```{r predict_compare}
-compare_results(musica, model_id = "ex_pred_result", 
-                other_model_id = "pred_our_sigs", threshold = 0.60)
+compare_results(musica,
+  model_id = "ex_pred_result",
+  other_model_id = "pred_our_sigs", threshold = 0.60
+)
 ```
 
 # Comparing samples between groups using Sample Annotations
@@ -295,8 +341,9 @@ compare_results(musica, model_id = "ex_pred_result",
 
 We first must add an annotation to the `musica` object
 ```{r annotations}
-annot <- read.table(system.file("extdata", "sample_annotations.txt", 
-                                package = "musicatk"), sep = "\t", header=TRUE)
+annot <- read.table(system.file("extdata", "sample_annotations.txt",
+                                package = "musicatk"),
+                    sep = "\t", header = TRUE)
 samp_annot(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 ```
 
@@ -313,21 +360,26 @@ sample_names(musica)
 As mentioned previously, the `plot_exposures` function can plot sample exposures in a `musica_result` object. It can group exposures by either a sample annotation or by a signature by setting the `group_by` parameter. Here will will group the exposures by the `Tumor_Subtype` annotation:
 
 ```{r plot_exposures_by_subtype}
-plot_exposures(musica, "ex_result", plot_type = "bar", group_by = "annotation", 
-               annotation = "Tumor_Subtypes")
+plot_exposures(musica, "ex_result",
+  plot_type = "bar", group_by = "annotation",
+  annotation = "Tumor_Subtypes"
+)
 ```
 
 The distribution of exposures with respect to annotation can be viewed using boxplots by setting `plot_type = "box"` and `group_by = "annotation"`:
 
 ```{r plot_exposures_box_annot}
-plot_exposures(musica, "ex_result", plot_type = "box", group_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposures(musica, "ex_result", plot_type = "box", group_by = "annotation",
+               annotation = "Tumor_Subtypes")
 ```
 
 Note that the name of the annotation must be supplied via the `annotation` parameter. Boxplots can be converted to violin plots by setting `plot_type = "violin"`. To compare the level of each exposure across sample groups within a signature, we can set `group_by = "signature"` and `color_by = "annotation"`:
 
 ```{r plot_exposures_box_sig}
-plot_exposures(musica, "ex_result", plot_type = "box", group_by = "signature", 
-               color_by = "annotation", annotation = "Tumor_Subtypes")
+plot_exposures(musica, "ex_result",
+  plot_type = "box", group_by = "signature",
+  color_by = "annotation", annotation = "Tumor_Subtypes"
+)
 ```
 
 ## Visualizing samples in 2D using UMAP
@@ -353,8 +405,10 @@ plot_umap(musica, "ex_result", same_scale = FALSE)
 Lastly, points can be colored by a Sample Annotation by setting `color_by = "annotation"` and `annotation` to the name of the annotation:
 
 ```{r umap_plot_annot}
-plot_umap(musica, "ex_result", color_by = "annotation", 
-          annotation = "Tumor_Subtypes", add_annotation_labels = TRUE)
+plot_umap(musica, "ex_result",
+  color_by = "annotation",
+  annotation = "Tumor_Subtypes", add_annotation_labels = TRUE
+)
 ```
 
 When `add_annotation_labels = TRUE`, the centroid of each group is identified 
@@ -388,9 +442,11 @@ when run multiple times with the same settings.
 
 ```{r reproducible_prediction}
 seed <- 1
-withr::with_seed(seed, predict_exposure(musica = musica, modality = "SBS96",
-                                        signature_res = model, algorithm = "lda",
-                                        model_id = "reproducible_ex"))
+withr::with_seed(seed, predict_exposure(
+  musica = musica, modality = "SBS96",
+  signature_res = model, algorithm = "lda",
+  model_id = "reproducible_ex"
+))
 ```
 
 

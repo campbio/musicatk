@@ -26,13 +26,13 @@ function.}
 the same length as the number of samples in the object.}
 }
 \value{
-A new object with the sample annotations added to the table in the 
+A new object with the sample annotations added to the table in the
 \code{sample_annotations} slot.
 }
 \description{
 Sample annotations can be used to store information about
-each sample such as tumor type or treatment status. These are used in 
-downstream plotting functions such as \code{\link{plot_exposures}} or 
+each sample such as tumor type or treatment status. These are used in
+downstream plotting functions such as \code{\link{plot_exposures}} or
 \code{\link{plot_umap}} to group or color samples by a particular annotation.
 }
 \examples{
@@ -46,6 +46,6 @@ data(musica)
 samp_annot(musica, "example") <- rep("ex", 7)
 }
 \seealso{
-See \code{\link{sample_names}} to get a vector of sample names in 
+See \code{\link{sample_names}} to get a vector of sample names in
 the \code{\linkS4class{musica}} object.
 }

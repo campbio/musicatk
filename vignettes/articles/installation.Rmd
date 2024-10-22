@@ -8,8 +8,9 @@ Mutational signatures are carcinogenic exposures or aberrant cellular processes 
 To install the latest stable release of **musicatk** from [Bioconductor](http://bioconductor.org/packages/musicatk/):
 
 ```{r bioc, eval = FALSE}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
 BiocManager::install("musicatk")
 ```
 

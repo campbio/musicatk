@@ -35,7 +35,8 @@ parameter(x, ...) <- value
 a list of parameters
 }
 \description{
-The \code{parameter} contains input parameters used in the model
+The \code{parameter} contains input parameters used in the
+model
 }
 \examples{
 data(res)

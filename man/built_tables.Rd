@@ -18,7 +18,7 @@ function.}
 The names of created count_tables
 }
 \description{
-The \code{count_tables} contains standard and/or custom 
+The \code{count_tables} contains standard and/or custom
 count tables created from variants
 }
 \examples{

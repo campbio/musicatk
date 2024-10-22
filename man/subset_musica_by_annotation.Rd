@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_musica.R
 \name{subset_musica_by_annotation}
 \alias{subset_musica_by_annotation}
-\title{Creates a new musica object subsetted to only one value of a sample annotation}
+\title{Creates a new musica object subsetted to only one value of a sample
+annotation}
 \usage{
 subset_musica_by_annotation(musica, annot_col, annot_names)
 }
@@ -19,15 +20,19 @@ and variants subsetted to only contains samples of the specified annotation
 type
 }
 \description{
-Creates a new musica object subsetted to only one value of a sample annotation
+Creates a new musica object subsetted to only one value of a sample
+annotation
 }
 \examples{
 data(musica_sbs96)
-annot <- read.table(system.file("extdata", "sample_annotations.txt", 
-package = "musicatk"), sep = "\t", header=TRUE)
+annot <- read.table(system.file("extdata", "sample_annotations.txt",
+  package = "musicatk"
+), sep = "\t", header = TRUE)
 
 samp_annot(musica_sbs96, "Tumor_Subtypes") <- annot$Tumor_Subtypes
 
-musica_sbs96 <- subset_musica_by_annotation(musica_sbs96, "Tumor_Subtypes", 
-"Lung")
+musica_sbs96 <- subset_musica_by_annotation(
+  musica_sbs96, "Tumor_Subtypes",
+  "Lung"
+)
 }

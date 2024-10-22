@@ -22,7 +22,9 @@ differential analysis created by \code{exposure_differential_analysis}.
 }
 \examples{
 data("res_annot")
-analysis <- exposure_differential_analysis(res_annot, model_name = "res_annot",
-annotation = "Tumor_Subtypes", method="wilcox")
+analysis <- exposure_differential_analysis(res_annot,
+  model_name = "res_annot",
+  annotation = "Tumor_Subtypes", method = "wilcox"
+)
 plot_differential_analysis(analysis, "glm", 2)
 }

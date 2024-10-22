@@ -34,7 +34,7 @@ discovery or prediction.}
 to plot. Default \code{"result"}.}
 
 \item{color_variable}{Name of the column in the variant annotation data.frame
-to use for coloring the mutation type bars. The variant annotation data.frame 
+to use for coloring the mutation type bars. The variant annotation data.frame
 can be found within the count table of the \code{\linkS4class{musica}}
 object. If \code{NULL}, then the default column specified in the count
 table will be used. Default \code{NULL}.}
@@ -42,7 +42,7 @@ table will be used. Default \code{NULL}.}
 \item{color_mapping}{A character vector used to map items in the
 \code{color_variable} to a color. The items in \code{color_mapping}
 correspond to the colors. The names of the items in \code{color_mapping}
-should correspond to the uniqeu items in \code{color_variable}. If
+should correspond to the unique items in \code{color_variable}. If
 \code{NULL}, then the default \code{color_mapping} specified in the count
 table will be used. Default \code{NULL}.}
 
@@ -51,23 +51,23 @@ table will be used. Default \code{NULL}.}
 \item{show_x_labels}{If \code{TRUE}, the labels for the mutation types
 on the x-axis will be shown. Default \code{TRUE}.}
 
-\item{show_y_labels}{If \code{TRUE}, the y-axis ticks and labels will be 
+\item{show_y_labels}{If \code{TRUE}, the y-axis ticks and labels will be
 shown. Default \code{TRUE}.}
 
 \item{same_scale}{If \code{TRUE}, the scale of the probability for each
 signature will be the same. If \code{FALSE}, then the scale of the y-axis
 will be adjusted for each signature. Default \code{FALE}.}
 
-\item{y_max}{Vector of maximum y-axis limits for each signature. One value 
+\item{y_max}{Vector of maximum y-axis limits for each signature. One value
 may also be provided to specify a constant y-axis limit for all signatures.
-Vector length must be 1 or equivalent to the number of signatures. Default 
+Vector length must be 1 or equivalent to the number of signatures. Default
 \code{NULL}.}
 
 \item{annotation}{Vector of annotations to be displayed in the top right
 corner of each signature. Vector length must be equivalent to the number of
 signatures. Default \code{NULL}.}
 
-\item{percent}{If \code{TRUE}, the y-axis will be represented in percent 
+\item{percent}{If \code{TRUE}, the y-axis will be represented in percent
 format instead of mutation counts. Default \code{TRUE}.}
 
 \item{plotly}{If \code{TRUE}, the the plot will be made interactive

@@ -8,5 +8,5 @@
 #' @usage lhs \%>\% rhs
 #' @return NA
 #' @examples
-#' c(1,2) %>% barplot()
+#' c(1, 2) %>% barplot()
 NULL

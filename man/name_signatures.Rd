@@ -34,6 +34,8 @@ Rename signatures for a model
 }
 \examples{
 data(res)
-name_signatures(res, model_id = "res", 
-name_vector = c("smoking", "apobec", "unknown"))
+name_signatures(res,
+  model_id = "res",
+  name_vector = c("smoking", "apobec", "unknown")
+)
 }

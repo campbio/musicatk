@@ -12,7 +12,7 @@ See [create_musica_from_variants()] and [create_musica_from_counts()].
 data(musica_annot)
 }
 \description{
-A musica created for testing that includes SBS variants and sample 
+A musica created for testing that includes SBS variants and sample
 annotations
 }
 \keyword{datasets}
