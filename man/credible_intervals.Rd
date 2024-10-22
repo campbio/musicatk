@@ -9,7 +9,7 @@
 \alias{credible_intervals<-,musica,matrix-method}
 \alias{credible_intervals<-,result_collection,matrix-method}
 \alias{credible_intervals<-,result_model,matrix-method}
-\title{Retrieve credible_intervals from a result_model, result_collection, or 
+\title{Retrieve credible_intervals from a result_model, result_collection, or
 musica object}
 \usage{
 credible_intervals(x, ...)

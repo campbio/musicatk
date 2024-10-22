@@ -40,7 +40,7 @@ to compare. Default \code{"result"}.}
 
 \item{threshold}{threshold for similarity}
 
-\item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
+\item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"}
 for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 
 \item{result_rename}{title for plot of first result signatures}
@@ -62,6 +62,8 @@ Compare two result files to find similar signatures
 }
 \examples{
 data(res)
-compare_results(res, model_id = "res", other_model_id = "res",
-modality = "SBS96", threshold = 0.8)
+compare_results(res,
+  model_id = "res", other_model_id = "res",
+  modality = "SBS96", threshold = 0.8
+)
 }

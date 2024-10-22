@@ -13,6 +13,6 @@ NA
 Pipe operator
 }
 \examples{
-c(1,2) \%>\% barplot()
+c(1, 2) \%>\% barplot()
 }
 \keyword{internal}

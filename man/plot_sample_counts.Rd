@@ -12,7 +12,8 @@ plot_sample_counts(
   show_x_labels = TRUE,
   show_y_labels = TRUE,
   same_scale = TRUE,
-  annotation = NULL
+  annotation = NULL,
+  table_name = NULL
 )
 }
 \arguments{
@@ -20,14 +21,15 @@ plot_sample_counts(
 
 \item{sample_names}{Names of the samples to plot.}
 
-\item{modality}{Name of table used for plotting counts. Default \code{"SBS96"}.}
+\item{modality}{Name of table used for plotting counts. Default
+\code{"SBS96"}.}
 
 \item{text_size}{Size of axis text. Default \code{10}.}
 
 \item{show_x_labels}{If \code{TRUE}, the labels for the mutation types
 on the x-axis will be shown. Default \code{TRUE}.}
 
-\item{show_y_labels}{If \code{TRUE}, the y-axis ticks and labels will be 
+\item{show_y_labels}{If \code{TRUE}, the y-axis ticks and labels will be
 shown. Default \code{TRUE}.}
 
 \item{same_scale}{If \code{TRUE}, the scale of the y-axis for each
@@ -37,6 +39,8 @@ will be adjusted for each sample. Default \code{TRUE}.}
 \item{annotation}{Vector of annotations to be displayed in the top right
 corner of each sample. Vector length must be equivalent to the number of
 samples. Default \code{NULL}.}
+
+\item{table_name}{Use modality instead}
 }
 \value{
 Generates a ggplot object
@@ -47,6 +51,8 @@ or more samples.
 }
 \examples{
 data(musica_sbs96)
-plot_sample_counts(musica_sbs96, sample_names = 
-sample_names(musica_sbs96)[1])
+plot_sample_counts(musica_sbs96,
+  sample_names =
+    sample_names(musica_sbs96)[1]
+)
 }

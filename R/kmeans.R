@@ -1,5 +1,6 @@
 #' @title Perform clustering analysis from a musica result object
-#' @description Proportional sample exposures will be used as input to perform clustering.
+#' @description Proportional sample exposures will be used as input to perform
+#' clustering.
 #' @param musica A \code{\linkS4class{musica}} object containing a mutational
 #' discovery or prediction.
 #' @param model_name The name of the desired model.
@@ -8,294 +9,377 @@
 #' @param result_name Name of the result list entry containing desired model.
 #' Default \code{"result"}.
 #' @param nclust Pre-defined number of clusters.
-#' @param proportional Logical, indicating if proportional exposure (default) will be used for clustering.
-#' @param method Clustering algorithms. Options are "kmeans" (K-means), "hkmeans" (hybrid of hierarchical 
-#' K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).
-#' @param dis.method Methods to calculate dissimilarity matrix. Options are "euclidean" (default), "manhattan", 
-#' "jaccard", "cosine", and "canberra".
-#' @param hc.method Methods to perform hierarchical clustering. Options are "ward.D" (default), "ward.D2", 
-#' "single", "complete", "average", "mcquitty", "median", and "centroid".
-#' @param clara.samples Number of samples to be drawn from dataset. Only used when "clara" is selected. 
-#' Default is 5.
+#' @param proportional Logical, indicating if proportional exposure (default)
+#' will be used for clustering.
+#' @param method Clustering algorithms. Options are "kmeans" (K-means),
+#' "hkmeans" (hybrid of hierarchical
+#' K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara"
+#' (Clara).
+#' @param dis.method Methods to calculate dissimilarity matrix. Options are
+#' "euclidean" (default), "manhattan", "jaccard", "cosine", and "canberra".
+#' @param hc.method Methods to perform hierarchical clustering. Options are
+#' "ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty",
+#' "median", and "centroid".
+#' @param clara.samples Number of samples to be drawn from dataset. Only used
+#' when "clara" is selected. Default is 5.
 #' @param iter.max Maximum number of iterations for k-means clustering.
 #' @param tol Tolerance level for kmeans clustering level iterations
-#' @return A one-column data frame with sample IDs as row names and cluster number for each sample.
+#' @return A one-column data frame with sample IDs as row names and cluster
+#' number for each sample.
 #' @seealso \link[stats]{kmeans}
-#' @examples 
+#' @examples
 #' set.seed(123)
 #' data(res_annot)
-#' clust_out <- cluster_exposure(res_annot, model_name = "res_annot", nclust = 2)
+#' clust_out <- cluster_exposure(res_annot, model_name = "res_annot",
+#' nclust = 2)
 #' @export
-cluster_exposure <- function(musica, model_name, modality = "SBS96", result_name = "result", nclust, proportional = TRUE, method = "kmeans", dis.method = "euclidean", 
-                             hc.method = "ward.D", clara.samples = 5, iter.max = 10, tol = 1e-15){
- 
+cluster_exposure <- function(musica, model_name, modality = "SBS96",
+                             result_name = "result", nclust,
+                             proportional = TRUE, method = "kmeans",
+                             dis.method = "euclidean", hc.method = "ward.D",
+                             clara.samples = 5, iter.max = 10, tol = 1e-15) {
   # check if valid result_name
-  if (!(result_name %in% names(result_list(musica)))){
-    stop(result_name, " does not exist in the result_list. Current names are: ",
-         paste(names(result_list(musica)), collapse = ", "))
+  if (!(result_name %in% names(result_list(musica)))) {
+    stop(
+      result_name, " does not exist in the result_list. Current names are: ",
+      paste(names(result_list(musica)), collapse = ", ")
+    )
   }
-  
+
   # check if valid modality
-  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
-    stop(modality, " is not a valid modality. Current modalities are: ", 
-         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  if (!(modality %in%
+        names(get_result_list_entry(musica, result_name)@modality))) {
+    stop(
+      modality, " is not a valid modality. Current modalities are: ",
+      paste(names(get_result_list_entry(musica, result_name)@modality),
+            collapse = ", ")
+    )
   }
-  
+
   # check if valid model_name
-  if (!(model_name %in% names(get_modality(musica, result_name, modality)))){
-    stop(model_name, " is not a valid model_name. Current model names are: ",
-         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  if (!(model_name %in% names(get_modality(musica, result_name, modality)))) {
+    stop(
+      model_name, " is not a valid model_name. Current model names are: ",
+      paste(names(get_modality(musica, result_name, modality)), collapse = ", ")
+    )
   }
-  
+
   # Get result object from musica object
-  result <- get_model(musica, result = result_name,
-                      modality = modality,
-                      model = model_name)
-  
-   method <- match.arg(method, c("kmeans", "hkmeans", "hclust", 
-                                "pam", "clara"))
-  dis.method <- match.arg(dis.method, c("euclidean", "manhattan", 
-                                        "jaccard", "cosine", "canberra"))
-  hc.method <- match.arg(hc.method, c("ward.D", "ward.D2", "single", "complete", 
-                                    "average", "mcquitty", "median", "centroid"))
-  #read exposure data
+  result <- get_model(musica,
+    result = result_name,
+    modality = modality,
+    model = model_name
+  )
+
+  method <- match.arg(method, c(
+    "kmeans", "hkmeans", "hclust",
+    "pam", "clara"
+  ))
+  dis.method <- match.arg(dis.method, c(
+    "euclidean", "manhattan",
+    "jaccard", "cosine", "canberra"
+  ))
+  hc.method <- match.arg(hc.method, c(
+    "ward.D", "ward.D2", "single", "complete",
+    "average", "mcquitty", "median", "centroid"
+  ))
+  # read exposure data
   expos <- exposures(result)
-  if (isTRUE(proportional)){
+  if (isTRUE(proportional)) {
     expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
-  } else{
+  } else {
     expos <- t(expos)
   }
-  #Calculate dissimilarity matrix
-  diss <- philentropy::distance(x = expos, method = dis.method, use.row.names = TRUE, as.dist.obj = TRUE)
-  #Perform clustering
-  if(method == "kmeans"){
-    res <- cluster::fanny(x = diss, k = nclust, diss = TRUE, maxit = iter.max, 
-                          tol = tol)
+  # Calculate dissimilarity matrix
+  diss <- philentropy::distance(x = expos, method = dis.method,
+                                use.row.names = TRUE, as.dist.obj = TRUE)
+  # Perform clustering
+  if (method == "kmeans") {
+    res <- cluster::fanny(
+      x = diss, k = nclust, diss = TRUE, maxit = iter.max,
+      tol = tol
+    )
     clust_out <- data.frame(cluster = res$clustering)
-  } else if(method == "hkmeans"){
-    if(!dis.method %in% c("euclidean", "manhattan", "canberra")){
-      stop("For hkmeans clustering, please choose the following methods to calculate dissimilarity matrix: 
-           euclidean, manhattan, canberra")
+  } else if (method == "hkmeans") {
+    if (!dis.method %in% c("euclidean", "manhattan", "canberra")) {
+      stop("For hkmeans clustering, please choose the following methods to 
+           calculate dissimilarity matrix: euclidean, manhattan, canberra")
     }
-    res <- factoextra::hkmeans(x = expos, k = nclust, hc.metric = dis.method, 
-                               hc.method = hc.method, iter.max = iter.max)
+    res <- factoextra::hkmeans(
+      x = expos, k = nclust, hc.metric = dis.method,
+      hc.method = hc.method, iter.max = iter.max
+    )
     clust_out <- data.frame(cluster = res$cluster)
-  } else if(method == "hclust"){
-    res <- factoextra::hcut(x = diss, k = nclust, isdiss = FALSE, hc_method = hc.method)
-    clust_out <-data.frame(cluster = res$cluster)
-  } else if(method == "pam"){
-    clust_out <- data.frame(cluster = cluster::pam(x = diss, k = nclust,
-                                                   diss = TRUE,
-                                                   cluster.only = TRUE))
-  } else{
-    if(!dis.method %in% c("euclidean", "manhattan", "jaccard")){
-      stop("For clara clustering, please choose the following methods to calculate dissimilarity matrix: 
-           euclidean, manhattan, jaccard")
+  } else if (method == "hclust") {
+    res <- factoextra::hcut(x = diss, k = nclust, isdiss = FALSE,
+                            hc_method = hc.method)
+    clust_out <- data.frame(cluster = res$cluster)
+  } else if (method == "pam") {
+    clust_out <- data.frame(cluster = cluster::pam(
+      x = diss, k = nclust,
+      diss = TRUE,
+      cluster.only = TRUE
+    ))
+  } else {
+    if (!dis.method %in% c("euclidean", "manhattan", "jaccard")) {
+      stop("For clara clustering, please choose the following methods to 
+           calculate dissimilarity matrix: euclidean, manhattan, jaccard")
     }
-    res <- cluster::clara(x = expos, k = nclust, metric = dis.method, samples = clara.samples)
+    res <- cluster::clara(x = expos, k = nclust, metric = dis.method,
+                          samples = clara.samples)
     clust_out <- data.frame(cluster = res$clustering)
   }
   return(clust_out)
 }
 
 #' @title Visualize clustering results
-#' @description The clustering results can be visualized on a UMAP panel. 
-#' Three different types of plots can be generated using this function: cluster-by-signature 
-#' plot, cluster-by-annotation plot, and a single UMAP plot.
+#' @description The clustering results can be visualized on a UMAP panel.
+#' Three different types of plots can be generated using this function:
+#' cluster-by-signature plot, cluster-by-annotation plot, and a single UMAP
+#' plot.
 #' @param musica A \code{\linkS4class{musica}} object containing a mutational
-#' discovery or prediction. A two-dimensional UMAP has to be stored in this object.
+#' discovery or prediction. A two-dimensional UMAP has to be stored in this
+#' object.
 #' @param model_name The name of the desired model.
 #' @param modality The modality of the model. Must be "SBS96", "DBS78", or
 #' "IND83". Default \code{"SBS96"}.
 #' @param result_name Name of the result list entry containing desired model.
 #' Default \code{"result"}.
 #' @param clusters The result generated from cluster_exposure function.
-#' @param group A single character string indicating the grouping factor. 
-#' Possible options are: "signature" (columns are signatures in a grid), 
-#' "annotation" (columns are sample annotation), and "none" (a single UMAP plot). 
-#' Default is "signature".
+#' @param group A single character string indicating the grouping factor.
+#' Possible options are: "signature" (columns are signatures in a grid),
+#' "annotation" (columns are sample annotation), and "none" (a single UMAP
+#' plot). Default is "signature".
 #' @param annotation Column name of annotation.
 #' @param plotly If TRUE, the plot will be made interactive using plotly.
 #' @return Generate a ggplot or plotly object.
 #' @seealso \link{create_umap}
-#' @examples 
+#' @examples
 #' set.seed(123)
 #' data(res_annot)
-#' #Get clustering result
-#' clust_out <- cluster_exposure(musica = res_annot, model_name = "res_annot", nclust = 2)
-#' #UMAP
+#' # Get clustering result
+#' clust_out <- cluster_exposure(
+#'   musica = res_annot, model_name = "res_annot",
+#'   nclust = 2, iter.max = 15
+#' )
+#' # UMAP
 #' create_umap(musica = res_annot, model_name = "res_annot")
-#' #generate cluster X signature plot
-#' plot_cluster(musica = res_annot, model_name = "res_annot",
-#' clusters = clust_out, group = "signature")
-#' #generate cluster X annotation plot
-#' plot_cluster(musica = res_annot, model_name = "res_annot",
-#' clusters = clust_out, group = "annotation",
-#'             annotation = "Tumor_Subtypes")
-#' #generate a single UMAP plot
-#' plot_cluster(musica = res_annot, model_name = "res_annot",
-#' clusters = clust_out, group = "none")
+#' # generate cluster X signature plot
+#' plot_cluster(
+#'   musica = res_annot, model_name = "res_annot",
+#'   clusters = clust_out, group = "signature"
+#' )
+#' # generate cluster X annotation plot
+#' plot_cluster(
+#'   musica = res_annot, model_name = "res_annot",
+#'   clusters = clust_out, group = "annotation",
+#'   annotation = "Tumor_Subtypes"
+#' )
+#' # generate a single UMAP plot
+#' plot_cluster(
+#'   musica = res_annot, model_name = "res_annot",
+#'   clusters = clust_out, group = "none"
+#' )
 #' @export
 
-plot_cluster <- function(musica, model_name, modality = "SBS96", result_name = "result",
-                         clusters, group = "signature", annotation = NULL, plotly = TRUE){
-  
+plot_cluster <- function(musica, model_name, modality = "SBS96",
+                         result_name = "result", clusters, group = "signature",
+                         annotation = NULL, plotly = TRUE) {
+  # dummy variables
+  UMAP_1 <- NULL
+  UMAP_2 <- NULL
+  exposure <- NULL
+
   # check if valid result_name
-  if (!(result_name %in% names(result_list(musica)))){
-    stop(result_name, " does not exist in the result_list. Current names are: ",
-         paste(names(result_list(musica)), collapse = ", "))
+  if (!(result_name %in% names(result_list(musica)))) {
+    stop(
+      result_name, " does not exist in the result_list. Current names are: ",
+      paste(names(result_list(musica)), collapse = ", ")
+    )
   }
-  
+
   # check if valid modality
-  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
-    stop(modality, " is not a valid modality. Current modalities are: ", 
-         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  if (!(modality %in%
+        names(get_result_list_entry(musica, result_name)@modality))) {
+    stop(
+      modality, " is not a valid modality. Current modalities are: ",
+      paste(names(get_result_list_entry(musica, result_name)@modality),
+            collapse = ", ")
+    )
   }
-  
+
   # check if valid model_name
-  if (!(model_name %in% names(get_modality(musica, result_name, modality)))){
-    stop(model_name, " is not a valid model_name. Current model names are: ",
-         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  if (!(model_name %in% names(get_modality(musica, result_name, modality)))) {
+    stop(
+      model_name, " is not a valid model_name. Current model names are: ",
+      paste(names(get_modality(musica, result_name, modality)), collapse = ", ")
+    )
   }
-  
+
   # Get result object from musica object
-  result <- get_model(musica, result = result_name,
-                      modality = modality,
-                      model = model_name)
-  
+  result <- get_model(musica,
+    result = result_name,
+    modality = modality,
+    model = model_name
+  )
+
   group <- match.arg(group, c("signature", "annotation", "none"))
-  if(length(umap(result)) == 0){
-    stop("UMAP not found in musica_result object. Run create_umap(", deparse(substitute(result)),") first.")
+  if (length(umap(result)) == 0) {
+    stop("UMAP not found in musica_result object. 
+         Run create_umap(", deparse(substitute(result)), ") first.")
   }
   k_toplot <- cbind(result@umap, clusters)
   k_toplot$cluster <- factor(k_toplot$cluster)
-  if(group == "signature"){
+  if (group == "signature") {
     expos <- exposures(result)
     expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
     clust_by_sigs <- cbind(k_toplot, expos) %>%
       tibble::rownames_to_column(var = "sample") %>%
-      tidyr::pivot_longer(cols = colnames(expos),
-                          names_to = "signature",
-                          values_to = "exposure",
-                          names_repair = "minimal")
-    p <- ggplot2::ggplot(clust_by_sigs, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "exposure")) +
-           geom_point() +
-           facet_grid(cluster ~ signature) +
-           ggplot2::scale_colour_gradientn(colors = c("blue", "green", "yellow", "orange", "red"), name = "Fraction") +
-           ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                    panel.background = element_blank())
-  }
-  else if(group == "annotation"){
-    if(is.null(annotation) || !annotation %in% colnames(samp_annot(musica))){
+      tidyr::pivot_longer(
+        cols = colnames(expos),
+        names_to = "signature",
+        values_to = "exposure",
+        names_repair = "minimal"
+      )
+    p <- ggplot2::ggplot(clust_by_sigs,
+                         aes(x = UMAP_1, y = UMAP_2, colour = exposure)) +
+      geom_point() +
+      facet_grid(cluster ~ signature) +
+      ggplot2::scale_colour_gradientn(colors =
+                                        c("blue", "green", "yellow", "orange",
+                                          "red"), name = "Fraction") +
+      ggplot2::theme(
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank()
+      )
+  } else if (group == "annotation") {
+    if (is.null(annotation) || !annotation %in% colnames(samp_annot(musica))) {
       stop("Sample annotation not found or invalid annotation column name.")
-    }
-    else{
-      annot <- samp_annot(musica) %>% tibble::column_to_rownames(var = "Samples")
+    } else {
+      annot <- samp_annot(musica) %>%
+        tibble::column_to_rownames(var = "Samples")
       colnames(annot) <- "annotation"
       annot[["annotation"]] <- factor(annot[["annotation"]])
       clust_by_annot <- cbind(k_toplot, annot)
-      p <- ggplot2::ggplot(clust_by_annot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
-             geom_point() +
-             facet_grid(cluster ~ annotation) +
-           ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                          panel.background = element_blank())
+      p <- ggplot2::ggplot(clust_by_annot,
+                           aes_string(x = "UMAP_1", y = "UMAP_2",
+                                      colour = "cluster")) +
+        geom_point() +
+        facet_grid(cluster ~ annotation) +
+        ggplot2::theme(
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank()
+        )
     }
+  } else {
+    p <- ggplot2::ggplot(k_toplot, aes_string(x = "UMAP_1", y = "UMAP_2",
+                                              colour = "cluster")) +
+      geom_point() +
+      ggplot2::theme(
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank()
+      )
   }
-  else{
-    p <- ggplot2::ggplot(k_toplot, aes_string(x = "UMAP_1", y = "UMAP_2", colour = "cluster")) +
-           geom_point() +
-         ggplot2::theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                        panel.background = element_blank())
-  }
-  if(plotly){
+  if (plotly) {
     p <- plotly::ggplotly(p)
     return(p)
-  }
-  else{
+  } else {
     return(p)
   }
 }
 
 #' @title Plots for helping decide number of clusters
-#' @description To help decide the number of cluster, three different methods 
-#' are provided: total within cluster sum of squares, average silhouette coefficient, 
-#' and gap statistics.
+#' @description To help decide the number of cluster, three different methods
+#' are provided: total within cluster sum of squares, average silhouette
+#' coefficient, and gap statistics.
 #' @param musica A \code{\linkS4class{musica}} object containing a mutational
-#' discovery or prediction. A two-dimensional UMAP has to be stored in this object.
+#' discovery or prediction. A two-dimensional UMAP has to be stored in this
+#' object.
 #' @param model_name The name of the desired model.
 #' @param modality The modality of the model. Must be "SBS96", "DBS78", or
 #' "IND83". Default \code{"SBS96"}.
 #' @param result_name Name of the result list entry containing desired model.
 #' Default \code{"result"}.
-#' @param method A single character string indicating which statistic to use for plot. 
-#' Options are "wss" (total within cluster sum of squares), "silhouette" (average silhouette 
-#' coefficient), and "gap_stat" (gap statistic). Default is "wss".
-#' @param clust.method A character string indicating clustering method. Options are "kmeans" 
-#' (default), "hclust" (hierarchical clustering), "hkmeans", "pam", and "clara".
-#' @param n An integer indicating maximum number of clusters to test. Default is 10.
-#' @param proportional Logical, indicating if proportional exposure (default) will be used for clustering.
+#' @param method A single character string indicating which statistic to use for
+#' plot. Options are "wss" (total within cluster sum of squares), "silhouette"
+#' (average silhouette coefficient), and "gap_stat" (gap statistic). Default is
+#' "wss".
+#' @param clust.method A character string indicating clustering method. Options
+#' are "kmeans" (default), "hclust" (hierarchical clustering), "hkmeans", "pam",
+#' and "clara".
+#' @param n An integer indicating maximum number of clusters to test. Default is
+#' 10.
+#' @param proportional Logical, indicating if proportional exposure (default)
+#' will be used for clustering.
 #' @return A ggplot object.
 #' @seealso \link[factoextra]{fviz_nbclust}
-#' @examples 
+#' @examples
 #' data(res_annot)
 #' set.seed(123)
-#' #Make an elbow plot
+#' # Make an elbow plot
 #' k_select(res_annot, model_name = "res_annot", method = "wss", n = 6)
-#' #Plot average silhouette coefficient against number of clusters
+#' # Plot average silhouette coefficient against number of clusters
 #' k_select(res_annot, model_name = "res_annot", method = "silhouette", n = 6)
-#' #Plot gap statistics against number of clusters
+#' # Plot gap statistics against number of clusters
 #' k_select(res_annot, model_name = "res_annot", method = "gap_stat", n = 6)
 #' @export
-
-k_select <- function(musica, model_name, modality = "SBS96", result_name = "result",
-                     method = "wss", clust.method = "kmeans", n = 10,
-                     proportional = TRUE){
-  
+k_select <- function(musica, model_name, modality = "SBS96",
+                     result_name = "result", method = "wss",
+                     clust.method = "kmeans", n = 10, proportional = TRUE) {
   # check if valid result_name
-  if (!(result_name %in% names(result_list(musica)))){
-    stop(result_name, " does not exist in the result_list. Current names are: ",
-         paste(names(result_list(musica)), collapse = ", "))
+  if (!(result_name %in% names(result_list(musica)))) {
+    stop(
+      result_name, " does not exist in the result_list. Current names are: ",
+      paste(names(result_list(musica)), collapse = ", ")
+    )
   }
-  
+
   # check if valid modality
-  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
-    stop(modality, " is not a valid modality. Current modalities are: ", 
-         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  if (!(modality %in%
+        names(get_result_list_entry(musica, result_name)@modality))) {
+    stop(
+      modality, " is not a valid modality. Current modalities are: ",
+      paste(names(get_result_list_entry(musica, result_name)@modality),
+            collapse = ", ")
+    )
   }
-  
+
   # check if valid model_name
-  if (!(model_name %in% names(get_modality(musica, result_name, modality)))){
-    stop(model_name, " is not a valid model_name. Current model names are: ",
-         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  if (!(model_name %in% names(get_modality(musica, result_name, modality)))) {
+    stop(
+      model_name, " is not a valid model_name. Current model names are: ",
+      paste(names(get_modality(musica, result_name, modality)), collapse = ", ")
+    )
   }
-  
+
   # Get result object from musica object
-  result <- get_model(musica, result = result_name,
-                      modality = modality,
-                      model = model_name)
-  
+  result <- get_model(musica,
+    result = result_name,
+    modality = modality,
+    model = model_name
+  )
+
   method <- match.arg(method, c("wss", "silhouette", "gap_stat"))
-  clust.method <- match.arg(clust.method, c("kmeans", "hclust", "hkmeans", "pam", "clara"))
+  clust.method <- match.arg(clust.method,
+                            c("kmeans", "hclust", "hkmeans", "pam", "clara"))
   expos <- exposures(result)
-  if(isTRUE(proportional)){
+  if (isTRUE(proportional)) {
     expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
-  }
-  else{
+  } else {
     expos <- t(expos)
   }
-  if(clust.method == "kmeans"){
+  if (clust.method == "kmeans") {
     factoextra::fviz_nbclust(expos, stats::kmeans, method = method, k.max = n)
-  }
-  else if(clust.method == "hclust"){
-    factoextra::fviz_nbclust(expos, factoextra::hcut, method = method, k.max = n)
-  }
-  else if(clust.method == "hkmeans"){
-    factoextra::fviz_nbclust(expos, factoextra::hkmeans, method = method, k.max = n)
-  }
-  else if(clust.method == "pam"){
+  } else if (clust.method == "hclust") {
+    factoextra::fviz_nbclust(expos, factoextra::hcut, method = method,
+                             k.max = n)
+  } else if (clust.method == "hkmeans") {
+    factoextra::fviz_nbclust(expos, factoextra::hkmeans, method = method,
+                             k.max = n)
+  } else if (clust.method == "pam") {
     factoextra::fviz_nbclust(expos, cluster::pam, method = method, k.max = n)
-  }
-  else{
+  } else {
     factoextra::fviz_nbclust(expos, cluster::clara, method = method, k.max = n)
   }
 }

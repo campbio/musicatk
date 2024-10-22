@@ -4,7 +4,8 @@
 \alias{get_modality}
 \alias{get_modality,musica-method}
 \alias{get_modality,result_collection-method}
-\title{Retrieve a specific modality entry from a musica or result_collection object}
+\title{Retrieve a specific modality entry from a musica or result_collection
+object}
 \usage{
 get_modality(x, ...)
 

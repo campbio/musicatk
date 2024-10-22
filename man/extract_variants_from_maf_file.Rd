@@ -20,6 +20,7 @@ Add Description - Aaron
 }
 \examples{
 maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-package = "musicatk")
+  package = "musicatk"
+)
 maf <- extract_variants_from_maf_file(maf_file = maf_file)
 }

@@ -20,7 +20,7 @@ A character vector of sample names
 \description{
 Sample names were included in the \code{sample} column
 in the variant object passed to \code{\link{create_musica_from_variants}}, or
-in the colnames of the count table object passed to 
+in the colnames of the count table object passed to
 \code{\link{create_musica_from_counts}}. This returns a unique list of
 samples names in the order they are inside the \code{\linkS4class{musica}}
 object.

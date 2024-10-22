@@ -35,8 +35,8 @@ Default \code{"result"}.}
 to between 0 and 1 by dividing by the total number of counts for each sample.
 Default \code{FALSE}.}
 
-\item{show_column_names}{Boolean check. If \code{True}, column names are shown.
-Otherwise, they aren't.
+\item{show_column_names}{Boolean check. If \code{True}, column names are
+shown. Otherwise, they aren't.
 Default \code{FALSE}}
 
 \item{show_row_names}{Boolean check. If \code{True}, row names are shown.
@@ -79,6 +79,8 @@ Column annotations can also be seen by passing the \code{col_annot} argument.
 }
 \examples{
 data(res_annot)
-plot_heatmap(musica = res_annot, model_name = "res_annot", 
-proportional = TRUE, scale = TRUE, annotation = "Tumor_Subtypes")
+plot_heatmap(
+  musica = res_annot, model_name = "res_annot",
+  proportional = TRUE, scale = TRUE, annotation = "Tumor_Subtypes"
+)
 }

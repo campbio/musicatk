@@ -1,6 +1,5 @@
-
 #' @title Create a UMAP from a model result
-#' @description Proportional sample exposures will be used as input into the 
+#' @description Proportional sample exposures will be used as input into the
 #' \code{\link[uwot]{umap}} function to generate a two dimensional UMAP.
 #' @param musica A \code{\linkS4class{musica}} object containing a mutational
 #' signature discovery or prediction.
@@ -27,62 +26,77 @@
 #' object for the model.
 #' @seealso See \link{plot_umap} to display the UMAP and
 #' \code{\link[uwot]{umap}} for more information on the individual parameters
-#' for generating UMAPs. 
+#' for generating UMAPs.
 #' @examples
 #' data(res_annot)
 #' create_umap(res_annot, model_name = "res_annot")
 #' @export
-create_umap <- function(musica, model_name, modality = "SBS96", result_name = "result",
-                        n_neighbors = 30, min_dist = 0.75, spread = 1) {
-  
+create_umap <- function(musica, model_name, modality = "SBS96",
+                        result_name = "result", n_neighbors = 30,
+                        min_dist = 0.75, spread = 1) {
   # check if valid result_name
-  if (!(result_name %in% names(result_list(musica)))){
-    stop(result_name, " does not exist in the result_list. Current names are: ",
-         paste(names(result_list(musica)), collapse = ", "))
+  if (!(result_name %in% names(result_list(musica)))) {
+    stop(
+      result_name, " does not exist in the result_list. Current names are: ",
+      paste(names(result_list(musica)), collapse = ", ")
+    )
   }
-  
+
   # check if valid modality
-  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
-    stop(modality, " is not a valid modality. Current modalities are: ", 
-         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  if (!(modality %in%
+        names(get_result_list_entry(musica, result_name)@modality))) {
+    stop(
+      modality, " is not a valid modality. Current modalities are: ",
+      paste(names(get_result_list_entry(musica, result_name)@modality),
+            collapse = ", ")
+    )
   }
-  
+
   # check if valid model_name
-  if (!(model_name %in% names(get_modality(musica, result_name, modality)))){
-    stop(model_name, " is not a valid model_name. Current model names are: ",
-         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  if (!(model_name %in% names(get_modality(musica, result_name, modality)))) {
+    stop(
+      model_name, " is not a valid model_name. Current model names are: ",
+      paste(names(get_modality(musica, result_name, modality)), collapse = ", ")
+    )
   }
-  
+
   # Get result object from musica object
-  result <- get_model(musica, result = result_name,
-                      modality = modality,
-                      model = model_name)
-  
+  result <- get_model(musica,
+    result = result_name,
+    modality = modality,
+    model = model_name
+  )
+
   # dummy call to Matrix
   Matrix::Matrix()
-  
+
   samples <- exposures(result)
   samples <- sweep(samples, 2, colSums(samples), FUN = "/")
-  
+
   # n_neighbors cannot be bigger than the total number of samples
   if (n_neighbors > ncol(samples)) {
     n_neighbors <- ncol(samples)
-    message("The parameter 'n_neighbors' cannot be bigger than the total ",
-            "number of samples. Setting 'n_neighbors' to ", n_neighbors, ".")
+    message(
+      "The parameter 'n_neighbors' cannot be bigger than the total ",
+      "number of samples. Setting 'n_neighbors' to ", n_neighbors, "."
+    )
   }
-  
-  umap_out <- uwot::umap(t(samples), n_neighbors = n_neighbors, min_dist = 
-                           min_dist, spread = spread, n_threads = 1,
-                         n_sgd_threads = 1, pca = NULL,
-                         metric = "cosine")
+
+  umap_out <- uwot::umap(t(samples),
+    n_neighbors = n_neighbors, min_dist =
+      min_dist, spread = spread, n_threads = 1,
+    n_sgd_threads = 1, pca = NULL,
+    metric = "cosine"
+  )
   rownames(umap_out) <- colnames(samples)
   colnames(umap_out) <- c("UMAP_1", "UMAP_2")
-  eval.parent(substitute(umap(musica, result_name, modality, model_name) <- umap_out))
+  eval.parent(substitute(umap(musica, result_name, modality, model_name) <-
+                           umap_out))
 }
 
 #' @title Plot a UMAP from a musica result
 #' @description Plots samples on a UMAP scatterplot. Samples can be colored by
-#' the levels of mutational signatures or by a annotation variable. 
+#' the levels of mutational signatures or by a annotation variable.
 #'
 #' @param musica A \code{\linkS4class{musica}} object containing a mutational
 #' signature discovery or prediction.
@@ -93,9 +107,9 @@ create_umap <- function(musica, model_name, modality = "SBS96", result_name = "r
 #' \code{"result"}.
 #' @param color_by One of \code{"signatures"}, \code{"annotation"}, or
 #' \code{"none"}. If \code{"signatures"}, then one UMAP scatterplot will be
-#' generated for each signature and points will be colored by the level of 
-#' that signature in each sample. If \code{annotation}, a single UMAP will 
-#' be generated colored by the annotation selected using the parameter 
+#' generated for each signature and points will be colored by the level of
+#' that signature in each sample. If \code{annotation}, a single UMAP will
+#' be generated colored by the annotation selected using the parameter
 #' \code{annotation}. If \code{"none"}, a single UMAP scatterplot will be
 #' generated with no coloring. Default \code{"signature"}.
 #' @param proportional If \code{TRUE}, then the exposures will be normalized
@@ -108,14 +122,14 @@ create_umap <- function(musica, model_name, modality = "SBS96", result_name = "r
 #' scale in each signature subplot. If \code{FALSE}, then each signature subplot
 #' will be colored by a different scale with different maximum values. Only
 #' used when \code{color_by = "signature"}. Setting to \code{FALSE} is most
-#' useful when the maximum value of various signatures are vastly different 
+#' useful when the maximum value of various signatures are vastly different
 #' from one another. Default \code{TRUE}.
 #' @param add_annotation_labels If \code{TRUE}, labels for each group in the
 #' \code{annotation} variable will be displayed. Only used if
 #' \code{color_by = "annotation"}. This not recommended if the annotation is
 #' a continuous variable. The label is plotting using the centriod of each
 #' group within the \code{annotation} variable. Default \code{FALSE}.
-#' @param annotation_label_size Size of annotation labels. Only used if 
+#' @param annotation_label_size Size of annotation labels. Only used if
 #' \code{color_by = "annotation"} and \code{add_annotation_labels = TRUE}.
 #' Default \code{3}.
 #' @param annotation_text_box Place a white box around the annotation labels
@@ -134,10 +148,12 @@ create_umap <- function(musica, model_name, modality = "SBS96", result_name = "r
 #' create_umap(res_annot, "res_annot")
 #' plot_umap(res_annot, "res_annot", color_by = "none")
 #' @export
-plot_umap <- function(musica, model_name, modality = "SBS96", 
-                      result_name = "result", 
-                      color_by = c("signatures", "annotation", 
-                                           "cluster", "none"),
+plot_umap <- function(musica, model_name, modality = "SBS96",
+                      result_name = "result",
+                      color_by = c(
+                        "signatures", "annotation",
+                        "cluster", "none"
+                      ),
                       proportional = TRUE, annotation = NULL,
                       point_size = 0.7, same_scale = TRUE,
                       add_annotation_labels = FALSE,
@@ -146,67 +162,90 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
                       clust = NULL,
                       legend = TRUE,
                       strip_axes = FALSE) {
-  
+  # dummy variables
+  UMAP_1 <- NULL
+  UMAP_2 <- NULL
+  exposure <- NULL
+
   # check if valid result_name
-  if (!(result_name %in% names(result_list(musica)))){
-    stop(result_name, " does not exist in the result_list. Current names are: ",
-         paste(names(result_list(musica)), collapse = ", "))
+  if (!(result_name %in% names(result_list(musica)))) {
+    stop(
+      result_name, " does not exist in the result_list. Current names are: ",
+      paste(names(result_list(musica)), collapse = ", ")
+    )
   }
-  
+
   # check if valid modality
-  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
-    stop(modality, " is not a valid modality. Current modalities are: ", 
-         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  if (!(modality %in%
+        names(get_result_list_entry(musica, result_name)@modality))) {
+    stop(
+      modality, " is not a valid modality. Current modalities are: ",
+      paste(names(get_result_list_entry(musica, result_name)@modality),
+            collapse = ", ")
+    )
   }
-  
+
   # check if valid model_name
-  if (!(model_name %in% names(get_modality(musica, result_name, modality)))){
-    stop(model_name, " is not a valid model_name. Current model names are: ",
-         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  if (!(model_name %in% names(get_modality(musica, result_name, modality)))) {
+    stop(
+      model_name, " is not a valid model_name. Current model names are: ",
+      paste(names(get_modality(musica, result_name, modality)), collapse = ", ")
+    )
   }
-  
+
   # Get result object from musica object
-  result <- get_model(musica, result = result_name,
-                      modality = modality,
-                      model = model_name)
-  
+  result <- get_model(musica,
+    result = result_name,
+    modality = modality,
+    model = model_name
+  )
+
   umap <- umap(result)
   color_by <- match.arg(color_by)
-  
+
   if (color_by %in% c("annotation", "cluster")) {
     if (is.null(annotation)) {
-      stop("If the parameter or 'color_by' are is to 'annotation', ",
-           "then the 'annotation' parameter must be supplied.")
+      stop(
+        "If the parameter or 'color_by' are is to 'annotation', ",
+        "then the 'annotation' parameter must be supplied."
+      )
     }
-    
+
     # Add annotation to data.frame
     annot <- samp_annot(musica)
-    
+
     # Manually override annotations with cluster labels
     if (color_by == "cluster") {
       annot <- clust
       annotation <- "cluster"
     }
-    
-    umap <- umap %>% as.data.frame %>%
+
+    umap <- umap %>%
+      as.data.frame() %>%
       tibble::rownames_to_column(var = "sample")
-    umap <- .add_annotation_to_df(musica, plot_dat = umap,
-                                  annotation = annotation, 
-                                  clust = clust)
-    
+    umap <- .add_annotation_to_df(musica,
+      plot_dat = umap,
+      annotation = annotation,
+      clust = clust
+    )
+
     # Create base ggplot object
     if (plotly) {
-      p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
-                                   color = "annotation", text = "sample", 
-                                   label = "annotation"))
+      p <- ggplot(umap, aes(
+        x = UMAP_1, y = UMAP_2,
+        color = annotation, text = sample,
+        label = annotation
+      ))
     } else {
-      p <- ggplot(umap, aes_string(x = "UMAP_1", y = "UMAP_2",
-                                   color = "annotation"))
+      p <- ggplot(umap, aes(
+        x = UMAP_1, y = UMAP_2,
+        color = annotation
+      ))
     }
-    p <- p + geom_point(size = point_size) 
-    
+    p <- p + geom_point(size = point_size)
+
     # Add labels for discrete annotation groups
-    if (isTRUE(add_annotation_labels) & !plotly) {
+    if (isTRUE(add_annotation_labels) && !plotly) {
       centroid_list <- lapply(unique(umap$annotation), function(x) {
         df_sub <- umap[umap$annotation == x, ]
         median_1 <- stats::median(df_sub[, "UMAP_1"])
@@ -219,27 +258,32 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
         UMAP_2 = as.numeric(centroid[, 2]),
         annotation = centroid[, 3]
       )
-      p <- p + ggplot2::geom_point(data = centroid, mapping =
-          ggplot2::aes_string(x = "UMAP_1", y = "UMAP_1"),
-          size = 0, alpha = 0) 
-      
+      p <- p + ggplot2::geom_point(
+        data = centroid, mapping =
+          ggplot2::aes(x = UMAP_1, y = UMAP_1),
+        size = 0, alpha = 0
+      )
+
       if (isTRUE(annotation_text_box)) {
-        p <- p + ggrepel::geom_label_repel(data = centroid, mapping =
-                                          ggplot2::aes_string(label = "annotation"),
-                                           size = annotation_label_size,
-                                          show.legend = FALSE)
+        p <- p + ggrepel::geom_label_repel(
+          data = centroid, mapping =
+            ggplot2::aes(label = annotation),
+          size = annotation_label_size,
+          show.legend = FALSE
+        )
       } else {
-        p <- p + ggrepel::geom_text_repel(data = centroid, mapping =
-                                            ggplot2::aes_string(label = "annotation"),
-                                          size = annotation_label_size,
-                                          show.legend = FALSE)
+        p <- p + ggrepel::geom_text_repel(
+          data = centroid, mapping =
+            ggplot2::aes(label = annotation),
+          size = annotation_label_size,
+          show.legend = FALSE
+        )
       }
     }
-    
-    # Add theme and title 
+
+    # Add theme and title
     p <- .gg_default_theme(p)
     p <- p + ggplot2::scale_color_discrete(name = annotation)
-    
   } else if (color_by == "signatures") {
     cols <- c("blue", "green", "yellow", "orange", "red")
 
@@ -253,28 +297,35 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
     }
 
     cbind(umap, t(exposures)) %>%
-      as.data.frame %>%
+      as.data.frame() %>%
       tibble::rownames_to_column(var = "sample") %>%
-      tidyr::pivot_longer(cols = rownames(exposures),
-                          names_to = "signature",
-                          values_to = "exposure",
-                          names_repair = "minimal") -> df
-    
+      tidyr::pivot_longer(
+        cols = rownames(exposures),
+        names_to = "signature",
+        values_to = "exposure",
+        names_repair = "minimal"
+      ) -> df
+
     # Ensure that the signature order will be the same as in the exposures
-    df$signature <- factor(df$signature, 
-                           levels = gtools::mixedsort(rownames(exposures)))
-    
+    df$signature <- factor(df$signature,
+      levels = gtools::mixedsort(rownames(exposures))
+    )
+
     # Create base ggplot object for "signatures"
     if (isTRUE(same_scale)) {
-      # Uses facet_grid to plot all signatures 
+      # Uses facet_grid to plot all signatures
       breaks <- signif(seq(0, max(df$exposure), length.out = 5), 2)
       limits <- c(0, max(breaks))
-      p <- ggplot(df, aes_string(x = "UMAP_1", y = "UMAP_2", 
-                                 colour = "exposure")) +
-        ggplot2::facet_wrap(~ signature, drop = TRUE, scales = "free") +
+      p <- ggplot(df, aes(
+        x = UMAP_1, y = UMAP_2,
+        colour = exposure
+      )) +
+        ggplot2::facet_wrap(~signature, drop = TRUE, scales = "free") +
         geom_point() +
-        ggplot2::scale_colour_gradientn(colors = cols, name = color_lab,
-                                        breaks = breaks, limits = limits)
+        ggplot2::scale_colour_gradientn(
+          colors = cols, name = color_lab,
+          breaks = breaks, limits = limits
+        )
       p <- .gg_default_theme(p)
     } else {
       # Uses grid.arrange to plot many ggplot objects
@@ -282,48 +333,54 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
         m <- droplevels(m)
         breaks <- signif(seq(0, max(m$exposure), length.out = 5), 2)
         limits <- c(0, max(breaks))
-        m <- ggplot(m, aes_string(x = "UMAP_1",
-                                  y = "UMAP_2",
-                                  color = "exposure")) +
-          ggplot2::geom_point() + 
-          ggplot2::scale_colour_gradientn(colors = cols, name = color_lab,
-                                          breaks = breaks, limits = limits) +
+        m <- ggplot(m, aes(
+          x = UMAP_1,
+          y = UMAP_2,
+          color = exposure
+        )) +
+          ggplot2::geom_point() +
+          ggplot2::scale_colour_gradientn(
+            colors = cols, name = color_lab,
+            breaks = breaks, limits = limits
+          ) +
           ggplot2::ggtitle(unique(m$signature))
         m <- .gg_default_theme(m)
       })
-      
+
       # Need to use invisible since this is a gtable object
       return(invisible(do.call(gridExtra::grid.arrange, out)))
     }
   } else {
     # Create base ggplot object without any color
-    p <- ggplot(as.data.frame(umap), aes_string(x = "UMAP_1", y = "UMAP_2")) +
+    p <- ggplot(as.data.frame(umap), aes(x = UMAP_1, y = UMAP_2)) +
       geom_point(size = point_size)
     p <- .gg_default_theme(p)
   }
-  
+
   if (!isTRUE(legend)) {
     p <- p + theme(legend.position = "none")
   }
-  
+
   if (isTRUE(strip_axes)) {
-    p <- p + theme(axis.title.x=element_blank(), 
-                   axis.text.x=element_blank(), 
-                   axis.ticks.x=element_blank(), 
-                   axis.title.y=element_blank(), 
-                   axis.text.y=element_blank(), 
-                   axis.ticks.y=element_blank())
+    p <- p + theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank()
+    )
   }
-  
+
   # Toggle plotly
   if (isTRUE(plotly)) {
     if (color_by == "annotation") {
       p <- plotly::ggplotly(p, tooltip = c("text", "x", "y", "type", "label"))
     } else {
-      p <- plotly::ggplotly(p) 
+      p <- plotly::ggplotly(p)
     }
   }
-  
+
   # Return all other scenarios other than
   # color_by = "signatures" & same_scale = TRUE
   return(p)

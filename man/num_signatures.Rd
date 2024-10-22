@@ -9,7 +9,7 @@
 \alias{num_signatures<-,musica,matrix-method}
 \alias{num_signatures<-,result_collection,matrix-method}
 \alias{num_signatures<-,result_model,matrix-method}
-\title{Retrieve num_signatures from a result_model, result_collection, or 
+\title{Retrieve num_signatures from a result_model, result_collection, or
 musica object}
 \usage{
 num_signatures(x, ...)

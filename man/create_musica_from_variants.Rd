@@ -61,10 +61,10 @@ id for each variant. Default \code{"sample"}.}
 \item{extra_fields}{Which additional fields to extract and include in
 the musica object. Default \code{NULL}.}
 
-\item{standardize_indels}{Flag to convert indel style (e.g. `C > CAT` 
+\item{standardize_indels}{Flag to convert indel style (e.g. `C > CAT`
 becomes `- > AT` and `GCACA > G` becomes `CACA > -`)}
 
-\item{convert_dbs}{Flag to convert adjacent SBS into DBS (original SBS are 
+\item{convert_dbs}{Flag to convert adjacent SBS into DBS (original SBS are
 removed)}
 
 \item{verbose}{Whether to print status messages during error checking.
@@ -87,7 +87,8 @@ can be mapped using the \code{chromosome_col}, \code{start_col},
 }
 \examples{
 maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
-package = "musicatk")
+  package = "musicatk"
+)
 variants <- extract_variants_from_maf_file(maf_file)
 g <- select_genome("38")
 musica <- create_musica_from_variants(x = variants, genome = g)

@@ -17,7 +17,8 @@ plot_cluster(
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object containing a mutational
-discovery or prediction. A two-dimensional UMAP has to be stored in this object.}
+discovery or prediction. A two-dimensional UMAP has to be stored in this
+object.}
 
 \item{model_name}{The name of the desired model.}
 
@@ -29,10 +30,10 @@ Default \code{"result"}.}
 
 \item{clusters}{The result generated from cluster_exposure function.}
 
-\item{group}{A single character string indicating the grouping factor. 
-Possible options are: "signature" (columns are signatures in a grid), 
-"annotation" (columns are sample annotation), and "none" (a single UMAP plot). 
-Default is "signature".}
+\item{group}{A single character string indicating the grouping factor.
+Possible options are: "signature" (columns are signatures in a grid),
+"annotation" (columns are sample annotation), and "none" (a single UMAP
+plot). Default is "signature".}
 
 \item{annotation}{Column name of annotation.}
 
@@ -42,27 +43,37 @@ Default is "signature".}
 Generate a ggplot or plotly object.
 }
 \description{
-The clustering results can be visualized on a UMAP panel. 
-Three different types of plots can be generated using this function: cluster-by-signature 
-plot, cluster-by-annotation plot, and a single UMAP plot.
+The clustering results can be visualized on a UMAP panel.
+Three different types of plots can be generated using this function:
+cluster-by-signature plot, cluster-by-annotation plot, and a single UMAP
+plot.
 }
 \examples{
 set.seed(123)
 data(res_annot)
-#Get clustering result
-clust_out <- cluster_exposure(musica = res_annot, model_name = "res_annot", nclust = 2)
-#UMAP
+# Get clustering result
+clust_out <- cluster_exposure(
+  musica = res_annot, model_name = "res_annot",
+  nclust = 2, iter.max = 15
+)
+# UMAP
 create_umap(musica = res_annot, model_name = "res_annot")
-#generate cluster X signature plot
-plot_cluster(musica = res_annot, model_name = "res_annot",
-clusters = clust_out, group = "signature")
-#generate cluster X annotation plot
-plot_cluster(musica = res_annot, model_name = "res_annot",
-clusters = clust_out, group = "annotation",
-            annotation = "Tumor_Subtypes")
-#generate a single UMAP plot
-plot_cluster(musica = res_annot, model_name = "res_annot",
-clusters = clust_out, group = "none")
+# generate cluster X signature plot
+plot_cluster(
+  musica = res_annot, model_name = "res_annot",
+  clusters = clust_out, group = "signature"
+)
+# generate cluster X annotation plot
+plot_cluster(
+  musica = res_annot, model_name = "res_annot",
+  clusters = clust_out, group = "annotation",
+  annotation = "Tumor_Subtypes"
+)
+# generate a single UMAP plot
+plot_cluster(
+  musica = res_annot, model_name = "res_annot",
+  clusters = clust_out, group = "none"
+)
 }
 \seealso{
 \link{create_umap}

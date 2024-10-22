@@ -51,3 +51,12 @@ NULL
 #'
 #' This data is used in the vignette and in several examples
 NULL
+
+#' Example count table with LUAD data from TCGA
+#'
+#' @name luad_tcga_count_table
+#'
+#' @section luad_tcga_count_table.csv
+#'
+#' This data is used in the vignette
+NULL

@@ -16,5 +16,5 @@ Returns signatures related to a partial string match
 Input a cancer subtype to return a list of related COSMIC signatures
 }
 \examples{
-cosmic_v2_subtype_map ("lung")
+cosmic_v2_subtype_map("lung")
 }

@@ -14,7 +14,8 @@ discover_signatures(
   seed = 1,
   nstart = 10,
   par_cores = 1,
-  make_copy = FALSE
+  make_copy = FALSE,
+  table_name = NULL
 )
 }
 \arguments{
@@ -26,7 +27,7 @@ to be the same name supplied to the table building functions such as
 
 \item{num_signatures}{Number of signatures to discover.}
 
-\item{algorithm}{Method to use for mutational signature discovery. One of 
+\item{algorithm}{Method to use for mutational signature discovery. One of
 \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.}
 
 \item{result_name}{Name for result_list entry to save the results to. Default
@@ -49,14 +50,16 @@ signature algorithms. Default \code{10}.}
 object is updated and nothing is returned. If \code{TRUE}, a new
 \code{\linkS4class{musica}} object is created and returned. Default
 \code{FALSE}.}
+
+\item{table_name}{Use modality instead}
 }
 \value{
-Returns nothing or a new \code{\linkS4class{musica}} object, depending
-on the \code{make_copy} parameter.
+Returns nothing or a new \code{\linkS4class{musica}} object,
+depending on the \code{make_copy} parameter.
 }
 \description{
 Mutational signatures and exposures will be discovered using
-methods such as Latent Dirichlet Allocation (lda) or Non-Negative 
+methods such as Latent Dirichlet Allocation (lda) or Non-Negative
 Matrix Factorization (nmf). These algorithms will deconvolute a matrix of
 counts for mutation types in each sample to two matrices: 1) a "signature"
 matrix containing the probability of each mutation type in each sample and
@@ -71,6 +74,8 @@ function and mutation count tables need to be created using functions such as
 data(musica)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
-discover_signatures(musica = musica, modality = "SBS96",
-num_signatures = 3, algorithm = "lda", seed = 12345, nstart = 1)
+discover_signatures(
+  musica = musica, modality = "SBS96",
+  num_signatures = 3, algorithm = "lda", seed = 12345, nstart = 1
+)
 }

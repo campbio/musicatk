@@ -1,21 +1,28 @@
 # Result Collection object -------------------------------
 
-#' The Result Collection object that contains modality, input parameters, prior hyperparameters
+#' The Result Collection object that contains modality, input parameters, prior
+#' hyperparameters
 #' @slot modality a list contains model results for different modality
 #' @slot parameter a list contains input parameters
 #' @slot hyperparameter a list contains prior and tuning parameters
 #' @importFrom S4Vectors SimpleList
 #' @exportClass result_collection
 #' @export
-setClass("result_collection", slots = c(modality = "SimpleList", 
-                                        parameter = "list", 
-                                        hyperparameter= "list"),
-         prototype = list(modality = SimpleList(), 
-                          parameter = list(), 
-                          hyperparameter = list())
+setClass("result_collection",
+  slots = c(
+    modality = "SimpleList",
+    parameter = "list",
+    hyperparameter = "list"
+  ),
+  prototype = list(
+    modality = SimpleList(),
+    parameter = list(),
+    hyperparameter = list()
+  )
 )
 
-#' @title Retrieve a specific modality entry from a musica or result_collection object
+#' @title Retrieve a specific modality entry from a musica or result_collection
+#' object
 #' @description  \code{modality} list contains model results for a modality
 #' @param x  A \code{\linkS4class{result_model}} or
 #' \code{\linkS4class{result_collection}} object
@@ -30,8 +37,7 @@ setClass("result_collection", slots = c(modality = "SimpleList",
 #' get_modality(res, "result", "SBS96")
 setGeneric(
   name = "get_modality",
-  def = function(x, ...)
-  {
+  def = function(x, ...) {
     standardGeneric("get_modality")
   }
 )
@@ -55,7 +61,8 @@ setMethod(
 )
 
 #' @title Retrieve parameter from a musica or result_collection object
-#' @description  The \code{parameter} contains input parameters used in the model 
+#' @description  The \code{parameter} contains input parameters used in the
+#' model
 #' @param x  A \code{\linkS4class{result_model}} or
 #' \code{\linkS4class{result_collection}} object
 #' @param result The name of the result_list entry.
@@ -68,13 +75,12 @@ setMethod(
 #' parameter(res, "result")
 setGeneric(
   name = "parameter",
-  def = function(x, ...)
-  {
+  def = function(x, ...) {
     standardGeneric("parameter")
   }
 )
 
-#' @rdname parameter 
+#' @rdname parameter
 setMethod(
   f = "parameter",
   signature = "musica",
@@ -83,7 +89,7 @@ setMethod(
   }
 )
 
-#' @rdname parameter 
+#' @rdname parameter
 setMethod(
   f = "parameter",
   signature = "result_collection",
@@ -100,8 +106,7 @@ setMethod(
 
 setGeneric(
   name = "parameter<-",
-  def = function(x, ..., value)
-  {
+  def = function(x, ..., value) {
     standardGeneric("parameter<-")
   }
 )
@@ -110,26 +115,25 @@ setGeneric(
 setReplaceMethod(
   f = "parameter",
   signature = c("result_collection", "list"),
-  definition = function(x, value)
-  {
+  definition = function(x, value) {
     x@parameter <- value
     return(x)
   }
-) 
+)
 
 #' @rdname parameter
 setReplaceMethod(
   f = "parameter",
   signature = c("musica", "list"),
-  definition = function(x, result, value)
-  {
+  definition = function(x, result, value) {
     x@result_list[[result]]@parameter <- value
     return(x)
   }
-) 
+)
 
 #' @title Retrieve hyperparameter from a musica or result_collection object
-#' @description The \code{hyperparameter} contain list of prior and tuning parameters 
+#' @description The \code{hyperparameter} contain list of prior and tuning
+#' parameters
 #' @param x  A \code{\linkS4class{result_model}} or
 #' \code{\linkS4class{result_collection}} object
 #' @param result The name of the result_list entry.
@@ -142,8 +146,7 @@ setReplaceMethod(
 #' hyperparameter(res, "result")
 setGeneric(
   name = "hyperparameter",
-  def = function(x, ...)
-  {
+  def = function(x, ...) {
     standardGeneric("hyperparameter")
   }
 )
@@ -173,8 +176,7 @@ setMethod(
 #' @export
 setGeneric(
   name = "hyperparameter<-",
-  def = function(x, ..., value)
-  {
+  def = function(x, ..., value) {
     standardGeneric("hyperparameter<-")
   }
 )
@@ -183,8 +185,7 @@ setGeneric(
 setReplaceMethod(
   f = "hyperparameter",
   signature = c("musica", "list"),
-  definition = function(x, result, value)
-  {
+  definition = function(x, result, value) {
     x@result_list[[result]]@hperparameter
     return(x)
   }
@@ -194,12 +195,11 @@ setReplaceMethod(
 setReplaceMethod(
   f = "hyperparameter",
   signature = c("result_collection", "list"),
-  definition = function(x, value)
-  {
+  definition = function(x, value) {
     x@hyperparameter <- value
     return(x)
   }
-) 
+)
 
 
 #' @title Retrieve model from a musica or result collection object
@@ -220,8 +220,7 @@ setReplaceMethod(
 #' get_model(res, "result", "SBS96", "res")
 setGeneric(
   name = "get_model",
-  def = function(x, ...)
-  {
+  def = function(x, ...) {
     standardGeneric("get_model")
   }
 )
@@ -243,8 +242,3 @@ setMethod(
     return(x@modality[[modality]][[model]])
   }
 )
-
-
-
-
-

@@ -24,14 +24,14 @@ function.}
 the \link{create_musica_from_variants} or \link{create_musica_from_counts}
 function}
 
-\item{value}{A \code{\linkS4class{data.table}} of mutational variants and 
+\item{value}{A \code{\linkS4class{data.table}} of mutational variants and
 variant-level annotations}
 }
 \value{
 A data.table of variants
 }
 \description{
-The \code{variants} \code{data.table} contains the variants 
+The \code{variants} \code{data.table} contains the variants
 and variant-level annotations
 }
 \examples{

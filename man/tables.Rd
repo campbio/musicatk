@@ -24,14 +24,14 @@ function.}
 the \link{create_musica_from_variants} or \link{create_musica_from_counts}
 function.}
 
-\item{value}{A list of \code{\linkS4class{count_table}} objects representing 
+\item{value}{A list of \code{\linkS4class{count_table}} objects representing
 counts of motifs in samples}
 }
 \value{
 A list of count_tables
 }
 \description{
-The \code{count_tables} contains standard and/or custom 
+The \code{count_tables} contains standard and/or custom
 count tables created from variants
 }
 \examples{

@@ -3,9 +3,11 @@
 \docType{class}
 \name{result_collection-class}
 \alias{result_collection-class}
-\title{The Result Collection object that contains modality, input parameters, prior hyperparameters}
+\title{The Result Collection object that contains modality, input parameters, prior
+hyperparameters}
 \description{
-The Result Collection object that contains modality, input parameters, prior hyperparameters
+The Result Collection object that contains modality, input parameters, prior
+hyperparameters
 }
 \section{Slots}{
 

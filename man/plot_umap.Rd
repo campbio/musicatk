@@ -37,9 +37,9 @@ signature discovery or prediction.}
 
 \item{color_by}{One of \code{"signatures"}, \code{"annotation"}, or
 \code{"none"}. If \code{"signatures"}, then one UMAP scatterplot will be
-generated for each signature and points will be colored by the level of 
-that signature in each sample. If \code{annotation}, a single UMAP will 
-be generated colored by the annotation selected using the parameter 
+generated for each signature and points will be colored by the level of
+that signature in each sample. If \code{annotation}, a single UMAP will
+be generated colored by the annotation selected using the parameter
 \code{annotation}. If \code{"none"}, a single UMAP scatterplot will be
 generated with no coloring. Default \code{"signature"}.}
 
@@ -56,7 +56,7 @@ when \code{color_by = "annotation"}. Default \code{NULL}.}
 scale in each signature subplot. If \code{FALSE}, then each signature subplot
 will be colored by a different scale with different maximum values. Only
 used when \code{color_by = "signature"}. Setting to \code{FALSE} is most
-useful when the maximum value of various signatures are vastly different 
+useful when the maximum value of various signatures are vastly different
 from one another. Default \code{TRUE}.}
 
 \item{add_annotation_labels}{If \code{TRUE}, labels for each group in the
@@ -65,7 +65,7 @@ from one another. Default \code{TRUE}.}
 a continuous variable. The label is plotting using the centriod of each
 group within the \code{annotation} variable. Default \code{FALSE}.}
 
-\item{annotation_label_size}{Size of annotation labels. Only used if 
+\item{annotation_label_size}{Size of annotation labels. Only used if
 \code{color_by = "annotation"} and \code{add_annotation_labels = TRUE}.
 Default \code{3}.}
 

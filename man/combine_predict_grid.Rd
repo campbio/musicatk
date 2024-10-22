@@ -12,7 +12,8 @@ combine_predict_grid(
   model_ids = NULL,
   result_name = "result",
   model_rename = NULL,
-  make_copy = FALSE
+  make_copy = FALSE,
+  table_name = NULL
 )
 }
 \arguments{
@@ -35,10 +36,12 @@ the ids for the models being combined. Deafult \code{NULL}.}
 object is updated and nothing is returned. If \code{TRUE}, a new
 \code{\linkS4class{musica}} object is created and returned. Default
 \code{FALSE}.}
+
+\item{table_name}{Use modality instead}
 }
 \value{
-Returns nothing or a new \code{\linkS4class{musica}} object, depending
-on the \code{make_copy} parameter.
+Returns nothing or a new \code{\linkS4class{musica}} object,
+depending on the \code{make_copy} parameter.
 }
 \description{
 Combine signatures and exposures of different models. Exposure values are
@@ -48,6 +51,9 @@ zero for samples in an annotation where that signature was not predicted
 data(musica_annot)
 data(cosmic_v2_sigs)
 grid <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
-"Tumor_Subtypes", combine_res = FALSE, make_copy = TRUE)
-combined <- combine_predict_grid(grid, "SBS96", cosmic_v2_sigs, make_copy = TRUE)
+  "Tumor_Subtypes",
+  combine_res = FALSE, make_copy = TRUE
+)
+combined <- combine_predict_grid(grid, "SBS96", cosmic_v2_sigs,
+make_copy = TRUE)
 }

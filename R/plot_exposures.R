@@ -1,14 +1,14 @@
 #' @title Display sample exposures with bar, box, or violin plots
-#' @description The distributions of mutational signatures can be viewed 
+#' @description The distributions of mutational signatures can be viewed
 #' with barplots or box/violin plots. Barplots are most useful for viewing
 #' the proportion of signatures within and across samples. The box/violin plots
-#' are most useful for viewing the distributions of signatures with respect to 
+#' are most useful for viewing the distributions of signatures with respect to
 #' sample annotations. Samples can be grouped using the \code{group_by}
 #' parameter. For barplots, various methods of sorting samples from left
-#' to right can be chosen using the \code{sort_samples} parameter. 
+#' to right can be chosen using the \code{sort_samples} parameter.
 #'
 #' @param musica A \code{\linkS4class{musica}} object containing a mutational
-#' discovery or prediction. 
+#' discovery or prediction.
 #' @param model_name The name of the desired model.
 #' @param modality The modality of the model. Must be "SBS96", "DBS78", or
 #' "IND83". Default \code{"SBS96"}.
@@ -22,11 +22,11 @@
 #' @param group_by Determines how to group samples into the subplots
 #' (i.e. facets). One of \code{"none"}, \code{"signature"} or
 #' \code{"annotation"}. If set to \code{"annotation"},
-#' then a sample annotation must be supplied via the 
+#' then a sample annotation must be supplied via the
 #' \code{annotation} parameter. Default \code{"none"}.
 #' @param color_by Determines how to color the bars or box/violins. One of
 #' \code{"signature"} or \code{"annotation"}. If set to \code{"annotation"},
-#' then a sample annotation must be supplied via the 
+#' then a sample annotation must be supplied via the
 #' \code{annotation} parameter. Default \code{"signature"}.
 #' @param annotation Sample annotation used to group the subplots and/or
 #' color the bars, boxes, or violins. Default \code{NULL}.
@@ -38,25 +38,25 @@
 #' will be sorted from those with the highest number of mutation counts to the
 #' lowest (regardless of how the parameter \code{"proportional"} is set).
 #' If set to \code{"name"}, then samples are sorted by their name with the
-#' \code{\link[gtools]{mixedsort}} function. If set to 
+#' \code{\link[gtools]{mixedsort}} function. If set to
 #' one or more signature names (e.g. \code{"Signature1"}), then samples will
 #' be sorted from those with the highest level of that signature to the lowest.
 #' If multiple signatures are supplied then, samples will be sorted by each
 #' signature sequentially. Default \code{"total"}.
 #' @param threshold Exposures less than this threshold will be set to 0.
-#' This is most useful when more than one signature is supplied to 
+#' This is most useful when more than one signature is supplied to
 #' \code{sort_samples} as samples that are set to zero for the first exposure
 #' will then be sorted by the levels of the second exposure.
 #' Default \code{NULL}.
-#' @param same_scale If \code{TRUE}, then all subplots will have the 
+#' @param same_scale If \code{TRUE}, then all subplots will have the
 #' same scale. Only used when \code{group_by} is set. Default \code{FALSE}.
-#' @param add_points If \code{TRUE}, then points for individual sample 
+#' @param add_points If \code{TRUE}, then points for individual sample
 #' exposures will be plotted on top of the violin/box plots. Only used when
-#' \code{plot_type} is set to \code{"violin"} or \code{"box"}. 
+#' \code{plot_type} is set to \code{"violin"} or \code{"box"}.
 #' Default \code{TRUE}.
 #' @param point_size Size of the points to be plotted on top of the
 #' violin/box plots. Only used when \code{plot_type} is set to \code{"violin"}
-#' or \code{"box"} and \code{add_points} is set to \code{TRUE}. 
+#' or \code{"box"} and \code{add_points} is set to \code{TRUE}.
 #' Default \code{2}.
 #' @param label_x_axis If \code{TRUE}, x-axis labels will be displayed at
 #' the bottom of the plot. Default \code{FALSE}.
@@ -67,11 +67,13 @@
 #' @return Generates a ggplot or plotly object
 #' @examples
 #' data(res_annot)
-#' plot_exposures(res_annot, model_name = "res_annot", plot_type = "bar", 
-#' annotation = "Tumor_Subtypes")
+#' plot_exposures(res_annot,
+#'   model_name = "res_annot", plot_type = "bar",
+#'   annotation = "Tumor_Subtypes"
+#' )
 #' @export
-plot_exposures <- function(musica, model_name, modality = "SBS96", 
-                           result_name = "result", 
+plot_exposures <- function(musica, model_name, modality = "SBS96",
+                           result_name = "result",
                            plot_type = c("bar", "box", "violin"),
                            proportional = FALSE, group_by = "none",
                            color_by = c("signature", "annotation"),
@@ -80,108 +82,125 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
                            same_scale = FALSE, add_points = FALSE,
                            point_size = 2, label_x_axis = FALSE,
                            legend = TRUE, plotly = FALSE) {
-  
   # dummy variables
   exposure <- NULL
   color <- NULL
-  
+
   # check if valid result_name
-  if (!(result_name %in% names(result_list(musica)))){
-    stop(result_name, " does not exist in the result_list. Current names are: ",
-         paste(names(result_list(musica)), collapse = ", "))
+  if (!(result_name %in% names(result_list(musica)))) {
+    stop(
+      result_name, " does not exist in the result_list. Current names are: ",
+      paste(names(result_list(musica)), collapse = ", ")
+    )
   }
-  
+
   # check if valid modality
-  if (!(modality %in% names(get_result_list_entry(musica, result_name)@modality))){
-    stop(modality, " is not a valid modality. Current modalities are: ", 
-         paste(names(get_result_list_entry(musica, result_name)@modality), collapse = ", "))
+  if (!(modality %in%
+        names(get_result_list_entry(musica, result_name)@modality))) {
+    stop(
+      modality, " is not a valid modality. Current modalities are: ",
+      paste(names(get_result_list_entry(musica, result_name)@modality),
+            collapse = ", ")
+    )
   }
-  
+
   # check if valid model_name
-  if (!(model_name %in% names(get_modality(musica, result_name, modality)))){
-    stop(model_name, " is not a valid model_name. Current model names are: ",
-         paste(names(get_modality(musica, result_name, modality)), collapse = ", "))
+  if (!(model_name %in% names(get_modality(musica, result_name, modality)))) {
+    stop(
+      model_name, " is not a valid model_name. Current model names are: ",
+      paste(names(get_modality(musica, result_name, modality)), collapse = ", ")
+    )
   }
-  
+
   # Get result object from musica object
-  result <- get_model(musica, result = result_name,
-                      modality = modality,
-                      model = model_name)
-  
+  result <- get_model(musica,
+    result = result_name,
+    modality = modality,
+    model = model_name
+  )
+
   group_by <- match.arg(group_by, c("none", "annotation", "signature"))
   color_by <- match.arg(color_by)
   plot_type <- match.arg(plot_type)
-  
-  if (is.null(annotation) & (color_by == "annotation" | 
-                            group_by == "annotation")) {
-    stop("If parameters 'group_by' or 'color_by' are set to 'annotation', ",
-         "then the 'annotation' parameter must be supplied.")
+
+  if (is.null(annotation) && (color_by == "annotation" ||
+                              group_by == "annotation")) {
+    stop(
+      "If parameters 'group_by' or 'color_by' are set to 'annotation', ",
+      "then the 'annotation' parameter must be supplied."
+    )
   }
-  
+
   # Retrieve exposures. Need to eventually make an S4 getter
   exposures <- exposures(result)
   total <- colSums(exposures)
-  
+
   y_label <- "counts"
   if (isTRUE(proportional)) {
     y_label <- "fractions"
     exposures <- sweep(exposures, 2, colSums(exposures), FUN = "/")
   }
-  
+
   # Convert to long format
   plot_dat <- .pivot_exposures(exposures)
-  
+
   # Add sample annotation to data frame if supplied
   plot_dat <- .add_annotation_to_df(musica, plot_dat, annotation)
 
   # Order signatures with mixedsort
-  plot_dat$signature <- factor(plot_dat$signature, 
-                               levels = gtools::mixedsort(rownames(exposures)))
-  
+  plot_dat$signature <- factor(plot_dat$signature,
+    levels = gtools::mixedsort(rownames(exposures))
+  )
+
   # Apply threshold to signatures if supplied
   if (!is.null(threshold)) {
     if (!is.numeric(threshold) || !length(threshold) == 1 ||
-       threshold < 0) {
+        threshold < 0) {
       stop("The 'threshold' parameter must be a number greater than 0.")
     }
     plot_dat <- dplyr::filter(plot_dat, .data$exposure > threshold)
   } else {
     threshold <- 0
   }
-  
+
   # Define the order of samples in the bar plot
   if (length(sort_samples == 1) && sort_samples == "name") {
     # Sort alphabetically with mixed alphanumeric characters
     o <- gtools::mixedsort(colnames(exposures))
   } else if (length(sort_samples == 1) && sort_samples == "total") {
-    # Sorting of samples by counts 
+    # Sorting of samples by counts
     o <- colnames(exposures)[order(total, decreasing = TRUE)]
   } else {
     # Sorting of samples by counts of specific signature(s)
     if (!all(sort_samples %in% rownames(exposures))) {
-      stop("Signature is not present in this result, please choose from: \n",
-           paste0(rownames(exposures), collapse = "\n"))
+      stop(
+        "Signature is not present in this result, please choose from: \n",
+        paste0(rownames(exposures), collapse = "\n")
+      )
     }
-    
+
     # Convert to data.frame and recursively order based on each signature
     temp_exposures <- exposures
     temp_exposures[temp_exposures < threshold] <- 0
     a <- as.data.frame(t(temp_exposures[sort_samples, , drop = FALSE]))
     ix <- do.call(order, c(a, list(decreasing = TRUE)))
     o <- colnames(temp_exposures)[ix]
-    
+
     # Use levels to set order of the signatures being sorted on
     unused_sigs <- setdiff(rownames(temp_exposures), sort_samples)
-    plot_dat$signature <- factor(plot_dat$signature, 
-                                 levels = c(unused_sigs, rev(sort_samples)))
+    plot_dat$signature <- factor(plot_dat$signature,
+      levels = c(unused_sigs, rev(sort_samples))
+    )
   }
-  
+
   # Get top N samples from ordering
   if (!is.null(num_samples)) {
     if (!is.numeric(num_samples) || length(num_samples) != 1 ||
-       num_samples < 1 || num_samples > ncol(exposures)) {
-      stop("The parameter 'num_samples', needs to be an integer between 1 ",
-           "and the total number of samples in the result: ", ncol(exposures))
+        num_samples < 1 || num_samples > ncol(exposures)) {
+      stop(
+        "The parameter 'num_samples', needs to be an integer between 1 ",
+        "and the total number of samples in the result: ", ncol(exposures)
+      )
     }
   } else {
     num_samples <- ncol(exposures)
@@ -189,37 +208,47 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
   o <- head(o, num_samples)
   plot_dat <- subset(plot_dat, sample %in% o)
   plot_dat$sample <- factor(plot_dat$sample, levels = o)
-  
+
   # Select color for fill
   if (color_by == "annotation") {
     plot_dat$color <- plot_dat$annotation
   } else {
     plot_dat$color <- plot_dat$signature
   }
-  
+
   # Create base ggplot object
-  if (plot_type == "box" & group_by == "annotation") {
-    p <- ggplot(plot_dat,
-                aes(x = signature, y = exposure, fill = color))
-    p <- p +  ggplot2::geom_boxplot() + ggplot2::xlab("")  
-  } else if (plot_type == "box" & group_by == "signature") {
-    p <- ggplot(plot_dat,
-                aes(x = annotation, y = exposure, fill = color))
-    p <- p +  ggplot2::geom_boxplot() + ggplot2::xlab("")  
-  } else if (plot_type == "violin" & group_by == "annotation") {
-    p <- ggplot(plot_dat,
-                aes(x = signature, y = exposure, fill = color))
-    p <- p +  ggplot2::geom_violin(alpha = 0.75) + ggplot2::xlab("")  
-  } else if (plot_type == "violin" & group_by == "signature") {
-    p <- ggplot(plot_dat,
-                aes(x = annotation, y = exposure, fill = color))
-    p <- p +  ggplot2::geom_violin(alpha = 0.75) + ggplot2::xlab("")  
+  if (plot_type == "box" && group_by == "annotation") {
+    p <- ggplot(
+      plot_dat,
+      aes(x = signature, y = exposure, fill = color)
+    )
+    p <- p + ggplot2::geom_boxplot() + ggplot2::xlab("")
+  } else if (plot_type == "box" && group_by == "signature") {
+    p <- ggplot(
+      plot_dat,
+      aes(x = annotation, y = exposure, fill = color)
+    )
+    p <- p + ggplot2::geom_boxplot() + ggplot2::xlab("")
+  } else if (plot_type == "violin" && group_by == "annotation") {
+    p <- ggplot(
+      plot_dat,
+      aes(x = signature, y = exposure, fill = color)
+    )
+    p <- p + ggplot2::geom_violin(alpha = 0.75) + ggplot2::xlab("")
+  } else if (plot_type == "violin" && group_by == "signature") {
+    p <- ggplot(
+      plot_dat,
+      aes(x = annotation, y = exposure, fill = color)
+    )
+    p <- p + ggplot2::geom_violin(alpha = 0.75) + ggplot2::xlab("")
   } else {
-    p <- ggplot(plot_dat,
-                aes(x = sample, y = exposure, fill = color))
-    p <- p + ggplot2::geom_bar(stat = "identity") + ggplot2::xlab("Samples")  
+    p <- ggplot(
+      plot_dat,
+      aes(x = sample, y = exposure, fill = color)
+    )
+    p <- p + ggplot2::geom_bar(stat = "identity") + ggplot2::xlab("Samples")
   }
-  
+
   # Add the ability to create a permanent color palette that is the same
   # no matter what the order of the signatures are
   if (color_by == "signature") {
@@ -230,36 +259,42 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
 
   # Define if both x and y axis will be free or just the x-axis
   scales <- ifelse(isTRUE(same_scale), "free_x", "free")
-  
+
   # Set facet_wrap based on 'group_by' variable
   if (group_by == "annotation") {
-    p <- p + ggplot2::facet_wrap(~ annotation, drop = TRUE, scales = scales)
+    p <- p + ggplot2::facet_wrap(~annotation, drop = TRUE, scales = scales)
   } else if (group_by == "signature") {
-    p <- p + ggplot2::facet_wrap(~ signature, drop = TRUE, scales = scales)
+    p <- p + ggplot2::facet_wrap(~signature, drop = TRUE, scales = scales)
   }
-  
+
   # Add themes
   p <- .gg_default_theme(p) +
-    theme(legend.title = element_blank(),
-          axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme(
+      legend.title = element_blank(),
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
     ggplot2::ylab(paste0("Exposure ", y_label)) +
     ggplot2::scale_y_continuous(expand = c(0, 0))
-  
+
   # Toggle sample labels
   if (!isTRUE(label_x_axis)) {
-    p <- p + theme(axis.text.x = element_blank(), axis.ticks.x =
-                     element_blank())
+    p <- p + theme(
+      axis.text.x = element_blank(), axis.ticks.x =
+        element_blank()
+    )
   }
-  
+
   # Toggle points if the plot is box/violin
-  if (plot_type %in% c("box", "violin") & isTRUE(add_points)) {
-    if (!is.numeric(point_size) | length(point_size) != 1) {
+  if (plot_type %in% c("box", "violin") && isTRUE(add_points)) {
+    if (!is.numeric(point_size) || length(point_size) != 1) {
       stop("The parameter 'point_size' needs to be a integer.")
     }
-    p <- p + ggplot2::geom_point(pch = 21, size = point_size,
-                                 position = ggplot2::position_jitterdodge())
+    p <- p + ggplot2::geom_point(
+      pch = 21, size = point_size,
+      position = ggplot2::position_jitterdodge()
+    )
   }
-  
+
   # Toggle legend and plotly
   if (!isTRUE(legend)) {
     p <- p + theme(legend.position = "none")
@@ -275,16 +310,18 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
 .pivot_exposures <- function(exposures) {
   # Convert to long data frame
   t(exposures) %>%
-    as.data.frame %>%
+    as.data.frame() %>%
     tibble::rownames_to_column(var = "sample") %>%
-    tidyr::pivot_longer(cols = rownames(exposures),
-                        names_to = "signature",
-                        values_to = "exposure",
-                        names_repair = "minimal") -> temp
+    tidyr::pivot_longer(
+      cols = rownames(exposures),
+      names_to = "signature",
+      values_to = "exposure",
+      names_repair = "minimal"
+    ) -> temp
   return(temp)
 }
 
-.add_annotation_to_df <- function(musica, plot_dat, annotation = NULL, 
+.add_annotation_to_df <- function(musica, plot_dat, annotation = NULL,
                                   clust = NULL) {
   if (!is.null(annotation)) {
     # Add sample annotation to data frame if supplied
@@ -295,15 +332,17 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
     } else {
       sample_annot <- samp_annot(musica)
       if (!annotation %in% colnames(sample_annot)) {
-        stop("'", annotation, "' was not found in sample annotations in the ",
-             "'musica' object. Current annotations are: ",
-             paste(colnames(sample_annot), collapse = ", "))
+        stop(
+          "'", annotation, "' was not found in sample annotations in the ",
+          "'musica' object. Current annotations are: ",
+          paste(colnames(sample_annot), collapse = ", ")
+        )
       }
     }
     head(sample_annot)
-    
+
     selected_annot <- sample_annot[[annotation]]
-    
+
     names(selected_annot) <- sample_annot$Samples
     plot_dat$annotation <- as.character(selected_annot[plot_dat$sample])
   } else {
