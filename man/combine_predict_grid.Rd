@@ -2,36 +2,52 @@
 % Please edit documentation in R/discovery_prediction.R
 \name{combine_predict_grid}
 \alias{combine_predict_grid}
-\title{Combine prediction grid list into a result object. Exposure values are zero
-for samples in an annotation where that signature was not predicted}
+\title{Combine signatures and exposures of different models. Exposure values are
+zero for samples in an annotation where that signature was not predicted}
 \usage{
-combine_predict_grid(grid_list, musica, table_name, signature_res)
+combine_predict_grid(
+  musica,
+  modality,
+  signature_res,
+  model_ids = NULL,
+  result_name = "result",
+  model_rename = NULL,
+  make_copy = FALSE
+)
 }
 \arguments{
-\item{grid_list}{A list of result objects from the prediction grid to
-combine into a single result}
-
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{table_name}{Table name used for prediction}
+\item{modality}{Modality used for prediction.}
 
 \item{signature_res}{Signatures to automatically subset from for prediction}
+
+\item{model_ids}{Vector of ids for the models to combine. If null, all models
+in the modality and result_list entry will be combined. Default \code{NULL}.}
+
+\item{result_name}{Name of the result list entry containing the signatures
+to plot. Default \code{"result"}.}
+
+\item{model_rename}{New model identifier. If null, will be combination of
+the ids for the models being combined. Deafult \code{NULL}.}
+
+\item{make_copy}{If \code{FALSE}, the inputted \code{\linkS4class{musica}}
+object is updated and nothing is returned. If \code{TRUE}, a new
+\code{\linkS4class{musica}} object is created and returned. Default
+\code{FALSE}.}
 }
 \value{
-A result object combining all samples and signatures from a
-prediction grid. Samples have zero exposure value for signatures not found
-in that annotation type.
+Returns nothing or a new \code{\linkS4class{musica}} object, depending
+on the \code{make_copy} parameter.
 }
 \description{
-Combine prediction grid list into a result object. Exposure values are zero
-for samples in an annotation where that signature was not predicted
+Combine signatures and exposures of different models. Exposure values are
+zero for samples in an annotation where that signature was not predicted
 }
 \examples{
 data(musica_annot)
 data(cosmic_v2_sigs)
 grid <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
-"Tumor_Subtypes", combine_res = FALSE)
-combined <- combine_predict_grid(grid, musica_annot, "SBS96", cosmic_v2_sigs)
-plot_exposures(combined, group_by = "annotation", 
-annotation="Tumor_Subtypes")
+"Tumor_Subtypes", combine_res = FALSE, make_copy = TRUE)
+combined <- combine_predict_grid(grid, "SBS96", cosmic_v2_sigs, make_copy = TRUE)
 }

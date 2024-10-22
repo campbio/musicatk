@@ -6,18 +6,20 @@
 \usage{
 auto_subset_sigs(
   musica,
-  table_name,
+  modality,
   signature_res,
   algorithm,
   min_exists = 0.05,
   proportion_samples = 0.25,
-  rare_exposure = 0.4
+  rare_exposure = 0.4,
+  result_name = "result",
+  model_id = NULL
 )
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{table_name}{Name of table used for posterior prediction (e.g. SBS96)}
+\item{modality}{Modality used for posterior prediction (e.g. SBS96)}
 
 \item{signature_res}{Signatures to automatically subset from for prediction}
 
@@ -31,10 +33,16 @@ active in the cohort}
 
 \item{rare_exposure}{A sample will be considered active in the cohort if at
 least one sample has more than this threshold proportion}
+
+\item{result_name}{Name for result_list entry to save the results to. Default
+\code{"result"}.}
+
+\item{model_id}{Identifier for the result. If \code{NULL}, will be
+automatically set to the algorithm and number of signatures. Default
+\code{NULL}.}
 }
 \value{
-A result object containing automatically subset signatures
-and corresponding sample weights
+Returns new \code{\linkS4class{musica}} object with the results.
 }
 \description{
 Automatic filtering of inactive signatures

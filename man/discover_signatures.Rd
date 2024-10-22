@@ -6,18 +6,21 @@
 \usage{
 discover_signatures(
   musica,
-  table_name,
+  modality,
   num_signatures,
   algorithm = "lda",
+  result_name = "result",
+  model_id = NULL,
   seed = 1,
   nstart = 10,
-  par_cores = 1
+  par_cores = 1,
+  make_copy = FALSE
 )
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{table_name}{Name of the table to use for signature discovery. Needs
+\item{modality}{Modality to use for signature discovery. Needs
 to be the same name supplied to the table building functions such as
 \link{build_standard_table}.}
 
@@ -25,6 +28,13 @@ to be the same name supplied to the table building functions such as
 
 \item{algorithm}{Method to use for mutational signature discovery. One of 
 \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.}
+
+\item{result_name}{Name for result_list entry to save the results to. Default
+\code{"result"}.}
+
+\item{model_id}{Identifier for the result. If \code{NULL}, will be
+automatically set to the algorithm and number of signatures. Default
+\code{NULL}.}
 
 \item{seed}{Seed to be used for the random number generators in the
 signature discovery algorithms. Default \code{1}.}
@@ -34,10 +44,15 @@ signature algorithms. Default \code{10}.}
 
 \item{par_cores}{Number of parallel cores to use. Only used if
 \code{method = "nmf"}. Default \code{1}.}
+
+\item{make_copy}{If \code{FALSE}, the inputted \code{\linkS4class{musica}}
+object is updated and nothing is returned. If \code{TRUE}, a new
+\code{\linkS4class{musica}} object is created and returned. Default
+\code{FALSE}.}
 }
 \value{
-Returns a A \code{\linkS4class{musica_result}} object containing
-signatures and exposures.
+Returns nothing or a new \code{\linkS4class{musica}} object, depending
+on the \code{make_copy} parameter.
 }
 \description{
 Mutational signatures and exposures will be discovered using
@@ -46,16 +61,16 @@ Matrix Factorization (nmf). These algorithms will deconvolute a matrix of
 counts for mutation types in each sample to two matrices: 1) a "signature"
 matrix containing the probability of each mutation type in each sample and
 2) an "exposure" matrix containing the estimated counts for each signature
-in each sample. Before mutational discovery can be performed,
-variants from samples first need to be stored in a 
-\code{\linkS4class{musica}} object using the \link{create_musica} function 
-and mutation count tables need to be created using functions such as
-\link{build_standard_table}.
+in each sample. Before mutational discovery can be performed, samples first
+need to be stored in a \code{\linkS4class{musica}} object using the
+\link{create_musica_from_variants} or \link{create_musica_from_counts}
+function and mutation count tables need to be created using functions such as
+\link{build_standard_table} if \link{create_musica_from_counts} was not used.
 }
 \examples{
 data(musica)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
-discover_signatures(musica = musica, table_name = "SBS96",
+discover_signatures(musica = musica, modality = "SBS96",
 num_signatures = 3, algorithm = "lda", seed = 12345, nstart = 1)
 }

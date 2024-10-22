@@ -6,29 +6,35 @@
 SBS and only genome for DBS or Indel classes}
 \usage{
 compare_cosmic_v3(
-  result,
-  variant_class,
+  musica,
+  model_id,
   sample_type,
+  modality = "SBS96",
+  result_name = "result",
   metric = "cosine",
   threshold = 0.9,
-  result_name = deparse(substitute(result)),
+  result_rename = deparse(substitute(model_id)),
   decimals = 2,
   same_scale = FALSE
 )
 }
 \arguments{
-\item{result}{A \code{\linkS4class{musica_result}} object.}
+\item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{variant_class}{Compare to SBS, DBS, or Indel}
+\item{model_id}{The name of the model containing the signatures to compare.}
 
 \item{sample_type}{exome (SBS only) or genome}
+
+\item{modality}{Compare to SBS, DBS, or Indel. Default \code{"SBS96"}}
+
+\item{result_name}{Name of the result list entry. Default \code{"result"}.}
 
 \item{metric}{One of \code{"cosine"} for cosine similarity or \code{"jsd"} 
 for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 
 \item{threshold}{threshold for similarity}
 
-\item{result_name}{title for plot user result signatures}
+\item{result_rename}{title for plot user result signatures}
 
 \item{decimals}{Specifies rounding for similarity metric displayed. Default
 \code{2}.}
@@ -46,5 +52,6 @@ SBS and only genome for DBS or Indel classes
 }
 \examples{
 data(res)
-compare_cosmic_v3(res, "SBS", "genome", threshold = 0.8)
+compare_cosmic_v3(res, model_id = "res", modality = "SBS96",
+sample_type = "genome", threshold = 0.8)
 }

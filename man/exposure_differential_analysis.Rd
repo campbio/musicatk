@@ -5,8 +5,11 @@
 \title{Compare exposures of annotated samples}
 \usage{
 exposure_differential_analysis(
-  musica_result,
+  musica,
+  model_name,
   annotation,
+  modality = "SBS96",
+  result_name = "result",
   method = c("wilcox", "kruskal", "glm.nb"),
   group1 = NULL,
   group2 = NULL,
@@ -14,10 +17,17 @@ exposure_differential_analysis(
 )
 }
 \arguments{
-\item{musica_result}{A \code{\linkS4class{musica_result}} object}
+\item{musica}{A \code{\linkS4class{musica}} object.}
+
+\item{model_name}{The name of the model.}
 
 \item{annotation}{Column in the sample_annotations table of the
-\code{\linkS4class{musica_result}} object}
+\code{\linkS4class{musica}} object}
+
+\item{modality}{The modality. Must be "SBS96", "DBS78", or "IND83". Default
+\code{"SBS96"}.}
+
+\item{result_name}{Name of the result list entry. Default \code{"result"}.}
 
 \item{method}{Any method in \code{c("wilcox", "kruskal", "glm.nb")}
 used to perform differential analysis on signature exposures}
@@ -38,10 +48,10 @@ on the chosen method
 }
 \description{
 \code{exposure_differential_analysis} is used to run
-differential analysis on the signature exposures of annotated samples within
-the \code{\linkS4class{musica_result}} object.
+differential analysis on the signature exposures of annotated samples.
 }
 \examples{
 data("res_annot")
-exposure_differential_analysis(res_annot, "Tumor_Subtypes", method="wilcox")
+exposure_differential_analysis(res_annot, model_name = "res_annot",
+annotation = "Tumor_Subtypes", method="wilcox")
 }

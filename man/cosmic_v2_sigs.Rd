@@ -5,7 +5,7 @@
 \alias{cosmic_v2_sigs}
 \title{COSMIC v2 SBS96 Signatures Result Object}
 \format{
-An object of class \code{musica_result}
+An object of class \code{result_model}
 See [predict_exposure()].
 }
 \source{

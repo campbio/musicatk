@@ -6,40 +6,54 @@
 \usage{
 predict_exposure(
   musica,
-  table_name,
+  modality,
   signature_res,
   algorithm = c("lda", "decompTumor2Sig"),
+  result_name = "result",
+  model_id = NULL,
   signatures_to_use = seq_len(ncol(signatures(signature_res))),
-  verbose = FALSE
+  verbose = FALSE,
+  make_copy = FALSE
 )
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{table_name}{Name of table used for posterior prediction.
-Must match the table type used to generate the prediction signatures}
+\item{modality}{Modality for posterior prediction. Must match the table type
+used to generate the prediction signatures}
 
 \item{signature_res}{Signatures used to predict exposures for the samples
 \code{musica} object. Existing signatures need to stored in a
-\code{\linkS4class{musica_result}} object.}
+\code{\linkS4class{result_model}} object.}
 
 \item{algorithm}{Algorithm to use for prediction of exposures. One of
 \code{"lda"} or \code{"decompTumor2Sig"}.}
+
+\item{result_name}{Name for result_list entry to save the results to. Default
+\code{"result"}.}
+
+\item{model_id}{Identifier for the result. If \code{NULL}, will be
+automatically set to the algorithm and number of signatures. Default
+\code{NULL}.}
 
 \item{signatures_to_use}{Which signatures in the \code{signature_res} result
 object to use. Default is to use all signatures.}
 
 \item{verbose}{If \code{TRUE}, progress will be printing. Only used if
 \code{algorithm = "lda"}. Default \code{FALSE}.}
+
+\item{make_copy}{If \code{FALSE}, the inputted \code{\linkS4class{musica}}
+object is updated and nothing is returned. If \code{TRUE}, a new
+\code{\linkS4class{musica}} object is created and returned. Default
+\code{FALSE}.}
 }
 \value{
-Returns a A \code{\linkS4class{musica_result}} object containing
-signatures given by the \code{signature_res} parameter and exposures
-predicted from these signatures.
+Returns nothing or a new \code{\linkS4class{musica}} object, depending
+on the \code{make_copy} parameter.
 }
 \description{
 Exposures for samples will be predicted using an existing set
-of signatures stored in a \code{\linkS4class{musica_result}} object. 
+of signatures stored in a \code{\linkS4class{result_model}} object. 
 Algorithms available for prediction include a modify version of \code{"lda"},
 and \code{"decompTumor2Sig"}.
 }
@@ -48,11 +62,11 @@ data(musica)
 data(cosmic_v2_sigs)
 g <- select_genome("19")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
-result <- predict_exposure(musica = musica, table_name = "SBS96",
+result <- predict_exposure(musica = musica, modality = "SBS96",
 signature_res = cosmic_v2_sigs, algorithm = "lda")
 
 # Predict using LDA-like algorithm with seed set to 1
 set.seed(1)
-predict_exposure(musica = musica, table_name = "SBS96",
+predict_exposure(musica = musica, modality = "SBS96",
 signature_res = cosmic_v2_sigs, algorithm = "lda")
 }

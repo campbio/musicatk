@@ -92,10 +92,10 @@ A genome build must first be selected before a musica object can be created for 
 g <- select_genome("hg38")
 ```
 
-The last preprocessing step is to create an object with the variants and the genome using the `create_musica` function. This function will perform checks to ensure that the chromosome names and reference alleles in the input variant object match those in supplied BSgenome object. These checks can be turned off by setting `check_ref_chromosomes = FALSE` and `check_ref_bases = FALSE`, respectively. This function also looks for adjacent single base substitutions (SBSs) and will convert them to double base substitutions (DBSs). To disable this automatic conversion, set `convert_dbs = FALSE`. 
+The last preprocessing step is to create an object with the variants and the genome using the `create_musica_from_variants` function. This function will perform checks to ensure that the chromosome names and reference alleles in the input variant object match those in supplied BSgenome object. These checks can be turned off by setting `check_ref_chromosomes = FALSE` and `check_ref_bases = FALSE`, respectively. This function also looks for adjacent single base substitutions (SBSs) and will convert them to double base substitutions (DBSs). To disable this automatic conversion, set `convert_dbs = FALSE`. 
 
 ```{r create_musica}
-musica <- create_musica(x = variants, genome = g)
+musica <- create_musica_from_variants(x = variants, genome = g)
 ```
 
 # Importing sample annotations
@@ -107,7 +107,7 @@ id <- as.character(sample_names(musica))
 samp_annot(musica, "Tumor_Type") <- annot[id,"Tumor_Type"]
 ```
 
-> **Note: Be sure that the annotation vector or data.frame being supplied is in the same order as the samples in the `musica` object.** The `sample_names` function can be used to get the order of the samples in the musica object. Note that the annotations can also be added later on to a `musica_result` objects created by discovery or prediction using the same function: `samp_annot(result, "Tumor_Type") <- annot[id,"Tumor_Type"]`. 
+> **Note: Be sure that the annotation vector or data.frame being supplied is in the same order as the samples in the `musica` object.** The `sample_names` function can be used to get the order of the samples in the musica object. Note that the annotations can also be added later on. 
 
 
 # Creating mutation count tables
@@ -179,11 +179,13 @@ Mutational signature discovery is the process of deconvoluting a matrix
 containing the count of each mutation type in each sample into two matrices: 1)
 a **Signature** matrix containing the probability of each mutation motif in
 signature and 2) an **Exposure** matrix containing the estimated counts of each
-signature in each sample. Discovery and prediction results are save in a
-`musica_result` object that includes both the signatures and sample exposures. The `discover_signatures` function can be used to identify signatures in a dataset **de novo**:
+signature in each sample. Discovery and prediction results are saved in the
+result_list slot of a `musica` object. The `discover_signatures` function can be
+used to identify signatures in a dataset **de novo**:
 
 ```{r discover_sigs}
-result_discov <- discover_signatures(musica_filter, table_name = "SBS96", num_signatures = 4, algorithm = "lda")
+discover_signatures(musica_filter, modality = "SBS96", num_signatures = 4, 
+                    algorithm = "lda", model_id = "ex_result")
 ```
 
 
@@ -199,11 +201,11 @@ functions can be used:
 
 ```{r result_accessors}
 # Extract the exposure matrix
-expos <- exposures(result_discov)
+expos <- exposures(musica_filter, "result", "SBS96", "ex_result")
 expos[1:3,1:3]
 
 # Extract the signature matrix
-sigs <- signatures(result_discov)
+sigs <- signatures(musica_filter, "result", "SBS96", "ex_result")
 sigs[1:3,1:3]
 ```
 
@@ -214,21 +216,21 @@ sigs[1:3,1:3]
 The `plot_signatures` function can be used to display barplots that show the probability of each mutation type in each signature:
 
 ```{r plot_sigs}
-plot_signatures(result_discov)
+plot_signatures(musica_filter, "ex_result")
 ```
 
 By default, the scales on the y-axis are forced to be the same across all 
 signatures. This behavior can be turned off by setting `same_scale = FALSE`:
 
 ```{r plot_sigs_same_scale}
-plot_signatures(result_discov, same_scale = FALSE)
+plot_signatures(musica_filter, "ex_result", same_scale = FALSE)
 ```
 
 ## Comparing to external signatures
-A common analysis is to compare the signatures estimated in a dataset to those generated in other datasets or to those in the [COSMIC database](https://cancer.sanger.ac.uk/cosmic/signatures). We have a set of functions that can be used to easily perform pairwise correlations between signatures. The `compare_results` functions compares the signatures between two `musica_result` objects. The `compare_cosmic_v2` will correlate the signatures between a `musica_result` object and the SBS signatures in COSMIC V2. For example:
+A common analysis is to compare the signatures estimated in a dataset to those generated in other datasets or to those in the [COSMIC database](https://cancer.sanger.ac.uk/cosmic/signatures). We have a set of functions that can be used to easily perform pairwise correlations between signatures. The `compare_results` functions compares the signatures between two models in the same or different `musica` objects. The `compare_cosmic_v2` will correlate the signatures between a model and the SBS signatures in COSMIC V2. For example:
 
 ```{r compare_cosmic}
-compare_cosmic_v2(result_discov, threshold = 0.8)
+compare_cosmic_v2(musica_filter, "ex_result", threshold = 0.8)
 ```
 
 In this example, our Signatures 1 and 3 were most highly correlated to COSMIC Signature 4 and 7, respectively, so this may indicate that samples in our dataset were exposed to UV radiation or cigarette smoke. Only pairs of signatures who have a correlation above the `threshold` parameter will be returned. If no pairs of signatures are found, then you may want to consider lowering the threshold. Signatures can also be correlated to those in the COSMIC V3 database using the `compare_cosmic_v3` function.
@@ -236,8 +238,8 @@ In this example, our Signatures 1 and 3 were most highly correlated to COSMIC Si
 Based on the COSMIC comparison results and our prior knowledge, these signatures can be re-named and the new name can displayed in the plots:
 
 ```{r, name_sigs}
-name_signatures(result_discov, c("SBS4 - Smoking", "SBS15 - MMR", "SBS7 - UV", "SBS2/13 - APOBEC"))
-plot_signatures(result_discov)
+name_signatures(musica_filter, "ex_result", c("SBS4 - Smoking", "SBS15 - MMR", "SBS7 - UV", "SBS2/13 - APOBEC"))
+plot_signatures(musica_filter, "ex_result")
 ```
 
 
@@ -247,43 +249,43 @@ Barplots showing the exposures in each sample can be plotted with the
 `plot_exposures` function:
 
 ```{r exposures_raw}
-plot_exposures(result_discov, plot_type = "bar")
+plot_exposures(musica_filter, "ex_result", plot_type = "bar")
 ```
 
 By default, samples are ordered from those with the highest number of mutations on the left to those with the lowest on the right. Sometimes, too many samples are present and the bars are too small to clearly examine the patterns of exposures. The `num_samples` parameter can be used to display the top samples with the highest number of mutations on the left:
 
 ```{r exposures_raw_top}
-plot_exposures(result_discov, plot_type = "bar", num_samples = 50)
+plot_exposures(musica_filter, "ex_result", plot_type = "bar", num_samples = 50)
 ```
 Samples can be ordered by the level of individual exposures. The can be used in combination with the `num_samples` parameter to examine the mutational patterns in the samples with the highest levels of a particular exposure. For example, samples can be ordered by the number of estimated mutations from the MMR signature: 
 
 ```{r exposures_raw_sort}
-plot_exposures(result_discov, plot_type = "bar", num_samples = 50, sort_samples = "SBS15 - MMR")
+plot_exposures(musica_filter, "ex_result", plot_type = "bar", num_samples = 50, sort_samples = "SBS15 - MMR")
 ```
 
 
 The proportion of each exposure in each tumor can be shown by setting `proportional = TRUE`:
 
 ```{r exposures_prop}
-plot_exposures(result_discov, plot_type = "bar", num_samples = 50, proportional = TRUE)
+plot_exposures(musica_filter, "ex_result", plot_type = "bar", num_samples = 50, proportional = TRUE)
 ```
 
 The `plot_exposures` function can group exposures by either a sample annotation or by a signature by setting the `group_by` parameter. To group by an annotation, the `groupBy` parameter must be set to `"annotation"` and the name of the annotation must be supplied via the `annotation` parameter. For example, the exposures from the previous result can be grouped by the `Tumor_Type` annotation:
 
 ```{r plot_exposures_by_subtype}
-plot_exposures(result_discov, plot_type = "bar", group_by = "annotation", annotation = "Tumor_Type")
+plot_exposures(musica_filter, "ex_result", plot_type = "bar", group_by = "annotation", annotation = "Tumor_Type")
 ```
 
 In this plot, it is clear that the smoking signature is more active in the lung cancers while the UV signature is more active in the skin cancers. The distribution of exposures with respect to annotation can be viewed using boxplots by setting `plot_type = "box"` and `group_by = "annotation"`:
 
 ```{r plot_exposures_box_annot}
-plot_exposures(result_discov, plot_type = "box", group_by = "annotation", annotation = "Tumor_Type")
+plot_exposures(musica_filter, "ex_result", plot_type = "box", group_by = "annotation", annotation = "Tumor_Type")
 ```
 
 Note that boxplots can be converted to violin plots by setting `plot_type = "violin"`. To compare the exposures levels across groups of samples within a signature, we can set `group_by = "signature"` and `color_by = "annotation"`:
 
 ```{r plot_exposures_box_sig}
-plot_exposures(result_discov, plot_type = "box", group_by = "signature", 
+plot_exposures(musica_filter, "ex_result", plot_type = "box", group_by = "signature", 
                color_by = "annotation", annotation = "Tumor_Type")
 ```
 
@@ -295,7 +297,7 @@ expos.prop <- prop.table(expos, margin = 2)
 
 # Plot counts for the sample with the higest level of exposures for sigs #2 and #4
 ix <- c(which.max(expos.prop[2,]), which.max(expos.prop[4,]))
-plot_sample_counts(musica_filter, sample_names = colnames(expos.prop)[ix], table_name = "SBS96")
+plot_sample_counts(musica_filter, sample_names = colnames(expos.prop)[ix], modality = "SBS96")
 ```
 
 
@@ -311,13 +313,16 @@ Instead of discovering mutational signatures and exposures from a dataset *de no
 data("cosmic_v2_sigs")
 
 # Predict pre-existing exposures using the "lda" method
-result_cosmic_selected_sigs <- predict_exposure(musica = musica_filter, table_name = "SBS96", signature_res = cosmic_v2_sigs, signatures_to_use =  c(1, 2, 4, 6, 7, 13), algorithm = "lda")
+predict_exposure(musica = musica_filter, modality = "SBS96", 
+                 signature_res = cosmic_v2_sigs, 
+                 model_id = "result_cosmic_selected_sigs",
+                 signatures_to_use =  c(1, 2, 4, 6, 7, 13), algorithm = "lda")
 
 # Plot exposures
-plot_exposures(result_cosmic_selected_sigs, plot_type = "bar", num_samples = 50)
+plot_exposures(musica_filter, "result_cosmic_selected_sigs", plot_type = "bar", num_samples = 50)
 ```
 
-The `cosmic_v2_sigs` object is just a `musica_result` object containing COSMIC V2 signatures without any sample or exposure information. Note that if `signatures_to_use` is not supplied by the user, then exposures for all signatures in the result object will be estimated. Any `musical_result` object can be given to the `signature_res` parameter. Exposures can be predicted for samples in any `musica` object from any `musica_result` object as long as the same mutation schema was utilized. 
+The `cosmic_v2_sigs` object is just a `result_model` object containing COSMIC V2 signatures without any sample or exposure information. Note that if `signatures_to_use` is not supplied by the user, then exposures for all signatures in the result object will be estimated. Any `result_model` object can be given to the `signature_res` parameter. Exposures can be predicted for samples in any `musica` object from any `result_model` object as long as the same mutation schema was utilized. 
 
 ## Prediction with signature selection
 
@@ -325,13 +330,13 @@ In many cases, researchers will not know the signatures that are active in a coh
 
 ```{r auto_pred_grid}
 # Predict exposures with auto selection of signatures
-result_cosmic_auto <- auto_predict_grid(musica_filter, table_name = "SBS96", signature_res = cosmic_v2_sigs, algorithm = "lda", sample_annotation = "Tumor_Type")
+auto_predict_grid(musica_filter, modality = "SBS96", signature_res = cosmic_v2_sigs, algorithm = "lda", model_id = "result_cosmic_auto", sample_annotation = "Tumor_Type")
 
 # See list of selected signatures 
-rownames(exposures(result_cosmic_auto))
+rownames(exposures(musica_filter, "result", "SBS96", "result_cosmic_auto"))
 ```
 
-In this result, `r length(rownames(exposures(result_cosmic_auto)))` of the 30 original COSMIC V2 signatures were selected including several signatures that were not previously included in our first prediction with manually selected signatures. If multiple groups of samples are present in the dataset that are expected to have somewhat different sets of active signatures (e.g. multiple tumor types), then this 2-step process can be improved by performing signature selection within each group. This can be achieved by supplying the `sample_annoation` parameter. In our example, exposures were predicted in the three different tumor types by supplying the `Tumor_Type` annotation to `sample_annotation`. This parameter can be left `NULL` if no grouping annotation is available.
+In this result, `r length(rownames(exposures(musica_filter, "result", "SBS96", "result_cosmic_auto"))))` of the 30 original COSMIC V2 signatures were selected including several signatures that were not previously included in our first prediction with manually selected signatures. If multiple groups of samples are present in the dataset that are expected to have somewhat different sets of active signatures (e.g. multiple tumor types), then this 2-step process can be improved by performing signature selection within each group. This can be achieved by supplying the `sample_annoation` parameter. In our example, exposures were predicted in the three different tumor types by supplying the `Tumor_Type` annotation to `sample_annotation`. This parameter can be left `NULL` if no grouping annotation is available.
 
 The three major parameters that determine whether a signature is present in a dataset on the first pass are:
 
@@ -344,7 +349,7 @@ The three major parameters that determine whether a signature is present in a da
 It is almost always worthwhile to manually assess and confirm the signatures predicted to be present within a dataset, especially for signatures that have similar profiles to one another. For example, both COSMIC [Signature 4](https://cancer.sanger.ac.uk/signatures/media/images/v2_signature_profile_4.original.png) (smoking) and [Signature 24](https://cancer.sanger.ac.uk/signatures/media/images/v2_signature_profile_24.original.png) (aflatoxin) were predicted to be present within our dataset. The smoking-related signature is expected as our cohort contains lung cancers, but the aflatoxin signature is unexpected given that it is usually found in liver cancers. These signatures both have a strong concentration of C>A tranversions. In fact, we can see that the predicted exposures for these signatures are highly correlated to each other across samples:
 
 ```{r plot_SBS4_vs_SBS24}
-e <- exposures(result_cosmic_auto)
+e <- exposures(musica_filter, "result", "SBS96", "result_cosmic_auto"))
 plot(e["SBS4",], e["SBS24",], xlab="SBS4", ylab="SBS24")
 ```
 
@@ -352,7 +357,7 @@ Therefore, we will want to remove Signature 24 from our final prediction model. 
 
 ```{r plot_SBS4_vs_SBS18}
 plot(e["SBS4",], e["SBS18",], xlab="SBS4", ylab="SBS18")
-plot_exposures(result_cosmic_auto, num_samples = 25, sort_samples = "SBS18")
+plot_exposures(musica_filter, "result_cosmic_auto", num_samples = 25, sort_samples = "SBS18")
 ```
 
 Additionally, 2 of the 3 samples are skin cancers where the smoking signature is not usually expected:
@@ -374,7 +379,7 @@ After additional analysis of other signatures, we also want to remove Signature 
 
 ```{r predict_cosmic_final}
 # Predict pre-existing exposures with the revised set of selected signatures
-result_cosmic_final <- predict_exposure(musica = musica_filter, table_name = "SBS96", signature_res = cosmic_v2_sigs, signatures_to_use =  c(1, 2, 4, 6, 7, 13, 15, 18, 26), algorithm = "lda")
+predict_exposure(musica = musica_filter, modality = "SBS96", signature_res = cosmic_v2_sigs, signatures_to_use =  c(1, 2, 4, 6, 7, 13, 15, 18, 26), model_id = "result_cosmic_final", algorithm = "lda")
 ```
 
 
@@ -386,31 +391,31 @@ The `create_umap` function embeds samples in 2 dimensions using the `umap` funct
 
 ```{r umap_create}
 set.seed(1)
-create_umap(result_cosmic_final)
+create_umap(musica_filter, "result_cosmic_final")
 ```
 
-Note that while we are using the `result_cosmic_final` object which came from the prediction algorithm, we could have also used the `result_discov` object generated by the discovery algorithm. The `plot_umap` function will generate a scatter plot of the UMAP coordinates. The points of plot will be colored by the level of a signature by default:
+Note that while we are using the `result_cosmic_final` model which came from the prediction algorithm, we could have also used the `ex_result` model generated by the discovery algorithm. The `plot_umap` function will generate a scatter plot of the UMAP coordinates. The points of plot will be colored by the level of a signature by default:
 
 ```{r umap_plot}
-plot_umap(result_cosmic_final)
+plot_umap(musica_filter, "result_cosmic_final")
 ```
 
 By default, the exposures for each sample will share the same color scale. However, exposures for some signatures may have really high levels compared to others. To make a plot where exposures for each signature will have their own color scale, you can set `same_scale = FALSE`:
 
 ```{r umap_plot_same_scale}
-plot_umap(result_cosmic_final, same_scale = FALSE)
+plot_umap(musica_filter, "result_cosmic_final", same_scale = FALSE)
 ```
 
 Lastly, points can be colored by a Sample Annotation by setting `color_by = "annotation"` and the `annotation` parameter to the name of the annotation:
 
 ```{r umap_plot_annot}
-plot_umap(result_cosmic_final, color_by = "annotation", annotation = "Tumor_Type")
+plot_umap(musica_filter, "result_cosmic_final", color_by = "annotation", annotation = "Tumor_Type")
 ```
 
 If we set `add_annotation_labels = TRUE`, the centroid of each group is identified using medians and the labels are plotted at the position of the centroid:
 
 ```{r umap_plot_annot_label}
-plot_umap(result_cosmic_final, color_by = "annotation", annotation = "Tumor_Type", add_annotation_labels = TRUE)
+plot_umap(musica_filter, "result_cosmic_final", color_by = "annotation", annotation = "Tumor_Type", add_annotation_labels = TRUE)
 ```
 
 ## Plotting exposures in a heatmap
@@ -418,19 +423,19 @@ plot_umap(result_cosmic_final, color_by = "annotation", annotation = "Tumor_Type
 Exposures can be displayed in a heatmap where each row corresponds to a siganture and each column correponds to a sample:
 
 ```{r exposure_heatmap}
-plot_heatmap(result_cosmic_final)
+plot_heatmap(musica_filter, "result_cosmic_final")
 ```
 
 By default, signatures are scaled to have a mean of zero and a standard deviation of 1 across samples (i.e. z-scored). This can be turned off by setting `scale = FALSE`. Sample annotations can be displayed in the column color bar by setting the `annotation` parameter:
 
 ```{r exposure_heatmap_annot}
-plot_heatmap(result_cosmic_final, annotation = "Tumor_Type")
+plot_heatmap(musica_filter, "result_cosmic_final", annotation = "Tumor_Type")
 ```
 
 The heatmap shows that Signature 4 and Signature 7 are largely mutually exclusive from one another and can be used to separate lung and skin cancers. Additionally, subsets of signatures or samples can be displayed. For example, if we only want to examine signatures involved in mismatch repair, we can select signatures 6, 15, and 26:
 
 ```{r exposure_heatmap_sigs}
-plot_heatmap(result_cosmic_final, annotation = "Tumor_Type", subset_signatures = c("SBS6", "SBS15", "SBS26"))
+plot_heatmap(musica_filter, "result_cosmic_final", annotation = "Tumor_Type", subset_signatures = c("SBS6", "SBS15", "SBS26"))
 ```
 
 In this heatmap, we can see that only a small subset of distinct samples have relatively higher levels of these signatures. 
@@ -440,20 +445,20 @@ In this heatmap, we can see that only a small subset of distinct samples have re
 Samples can be grouped into **de novo** clusters using a several algorithms from the factoextra and cluster packages such as `pam` or `kmeans`. One major challenge is choosing the number of clusters (k). The function `k_select` has several metrics for examining cluster stability such as total within cluster sum of squares (`wss`), Silhouette Width (`silhouette`), and the Gap Statistic (`gap_stat`). 
 
 ```{r find_cluster_number}
-k_select(result_cosmic_final, method = "silhouette", clust.method = "pam", n = 20)
+k_select(musica_filter, "result_cosmic_final", method = "silhouette", clust.method = "pam", n = 20)
 ```
 
 While 2 clusters may be the most optimal choice, this would just correspond to the two large clusters of lung and skin tumors. Therefore, choosing a higher value may be more informative. The next major drop in the silhouette width is after `k = 6`, so we will select this moving forward and perform the clustering:
 
 ```{r cluster}
-clusters <- cluster_exposure(result_cosmic_final, method = "pam", nclust = 6)
+clusters <- cluster_exposure(musica_filter, "result_cosmic_final", method = "pam", nclust = 6)
 ```
 
 Clusters can be visualized on the UMAP with the `plot_cluster` function:
 
 ```{r plot_clusters}
 clusters[,1] <- as.factor(clusters[,1])
-plot_cluster(result_cosmic_final, cluster = clusters, group = "none")
+plot_cluster(musica_filter, "result_cosmic_final", cluster = clusters, group = "none")
 ```
 
 # Additional features
@@ -463,8 +468,8 @@ plot_cluster(result_cosmic_final, cluster = clusters, group = "none")
 The functions `plot_signatures`, `plot_exposures`, and `plot_umap` have the ability to create `r BiocStyle::CRANpkg("ggplotly")` plots by simply specifying `plotly = TRUE`. Plotly plots are interactive and allow users to zoom and re-sizing plots, turn on and off annotation types and legend values, and hover over elements of the plots (e.g. bars or  points) to more information about that element (e.g. sample name). Here are examples of `plot_signatures` and `plot_exposures`
 
 ```{r plotly}
-plot_signatures(result_cosmic_final, plotly = TRUE)
-plot_exposures(result_cosmic_final, num_samples = 25, plotly = TRUE)
+plot_signatures(musica_filter, "result_cosmic_final", plotly = TRUE)
+plot_exposures(musica_filter, "result_cosmic_final", num_samples = 25, plotly = TRUE)
 ```
 
 ## COSMIC signatures annotated to be active in a tumor type
