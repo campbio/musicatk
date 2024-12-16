@@ -1,3 +1,8 @@
+# musicatk 2.0.0 (2023-10-30)
+* Restructure of the musica class to contain mutational signature discovery and prediction results, thus eliminating the need for the musica_result class.
+* Added new functionality to help determine the correct number of signatures to predict (k-value).
+* Musica objects can be created from variants or directly from count tables.
+
 # musicatk 1.14.1 (2024-07-13)
 * Removed deconstructSigs
 

@@ -19,7 +19,9 @@ library(musicatk)
 In order to discover or predict mutational signatures, we must first set up
 our musica object by 1) extracting variants from files or objects such as
 VCFs and MAFs, 2) selecting the appropriate reference genome 3) creating a 
-musica object, 4) adding sample-level annotations, and 5) building a count tables for our variants of interest.
+musica object, 4) adding sample-level annotations, and 5) building a count
+tables for our variants of interest. Alternatively, a musica object can be
+created directly from a count table.
 
 ## Import variants from files
 
@@ -149,6 +151,19 @@ combine_count_tables(musica, to_comb = c("SBS96", "DBS78"), name = "SBS_DBS",
 names(tables(musica))
 ```
 
+# Creating a musica object directly from a count table
+If a count table is already available, a musica object can be created directly
+without need for a variant file and building tables.
+
+```{r create_musica_from_counts}
+luad_count_table_path <- system.file("extdata", "luad_tcga_count_table.csv",
+  package = "musicatk"
+)
+luad_count_table <- as.matrix(read.csv(luad_count_table_path))
+
+musica_from_counts <- create_musica_from_counts(luad_count_table, "SBS96")
+```
+
 # Filtering samples
 Samples with low numbers of mutations should usually be excluded from discover and prediction procedures. The `subset_musica_by_counts` function can be used to exclude samples with low numbers of mutations in a particular table:
 
@@ -168,7 +183,26 @@ musica_luad <- subset_musica_by_annotation(musica, annot_col = "Tumor_Type",
 
 # Discovery of signatures and exposures
 
-Mutational signature discovery is the process of deconvoluting a matrix containing the count of each mutation type in each sample into two matrices: 1) a **Signature** matrix containing the probability of each mutation motif in signature and 2) an **Exposure** matrix containing the estimated counts of each signature in each sample. Discovery and prediction results are saved in the result_list slot of a `musica` object. The `discover_signatures` function can be used to identify signatures in a dataset **de novo**:
+Mutational signature discovery is the process of deconvoluting a matrix containing the count of each mutation type in each sample into two matrices: 1) a **Signature** matrix containing the probability of each mutation motif in signature and 2) an **Exposure** matrix containing the estimated counts of each signature in each sample. Discovery and prediction results are saved in the result_list slot of a `musica` object. The `discover_signatures` function can be used to identify signatures in a dataset **de novo**.
+
+## Determining an appropriate k value
+The k value is the number of signatures that are predicted from a discovery
+method. To help determine an appropriate k value, the `compare_k_vals` function
+can be used to compare to the stability and error associated with various k
+values. Generally, 100 replicates is suggested, as well as a larger span of k
+values to test. Here, fewer k values and replicates are used for simplicity.
+
+```{r compare_k_vals, message = FALSE}
+k_comparison <- compare_k_vals(musica, "SBS96",
+  reps = 100, min_k = 2, max_k = 6,
+  algorithm = "lda"
+)
+```
+
+From the resulting plot, we see that k = 4 yields a relatively high silhouette
+width and a relatively low reconstruction error. The error bars for both metrics
+are also quite narrow for k = 4. Therefore four signatures should be selected,
+so we will set k equal to 4 in the `discover_signatures` function:
 
 ```{r discover_sigs}
 discover_signatures(musica_filter,
@@ -196,7 +230,6 @@ expos[1:3, 1:3]
 sigs <- signatures(musica_filter, "result", "SBS96", "ex_result")
 sigs[1:3, 1:3]
 ```
-
 
 # Visualization of results
 
@@ -338,7 +371,7 @@ auto_predict_grid(musica_filter, modality = "SBS96",
 rownames(exposures(musica_filter, "result", "SBS96", "result_cosmic_auto"))
 ```
 
-In this result, `r length(rownames(exposures(musica_filter, "result", "SBS96", "result_cosmic_auto"))))` of the 30 original COSMIC V2 signatures were selected including several signatures that were not previously included in our first prediction with manually selected signatures. If multiple groups of samples are present in the dataset that are expected to have somewhat different sets of active signatures (e.g. multiple tumor types), then this 2-step process can be improved by performing signature selection within each group. This can be achieved by supplying the `sample_annoation` parameter. In our example, exposures were predicted in the three different tumor types by supplying the `Tumor_Type` annotation to `sample_annotation`. This parameter can be left `NULL` if no grouping annotation is available.
+In this result, `r length(rownames(exposures(musica_filter, "result", "SBS96", "result_cosmic_auto")))` of the 30 original COSMIC V2 signatures were selected including several signatures that were not previously included in our first prediction with manually selected signatures. If multiple groups of samples are present in the dataset that are expected to have somewhat different sets of active signatures (e.g. multiple tumor types), then this 2-step process can be improved by performing signature selection within each group. This can be achieved by supplying the `sample_annoation` parameter. In our example, exposures were predicted in the three different tumor types by supplying the `Tumor_Type` annotation to `sample_annotation`. This parameter can be left `NULL` if no grouping annotation is available.
 
 The three major parameters that determine whether a signature is present in a dataset on the first pass are:
 

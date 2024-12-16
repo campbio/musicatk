@@ -9,7 +9,6 @@
 \alias{model_id<-,musica,matrix-method}
 \alias{model_id<-,result_collection,matrix-method}
 \alias{model_id<-,result_model,matrix-method}
-\alias{modality,musica-method}
 \title{Retrieve model_id from a result_model, result_collection, or musica
 object}
 \usage{
@@ -28,8 +27,6 @@ model_id(x, ...) <- value
 \S4method{model_id}{result_collection,matrix}(x, modality, model_id) <- value
 
 \S4method{model_id}{result_model,matrix}(x) <- value
-
-\S4method{modality}{musica}(x, result, modality, model_id)
 }
 \arguments{
 \item{x}{A \code{\linkS4class{musica}},
