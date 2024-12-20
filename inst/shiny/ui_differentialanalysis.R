@@ -9,6 +9,8 @@ shiny_panel_diffanal <- fluidPage(
   ),
   div(box(width = 12,
       uiOutput("diff_anal_result"),
+      uiOutput("diff_anal_modality"),
+      uiOutput("diff_anal_model"),
       uiOutput("diff_anal_annot"),
       radioButtons("diff_method", label = "Method",
                    choices = list("Wilcoxon Rank Sum Test" = "wilcox",
@@ -35,6 +37,6 @@ shiny_panel_diffanal <- fluidPage(
       bsTooltip("download_diff",
                 "Download the differential exposure table",
                 placement = "bottom", trigger = "hover", options = NULL),
-      dataTableOutput("diff_table")
+      DT::DTOutput("diff_table")
       )
 )

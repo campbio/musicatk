@@ -30,7 +30,7 @@ shiny_panel_tcga <- fluidPage(
               options = NULL),
     actionButton("import_tcga", "Import"),
     hr(),
-    div(dataTableOutput("tcga_contents"),
+    div(DT::DTOutput("tcga_contents"),
         style = "height:500px;
                   overflow-y: scroll;overflow-x: scroll;"),
   )

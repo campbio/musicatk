@@ -8,7 +8,10 @@ shiny_panel_heatmap <- fluidPage(
              '))
   ),  
   #Adding box formating
-  fluidRow(div(style = "position: relative;",box(uiOutput(outputId = "select_res_heatmap"),
+  fluidRow(div(style = "position: relative;",box(
+    uiOutput(outputId = "select_res_heatmap"),
+    uiOutput(outputId = "select_modality_heatmap"),
+    uiOutput(outputId = "select_model_heatmap"),
                   h3("Settings"),
                   #Adding checkboxees for different heatmap fucntion parameters
                   checkboxInput("prop", "Proportional", FALSE),
@@ -35,7 +38,7 @@ shiny_panel_heatmap <- fluidPage(
                  fluidRow(box(
                   radioButtons(
                     inputId = "subset",
-                    label = "",
+                    label = "Subset Signatures",
                     choices = list("All Signatures" = "all_signatures",
                                    "Selected Signatures" = "signature"),
                     inline = TRUE,
@@ -44,19 +47,22 @@ shiny_panel_heatmap <- fluidPage(
                   tags$div(id = "sortbysigs"),
                   radioButtons(
                     inputId = "subset_tum",
-                    label = "",
-                    choices = list("Samples" = "tumors"),
+                    label = "Subset Samples",
+                    choices = list("All Samples" = "all_samples",
+                                   "Selected Tumor Types" = "tumors"),
                     inline = TRUE,
-                    selected = ""
+                    selected = "all_samples"
                   ),
                   tags$div(id = "sortbytum"),
-                  radioButtons(
-                    inputId = "subset_annot",
-                    label = "Annotate by",
-                    choices = list("Annotation" = "annotation"),
-                    inline = TRUE,
-                    selected = ""
-                  ),
+                  h3("Annotation"),
+                  checkboxInput("subset_annot", "Add annotation", FALSE),
+                  #radioButtons(
+                  #  inputId = "subset_annot",
+                  #  label = "Annotate by",
+                  #  choices = list("Annotation" = "annotation"),
+                  #  inline = TRUE,
+                  #  selected = ""
+                  #),
                   tags$div(id = "sortbyannot"),
                   actionButton("get_heatmap", "Plot"),
                   )),

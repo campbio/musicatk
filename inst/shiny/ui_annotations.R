@@ -48,6 +48,6 @@ shiny_panel_annotations <- fluidPage(
             "Choose the delimiter to parse your text file.",
             placement = "right", trigger = "hover", options = NULL))),
   box(width = 12,
-    dataTableOutput("annotations")
+    DT::DTOutput("annotations")
   )
 )
