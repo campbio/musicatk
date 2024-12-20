@@ -1167,7 +1167,7 @@ parse_delete_event <- function(idstr) {
       tryCatch({
         build_standard_table(vals$musica,
                              select_genome(input$table_genome_list),
-                             table_name = table_name,
+                             modality = table_name,
                              strand_type = strand_type,
                              overwrite = TRUE)
         shiny::showNotification("Table created.")

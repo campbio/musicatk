@@ -62,7 +62,7 @@
 Sahelijo, Zainab Khurshid, Tong Tong, Aaron Chevalier, Joshua
 Campbell</h4>
             
-            <h4 data-toc-skip class="date">Compiled December 16,
+            <h4 data-toc-skip class="date">Compiled December 20,
 2024</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/campbio/musicatk/blob/HEAD/vignettes/articles/tutorial_tcga_ui.Rmd" class="external-link"><code>vignettes/articles/tutorial_tcga_ui.Rmd</code></a></small>
@@ -102,7 +102,7 @@ RStudio or R in the terminal and type the following in the console:</p>
 “Import variants from files” - upload MAF and VCF files containing the
 variant data. - “Import variants from TCGA” - easily import all open
 access TCGA tumor datasets. - “Import previously generated musica
-objects” - upload existing musica and result objects. <br></p>
+objects” - upload existing musica objects. <br></p>
 <div class="section level3">
 <h3 id="import-variants-from-files">Import variants from files<a class="anchor" aria-label="anchor" href="#import-variants-from-files"></a>
 </h3>
@@ -113,7 +113,7 @@ creating a musica object, 4) adding sample-level annotations, and 5)
 building a count tables for our variants of interest. Variants stored in
 VCF or MAF files can be selected from your computation using the
 ‘browse’ button under the ‘Select Files’ label.</p>
-<p><img src="ui_screenshots/import.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="./ui_screenshots/import.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>Clicking the ‘Add Samples’ button will add the files to the list of
 samples to be imported. The delete and undo button next to the file can
 be pressed to remove it or revert the change respectively. After adding
@@ -142,17 +142,12 @@ bottom right.</p>
 <h3 id="import-previously-generated-musica-objects">Import previously generated musica objects<a class="anchor" aria-label="anchor" href="#import-previously-generated-musica-objects"></a>
 </h3>
 <p>This tab can be used to import a user’s previously generated musica
-variant object or a musica result object in .rda or .rds format. . The
-browse button in the musica result or musica result object can be
-selected for selecting files. Once selected, a bar saying file upload is
-completed will appear. By default, the musica result objects will be
-named after the file’s name but it can be changed in the text box
-labeled “Name your musica result object”. Once finished, a notification
-message in the bottom right will appear along with a table of variants.
-If a musica variant object was uploaded then the users can skip the
-Create Musica tab and move to the build tables tab directly. If a musica
-result object was uploaded, then all the downstream tabs will be
-accessible.</p>
+variant object in .rda or .rds format. The browse button can be selected
+for selecting files. Once selected, a bar saying file upload is
+completed will appear. Once finished, a notification message in the
+bottom right will appear along with a table of variants. If a musica
+variant object was uploaded then the users can skip the Create Musica
+tab and move to the build tables tab directly.</p>
 <p><img src="ui_screenshots/upload_musica.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 </div>
@@ -242,19 +237,18 @@ Dirichlet Allocation (LDA) or a Non-Negative Matrix Factorization (NMF)
 algorithms. These algorithms will deconvolute the mutation count matrix
 into two matrices: 1) a “signature” matrix containing the probability of
 each mutation type in each sample and 2) an “exposure” matrix containing
-the estimated counts for each signature in each sample. Select a count
-table, algorithm, number of signatures, and specify the name of the
-result and then click “Discover signatures”.</p>
+the estimated counts for each signature in each sample. Select a
+modality, algorithm, number of signatures, and specify the name of the
+result list and model to store the results and then click “Discover
+signatures”.</p>
 <p><img src="ui_screenshots/DiscoverTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="predicting-exposures-from-existing-signatures">Predicting exposures from existing signatures<a class="anchor" aria-label="anchor" href="#predicting-exposures-from-existing-signatures"></a>
 </h3>
 <p>Exposures for samples can be predicted using an existing set of
-signatures stored in a musica result object. Algorithms available for
-prediction include “lda”, “decompTumor2Sig”, and “deconstructSigs”. Note
-that “deconstructSigs” can only work with variants stored in hg19
-format.</p>
+signatures stored in a result model object. Algorithms available for
+prediction include “lda” and “decompTumor2Sig”.</p>
 <p><img src="ui_screenshots/PredictTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>The “Signatures to Predict” dropdown contains all the signatures in
 the result object selected from the “Result to Predict” dropdown. You
@@ -426,11 +420,10 @@ annotations.</p>
 <div class="section level3">
 <h3 id="download-results">Download results<a class="anchor" aria-label="anchor" href="#download-results"></a>
 </h3>
-<p>You can download your musica object and musica result object from
-using the respective drop down menus. They will be saved as .rds files
-which can be reuploaded back into the app at a later time. Select the
-name of the musica result or musica object that click the Download
-button to save the file to your computer.</p>
+<p>You can download your musica object by using the drop down menu. It
+will be saved as .rds files which can be reuploaded back into the app at
+a later time. Select the name of the musica object that click the
+Download button to save the file to your computer.</p>
 <p><img src="ui_screenshots/download.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 </div>

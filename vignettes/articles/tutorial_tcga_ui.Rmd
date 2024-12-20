@@ -16,7 +16,7 @@ musicatk()
 Users can upload their datasets through 1 of 3 different methods.
 - “Import variants from files” - upload MAF and VCF files containing the variant data.
 - “Import variants from TCGA” - easily import all open access TCGA tumor datasets.
-- “Import previously generated musica objects” - upload existing musica and result objects.
+- “Import previously generated musica objects” - upload existing musica objects.
 <br>
 
 ## Import variants from files
@@ -45,7 +45,7 @@ This tab allows for selection of single or multiple datasets generated in The Ca
 <br>
 
 ## Import previously generated musica objects
-This tab can be used to import a user’s previously generated musica variant object or a musica result object in .rda or .rds format. . The browse button in the musica result or musica result object can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. By default, the musica result objects will be named after the file's name but it can be changed in the text box labeled "Name your musica result object". Once finished, a notification message in the bottom right will appear along with a table of variants. If a musica variant object was uploaded then the users can skip the Create Musica tab and move to the build tables tab directly. If a musica result object was uploaded, then all the downstream tabs will be accessible.  
+This tab can be used to import a user’s previously generated musica variant object in .rda or .rds format. The browse button can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. Once finished, a notification message in the bottom right will appear along with a table of variants. If a musica variant object was uploaded then the users can skip the Create Musica tab and move to the build tables tab directly. 
 
 <img src="ui_screenshots/upload_musica.jpg" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
@@ -113,13 +113,13 @@ Any two or more tables can be combined into a new table. The option to build a c
 The user has the option of discovering novel signatures and exposures, or using previously discovered signatures to predict exposures. To discover signatures use the "Discover" tab. To predict signature exposures, use the "Predict" tab.
 
 ## Discovery of signatures and exposures
-Mutational signatures and exposures are discovered using a Latent Dirichlet Allocation (LDA) or a Non-Negative Matrix Factorization (NMF) algorithms. These algorithms will deconvolute the mutation count matrix into two matrices: 1) a "signature" matrix containing the probability of each mutation type in each sample and 2) an "exposure" matrix containing the estimated counts for each signature in each sample. Select a count table, algorithm, number of signatures, and specify the name of the result and then click “Discover signatures”.
+Mutational signatures and exposures are discovered using a Latent Dirichlet Allocation (LDA) or a Non-Negative Matrix Factorization (NMF) algorithms. These algorithms will deconvolute the mutation count matrix into two matrices: 1) a "signature" matrix containing the probability of each mutation type in each sample and 2) an "exposure" matrix containing the estimated counts for each signature in each sample. Select a modality, algorithm, number of signatures, and specify the name of the result list and model to store the results and then click “Discover signatures”.
 
 <img src="ui_screenshots/DiscoverTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
 
 ## Predicting exposures from existing signatures
-Exposures for samples can be predicted using an existing set of signatures stored in a musica result object. Algorithms available for prediction include "lda", "decompTumor2Sig", and "deconstructSigs". Note that “deconstructSigs” can only work with variants stored in hg19 format. 
+Exposures for samples can be predicted using an existing set of signatures stored in a result model object. Algorithms available for prediction include "lda" and "decompTumor2Sig". 
 
 <img src="ui_screenshots/PredictTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
@@ -268,7 +268,7 @@ If “Annotation” is selected, an additional select box will show up and let y
 <img src="ui_screenshots/umap2.jpg" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
 
-## Heatmap of exposures
+## Heatmap of exposures 
 Heatmaps can be used to visualize the relative levels of all signatures across tumors in a single plot. Select the result object you want to use for heatmap visualization from the dropdown menu in the start labeled 'Select Result'. Choose from different settings and press the 'Plot' button to visualize the heatmap. Check the 'Proportional' option to normalize the levels of signatures within a sample to sum to one. Z-score normalization will scale each signature to have a mean of zero and a standard deviation of one.. You can also show or hide the  tumor and signature names by checking or unchecking the 'Show column names' and 'Show row names', respectively. If you want to display a subset by signatures, click the 'Selected Signatures' option and select the signatures to show. You can also select the 'Samples' and 'Annotation' options to subset by the available samples and annotations.
 
 <img src="ui_screenshots/heatmap.jpg" style="border: 1px solid rgba(0,0,0,0.2)"></img>
@@ -277,7 +277,7 @@ Heatmaps can be used to visualize the relative levels of all signatures across t
 <br>
 
 ## Download results
-You can download your musica object and musica result object from using the respective drop down menus. They will be saved as .rds files which can be reuploaded back into the app at a later time. Select the name of the musica result or musica object that click the Download button to save the file to your computer. 
+You can download your musica object by using the drop down menu. It will be saved as .rds files which can be reuploaded back into the app at a later time. Select the name of the musica object that click the Download button to save the file to your computer. 
 
 <img src="ui_screenshots/download.jpg" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
