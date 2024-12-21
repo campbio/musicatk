@@ -40,7 +40,9 @@ server <- function(input, output, session) {
     genome = NULL,
     musica = NULL,
     files = NULL,
-    result_objects = list(),
+    res_names = NULL,
+    res_names_full = list(),
+    #result_objects = list(),
     p_sigs = NULL, #cosmic sig
     p_res = NULL, #cosmic result object
     annotations = NULL,
@@ -75,7 +77,7 @@ server <- function(input, output, session) {
       }
     }
     else if (input$menu == "annotations") {
-      if (is.null(vals$musica) && length(vals$result_objects) == 0) {
+      if (is.null(vals$musica) && length(vals$res_names) == 0) {
         shinyalert::shinyalert("Error",
                                paste0("No musica object was found. ",
                                       "Please go to \"Import\" or ",
@@ -85,7 +87,7 @@ server <- function(input, output, session) {
       }
     }
     else if (input$menu == "download") {
-      if (is.null(vals$musica) && length(vals$result_objects) == 0) {
+      if (is.null(vals$musica) && length(vals$res_names) == 0) {
         shinyalert::shinyalert("Error",
                                paste0("No musica object was found. ",
                                       "Please go to \"Import\" or ",
@@ -168,7 +170,7 @@ server <- function(input, output, session) {
     else if (input$menu %in% c("visualization", "compare",
                                "differentialanalysis", "cluster", "heatmap")) {
       if (is.null(vals$var) && is.null(vals$musica) &&
-          is.null(vals$musica_upload) && length(vals$result_objects) == 0) {
+          is.null(vals$musica_upload) && length(vals$res_names) == 0) {
         shinyalert::shinyalert("Error",
                                paste0("No data was uploaded. ",
                                       "Please go to \"Import\" and upload ",
@@ -177,12 +179,12 @@ server <- function(input, output, session) {
       }
       else if (!is.null(vals$var) && is.null(vals$musica) &&
                is.null(vals$musica_upload) &&
-               length(vals$result_objects) == 0) {
+               length(vals$res_names) == 0) {
         shinyalert::shinyalert("Error",
                                paste0("No musica object was created. ",
                                       "Please go to \"Create Musica Object\" ",
                                       "to create a musica object or go to ",
-                                      "\"Import\" -> \"Import Musica Result ",
+                                      "\"Import\" -> \"Import Musica ",
                                       "Object\ to upload a muscia object."),
                                "error")
         updateTabItems(session, "menu", "musica")
@@ -190,7 +192,7 @@ server <- function(input, output, session) {
       else if (!is.null(vals$var) && !is.null(vals$musica) &&
                length(tables(vals$musica)) == 0 &&
                is.null(vals$musica_upload) &&
-               length(vals$result_objects) == 0) {
+               length(vals$res_names) == 0) {
         shinyalert::shinyalert("Error",
                                paste0("No mutation count table was created. ",
                                       "Please go to \"Build Tables\" ",
@@ -201,7 +203,7 @@ server <- function(input, output, session) {
       else if (!is.null(vals$var) && is.null(vals$musica)
                && !is.null(vals$musica_upload)
                && length(tables(vals$musica_upload)) == 0
-               && length(vals$result_objects) == 0) {
+               && length(vals$res_names) == 0) {
         shinyalert::shinyalert("Error",
                                paste0("No mutation count table was created. ",
                                       "Please go to \"Build Tables\" to ",
@@ -213,13 +215,22 @@ server <- function(input, output, session) {
                                       !is.null(vals$musica_upload))
                && (length(tables(vals$musica)) != 0 ||
                    length(tables(vals$musica_upload)) != 0)
-               && length(vals$result_objects) == 0) {
+               && length(vals$res_names) == 0) {
         shinyalert::shinyalert("Error",
-                               paste0("No musica_result object was created. ",
+                               paste0("No results in the musica object. ",
                                       "Please go to \"Signatures and ",
                                       "Exposures\" -> \"Discover Signatures ",
                                       "and Exposures\" to create ",
-                                      "musica_result object."), "error")
+                                      "results."), "error")
+        updateTabItems(session, "menu", "discover")
+      }
+      else if (!is.null(vals$musica_upload) && length(vals$res_names) == 0) {
+        shinyalert::shinyalert("Error",
+                               paste0("No results in the musica object. ",
+                                      "Please go to \"Signatures and ",
+                                      "Exposures\" -> \"Discover Signatures ",
+                                      "and Exposures\" to create ",
+                                      "results."), "error")
         updateTabItems(session, "menu", "discover")
       }
       else{
@@ -285,8 +296,8 @@ server <- function(input, output, session) {
   })
 
   #If there's result object, enable downstream tabs
-  observeEvent(vals$result_objects, {
-    if (length(vals$result_objects) > 0) {
+  observeEvent(vals$res_names, {
+    if (length(vals$res_names) > 0) {
       removeCssClass(selector = "a[data-value='annotations']",
                      class = "inactiveLink")
       removeCssClass(selector = "a[data-value='visualization']",
@@ -348,7 +359,7 @@ server <- function(input, output, session) {
   })
 
   #Displaying thr table for TCGA tumor variants
-  output$tcga_contents <- renderDataTable({
+  output$tcga_contents <- DT::renderDT({
     req(vals$var)
     req(input$tcga_tumor)
     return(head(vals$var))
@@ -376,10 +387,7 @@ server <- function(input, output, session) {
       for (i in seq_along(file_name)) {
         # Try to read the file
         result <- tryCatch({
-          # Attempt to read the VCF file
           vcf <- extract_variants(file_name[i])
-          
-          
         }, error = function(e) {
           # If there is an error, return NULL or an error message
           message(paste("Error reading file:", file_name[i], "\nError message:", e$message))
@@ -402,6 +410,7 @@ server <- function(input, output, session) {
         showNotification("Import successfully completed!")
         }
   })
+  
 #Displaying list of available genomes
   output$genome_list <- renderUI({
     g <- BSgenome::available.genomes()
@@ -440,7 +449,7 @@ server <- function(input, output, session) {
       shinybusy::show_spinner()
       vals$genome <- input$GenomeSelect
       if (!is.null(vals$var)) {
-        vals$musica <- create_musica(x = vals$var,
+        vals$musica <- create_musica_from_variants(x = vals$var,
                                    genome = select_genome(vals$genome),
                                    check_ref_chromosomes = check_chr(),
                                    check_ref_bases = check_bases(),
@@ -471,7 +480,7 @@ server <- function(input, output, session) {
    return(print(vals$musica_message))
  })
 #Displaying musica object variants
-  output$musica_contents <- renderDataTable({
+  output$musica_contents <- DT::renderDT({
     req(vals$var)
     return(head(vals$var))
     shinyjs::show(id = "musica_contents")
@@ -487,7 +496,7 @@ server <- function(input, output, session) {
     shinyjs::show(id = "musica_contents_summary")
     js$enableTabs();
   })
-  output$musica_contents_table <- renderDataTable({
+  output$musica_contents_table <- DT::renderDT({
     req(vals$musica)
     nvt <- as.data.frame(table(vals$musica@variants$Variant_Type))
     return(nvt)
@@ -507,18 +516,18 @@ server <- function(input, output, session) {
     vals$musica_name_user <- tools::file_path_sans_ext(input$musica_file$name)
   })
 
-  output$musica_result_name <- renderUI(
-    textInput("musica_result_name", value = paste0(vals$musica_name_user),
-              h3("Name your musica result object:"))
-  )
-  observeEvent(input$musica_button, {
-    if (input$musica_button == "result") {
-      shinyjs::show(id = "musica_result_name")
-    }
-    else if (input$musica_button == "object") {
-      shinyjs::hide(id = "musica_result_name")
-    }
-  })
+  #output$musica_result_name <- renderUI(
+  #  textInput("musica_result_name", value = paste0(vals$musica_name_user),
+  #            h3("Name your musica result object:"))
+  #)
+  #observeEvent(input$musica_button, {
+  #  if (input$musica_button == "result") {
+  #    shinyjs::show(id = "musica_result_name")
+  #  }
+  #  else if (input$musica_button == "object") {
+  #    shinyjs::hide(id = "musica_result_name")
+  #  }
+  #})
   observeEvent(input$upload_musica, {
     req(input$musica_file)
     if (all(tools::file_ext(tolower(input$musica_file$name)) !=
@@ -527,20 +536,20 @@ server <- function(input, output, session) {
       "Please upload .rda or .rds files"))
     }
     else{
-      if (input$musica_button == "result") {
-        if (all(tools::file_ext(tolower(input$musica_file$name)) == "rda")) {
-          vals$musica_upload <- load(input$musica_file$datapath)
-          vals$musica_upload <- get(vals$musica_upload)
-          vals$result_objects[[input$musica_result_name]] <- vals$musica_upload
-        }
-        else if (all(tools::file_ext(tolower(input$musica_file$name)) ==
-                     "rds")) {
-          vals$musica_upload <- readRDS(input$musica_file$datapath)
-          vals$result_objects[[input$musica_result_name]] <- vals$musica_upload
-        }
-        showNotification("Musica Result Object successfully imported!")
-      }
-      else if (input$musica_button == "object") {
+      #if (input$musica_button == "result") {
+      #  if (all(tools::file_ext(tolower(input$musica_file$name)) == "rda")) {
+      #    vals$musica_upload <- load(input$musica_file$datapath)
+      #    vals$musica_upload <- get(vals$musica_upload)
+      #    vals$result_objects[[input$musica_result_name]] <- vals$musica_upload
+      #  }
+      #  else if (all(tools::file_ext(tolower(input$musica_file$name)) ==
+      #               "rds")) {
+      #    vals$musica_upload <- readRDS(input$musica_file$datapath)
+      #    vals$result_objects[[input$musica_result_name]] <- vals$musica_upload
+      #  }
+      #  showNotification("Musica Result Object successfully imported!")
+      #}
+      #else if (input$musica_button == "object") {
         if (all(tools::file_ext(tolower(input$musica_file$name)) ==
                 "rda")) {
           vals$musica_upload <- load(input$musica_file$datapath)
@@ -552,36 +561,53 @@ server <- function(input, output, session) {
           vals$musica_upload <- readRDS(input$musica_file$datapath)
           vals$musica <- vals$musica_upload
         }
+        
+        # check if any result objects present
+        if (length(result_list(vals$musica)) > 0){
+          for (result_name in names(result_list(vals$musica))){
+            vals$res_names_full[[result_name]] <- list()
+            for (modality in names(get_result_list_entry(vals$musica, result_name)@modality)){
+              vals$res_names_full[[result_name]][[modality]] <- NULL
+              for (model in names(get_modality(vals$musica, result_name, modality))){
+                vals$res_names_full[[result_name]][[modality]] <- c(vals$res_names_full[[result_name]][[modality]], model)
+                vals$res_names <- c(vals$res_names, paste0(result_name, "/", modality, "/", model))
+              }
+            }
+          }
+        }
+      
+      vals$var <- variants(vals$musica)
         showNotification("Musica Object successfully imported!")
       }}
- })
+# }
+)
 #Displaying musica result/object summary table
-  output$musica_upload <- renderDataTable({
+  output$musica_upload <- DT::renderDT({
     req(vals$musica_upload)
-    if(input$musica_button == "result")
-      {return(head(vals$musica_upload@musica@variants))
-    }else{
+    #if(input$musica_button == "result")
+    #  {return(head(vals$musica_upload@musica@variants))
+    #}else{
       return(head(vals$musica_upload@variants))
-      }
+    #  }
     
     shinyjs::show(id = "musica_upload")
     js$enableTabs();
   })
   output$musica_upload_summary <- renderText({
     req(vals$musica_upload)
-    if(input$musica_button == "result"){
-    vt <- unique(vals$musica_upload@musica@variants$Variant_Type) #variant types
-    nvt <- table(vals$musica_upload@musica@variants$Variant_Type)
-    ns <- length(vals$musica_upload@musica@variants$sample) #sample length
-    mylist <- c("No. of Samples:\n", ns, "\n", "Variant types", vt, "\n", nvt)
-    return(mylist)
-    }else{
+    #if(input$musica_button == "result"){
+    #vt <- unique(vals$musica_upload@musica@variants$Variant_Type) #variant types
+    #nvt <- table(vals$musica_upload@musica@variants$Variant_Type)
+    #ns <- length(vals$musica_upload@musica@variants$sample) #sample length
+    #mylist <- c("No. of Samples:\n", ns, "\n", "Variant types", vt, "\n", nvt)
+    #return(mylist)
+    #}else{
       vt <- unique(vals$musica_upload@variants$Variant_Type) #variant types
       nvt <- table(vals$musica_upload@variants$Variant_Type)
       ns <- length(vals$musica_upload@variants$sample) #sample length
       mylist <- c("No. of Samples:\n", ns, "\n", "Variant types", vt, "\n", nvt)
       return(mylist)
-    }
+    #}
     shinyjs::show(id = "musica_upload_summary")
     js$enableTabs();
   })
@@ -602,18 +628,18 @@ server <- function(input, output, session) {
     }
   )
 
-  output$download_musica_result <- downloadHandler(
-    filename = function() {
-      paste("musica_variants", ".csv", sep = "")
-    },
-    content = function(file) {
-      if(input$musica_button == "result"){
-      write.csv(vals$musica_upload@musica@variants, file, row.names = FALSE)
-      }else{
-      write.csv(vals$musica_upload@variants, file, row.names = FALSE)
-      }
-        }
-  )
+  #output$download_musica_result <- downloadHandler(
+  #  filename = function() {
+  #    paste("musica_variants", ".csv", sep = "")
+  #  },
+  #  content = function(file) {
+  #    if(input$musica_button == "result"){
+  #    write.csv(vals$musica_upload@musica@variants, file, row.names = FALSE)
+  #    }else{
+  #    write.csv(vals$musica_upload@variants, file, row.names = FALSE)
+  #    }
+  #      }
+  #)
 
   output$download_musica_object <- downloadHandler(
     filename = function() {
@@ -638,6 +664,26 @@ server <- function(input, output, session) {
     vals$deleted_rows <- NULL
     vals$deleted_row_indices <- list()
     })
+  
+  observeEvent(input$example, {
+    #vals$files <- list(system.file("extdata", "public_LUAD_TCGA-97-7938.vcf", 
+    #                               package = "musicatk"))
+    #vals$files <- "public_TCGA.LUSC.maf"
+    #dt <- system.file("extdata", "public_TCGA.LUSC.maf", package = "musicatk")
+    #vals$files <- data.frame(files = vals$files, datapath = dt,
+    #                         stringsAsFactors = FALSE)
+    #vals$data <- vals$files
+    #vals$deleted_rows <- NULL
+    #vals$deleted_row_indices <- list()
+    shinybusy::show_spinner()
+    #vars <- extract_variants_from_maf_file(system.file("extdata", "public_TCGA.LUSC.maf", package = "musicatk"))
+    #vals$var <- vars
+    data(musica_annot)
+    vals$musica <- musica_annot
+    vals$var <- vals$musica@variants
+    shinybusy::hide_spinner()
+    showNotification("Example musica object imported. Proceed to discovery/prediction.")  
+  })
 
     observeEvent(input$deletep_ressed, {
     row_num <- parse_delete_event(input$deletep_ressed)
@@ -669,7 +715,7 @@ server <- function(input, output, session) {
     }
   })
 
-  output$dtable <- DT::renderDataTable({
+  output$dtable <- DT::renderDT({
     # Add the delete button column
     req(vals$data)
     delete_button_column(vals$data, "delete_button")
@@ -889,27 +935,27 @@ parse_delete_event <- function(idstr) {
 
   # Update musica object list whenever a result or musica object is altered
   output$annotation_musica_list <- renderUI({
-    result_names <- list(names(vals$result_objects))
-    if (is.null(vals$musica)) {
-      tagList(
-        selectInput("annotation_musica_list", "Select object",
-                    choices = list("result objects" =
-                                     list(names(vals$result_objects))))
-      )
-    } else if (is.null(result_names[[1]])) {
+    #result_names <- list(names(vals$result_objects))
+    #if (is.null(vals$musica)) {
+    #  tagList(
+    #    selectInput("annotation_musica_list", "Select object",
+    #                choices = list("result objects" =
+    #                                 list(names(vals$result_objects))))
+    #  )
+    #} else if (is.null(result_names[[1]])) {
       tagList(
         selectInput("annotation_musica_list", "Select object",
                     choices = list("musica object" = list("musica")))
       )
-    }
-    else {
-      tagList(
-        selectInput("annotation_musica_list", "Select object",
-                    choices = list("musica object" = list("musica"),
-                                   "result objects" =
-                                     list(names(vals$result_objects))))
-      )
-    }
+    #}
+    #else {
+    #  tagList(
+    #    selectInput("annotation_musica_list", "Select object",
+    #                choices = list("musica object" = list("musica"),
+    #                               "result objects" =
+    #                                 list(names(vals$result_objects))))
+    #  )
+    #}
   })
 
   # Input to choose the annotation delimiter.
@@ -923,7 +969,7 @@ parse_delete_event <- function(idstr) {
 
   # Read the annotation file, store it in vals$annotations, and display the
   # contents as a data table.
-  output$annotations <- renderDataTable({
+  output$annotations <- DT::renderDT({
     file <- input$annotations_file
     ext <- tools::file_ext(file$datapath)
     req(file)
@@ -967,16 +1013,16 @@ parse_delete_event <- function(idstr) {
   # Event that triggers add_annotation function.
   observeEvent(input$add_annotation, {
     # Add annotation to result object
-    if (!is.null(get_result(input$annotation_musica_list))) {
-      tryCatch({
-        vals$result_objects[[input$annotation_musica_list]] <-
-          add_annot(vals$result_objects[[input$annotation_musica_list]])
-      }, error = function(cond) {
-        shinyalert::shinyalert(title = "Error", text = cond$message)
-        return()
-      })
+    #if (!is.null(get_result(input$annotation_musica_list))) {
+    #  tryCatch({
+    #    vals$result_objects[[input$annotation_musica_list]] <-
+    #      add_annot(vals$result_objects[[input$annotation_musica_list]])
+    #  }, error = function(cond) {
+    #    shinyalert::shinyalert(title = "Error", text = cond$message)
+    #    return()
+    #  })
     # Add annotation to musica object
-    } else if (!is.null(vals$musica)) {
+    if (!is.null(vals$musica)) {
       tryCatch({
         vals$musica <- add_annot(vals$musica)
       }, error = function(cond) {
@@ -992,11 +1038,11 @@ parse_delete_event <- function(idstr) {
   # Input to select count table
   output$discover_table <- renderUI({
     tagList(
-      selectInput("select_discover_table", "Select Count Table",
+      selectInput("select_discover_table", "Select Modality",
                   choices = names(
                     extract_count_tables(vals$musica))),
       bsTooltip("select_discover_table",
-                "Name of the table to use for signature discovery.",
+                "Modality to use for signature discovery.",
                 placement = "right", trigger = "hover", options = NULL)
     )
   })
@@ -1121,7 +1167,7 @@ parse_delete_event <- function(idstr) {
       tryCatch({
         build_standard_table(vals$musica,
                              select_genome(input$table_genome_list),
-                             table_name = table_name,
+                             modality = table_name,
                              strand_type = strand_type,
                              overwrite = TRUE)
         shiny::showNotification("Table created.")
@@ -1144,6 +1190,7 @@ parse_delete_event <- function(idstr) {
   # Event listener for discover_signatures.
   observeEvent(input$discover_signatures, {
     if (input$discover_result_name == "" |
+        input$discover_model_name == "" |
         input$number_of_signatures == "" |
         input$n_start == "" |
         dim(extract_count_tables(vals$musica)[[
@@ -1152,7 +1199,9 @@ parse_delete_event <- function(idstr) {
       output$discover_warning <- renderText({
         validate(
           need(input$discover_result_name != "",
-               "You must provide a name for the new result object."),
+               "You must provide a result list name."),
+          need(input$discover_model_name != "",
+               "You must provide a model ID."),
           need(input$number_of_signatures != "",
                "You must specify the number of expected signatures."),
           need(input$n_start != "",
@@ -1166,11 +1215,12 @@ parse_delete_event <- function(idstr) {
       })
       return()
     }
-    if (input$discover_result_name %in% names(vals$result_objects)) {
+    if (paste0(input$discover_result_name, "/", input$select_discover_table, "/", input$discover_model_name) %in% names(vals$res_names)) {
+    #if ("lda5" %in% names(vals$result_objects)) {
       # Confirm overwrite of result object
       showModal(modalDialog(
-        title = "Existing Result Object.",
-        "Do you want to overwrite the existing result object?",
+        title = "This model ID already exists in the chosen result list entry.",
+        "Do you want to overwrite the existing result?",
         easyClose = TRUE,
         footer = list(
           actionButton("confirm_result_overwrite", "OK"),
@@ -1178,93 +1228,123 @@ parse_delete_event <- function(idstr) {
       ))
     } else {
       disc_sigs(input, vals)
-      showNotification(paste0("Musica Result object, ",
-                              input$discover_result_name,
-                            ", was created"))
+      showNotification(paste0("Disocvery, ",
+                              input$discover_model_name,
+                            ", completed and saved to ", 
+                            input$discover_result_name, "."))
     }
   })
 
   # Wrapper function for discover_signature
   disc_sigs <- function(input, vals) {
-    set_result(input$discover_result_name, discover_signatures(
-      vals$musica, table_name = input$select_discover_table,
+    name <- paste0(input$discover_result_name, "/", input$select_discover_table, "/", input$discover_model_name)
+    vals$musica <- discover_signatures(
+      vals$musica, modality = input$select_discover_table,
       num_signatures = as.numeric(input$number_of_signatures),
-      algorithm = input$Method,
+      algorithm = input$Method, result_name = input$discover_result_name,
+      model_id = input$discover_model_name,
       #seed = input$Seed,
-      nstart = as.numeric(input$n_start)))
+      nstart = as.numeric(input$n_start), make_copy = TRUE)
+    #set_result(name, "test")
+    vals$res_names <- c(vals$res_names, name)
+    vals$res_names_full[[input$discover_result_name]][[input$select_discover_table]] <- 
+      c(vals$res_names_full[[input$discover_result_name]][[input$select_discover_table]],
+        input$discover_model_name)
+
   }
 
   # Run discover_signatures if overwrite confirmed.
   observeEvent(input$confirm_result_overwrite, {
     removeModal()
     disc_sigs(input, vals)
-    showNotification("Existing result object overwritten.")
+    showNotification("Existing result overwritten.")
   })
 
   # Discover Musica Result Object
   output$discover_result_name <- renderUI({
-    name <- input$select_discover_table
+    #name <- input$select_discover_table
     tagList(
-      textInput("discover_result_name", "Name for musica result object",
-                value = paste0(name, "-Result")),
+      textInput("discover_result_name", "Name of result list entry to save result",
+                value = "result"),
       bsTooltip("discover_result_name",
-                "Name for the newly created musica result object.",
-                placement = "bottom", trigger = "hover", options = NULL)
+                "Which result list entry the discovery results will be stored in.",
+                placement = "right", trigger = "hover", options = NULL)
+    )
+  })
+  
+  output$discover_model_name <- renderUI({
+    #name <- input$select_discover_table
+    tagList(
+      textInput("discover_model_name", "Model ID for the result",
+                value = paste0(input$Method, input$number_of_signatures)),
+      bsTooltip("discover_model_name",
+                "An identifier for the discovery result.",
+                placement = "right", trigger = "hover", options = NULL)
     )
   })
 
   # UI to select musica object.
-  output$discover_musica_list <- renderUI({
-    tagList(
-      selectInput("discover_musica_list", h3("Select Musica Object"),
-                  choices = names(vals$result_objects))
-    )
-  })
+  #output$discover_musica_list <- renderUI({
+  #  tagList(
+  #    selectInput("discover_musica_list", h3("Select Musica Object"),
+  #                choices = names(vals$result_objects))
+  #  )
+  #})
 
   # Select counts table for prediction.
   output$predict_table <- renderUI({
     tagList(
-      selectInput("select_pred_table", "Select Counts Table",
+      selectInput("predict_table", "Select Modality",
                   choices = names(extract_count_tables(vals$musica))),
-      bsTooltip("select_pred_table",
-                "Name of the table used for posterior prediction",
+      bsTooltip("predict_table",
+                "Modality used for posterior prediction",
                 placement = "right", trigger = "hover", options = NULL)
     )
   })
 
   # Event listener alters UI based on selected COSMIC table.
-  observeEvent(input$cosmic_count_table, {
-    if (input$cosmic_count_table == "SBS") {
-      shinyjs::show(id = "cosmic_SBS_sigs")
-      shinyjs::hide(id = "cosmic_DBS_sigs")
-      shinyjs::hide(id = "cosmic_INDEL_sigs")
-    } else if (input$cosmic_count_table == "DBS") {
-      shinyjs::hide(id = "cosmic_SBS_sigs")
-      shinyjs::show(id = "cosmic_DBS_sigs")
-      shinyjs::hide(id = "cosmic_INDEL_sigs")
-    } else {
-      shinyjs::hide(id = "cosmic_SBS_sigs")
-      shinyjs::hide(id = "cosmic_DBS_sigs")
-      shinyjs::show(id = "cosmic_INDEL_sigs")
-    }
-  })
+  #observeEvent(input$predict_table, {
+  #  if (input$predict_table == "SBS96") {
+  #    shinyjs::show(id = "cosmic_SBS_sigs")
+  #    shinyjs::hide(id = "cosmic_DBS_sigs")
+  #    shinyjs::hide(id = "cosmic_INDEL_sigs")
+  #  } else if (input$predict_table == "DBS78") {
+  #    shinyjs::hide(id = "cosmic_SBS_sigs")
+  #    shinyjs::show(id = "cosmic_DBS_sigs")
+  #   shinyjs::hide(id = "cosmic_INDEL_sigs")
+  # } else {
+  #    shinyjs::hide(id = "cosmic_SBS_sigs")
+  #   shinyjs::hide(id = "cosmic_DBS_sigs")
+  #   shinyjs::show(id = "cosmic_INDEL_sigs")
+  # }
+  #})
 
   # UI to name Predict result object
   output$predict_result_name <- renderUI({
-    name <- names(extract_count_tables(vals$musica))[1]
+    #name <- names(extract_count_tables(vals$musica))[1]
     tagList(
-      textInput("predict_result_name", "Name for musica result object",
-        value = paste0(name, "-Predict-Result")),
+      textInput("predict_result_name", "Name of result list entry to save result",
+        value = "result"),
       bsTooltip("predict_result_name",
-                "Name for the newly created musica result object.",
-                placement = "bottom", trigger = "hover", options = NULL)
+                "Which result list entry the discovery results will be stored in.",
+                placement = "right", trigger = "hover", options = NULL)
+    )
+  })
+  
+  output$predict_model_name <- renderUI({
+    tagList(
+      textInput("predict_model_name", "Model ID for the result",
+                value = paste0(input$Method, length(input$pred_sigs), "_exp_pred")),
+      bsTooltip("predict_model_name",
+                "An identifier for the prediction result.",
+                placement = "right", trigger = "hover", options = NULL)
     )
   })
 
   # UI to select which result objects to predict.
   output$predicted_result <- renderUI({
-    other <- list(names(vals$result_objects))
-    if (is.null(other[[1]])) {
+    other <- vals$res_names
+    if (is.null(other)) {
       tagList(
         selectInput("predicted_result", "Result to Predict",
                     choices = list("Cosmic" = list(
@@ -1275,7 +1355,9 @@ parse_delete_event <- function(idstr) {
                       )),
                     selected = "cosmic_v3_sbs_sigs"),
         bsTooltip("predicted_result",
-                  "Result object containing the signatures to predict",
+                  "Result model object containing the signatures to predict. 
+                  Can use existing COSMIC signatures or signatures from a 
+                  previously generated result_model object.",
                   placement = "right", trigger = "hover", options = NULL)
       )    }
     else {
@@ -1286,56 +1368,74 @@ parse_delete_event <- function(idstr) {
                     "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
                     "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
                     "Cosmic V2 Signatures" = "cosmic_v2_sigs"),
-                                 "your signatures" = other),
+                                 "your signatures" = as.list(other)),
                   selected = "cosmic_v3_sbs_sigs"),
-      bsTooltip("predicted_result",
-                "Result object containing the signatures to predict",
-                placement = "right", trigger = "hover", options = NULL)
+      #bsTooltip("predicted_result",
+      #          "Result model object containing the signatures to predict. 
+      #          Can use existing COSMIC signatures or signatures from a 
+      #            previously generated result_model object.",
+      #          placement = "right", trigger = "hover", options = NULL)
     )
     }
   })
 
   # UI to select signatures to predict
-  output$precited_signatures <- renderUI({
-    if (input$predicted_result %in% names(cosmic_objects)) {
-        vals$p_sigs <- colnames(signatures(
-          cosmic_objects[[input$predicted_result]]))
-        vals$p_res <- cosmic_objects[[input$predicted_result]]
-    }
-    else {
-        vals$p_sigs <- colnames(signatures(
-          vals$result_objects[[input$predicted_result]]))
-        vals$p_res <- vals$result_objects[[input$predicted_result]]
-    }
-    tagList(
-      shinyWidgets::dropdownButton(circle = FALSE, label = "Signatures",
-                                   div(style =
-                                       "max-height:80vh; overflow-y: scroll",
-                                       checkboxGroupInput("pred_sigs", "",
-                         choices = vals$p_sigs, inline = FALSE,
-                         selected = vals$p_sigs))),
-      bsTooltip("pred_sigs",
-                "Signatures to predict.",
-                placement = "right", trigger = "hover", options = NULL)
-    )
+  observeEvent(input$predicted_result, {
+    output$predicted_signatures <- renderUI({
+      if (input$predicted_result %in% names(cosmic_objects)) {
+          vals$p_sigs <- colnames(signatures(
+            cosmic_objects[[input$predicted_result]]))
+          vals$p_res <- cosmic_objects[[input$predicted_result]]
+      }
+      else {
+        identifiers <- strsplit(input$predicted_result, "/")[[1]]
+        vals$p_sigs <- colnames(signatures(vals$musica, identifiers[1], identifiers[2], identifiers[3]))
+          #vals$p_sigs <- colnames(signatures(
+          #  vals$result_objects[[input$predicted_result]]))
+        vals$p_res <- get_model(vals$musica, identifiers[1], identifiers[2], identifiers[3])
+          #vals$p_res <- vals$result_objects[[input$predicted_result]]
+      }
+      tagList(
+        shinyWidgets::dropdownButton(circle = FALSE, label = "Signatures",
+                                     div(style =
+                                         "max-height:80vh; overflow-y: scroll",
+                                         checkboxGroupInput("pred_sigs", "",
+                           choices = vals$p_sigs, inline = FALSE,
+                           selected = vals$p_sigs))),
+        bsTooltip("predicted_signatures",
+                  "Signatures to predict.",
+                  placement = "right", trigger = "hover", options = NULL),
+        bsTooltip("predicted_result",
+                  "Result model object containing the signatures to predict. 
+                  Can use existing COSMIC signatures or signatures from a 
+                  previously generated result_model object.",
+                  placement = "right", trigger = "hover", options = NULL)
+      )
+    })
   })
 
   # Event listener for Predict signatures
   observeEvent(input$predict_sigs, {
-    if (input$predict_result_name == "" | length(input$pred_sigs) < 2) {
+    if (input$predict_result_name == "" | 
+        input$predict_model_name == "" |
+        length(input$pred_sigs) < 2) {
       output$predict_warning <- renderText({
         validate(
           need(input$predict_result_name != "",
-               "You must provide a name for the new result object."),
+               "You must provide a result list name."),
+          need(input$predict_model_name != "",
+               "You must provide a model ID."),
           need(length(c(input$pred_sigs)) >= 2,
                "You must select two or more signatures to predict.")
         )
       })
       return()
     }
-    if (input$predict_result_name %in% names(vals$result_objects)) {
+    if (paste0(input$predict_result_name, "/", input$predict_table, 
+               "/", input$predict_model_name) %in% names(vals$res_names)) {
+    #if (input$predict_result_name %in% names(vals$result_objects)) {
       showModal(modalDialog(
-        title = "Existing Result Object.",
+        title = "This model ID already exists in the chosen result list entry.",
         "Do you want to overwrite the existing result object?",
         easyClose = TRUE,
         footer = list(
@@ -1344,30 +1444,39 @@ parse_delete_event <- function(idstr) {
       ))
     } else {
       get_predict(input, vals)
-      showNotification(paste0("Musica result object, ",
-                              input$predict_result_name,
-                              ", was created"))
+      showNotification(paste0("Prediction, ",
+                              input$predict_model_name,
+                              ", completed and saved to ", 
+                              input$predict_result_name, "."))
     }
   })
 
   # Event listener displays additional options for deconstructSigs algorithm.
-  observeEvent(input$predict_algorithm, {
-    if (input$predict_algorithm == "deconstructSigs") {
-      shinyjs::show(id = "predict_genome_list")
-    } else {
-      shinyjs::hide(id = "predict_genome_list")
-    }
-  })
+  #observeEvent(input$predict_algorithm, {
+  #  if (input$predict_algorithm == "deconstructSigs") {
+  #    shinyjs::show(id = "predict_genome_list")
+  #  } else {
+  #    shinyjs::hide(id = "predict_genome_list")
+  #  }
+  #})
 
   # Wrapper function for predict_exposures
   get_predict <- function(inputs, vals) {
-    set_result(input$predict_result_name,
-      predict_exposure(vals$musica,
-                       g = select_genome(input$predict_genome_list),
-                       table_name = input$select_pred_table,
-                       signature_res = vals$p_res,
-                       algorithm = input$predict_algorithm,
-                       signatures_to_use = input$pred_sigs))
+    name <- paste0(input$predict_result_name, "/", input$predict_table, "/", input$predict_model_name)
+    vals$musica <- predict_exposure(
+      vals$musica, 
+      modality = input$predict_table,
+      signature_res = vals$p_res, 
+      algorithm = input$predict_algorithm,
+      result_name = input$predict_result_name, 
+      model_id = input$predict_model_name,
+      signatures_to_use = input$pred_sigs,
+      make_copy = TRUE)
+    #set_result(name, "test")
+    vals$res_names <- c(vals$res_names, name)
+    vals$res_names_full[[input$predict_result_name]][[input$predict_table]] <- 
+      c(vals$res_names_full[[input$predict_result_name]][[input$predict_table]],
+        input$predict_model_name)
   }
 
   # Event triggers predict_exposures when user confirms overwrite.
@@ -1379,37 +1488,111 @@ parse_delete_event <- function(idstr) {
 
 
   ####### Compare Tab ########
+  observeEvent(input$cosmic_button, {
+    if (input$cosmic_button == "cosmic") {
+      shinyjs::hide(id = "compare_result_b")
+      shinyjs::hide(id = "compare_model_b")
+      shinyjs::show(id = "compare_result_b_cosmic")
+    }
+    else if (input$cosmic_button == "model") {
+      shinyjs::show(id = "compare_result_b")
+      shinyjs::show(id = "compare_model_b")
+      shinyjs::hide(id = "compare_result_b_cosmic")
+    }
+  })
+  
   output$compare_result_a <- renderUI({
     tagList(
-      selectInput("select_result_a", "Select result object",
-                  choices = c(names(vals$result_objects))),
+      selectInput("select_result_a", "Select result list name",
+                  choices = c(names(vals$res_names_full))),
       bsTooltip("select_result_a",
-                "A musica result object",
+                "A result list name",
                 placement = "right", trigger = "hover", options = NULL)
     )
   })
-
-  output$compare_result_b <- renderUI({
-    tagList(
-      selectInput("select_result_b", "Select comparison result object",
-                  choices = list("cosmic signatures" =
-                                   as.list(names(cosmic_objects)),
-                                 "your signatures" = as.list(
-                              names(vals$result_objects)))),
-      bsTooltip("select_result_b",
-                "A second musica result object",
-                placement = "right", trigger = "hover", options = NULL)
-    )
+  
+  observeEvent(input$select_result_a, {
+    output$compare_modality_a <- renderUI({
+      tagList(
+        selectInput("select_modality_a", "Select modality",
+                    choices = c(names(vals$res_names_full[[input$select_result_a]]))),
+        bsTooltip("select_modality_a",
+                  "A modality",
+                  placement = "right", trigger = "hover", options = NULL)
+      )
+    })
+  })
+  
+  observeEvent(input$select_modality_a, {
+    output$compare_model_a <- renderUI({
+      tagList(
+        selectInput("select_model_a", "Select model ID",
+                    choices = c("", vals$res_names_full[[input$select_result_a]][[input$select_modality_a]]),
+                    selected = NULL),
+        bsTooltip("select_model_a",
+                  "A model ID",
+                  placement = "right", trigger = "hover", options = NULL)
+      )
+    })
+    
+  })
+   
+  observeEvent(input$cosmic_button, { 
+    if (input$cosmic_button == "model") {
+      observeEvent(input$select_modality_a, {
+        output$compare_result_b <- renderUI({
+          tagList(
+            selectInput("select_result_b", "Select comparison result list name",
+                        #choices = list("cosmic signatures" =
+                        #                 as.list(names(cosmic_objects)),
+                        #               "your signatures" = as.list(
+                        #            names(vals$result_objects)))),
+                        choices = c(names(vals$res_names_full)),
+                        selected = input$select_result_a),
+            bsTooltip("select_result_b",
+                      "Result list name for other model being compared",
+                      placement = "right", trigger = "hover", options = NULL)
+          )
+        })
+      })
+        
+      observeEvent(input$select_result_b, {
+        output$compare_model_b <- renderUI({
+          tagList(
+            selectInput("select_model_b", "Select model ID",
+                        choices = c("", vals$res_names_full[[input$select_result_b]][[input$select_modality_a]]),
+                        selected = NULL),
+            bsTooltip("select_model_a",
+                      "A model ID",
+                      placement = "right", trigger = "hover", options = NULL)
+          )
+        })
+      })
+    }
+    else{
+      output$compare_result_b_cosmic <- renderUI({
+        tagList(
+          selectInput("select_result_b_cosmic", "Select Cosmic",
+                      choices = as.list(names(cosmic_objects))),
+          bsTooltip("select_result_b_cosmic",
+                    "Cosmic database to compare to",
+                    placement = "right", trigger = "hover", options = NULL)
+        )
+      })
+    }
   })
 
   # Event listener triggers comparison.
-  observeEvent(input$compare_results, {
+  observeEvent(input$compare_results, { 
     if (is.null(input$select_result_a) | input$select_result_a == "" |
+        input$select_model_a == "" |
         input$Threshold == "") {
       output$compare_validate <- renderText({
         validate(
           need(input$select_result_a != "",
                "Please select a result object to compare."),
+          need(input$select_model_a != "",
+               "Please select a model ID to compare."),
           need(input$Threshold == "",
                "Please provide a similarity threshold from 0 to 1.")
         )
@@ -1417,28 +1600,65 @@ parse_delete_event <- function(idstr) {
       return()
     }
     # Retreive either cosmic or custom result objects.
-    if (input$select_result_b %in% names(cosmic_objects)) {
-      other <- cosmic_objects[[input$select_result_b]]
-    } else {
-      other <- isolate(get_result(input$select_result_b))
-    }
+    #if (input$select_result_b %in% names(cosmic_objects)) {
+    #  other <- cosmic_objects[[input$select_result_b]]
+    #} else {
+    #  other <- isolate(get_result(input$select_result_b))
+    #}
     # Attempt to compare signatures
     tryCatch({
-      isolate(vals$comparison <-
-                compare_results(isolate(get_result(input$select_result_a)),
-                      other, threshold = as.numeric(input$Threshold),
-                      metric = input$compare_metric))
+      if (input$cosmic_button == "cosmic"){
+        if(input$select_result_b_cosmic == "cosmic_v2_sigs"){
+          isolate(vals$comparison <-
+                    compare_cosmic_v2(vals$musica, model_id = input$select_model_a, 
+                                      modality = input$select_modality_a,
+                                      result_name = input$select_result_a,
+                                      threshold = as.numeric(input$Threshold),
+                                      metric = input$compare_metric,
+                                      result_rename = paste0(input$select_model_a)))
+          b_name <- input$select_result_b_cosmic
+        }
+        else{
+          isolate(vals$comparison <-
+                    compare_cosmic_v3(vals$musica, model_id = input$select_model_a, 
+                                      sample_type = "genome",
+                                      modality = input$select_modality_a,
+                                      result_name = input$select_result_a,
+                                      threshold = as.numeric(input$Threshold),
+                                      metric = input$compare_metric,
+                                      result_rename = paste0(input$select_model_a)))
+          b_name <- input$select_result_b_cosmic
+        }
+      }
+      else{
+        isolate(vals$comparison <-
+                  compare_results(vals$musica, model_id = input$select_model_a,
+                                  other_model_id = input$select_model_b, 
+                                  modality = input$select_modality_a,
+                                  result_name = input$select_result_a,
+                                  other_result_name = input$select_result_b,
+                                  threshold = as.numeric(input$Threshold),
+                                  metric = input$compare_metric,
+                                  result_rename = paste0(input$select_model_a),
+                                  other_result_rename = paste0(input$select_model_b)))
+        b_name <- input$select_model_b
+      }
+      
+      #isolate(vals$comparison <-
+      #          compare_results(isolate(get_result(input$select_result_a)),
+      #                other, threshold = as.numeric(input$Threshold),
+      #                metric = input$compare_metric))
     }, error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
     })
     colnames(vals$comparison) <- c(input$compare_metric,
-                                   paste0(input$select_result_a, "-Index"),
-                                   paste0(input$select_result_b, "-Index"),
-                                   paste0(input$select_result_a, "-Signature"),
-                                   paste0(input$select_result_b, "-Signature"))
+                                   paste0(input$select_model_a, "-Index"),
+                                   paste0(b_name, "-Index"),
+                                   paste0(input$select_model_a, "-Signature"),
+                                   paste0(b_name, "-Signature"))
     # generate table containing comparison statistics.
     if (!is.null(isolate(vals$comparison))) {
-      output$compare_table <- renderDataTable({
+      output$compare_table <- DT::renderDT({
         isolate(vals$comparison)
       }, options = list(autoWidth = FALSE, scrollX = TRUE))
       output$download_comparison <- renderUI({
@@ -1464,32 +1684,53 @@ parse_delete_event <- function(idstr) {
   ######## Differential Analysis Tab #########
   output$diff_anal_result <- renderUI({
     tagList(
-      selectInput("diff_anal_result", "Result Object",
-                  choices = names(vals$result_objects)),
-      bsTooltip("diff_anal_result", "Musica Result object")
+      selectInput("diff_anal_result", "Result list name",
+                  choices = names(vals$res_names_full)),
+      bsTooltip("diff_anal_result", "Name of result list entry containing desiered result")
     )
+  })
+  
+  observeEvent(input$diff_anal_result, {
+    output$diff_anal_modality <- renderUI({
+      tagList(
+        selectInput("diff_anal_modality", "Modality",
+                    choices = c(names(vals$res_names_full[[input$diff_anal_result]]))),
+        bsTooltip("diff_anal_modality", "Desired modality")
+      )
+    })
+  })
+  
+  observeEvent(input$diff_anal_modality, {
+    output$diff_anal_model <- renderUI({
+      tagList(
+        selectInput("diff_anal_model", "Model ID",
+                    choices = c("", vals$res_names_full[[input$diff_anal_result]][[input$diff_anal_modality]])),
+        bsTooltip("diff_anal_model", "Model ID of desired result")
+      )
+    })
   })
 
   # UI for Wilcoxon Rank Sum Test bucket list
-  output$diff_anal_groups <- renderUI({
-    if (interactive()) {
-      tagList(
-        sortable::bucket_list(
-          header = "Groups",
-          orientation = "horizontal",
-          add_rank_list(
-            text = "Group 1",
-            labels = unique(samp_annot(
-              get_result(input$diff_anal_result))[[input$diff_anal_annot]]),
-            input_id = "diff_group1"
-          ),
-          add_rank_list(
-            text = "Group2",
-            input_id = "diff_group2"
+  observeEvent(input$diff_anal_annot, {
+    output$diff_anal_groups <- renderUI({
+      if (interactive()) {
+        tagList(
+          sortable::bucket_list(
+            header = "Groups",
+            orientation = "horizontal",
+            add_rank_list(
+              text = "Group 1",
+              labels = unique(samp_annot(vals$musica)[[input$diff_anal_annot]]),
+              input_id = "diff_group1"
+            ),
+            add_rank_list(
+              text = "Group2",
+              input_id = "diff_group2"
+            )
           )
         )
-      )
-    }
+      }
+    })
   })
 
   # UI to select sample annotation.
@@ -1497,7 +1738,7 @@ parse_delete_event <- function(idstr) {
     tagList(
       selectInput("diff_anal_annot", "Sample annotation",
                 choices = colnames(
-                  samp_annot(get_result(input$diff_anal_result)))[-1],
+                  samp_annot(vals$musica))[-1],
                 selected = 1),
       bsTooltip("diff_anal_annot",
                 "Sample annotation used to run differential analysis.")
@@ -1528,21 +1769,27 @@ parse_delete_event <- function(idstr) {
     # Run differential analysis
     tryCatch({
       vals$diff <-
-        exposure_differential_analysis(get_result(input$diff_anal_result),
-                                       input$diff_anal_annot,
+        exposure_differential_analysis(vals$musica,
+                                       model_name = input$diff_anal_model,
+                                       annotation = input$diff_anal_annot,
+                                       modality = input$diff_anal_modality,
+                                       result_name = input$diff_anal_result,
                                        method = input$diff_method,
                                        group1 = g1,
                                        group2 = g2)
-      output$diff_table <- renderDataTable(
+      output$diff_table <- DT::renderDT(
         if (input$diff_method == "wilcox") {
           vals$diff
         } else {
-          vals$diff %>% tibble::rownames_to_column(var = "Signature")
+          if(colnames(vals$diff)[1] != "Signature"){
+            vals$diff %>% tibble::rownames_to_column(var = "Signature")
+          }
+          #vals$diff %>% tibble::rownames_to_column(var = "Signature")
         },
         options = list(autoWidth = FALSE, scrollX = TRUE)
       )
     }, error = function(cond) {
-      output$diff_table <- renderDataTable({
+      output$diff_table <- DT::renderDT({
         NULL
         })
     })
@@ -1563,13 +1810,21 @@ parse_delete_event <- function(idstr) {
 
   ####### Helper Functions #######
   # Set a result object
-  set_result <- function(x, y) {
-    vals$result_objects[[x]] <- y
-  }
+  #set_result <- function(x, y) {
+  #  vals$result_objects[[x]] <- y
+  #}
 
-  get_result <- function(name) {
-    return(vals$result_objects[[name]])
-  }
+  #get_result <- function(name) {
+  #  return(vals$result_objects[[name]])
+  #}
+  
+  #example_load = reactive({
+  #  req(input$file)
+    
+  #  vars <- extract_variants_from_vcf_file(system.file("extdata", "public_LUAD_TCGA-97-7938.vcf", package = "musicatk"))
+    
+  #  return(vars)
+  #})
 
 ###############################################################################
 
@@ -1579,15 +1834,50 @@ parse_delete_event <- function(idstr) {
     tagList(
       selectInput(
         inputId = "selected_res1",
-        label = "Select Result",
-        choices = c(names(vals$result_objects)),
+        label = "Select result list name",
+        choices = c(names(vals$res_names_full)),
         width = "50%"
       ),
       bsTooltip(id = "selected_res1",
                 title =
-                  "Select one musica_result object to visualize signatures.",
+                  "Select the result list entry that contains the desired signatures to visaulize.",
                 placement = "right", options = list(container = "body"))
     )
+  })
+  
+  observeEvent(input$selected_res1, {
+    output$select_modality1 <- renderUI({
+      tagList(
+        selectInput(
+          inputId = "selected_modality1",
+          label = "Select modality",
+          #choices = c(names(vals$musica@result_list[[input$selected_res1]]@modality)),
+          choices = c(names(vals$res_names_full[[input$selected_res1]])),
+          width = "50%"
+        ),
+        bsTooltip(id = "selected_modality1",
+                  title =
+                    "Select the modality of the desired signatures to visaulize.",
+                  placement = "right", options = list(container = "body"))
+      )
+    })
+  })
+  
+  observeEvent(input$selected_modality1, {
+    output$select_model1 <- renderUI({
+      tagList(
+        selectInput(
+          inputId = "selected_model1",
+          label = "Select model ID",
+          choices = c(vals$res_names_full[[input$selected_res1]][[input$selected_modality1]]),
+          width = "50%"
+        ),
+        bsTooltip(id = "selected_model1",
+                  title =
+                    "Select the model ID desired signatures to visaulize.",
+                  placement = "right", options = list(container = "body"))
+      )
+    })
   })
 
   #select box for exposure
@@ -1595,19 +1885,56 @@ parse_delete_event <- function(idstr) {
     tagList(
       selectInput(
         inputId = "selected_res2",
-        label = "Select Result",
-        choices = c(names(vals$result_objects))
+        label = "Select result list name",
+        choices = c(names(vals$res_names_full))
       ),
       bsTooltip(id = "selected_res2",
                 title =
-                  "Select one musica_result object to visualize exposures.",
+                  "Select the result list entry that contains the desired exposures to visaulize.",
                 placement = "right", options = list(container = "body"))
     )
+  })
+  
+  observeEvent(input$selected_res2, {
+    output$select_modality2 <- renderUI({
+      tagList(
+        selectInput(
+          inputId = "selected_modality2",
+          label = "Select modality",
+          #choices = c(names(vals$musica@result_list[[input$selected_res1]]@modality)),
+          choices = c(names(vals$res_names_full[[input$selected_res2]])),
+          width = "50%"
+        ),
+        bsTooltip(id = "selected_modality2",
+                  title =
+                    "Select the modality of the desired signatures to visaulize.",
+                  placement = "right", options = list(container = "body"))
+      )
+    })
+  })
+  
+  observeEvent(input$selected_modality2, {
+    output$select_model2 <- renderUI({
+      tagList(
+        selectInput(
+          inputId = "selected_model2",
+          label = "Select model ID",
+          choices = c(vals$res_names_full[[input$selected_res2]][[input$selected_modality2]]),
+          width = "50%"
+        ),
+        bsTooltip(id = "selected_model2",
+                  title =
+                    "Select the model ID of the signatures to visaulize.",
+                  placement = "right", options = list(container = "body"))
+      )
+    })
   })
 
   #create text input for changing signature names
   observeEvent(input$rename, {
-    n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
+    n <- ncol(vals$musica@result_list[[input$selected_res1]]@modality[[input$selected_modality1]][[input$selected_model1]]@signatures)
+    #n <- ncol(signatures(vals$musica, input$selected_res1, input$selected_modality1, input$selected_model1))
+    #n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     for (i in 1:n) {
       id <- paste0("sig", i)
       if (input$rename) {
@@ -1621,39 +1948,74 @@ parse_delete_event <- function(idstr) {
       }
     }
   }, ignoreInit = TRUE)
+  
+  #observeEvent(input$annotation1, {
+  #  n <- ncol(vals$musica@result_list[[input$selected_res1]]@modality[[input$selected_modality1]][[input$selected_model1]]@signatures)
+    #n <- ncol(signatures(vals$musica, input$selected_res1, input$selected_modality1, input$selected_model1))
+    #n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
+  #  for (i in 1:n) {
+  #    id2 <- paste0("sig", i)
+  #    if (input$annotation1) {
+  #      insertUI(
+  #        selector = "#annotations",
+  #        ui = textInput(inputId = id2, paste0("Signature", i))
+  #      )
+  #    }
+  #    else{
+  #      removeUI(selector = paste0("div:has(> #", id2, ")"))
+  #    }
+  #  }
+  #}, ignoreInit = TRUE)
 
   #save plotting options for signatures in a list
   get_sig_option <- function(input) {
-    n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
+    n <- ncol(vals$musica@result_list[[input$selected_res1]]@modality[[input$selected_modality1]][[input$selected_model1]]@signatures)
+    #n <- ncol(signatures(vals$musica, input$selected_res1, input$selected_modality1, input$selected_model1))
+    #n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     if (input$rename) {
       ids <- vector()
       for (i in 1:n) {
         ids <- c(ids, input[[paste0("sig", i)]])
       }
-      name_signatures(result = vals$result_objects[[input$selected_res1]], ids)
+      name_signatures(vals$musica, input$selected_model2, ids, input$selected_modality1, input$selected_res1)
+      #name_signatures(result = vals$result_objects[[input$selected_res1]], ids)
     }
+    #if (input$annotation1) {
+    #  ids2 <- vector()
+    #  for (i in 1:n) {
+    #    ids2 <- c(ids2, input[[paste0("sig", i)]])
+    #  }
+    #  #name_signatures(result = vals$result_objects[[input$selected_res1]], ids)
+    #}
+    #else{
+    #  ids2 <- NULL
+    #}
     #legend <- input$legend1
     text_size <- input$text_size1
     #facet_size <- input$facet_size
     show_x_labels <- input$xlab1
     show_y_labels <- input$ylab1
     same_scale <- input$scale1
+    percent <- input$percent1
     plotly <- input$plotly1
+    #annotation = ids2
     options <- list(
       #legend, 
       text_size, 
       #facet_size,
-                    show_x_labels, show_y_labels, same_scale, plotly)
+                    show_x_labels, show_y_labels, same_scale,  percent, plotly)
     return(options)
   }
 
   #Make signature plot
   observeEvent(input$get_plot1, {
     options <- get_sig_option(input)
-    result <- vals$result_objects[[input$selected_res1]]
-    n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
+    #result <- vals$result_objects[[input$selected_res1]]
+    n <- ncol(vals$musica@result_list[[input$selected_res1]]@modality[[input$selected_modality1]][[input$selected_model1]]@signatures)
+    #n <- ncol(signatures(vals$musica, input$selected_res1, input$selected_modality1, input$selected_model1))
+    #n <- ncol(vals$result_objects[[input$selected_res1]]@signatures)
     height <- paste0(as.character(n * 90), "px")
-    if (options[[5]]) {
+    if (options[[6]]) {
       #disable resizable
       jqui_resizable("#sigplot_plotly", operation = "destroy")
       jqui_resizable("#sigplot_plot", operation = "destroy")
@@ -1666,13 +2028,18 @@ parse_delete_event <- function(idstr) {
       )
       output$sigplot_plotly <- renderPlotly(
         plot_signatures(
-          result = result,
+          vals$musica,
+          input$selected_model1,
+          input$selected_modality1,
+          input$selected_res1,
           #legend = options[[1]],
-          plotly = options[[5]],
+          percent = options[[5]],
+          plotly = options[[6]],
           text_size = options[[1]],
           #facet_size = options[[3]],
           show_x_labels = options[[2]],
           show_y_labels = options[[3]],
+          #annotation = options[[7]],
           same_scale = options[[4]]
         )
       )
@@ -1690,13 +2057,18 @@ parse_delete_event <- function(idstr) {
       )
       output$sigplot_plot <- renderPlot(
         plot_signatures(
-          result = result,
+          vals$musica,
+          input$selected_model1,
+          input$selected_modality1,
+          input$selected_res1,
           #legend = options[[1]],
-          plotly = options[[5]],
+          percent = options[[5]],
+          plotly = options[[6]],
           text_size = options[[1]],
           #facet_size = options[[3]],
           show_x_labels = options[[2]],
           show_y_labels = options[[3]],
+          #annotation = options[[7]],
           same_scale = options[[4]]
         )
       )
@@ -1863,7 +2235,7 @@ parse_delete_event <- function(idstr) {
   #if annotation is selected for group by, enable annotation option
   observeEvent(input$group1, {
     if (input$group1 == "annotation" & input$color != "annotation") {
-      if (ncol(samp_annot(vals$result_objects[[input$selected_res2]])) == 1) {
+      if (ncol(samp_annot(vals$musica)) == 1) {
         shinyalert::shinyalert(title = "Error",
                                text = paste0("Annotation not found. ",
                                "Please add annotation to the musica object."))
@@ -1871,9 +2243,9 @@ parse_delete_event <- function(idstr) {
       else{
         vals$annot <-
           as.list(colnames(samp_annot(
-            vals$result_objects[[input$selected_res2]]))[-1])
+            vals$musica))[-1])
         names(vals$annot) <-
-          colnames(samp_annot(vals$result_objects[[input$selected_res2]]))[-1]
+          colnames(samp_annot(vals$musica))[-1]
         insertUI(
           selector = "#insert_annot",
           ui = tagList(
@@ -1900,16 +2272,16 @@ parse_delete_event <- function(idstr) {
   #if annotation is selected for color by, enable annotation option
   observeEvent(input$color, {
     if (input$color == "annotation" & input$group1 != "annotation") {
-      if (ncol(samp_annot(vals$result_objects[[input$selected_res2]])) == 1) {
+      if (ncol(samp_annot(vals$musica)) == 1) {
         shinyalert::shinyalert(title = "Error",
                                text = "Annotation not found.
                                Please add annotation to the musica object.")
       }
       else{
         vals$annot <- as.list(colnames(samp_annot(
-          vals$result_objects[[input$selected_res2]]))[-1])
+          vals$musica))[-1])
         names(vals$annot) <- colnames(samp_annot(
-          vals$result_objects[[input$selected_res2]]))[-1]
+          vals$musica))[-1]
         insertUI(
           selector = "#insert_annot",
           ui = tagList(
@@ -1947,7 +2319,8 @@ parse_delete_event <- function(idstr) {
             add_rank_list(
               text = "Available Signatures:",
               labels = as.list(colnames(
-                vals$result_objects[[input$selected_res2]]@signatures)),
+                signatures(vals$musica, input$selected_res2, input$selected_modality2, input$selected_model2))),
+                #vals$result_objects[[input$selected_res2]]@signatures)),
               input_id = "sig_from"
             ),
             add_rank_list(
@@ -1971,15 +2344,20 @@ parse_delete_event <- function(idstr) {
   })
 
   #generate the option to determine number of top samples to include in bar plot
-  observeEvent(input$selected_res2, {
+  #observeEvent(input$selected_res2, {
+  observeEvent(input$selected_model2, {
     output$number <- renderUI(
       tagList(
         numericInput(inputId = "num_samp", label = "# of Top Samples",
-                     value = dim(vals$result_objects[[
-                       input$selected_res2]]@exposures)[2],
+                     value = dim(exposures(vals$musica, input$selected_res2, 
+                                           input$selected_modality2, input$selected_model2))[2],
+                     #value = dim(vals$result_objects[[
+                       #input$selected_res2]]@exposures)[2],
                      min = 1,
-                     max = dim(vals$result_objects[[
-                       input$selected_res2]]@exposures)[2]),
+                     max = dim(exposures(vals$musica, input$selected_res2, 
+                                         input$selected_modality2, input$selected_model2))[2]),
+                     #max = dim(vals$result_objects[[
+                       #input$selected_res2]]@exposures)[2]),
         bsTooltip(id = "num_samp",
                   title = "The top number of sorted samples to display.",
                   placement = "right", options = list(container = "body"))
@@ -2039,13 +2417,10 @@ parse_delete_event <- function(idstr) {
   #plot exposures
   observeEvent(input$get_plot2, {
     options <- get_exp_option(input)
-    if (length(umap(vals$result_objects[[input$selected_res2]])) == 0) {
-      create_umap(vals$result_objects[[input$selected_res2]])
-      result <- vals$result_objects[[input$selected_res2]]
-    }
-    else{
-      result <- vals$result_objects[[input$selected_res2]]
-    }
+    
+    #else{
+    #  result <- vals$result_objects[[input$selected_res2]]
+    #}
     if (options[[14]]) {
       jqui_resizable("#exp_plotly", operation = "destroy")
       jqui_resizable("#exp_plot", operation = "destroy")
@@ -2056,22 +2431,33 @@ parse_delete_event <- function(idstr) {
         ui = plotlyOutput(outputId = "exp_plotly")
       )
       if (options[[1]] == "scatter") {
+        if (is.na(umap(vals$musica, input$selected_res2, input$selected_modality2, input$selected_model2)[1])) {
+          create_umap(vals$musica, input$selected_model2, input$selected_modality2, input$selected_res2)
+          #result <- vals$result_objects[[input$selected_res2]]
+        }
         output$exp_plotly <- renderPlotly(
           plot_umap(
-            result = result,
+            vals$musica,
+            model_name = input$selected_model2,
+            modality = input$selected_modality2,
+            result_name = input$selected_res2,
             color_by = options[[4]],
             proportional = options[[2]],
             same_scale = options[[9]],
             annotation = options[[5]],
             plotly = options[[14]],
-            legend = options[[11]]
+            legend = options[[11]],
+            point_size = options[[13]]
           )
         )
       }
       else{
         output$exp_plotly <- renderPlotly(
           plot_exposures(
-            result = result,
+            vals$musica,
+            model_name = input$selected_model2,
+            modality = input$selected_modality2,
+            result_name = input$selected_res2,
             plot_type = options[[1]],
             proportional = options[[2]],
             group_by = options[[3]],
@@ -2101,22 +2487,37 @@ parse_delete_event <- function(idstr) {
         ui = plotOutput(outputId = "exp_plot")
       )
       if (options[[1]] == "scatter") {
+        if (length(umap(vals$musica, input$selected_res2, input$selected_modality2, input$selected_model2)) == 0) {
+          #create_umap(vals$result_objects[[input$selected_res3]])
+          create_umap(vals$musica, 
+                      model_name = input$selected_model2,
+                      modality = input$selected_modality2,
+                      result_name = input$selected_res2)
+          #result <- vals$result_objects[[input$selected_res3]]
+        }
         output$exp_plot <- renderPlot(
           plot_umap(
-            result = result,
+            vals$musica,
+            model_name = input$selected_model2,
+            modality = input$selected_modality2,
+            result_name = input$selected_res2,
             color_by = options[[4]],
             proportional = options[[2]],
             same_scale = options[[9]],
             annotation = options[[5]],
             plotly = options[[14]],
-            legend = options[[11]]
+            legend = options[[11]],
+            point_size = options[[13]]
           )
         )
       }
       else{
         output$exp_plot <- renderPlot(
           plot_exposures(
-            result = result,
+            vals$musica,
+            model_name = input$selected_model2,
+            modality = input$selected_modality2,
+            result_name = input$selected_res2,
             plot_type = options[[1]],
             proportional = options[[2]],
             group_by = options[[3]],
@@ -2146,9 +2547,29 @@ parse_delete_event <- function(idstr) {
       selectInput(
         inputId = "select_res_heatmap",
         label = "Select Result",
-        choices = c(names(vals$result_objects))
+        choices = c(names(vals$res_names_full))
       )
     )
+  })
+  
+  observeEvent(input$select_res_heatmap, {
+    output$select_modality_heatmap <- renderUI({
+      tagList(
+        selectInput("select_modality_heatmap", "Modality",
+                    choices = c(names(vals$res_names_full[[input$select_res_heatmap]]))),
+        bsTooltip("select_modality_heatmap", "Desired modality")
+      )
+    })
+  })
+  
+  observeEvent(input$select_modality_heatmap, {
+    output$select_model_heatmap <- renderUI({
+      tagList(
+        selectInput("select_model_heatmap", "Model ID",
+                    choices = c(vals$res_names_full[[input$select_res_heatmap]][[input$select_modality_heatmap]])),
+        bsTooltip("select_model_heatmap", "Model ID of desired result")
+      )
+    })
   })
   propor <- reactive({
     props <- input$prop
@@ -2170,7 +2591,7 @@ parse_delete_event <- function(idstr) {
   observeEvent(input$subset, {
     if (input$subset == "signature") {
       insertUI(
-        selector = "#sort_by_sigs",
+        selector = "#sortbysigs",
         ui = tags$div(
           id = "insert_sig",
           bucket_list(
@@ -2179,8 +2600,12 @@ parse_delete_event <- function(idstr) {
             orientation = "horizontal",
             add_rank_list(
               text = "Available Signatures:",
-              labels = as.list(colnames(
-                vals$result_objects[[input$select_res_heatmap]]@signatures)),
+              labels = as.list(colnames(signatures(vals$musica, 
+                                                   input$select_res_heatmap,
+                                                   input$select_modality_heatmap,
+                                                   input$select_model_heatmap))),
+              #labels = as.list(colnames(
+              #  vals$result_objects[[input$select_res_heatmap]]@signatures)),
               input_id = "sig_from"
             ),
             add_rank_list(
@@ -2216,9 +2641,10 @@ parse_delete_event <- function(idstr) {
           id = "inserttum",
           checkboxGroupInput(
             "tum_val", "Available Samples:",
-            as.list(unique(vals$result_objects[[
-              input$select_res_heatmap
-              ]]@musica@sample_annotations$Tumor_Subtypes)))
+            as.list(unique(samp_annot(vals$musica)$Tumor_Subtypes)))
+            #as.list(unique(vals$result_objects[[
+            #  input$select_res_heatmap
+            #  ]]@musica@sample_annotations$Tumor_Subtypes)))
           )
         )
     }
@@ -2226,17 +2652,29 @@ parse_delete_event <- function(idstr) {
       removeUI(selector = "#inserttum")
     }
   })
+  
+  get_tums <- function(input) {
+    req(input$subset_tum)
+    if (input$subset_tum == "tumors") {
+      tums <- input$tum_val
+    }
+    else{
+      tums <- NULL
+    }
+    return(tums)
+  }
   #Subsetting by annotation
   observeEvent(input$subset_annot, {
-    if (input$subset_annot == "annotation") {
+    if (input$subset_annot == TRUE) {
       insertUI(
         selector = "#sortbyannot",
         ui = tags$div(
           id = "#insert_annot",
           checkboxGroupInput("annot_val", "Available annotations:",
-                             c(as.list(colnames(samp_annot(
-                               vals$result_objects[[input$select_res_heatmap
-                                                    ]]))))
+                             #c(as.list(colnames(samp_annot(
+                            #   vals$result_objects[[input$select_res_heatmap
+                            #                        ]]))))
+                            c(as.list(colnames(samp_annot(vals$musica))))
         )
       ))
     }
@@ -2247,19 +2685,23 @@ parse_delete_event <- function(idstr) {
    #Add heatmap functionality
   observeEvent(input$get_heatmap, {
     sigs <- get_sigs(input)
+    tums <- get_tums(input)
     output$heatmap <- renderPlot({
       req(input$select_res_heatmap)
       input$get_heatmap
-      isolate(plot_heatmap(res_annot =
-                           vals$result_objects[[input$select_res_heatmap]],
-                         proportional = propor(),
-                         show_row_names = sel_row_names(),
-                         show_column_names = sel_col_names(),
-                         scale = zscale(), subset_signatures = c(sigs),
-                         subset_tumor = input$tum_val,
-                         annotation = input$annot_val,
-                         column_title = paste0("Heatmap for ",
-                                               input$select_res_heatmap)))
+      isolate(plot_heatmap(vals$musica,
+                           model_name = input$select_model_heatmap,
+                           modality = input$select_modality_heatmap,
+                           result_name = input$select_res_heatmap,
+                           proportional = propor(),
+                           show_row_names = sel_row_names(),
+                           show_column_names = sel_col_names(),
+                           scale = zscale(), 
+                           subset_signatures = c(sigs),
+                           subset_tumor = c(tums),
+                           annotation = input$annot_val,
+                           column_title = paste0("Heatmap for ",
+                                               input$select_model_heatmap)))
   })
  })
  ##############Clustering################
@@ -2268,25 +2710,52 @@ parse_delete_event <- function(idstr) {
     tagList(
       selectInput(
         inputId = "selected_res3",
-        label = h3("Select Result"),
-        choices = c(names(vals$result_objects))
+        label = "Select result list name",
+        choices = c(names(vals$res_names_full))
       ),
       bsTooltip(id = "selected_res3",
-                title = "Select one musica_result
-                object to visualize signatures.",
+                title = "Select name of result list entry containing the
+                signatures to visualize.",
                 placement = "right", options = list(container = "body"))
     )
   })
-
-  #generate options for selecting number of clusters
+  
   observeEvent(input$selected_res3, {
+    output$select_modality3 <- renderUI({
+      tagList(
+        selectInput("selected_modality3", "Modality",
+                    choices = c(names(vals$res_names_full[[input$selected_res3]]))),
+        bsTooltip("selected_modality3", "Desired modality")
+      )
+    })
+  })
+  
+  observeEvent(input$selected_modality3, {
+    output$select_model3 <- renderUI({
+      tagList(
+        selectInput("selected_model3", "Model ID",
+                    choices = c(vals$res_names_full[[input$selected_res3]][[input$selected_modality3]])),
+        bsTooltip("selected_model3", "Model ID of desired result")
+      )
+    })
+  })
+
+  
+  #generate options for selecting number of clusters
+  observeEvent(input$selected_model3, {
+    default <- min(10, dim(exposures(vals$musica, input$selected_res3, 
+                                     input$selected_modality3, 
+                                     input$selected_model3))[2] - 1)
     output$no_cluster1 <- renderUI(
       tagList(
         numericInput(inputId = "num_clust1", label = "Max Number of Clusters",
-                     value = 10,
                      min = 2,
-                     max = dim(vals$result_objects[[
-                       input$selected_res3]]@exposures)[2])
+                     max = dim(exposures(vals$musica, input$selected_res3, 
+                                         input$selected_modality3, 
+                                         input$selected_model3))[2] - 1,
+                     value = default)
+                     #max = dim(vals$result_objects[[
+                    #   input$selected_res3]]@exposures)[2])
       )
     )
     output$no_cluster2 <- renderUI(
@@ -2294,8 +2763,9 @@ parse_delete_event <- function(idstr) {
         numericInput(inputId = "num_clust2", label = "Max Number of Clusters",
                      value = 2,
                      min = 2,
-                     max = dim(vals$result_objects[[
-                       input$selected_res3]]@exposures)[2])
+                     max = dim(exposures(vals$musica, input$selected_res3, 
+                                         input$selected_modality3, 
+                                         input$selected_model3))[2] - 1)
       )
     )
   })
@@ -2314,7 +2784,11 @@ parse_delete_event <- function(idstr) {
     proportional <- input$proportional2
     output$explore_plot <- renderPlot(
       k_select(
-        result = vals$result_objects[[input$selected_res3]],
+        #result = vals$result_objects[[input$selected_res3]],
+        vals$musica,
+        model_name = input$selected_model3,
+        modality = input$selected_modality3,
+        result_name = input$selected_res3,
         method = method,
         clust.method = clust.method,
         n = n,
@@ -2371,8 +2845,9 @@ parse_delete_event <- function(idstr) {
                           label = "No. of Samples for CLARA",
                           value = 5,
                           min = 1,
-                          max = dim(vals$result_objects[[
-                            input$selected_res3]]@exposures)[2])
+                          max = dim(exposures(vals$musica, input$selected_res3, 
+                                              input$selected_modality3, 
+                                              input$selected_model3))[2])
       )
     }
     else{
@@ -2395,10 +2870,8 @@ parse_delete_event <- function(idstr) {
   #create select box to allow users to color plot by annotation
   observeEvent(input$group2, {
     if (input$group2 == "annotation") {
-      vals$annot <- as.list(colnames(samp_annot(
-        vals$result_objects[[input$selected_res3]]))[-1])
-      names(vals$annot) <- colnames(samp_annot(
-        vals$result_objects[[input$selected_res3]]))[-1]
+      vals$annot <- as.list(colnames(samp_annot(vals$musica))[-1])
+      names(vals$annot) <- colnames(samp_annot(vals$musica))[-1]
       insertUI(
         selector = "#insert_annot2",
         ui = tagList(
@@ -2417,7 +2890,7 @@ parse_delete_event <- function(idstr) {
 
   #perform clustering analysis
   observeEvent(input$cluster_calc, {
-    result <- vals$result_objects[[input$selected_res3]]
+    #result <- vals$result_objects[[input$selected_res3]]
     nclust <- input$num_clust2
     proportional <- input$proportional3
     method <- input$algorithm2
@@ -2440,7 +2913,10 @@ parse_delete_event <- function(idstr) {
     else{
       iter.max <- input$max_iter
     }
-    vals$cluster <- cluster_exposure(result = result,
+    vals$cluster <- cluster_exposure(vals$musica,
+                                     model_name = input$selected_model3,
+                                     modality = input$selected_modality3,
+                                     result_name = input$selected_res3,
                                      nclust = nclust,
                                      proportional = proportional,
                                      method = method,
@@ -2451,19 +2927,20 @@ parse_delete_event <- function(idstr) {
     insertUI(
       selector = "#insert_cluster_table",
       ui = tags$div(
-        DT::dataTableOutput("cluster_table"),
+        DT::DTOutput("cluster_table"),
         downloadButton("download_cluster", "Download")
       )
     )
-    annot <- samp_annot(vals$result_objects[[input$selected_res3]])
+    #annot <- samp_annot(vals$result_objects[[input$selected_res3]])
+    annot <- samp_annot(vals$musica)
     row.names(annot) <- annot$Samples
     dat <- cbind(annot, vals$cluster)
-    output$cluster_table <- DT::renderDataTable(
+    output$cluster_table <- DT::renderDT(
       DT::datatable(dat[-1])
     )
     output$download_cluster <- downloadHandler(
       filename = function() {
-        paste0(input$selected_res3, "_cluster.txt")
+        paste0(input$selected_model3, "_cluster.txt")
       },
       content = function(file) {
         write.table(dat[-1], file, sep = "\t", quote = FALSE)
@@ -2473,12 +2950,17 @@ parse_delete_event <- function(idstr) {
 
   #visualize clustering result
   observeEvent(input$cluster_vis, {
-    if (length(umap(vals$result_objects[[input$selected_res3]])) == 0) {
-      create_umap(vals$result_objects[[input$selected_res3]])
-      result <- vals$result_objects[[input$selected_res3]]
+    #if (length(umap(vals$result_objects[[input$selected_res3]])) == 0) {
+    if (is.na(umap(vals$musica, input$selected_res3, input$selected_modality3, input$selected_model3)[1])) {
+      #create_umap(vals$result_objects[[input$selected_res3]])
+      create_umap(vals$musica, 
+                  model_name = input$selected_model3,
+                  modality = input$selected_modality3,
+                  result_name = input$selected_res3)
+      #result <- vals$result_objects[[input$selected_res3]]
     }
     else{
-      result <- vals$result_objects[[input$selected_res3]]
+      #result <- vals$result_objects[[input$selected_res3]]
     }
     clusters <- vals$cluster
     group <- input$group2
@@ -2499,7 +2981,10 @@ parse_delete_event <- function(idstr) {
         ui = plotlyOutput(outputId = "cluster_plotly")
       )
       output$cluster_plotly <- renderPlotly(
-        plot_cluster(result = result,
+        plot_cluster(vals$musica,
+                     model_name = input$selected_model3,
+                     modality = input$selected_modality3,
+                     result_name = input$selected_res3,
                      clusters = clusters,
                      group = group,
                      annotation = annotation,
@@ -2517,7 +3002,10 @@ parse_delete_event <- function(idstr) {
         ui = plotOutput(outputId = "cluster_plot")
       )
       output$cluster_plot <- renderPlot(
-        plot_cluster(result = result,
+        plot_cluster(vals$musica,
+                     model_name = input$selected_model3,
+                     modality = input$selected_modality3,
+                     result_name = input$selected_res3,
                      clusters = clusters,
                      group = group,
                      annotation = annotation,
@@ -2538,15 +3026,15 @@ parse_delete_event <- function(idstr) {
     )
   })
 
-  output$select_res_download <- renderUI({
-    tagList(
-      selectInput(
-        inputId = "select_res_download",
-        label = "Select Musica Result Object",
-        choices = c(names(vals$result_objects))
-      )
-    )
-  })
+  #output$select_res_download <- renderUI({
+  #  tagList(
+  #    selectInput(
+  #      inputId = "select_res_download",
+  #      label = "Select Musica Result Object",
+  #      choices = c(names(vals$result_objects))
+  #    )
+  #  )
+  #})
   #Adding the download feature
   output$download_mus_obj <- downloadHandler(
 
@@ -2557,13 +3045,13 @@ parse_delete_event <- function(idstr) {
       saveRDS(vals$musica, file = file)
     }
   )
- output$download_res <- downloadHandler(
+# output$download_res <- downloadHandler(
 
-    filename = function() {
-      paste("musica_results", ".rds", sep = "")
-    },
-    content = function(file) {
-      saveRDS(vals$result_objects[[input$select_res_download]], file = file)
-    }
-  )
+    #filename = function() {
+    #  paste("musica_results", ".rds", sep = "")
+    #},
+    #content = function(file) {
+    #  saveRDS(vals$result_objects[[input$select_res_download]], file = file)
+    #}
+  #)
 }

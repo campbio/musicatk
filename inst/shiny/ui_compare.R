@@ -9,7 +9,15 @@ shiny_panel_compare <- fluidPage(
   ),
   div(style = "position: relative;", box(width = 6,
     uiOutput("compare_result_a"),
+    uiOutput("compare_modality_a"),
+    uiOutput("compare_model_a"),
+    radioButtons("cosmic_button",
+                "Compare to Cosmic or other result?",
+                 c("Cosmic" = "cosmic",
+                  "Other result" = "model")),
     uiOutput("compare_result_b"),
+    uiOutput("compare_model_b"),
+    uiOutput("compare_result_b_cosmic"),
     # textInput("Threshold", "Threshold", value = "0.9"),
     textInput("Threshold", "Threshold", value = ".5"),
     radioButtons("compare_metric", "Similarity Metric",
@@ -41,6 +49,6 @@ shiny_panel_compare <- fluidPage(
   )),
   box(width = 12,
        uiOutput("download_comparison"),
-       dataTableOutput("compare_table")
+       DT::DTOutput("compare_table")
        )
 )

@@ -18,11 +18,12 @@ shiny_panel_discover <- fluidPage(
     textInput("n_start", "Number of random starts", value = 10),
     # UI to set result name. Default name of the counts table.
     uiOutput("discover_result_name"),
+    uiOutput("discover_model_name"),
     textOutput("discover_warning"),
     actionButton("discover_signatures", "Discover Signatures"),
     bsTooltip("discover_signatures",
-              "Create a musica result object that contains the signatures
-              and exposures of each sample.",
+              "Update the musica object to contain the discovery results 
+              (signatures and exposures of each sample).",
               placement = "bottom", trigger = "hover", options = NULL),
     tags$a(href = "#", 
            tags$i(class = "fas fa-question-circle"),
@@ -31,8 +32,8 @@ shiny_panel_discover <- fluidPage(
            `data-trigger` = "focus", 
            `data-content` = "Mutational signatures and exposures are discovered using a Latent Dirichlet Allocation (LDA) or a Non-Negative Matrix Factorization (NMF) algorithms. 
            These algorithms will deconvolute the mutation count matrix into two matrices: 1) a “signature” matrix containing the probability of each mutation type in each sample and 
-           2) an “exposure” matrix containing the estimated counts for each signature in each sample. Select a count table, algorithm, number of signatures, and specify the name of 
-           the result and then click “Discover signatures”.",
+           2) an “exposure” matrix containing the estimated counts for each signature in each sample. Select a modality, number of signatures, algorithm, specify the result list name
+           and model ID, then click “Discover signatures”.",
            `data-html` = "true",
            `data-placement` = "left",
            style = "position: absolute; top: 5px; right: 5px; cursor: pointer;"),    
@@ -43,7 +44,7 @@ shiny_panel_discover <- fluidPage(
               "Number of signatures to discover.",
               placement = "bottom", trigger = "hover", options = NULL),
     bsTooltip("get_table_name",
-              "Name of the table to use for signature discovery.",
+              "Modality to use for signature discovery.",
               placement = "bottom", trigger = "hover", options = NULL),
     bsTooltip("n_start",
               "Number of independent random starts used in the mutatinoal

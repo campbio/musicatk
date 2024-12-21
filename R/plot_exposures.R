@@ -164,10 +164,10 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
   }
 
   # Define the order of samples in the bar plot
-  if (length(sort_samples == 1) && sort_samples == "name") {
+  if (length(sort_samples) == 1 && sort_samples == "name") {
     # Sort alphabetically with mixed alphanumeric characters
     o <- gtools::mixedsort(colnames(exposures))
-  } else if (length(sort_samples == 1) && sort_samples == "total") {
+  } else if (length(sort_samples) == 1 && sort_samples == "total") {
     # Sorting of samples by counts
     o <- colnames(exposures)[order(total, decreasing = TRUE)]
   } else {

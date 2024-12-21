@@ -21,7 +21,7 @@ source("ui_differentialanalysis.R", local = TRUE)
 source("ui_download.R", local = TRUE)
 
 ui <- fluidPage(
-  shinyalert::useShinyalert(),
+  #shinyalert::useShinyalert(),
   shinybusy::add_busy_spinner(),
   shinyjs::useShinyjs(),
   tags$head(
@@ -59,7 +59,7 @@ ui <- fluidPage(
                menuSubItem("Clustering", tabName = "cluster"),
                menuSubItem("Heatmap", tabName = "heatmap")),
       menuItem("Download", tabName = "download"),
-      menuItem("Help", href = paste0(getwd(), "/../../docs/index.html")))),
+      menuItem(tags$a(href="https://camplab.net/musicatk/v1.14.0/articles/articles/tutorial_tcga_ui.html", "Help")))),
     dashboardBody(
         tabItems(
           tabItem(tabName = "import_tcga",
@@ -89,7 +89,7 @@ ui <- fluidPage(
           tabItem(tabName = "heatmap", h2("Plot heatmap"),
                   shiny_panel_heatmap),
           tabItem(tabName = "cluster", cluster_analysis),
-          tabItem(tabName = "download", h2("Download musica result objects"),
+          tabItem(tabName = "download", h2("Download musica objects"),
                   shiny_panel_download)
       )
     )

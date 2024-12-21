@@ -35,7 +35,7 @@ shiny_panel_musica <- fluidPage(
            hr(),
            div(textOutput("musica_contents_summary")),
            hr(),
-           div(dataTableOutput("musica_contents_table"),
+           div(DT::DTOutput("musica_contents_table"),
            style = "height:500px; overflow-y: scroll;overflow-x: scroll;"),
            hr(),
            #Adding help tooltips

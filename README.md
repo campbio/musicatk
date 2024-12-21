@@ -55,5 +55,5 @@ library(musicatk)
 
 # Tutorials
 
-Detailed usage tutorials are available on the [Camplab website](https://camplab.net/musicatk/v1.14.0/index.html)
+Detailed usage tutorials are available on the [Camplab website](https://camplab.net/musicatk/v1.14.0/index.html) under the 'Vignettes' drop-down.
 

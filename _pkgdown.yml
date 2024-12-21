@@ -1,4 +1,7 @@
+url: https://www.camplab.net/musicatk
+
 template:
+  bootstrap: 5
   params:
     bootswatch: yeti
     message: FALSE
@@ -8,6 +11,7 @@ navbar:
   left:
     - icon: fa-home fa-lg
       href: https://www.camplab.net/musicatk
+      aria-label: Home
     - text: "Installation"
       href: articles/articles/installation.html
     - text: "Vignettes"
@@ -23,8 +27,10 @@ navbar:
   right:      
     - icon: fa-github
       href: https://github.com/campbio/musicatk
+      aria-label: GitHub
     - icon: fa-twitter
       href: https://twitter.com/camplab1
+      aria-label: Twitter
       
 reference:
 - title: Importing and processing
@@ -40,11 +46,13 @@ reference:
   desc: Functions to create and subset musica objects
   contents:
   - '`select_genome`'
-  - '`create_musica`'  
+  - '`create_musica_from_variants`'  
+  - '`create_musica_from_counts`' 
   - '`subset_musica_by_annotation`'
   - '`subset_musica_by_counts`'
   - '`subset_variant_by_type`'
   - '`subset_variants_by_samples`'
+  - '`variants`'  
   - '`variants`'  
 - title: Creating mutation count tables
   desc: Functions to build and combine mutation count tables
@@ -59,12 +67,18 @@ reference:
   - '`combine_count_tables`'
   - '`extract_count_tables`'
   - '`tables`'
+  - '`get_count_table`'
 - title: Sample annotations
   desc: Functions to add and manipulate sample annotations
   contents:
   - '`samp_annot`'
   - '`sample_names`'
   - '`drop_annotation`'
+- title: K value help
+  desc: Functions to help determine k value
+  contents:
+  - '`compare_k_vals`'
+  - '`plot_k_comparison`'
 - title: Discovery and prediction
   desc: Functions to identify signatures and exposures from mutation count tables
   contents:
@@ -75,6 +89,23 @@ reference:
   - '`auto_predict_grid`'
   - '`combine_predict_grid`'
   - '`generate_result_grid`'
+- title: Accessing result data in musica objects
+  desc: Functions to extract and access data within the result_list of a musica object
+  contents:
+  - '`get_model`'
+  - '`get_result_list_entry`'
+  - '`get_modality`'
+  - '`result_list`'
+  - '`hyperparameter`'
+  - '`parameter`'
+  - '`signatures`'
+  - '`exposures`'
+  - '`num_signatures`'
+  - '`other_parameters`'
+  - '`credible_intervals`'
+  - '`metrics`'
+  - '`model_id`'
+  - '`modality`'
 - title: Visualization
   desc: Functions to identify signatures and exposures from mutation count tables
   contents:
@@ -112,7 +143,7 @@ reference:
 - title: Miscellaneous functions
   contents:
   - '`cosmic_v2_subtype_map`'
-  - '`get_musica`'
+  - '`create_result_model`'
 - title: Data objects and classes
   contents:
   - '`musica_sbs96`'
@@ -126,8 +157,8 @@ reference:
   - '`rep_range`'
   - '`musica-class`'
   - '`count_table-class`'
-  - '`musica_result-class`'
-  - '`musica_result_grid-class`'
+  - '`result_collection-class`'
+  - '`result_model-class`'
   - '`built_tables`'
   - '`musicatk`'
   - '`rc`'

@@ -13,7 +13,10 @@ cluster_analysis <- fluidPage(
   fluidRow(
     box(
       width = 12,
-      uiOutput(outputId = "select_res3")
+      h3("Specify Model"),
+      uiOutput(outputId = "select_res3"),
+      uiOutput(outputId = "select_modality3"),
+      uiOutput(outputId = "select_model3")
     )
   ),
   fluidRow(

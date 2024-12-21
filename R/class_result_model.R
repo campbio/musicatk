@@ -924,7 +924,7 @@ setGeneric(
   }
 )
 
-#' @rdname model_id
+#' @rdname modality
 setMethod(
   f = "modality",
   signature = "musica",

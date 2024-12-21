@@ -1,4 +1,5 @@
 shiny_panel_import <- fluidPage(
+  #fluidRow(box(width = 6, actionButton("example", "Import example data"))),
           fluidRow(
             tags$head(
               tags$link(rel = "stylesheet", type = "text/css", href = "https://use.fontawesome.com/releases/v5.15.4/css/all.css"),
@@ -26,12 +27,14 @@ shiny_panel_import <- fluidPage(
                      style = "position: absolute; top: 5px; right: 5px; cursor: pointer;"),
           br(),
           actionButton("upload", "Add samples")))),
-          bsTooltip("upload",
-                    "Press button to add your uploaded files to Sample List",
+          bsTooltip("upload", "Press button to add your uploaded files to Sample List",
+                    placement = "bottom", trigger = "hover", options = NULL),
+          bsTooltip("example",
+                    "Press button to add an example file",
                     placement = "bottom", trigger = "hover",
                     options = NULL),
           fluidRow(box(width = 6, HTML(paste0("<b>","Added files:","</b>")),
-          tags$div(id = "file_id", DT::dataTableOutput("dtable"),
+          tags$div(id = "file_id", DT::DTOutput("dtable"),
                    style = "overflow-y: scroll;overflow-x: scroll;"),
           uiOutput("undo_ui"),
           hr(),
@@ -60,7 +63,7 @@ shiny_panel_import <- fluidPage(
                               `data-placement` = "left",
                               style = "position: absolute; top: 5px; right: 5px; cursor: pointer;"),
                        hr(),
-                       div(dataTableOutput("musica_contents"),
+                       div(DT::DTOutput("musica_contents"),
                            style = "height:500px;
                            overflow-y: scroll;overflow-x: scroll;"),
                        ))),
