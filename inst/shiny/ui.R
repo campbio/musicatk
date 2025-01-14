@@ -59,7 +59,7 @@ ui <- fluidPage(
                menuSubItem("Clustering", tabName = "cluster"),
                menuSubItem("Heatmap", tabName = "heatmap")),
       menuItem("Download", tabName = "download"),
-      menuItem(tags$a(href="https://camplab.net/musicatk/v2.0.0/articles/articles/tutorial_tcga_ui.html", "Help")))),
+      menuItem(tags$a(href="https://camplab.net/musicatk/current/articles/articles/tutorial_tcga_ui.html", "Help")))),
     dashboardBody(
         tabItems(
           tabItem(tabName = "import_tcga",

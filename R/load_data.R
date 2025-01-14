@@ -1029,22 +1029,37 @@ create_musica_from_counts <- function(x, variant_class) {
 
 
 
-#' Load an external model into a result_model object
+#' Load an external model into a musica object
 #'
 #' This function creates a \linkS4class{result_model} object from signatures,
-#' exposures, and a mutation count table.
+#' exposures, and a mutation count table, and stores it in a provided musica
+#' object.
 #'
 #' @param signatures A matrix or data.frame of signatures by mutational motifs
 #' @param exposures A matrix or data.frame of samples by signature weights
-#' @param model_id Name of model
+#' @param musica Existing musica object to add the new model to
+#' @param result_name Name of result list entry to store the model in
 #' @param modality Modality of the model
-#' @return A \linkS4class{result_model} object
+#' @param model_id Name of model
+#' @param make_copy If \code{FALSE}, the inputted \code{\linkS4class{musica}}
+#' object is updated and nothing is returned. If \code{TRUE}, a new
+#' \code{\linkS4class{musica}} object is created and returned. Default
+#' \code{FALSE}.
+#' @return A \linkS4class{musica} object
 #' @examples
 #' signatures <- signatures(res, "result", "SBS96", "res")
 #' exposures <- exposures(res, "result", "SBS96", "res")
-#' model <- create_result_model(signatures, exposures, "example_model", "SBS96")
+#' add_result(signatures, exposures, musica = musica_annot,
+#' result_name = "result", modality = "SBS96", model_id = "example_model")
 #' @export
-create_result_model <- function(signatures, exposures, model_id, modality) {
+add_result <- function(signatures, exposures, musica, result_name, 
+                       modality, model_id, make_copy = FALSE) {
+  
+  # update global variable
+  if (make_copy == FALSE) {
+    var_name <- deparse(substitute(musica))
+  }
+  
   # create musica result object with given exposures and signatures
   model_result <- new("result_model",
     signatures = as.matrix(signatures),
@@ -1052,8 +1067,32 @@ create_result_model <- function(signatures, exposures, model_id, modality) {
     num_signatures = dim(signatures)[2],
     model_id = model_id, modality = modality
   )
-
-  return(model_result)
+  
+  # if this result name does not exist in result_list
+  if (is.null(result_list(musica)[[result_name]])) {
+    # make new list entry with the desired name and assign a new
+    # result_collection object
+    musica@result_list[[result_name]] <- new("result_collection",
+                                             modality = SimpleList(),
+                                             parameter = list(), hyperparameter = list()
+    )
+  }
+  
+  # if desired modality does not exist, create entry
+  if (is.null(get_modality(musica, result_name, modality))) {
+    musica@result_list[[result_name]]@modality[[modality]] <- list()
+  }
+  
+  # add result_model object in the list for the proper modality
+  musica@result_list[[result_name]]@modality[[modality]][[model_id]] <- model_result
+  
+  if (make_copy == FALSE) {
+    assign(var_name, musica, envir = parent.frame())
+  }
+  
+  if (make_copy == TRUE) {
+    return(musica)
+  }
 }
 
 
