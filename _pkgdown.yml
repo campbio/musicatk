@@ -90,8 +90,9 @@ reference:
   - '`combine_predict_grid`'
   - '`generate_result_grid`'
 - title: Accessing result data in musica objects
-  desc: Functions to extract and access data within the result_list of a musica object
+  desc: Functions to add, extract, and access data within the result_list of a musica object
   contents:
+  - '`add_result`'
   - '`get_model`'
   - '`get_result_list_entry`'
   - '`get_modality`'
@@ -143,7 +144,6 @@ reference:
 - title: Miscellaneous functions
   contents:
   - '`cosmic_v2_subtype_map`'
-  - '`create_result_model`'
 - title: Data objects and classes
   contents:
   - '`musica_sbs96`'
