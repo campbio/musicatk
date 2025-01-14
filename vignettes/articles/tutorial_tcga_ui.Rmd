@@ -25,7 +25,7 @@ our musica object by 1) extracting variants from files or objects such as
 VCFs and MAFs, 2) selecting the appropriate reference genome 3) creating a 
 musica object, 4) adding sample-level annotations, and 5) building a count tables for our variants of interest. Variants stored in VCF or MAF files can be selected from your computation using the 'browse' button under the 'Select Files' label.
 
-<img src="vignettes/ui_screenshots/import.jpg" alt = "screenshot of import page" style="border: 1px solid rgba(0,0,0,0.2)"></img>
+<img src="vignettes/ui_screenshots/import.jpg" alt = "screenshot of import tab" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
 
 Clicking  the 'Add Samples' button will add the files to the list of samples to be imported. The delete and undo button next to the file can be pressed to remove it or revert the change respectively. After adding the files, the 'Import' button can be clicked to start the importing process. 
@@ -41,13 +41,13 @@ Once the process is completed, a notification in the bottom right will appear. A
 ## Import TCGA Datasets
 This tab allows for selection of single or multiple datasets generated in The Cancer Genome Atlas (TCGA). The original TCGA page for the tumor name list can be referred to by selecting the 'Full Tumor List' link on the top. Once the desired datasets have been selected, the 'Import' button at the bottom can be clicked to download the TCGA data. It may take some time to download and process all of the selected datasets. Once finished, a completion notification will appear at the bottom right. 
 
-<img src="vignettes/ui_screenshots/TCGA.jpg" alt = "screenshot of TCGA import page" style="border: 1px solid rgba(0,0,0,0.2)"></img>
+<img src="vignettes/ui_screenshots/TCGA.jpg" alt = "screenshot of TCGA import tab" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
 
 ## Import previously generated musica objects
 This tab can be used to import a user’s previously generated musica variant object in .rda or .rds format. The browse button can be selected for selecting files. Once selected, a bar saying file upload is completed will appear. Once finished, a notification message in the bottom right will appear along with a table of variants. If a musica variant object was uploaded then the users can skip the Create Musica tab and move to the build tables tab directly. 
 
-<img src="vignettes/ui_screenshots/upload_musica.jpg" alt = "screenshot of import musica page" style="border: 1px solid rgba(0,0,0,0.2)"></img>
+<img src="vignettes/ui_screenshots/upload_musica.jpg" alt = "screenshot of import musica tab" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
 
 
@@ -55,7 +55,7 @@ This tab can be used to import a user’s previously generated musica variant ob
 
 In this tab users can process variants and create a musica variant object which can be used for discovery of signatures or prediction of exposures. The reference genome can be selected from the drop down menu labeled "Choose Genome" that matches the genome build of the variants and the 'Create Musica Object' button can then be clicked. Once it's done, a completion notification message at the bottom right and a variant summary table will appear. The musica object can be downloaded by clicking the 'Download Musica Object' button and re-uploaded to save time in subsequent sessions. 
 
-<img src="vignettes/ui_screenshots/create_musica.jpg" alt = "screenshot of create musica object page" style="border: 1px solid rgba(0,0,0,0.2)"></img>
+<img src="vignettes/ui_screenshots/create_musica.jpg" alt = "screenshot of create musica object tab" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>
 <img src="vignettes/ui_screenshots/create_musica1.jpg" alt = "screenshot of variant summary table" style="border: 1px solid rgba(0,0,0,0.2)"></img>
 <br>

@@ -84,7 +84,7 @@ shiny_panel_import <- fluidPage(
           fluidRow(
             box(
               width = 12,
-              HTML('<p> For more information, visit <a href="https://camplab.net/musicatk/v1.6.0/articles/articles/tutorial_tcga_ui.html">this link</a>.</p>')
+              HTML('<p> For more information, visit <a href="https://camplab.net/musicatk/current/articles/articles/tutorial_tcga_ui.html">this link</a>.</p>')
             )
           )
 )
