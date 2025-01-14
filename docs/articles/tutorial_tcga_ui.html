@@ -59,11 +59,11 @@
 
       <h1>Analysis of mutational signatures with the Shiny graphical user interface (GUI)</h1>
                         <h4 data-toc-skip class="author">Nathan
-Sahelijo, Zainab Khurshid, Tong Tong, Aaron Chevalier, Joshua
-Campbell</h4>
+Sahelijo, Zainab Khurshid, Tong Tong, Aaron Chevalier, Natasha Gurevich,
+Joshua Campbell</h4>
             
-            <h4 data-toc-skip class="date">Compiled December 20,
-2024</h4>
+            <h4 data-toc-skip class="date">Compiled January 14,
+2025</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/campbio/musicatk/blob/HEAD/vignettes/articles/tutorial_tcga_ui.Rmd" class="external-link"><code>vignettes/articles/tutorial_tcga_ui.Rmd</code></a></small>
       <div class="d-none name"><code>tutorial_tcga_ui.Rmd</code></div>
@@ -113,17 +113,17 @@ creating a musica object, 4) adding sample-level annotations, and 5)
 building a count tables for our variants of interest. Variants stored in
 VCF or MAF files can be selected from your computation using the
 ‘browse’ button under the ‘Select Files’ label.</p>
-<p><img src="./ui_screenshots/import.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/import.jpg" alt="screenshot of import page" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>Clicking the ‘Add Samples’ button will add the files to the list of
 samples to be imported. The delete and undo button next to the file can
 be pressed to remove it or revert the change respectively. After adding
 the files, the ‘Import’ button can be clicked to start the importing
 process.</p>
-<p><img src="ui_screenshots/import1.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/import1.jpg" alt="screenshot of added files" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>Once the process is completed, a notification in the bottom right
 will appear. A variants table from the uploaded files will also appear
 which can be downloaded by pressing the ‘Download Variants’ button.</p>
-<p><img src="ui_screenshots/import2.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/import2.jpg" alt="screenshot of variants table from uploaded files" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="import-tcga-datasets">Import TCGA Datasets<a class="anchor" aria-label="anchor" href="#import-tcga-datasets"></a>
@@ -136,7 +136,7 @@ List’ link on the top. Once the desired datasets have been selected, the
 It may take some time to download and process all of the selected
 datasets. Once finished, a completion notification will appear at the
 bottom right.</p>
-<p><img src="ui_screenshots/TCGA.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/TCGA.jpg" alt="screenshot of TCGA import page" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="import-previously-generated-musica-objects">Import previously generated musica objects<a class="anchor" aria-label="anchor" href="#import-previously-generated-musica-objects"></a>
@@ -148,7 +148,7 @@ completed will appear. Once finished, a notification message in the
 bottom right will appear along with a table of variants. If a musica
 variant object was uploaded then the users can skip the Create Musica
 tab and move to the build tables tab directly.</p>
-<p><img src="ui_screenshots/upload_musica.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/upload_musica.jpg" alt="screenshot of import musica page" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 </div>
 <div class="section level2">
@@ -163,7 +163,7 @@ done, a completion notification message at the bottom right and a
 variant summary table will appear. The musica object can be downloaded
 by clicking the ‘Download Musica Object’ button and re-uploaded to save
 time in subsequent sessions.</p>
-<p><img src="ui_screenshots/create_musica.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br><img src="ui_screenshots/create_musica1.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/create_musica.jpg" alt="screenshot of create musica object page" style="border: 1px solid rgba(0,0,0,0.2)"><br><img src="articles/ui_screenshots/create_musica1.jpg" alt="screenshot of variant summary table" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level2">
 <h2 id="importing-sample-annotations">Importing sample annotations<a class="anchor" aria-label="anchor" href="#importing-sample-annotations"></a>
@@ -173,20 +173,24 @@ such as tumor type or treatment status. They are optional and can be
 used in downstream plotting functions such as <a href="../../docs/reference/plot_exposures.html"><em>plot_exposures</em></a>
 or <a href="../../docs/reference/plot_umap.html"><em>plot_umap</em></a>
 to group or color samples by a particular annotation.</p>
-<p><img src="ui_screenshots/AnnotationsTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/AnnotationsTab.jpg" alt="screenshot of adding annotations" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>Annotations are sample-level variables such as Tumor Type or Age.
 These can be provided in a character delimited text file which must
 include a column containing the sample IDs.</p>
-<p><img src="ui_screenshots/annotation_file.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/annotation_file.jpg" alt="screenshot of example annotations" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>The sample IDs must match the sample names in the musica object. NA
 values will be given to any samples not present in the annotation
 file.</p>
-<p><img src="ui_screenshots/AnnotationOptions.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br> After selecting the correct delimiter, a data table will appear
+<p><img src="articles/ui_screenshots/AnnotationOptions.jpg" alt="screenshot of annotation file upload complete" style="border: 1px solid rgba(0,0,0,0.2)"><br> After selecting the correct delimiter, a data table will appear
 below to show the annotations that will be added to the musica object.
 If your annotation file does not contain a header, unselect the “Header”
 radio button. Choose the column that contains the sample names from the
 “Sample Name Columns” dropdown and then click “Add Annotation”.</p>
-<p><img src="ui_screenshots/AnnotationTable.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br> # Creating mutation count tables</p>
+<p><img src="articles/ui_screenshots/AnnotationTable.jpg" alt="screenshot of data table containing annotations" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+</div>
+<div class="section level2">
+<h2 id="creating-mutation-count-tables">Creating mutation count tables<a class="anchor" aria-label="anchor" href="#creating-mutation-count-tables"></a>
+</h2>
 <div class="section level3">
 <h3 id="create-standard-tables">Create standard tables<a class="anchor" aria-label="anchor" href="#create-standard-tables"></a>
 </h3>
@@ -211,7 +215,7 @@ length.</p>
 <p><br></p>
 <p>In addition to selecting a motif, the user must also provide the
 reference genome.</p>
-<p><img src="ui_screenshots/TableTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/TableTab.jpg" alt="screenshot of build tables tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="combine-tables">Combine tables<a class="anchor" aria-label="anchor" href="#combine-tables"></a>
@@ -219,7 +223,9 @@ reference genome.</p>
 <p>Any two or more tables can be combined into a new table. The option
 to build a combined table will only appear after the second table has
 been created.</p>
-<p><img src="ui_screenshots/combine-table.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p>&lt;img src=“vignettes/ui_screenshots/combine-table.alt =”screenshot
+of combining tables” jpg” style=“border: 1px solid
+rgba(0,0,0,0.2)”&gt; <br></p>
 </div>
 </div>
 <div class="section level2">
@@ -241,7 +247,7 @@ the estimated counts for each signature in each sample. Select a
 modality, algorithm, number of signatures, and specify the name of the
 result list and model to store the results and then click “Discover
 signatures”.</p>
-<p><img src="ui_screenshots/DiscoverTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/DiscoverTab.jpg" alt="screenshot of discover tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="predicting-exposures-from-existing-signatures">Predicting exposures from existing signatures<a class="anchor" aria-label="anchor" href="#predicting-exposures-from-existing-signatures"></a>
@@ -249,13 +255,13 @@ signatures”.</p>
 <p>Exposures for samples can be predicted using an existing set of
 signatures stored in a result model object. Algorithms available for
 prediction include “lda” and “decompTumor2Sig”.</p>
-<p><img src="ui_screenshots/PredictTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/PredictTab.jpg" alt="screenshot of predict tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>The “Signatures to Predict” dropdown contains all the signatures in
 the result object selected from the “Result to Predict” dropdown. You
 can search this dropdown and select multiple signatures. In our example
 we use the “lda” algorithm to predict exposures of 6 Cosmic
 signatures.</p>
-<p><img src="ui_screenshots/PredictDropdown.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/PredictDropdown.jpg" alt="screenshot of signatures to predict options" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 </div>
 <div class="section level2">
@@ -269,55 +275,55 @@ for signatures and exposures. Plots will be made interactive if the
 </h3>
 <p>Bar plots can be used to display the probability of each type of
 mutation within each signature.</p>
-<p><img src="ui_screenshots/visual_sig.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/visual_sig.jpg" alt="screenshot of signature section of data visualization tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>Previously, 8 single-base signatures were identified from a cohort of
 lung adenocarcinoma, lung squamous cell carcinoma, and skin cutaneous
 melanoma samples from TCGA. By default, signatures are named by numbers,
 but an option of renaming signatures is provided if you want to rename
 them according to their possible etiology (e.g. Smoking) or closest
 correlation to COSMIC (e.g. SBS4).</p>
-<p><img src="ui_screenshots/sig_plot.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/sig_plot.jpg" alt="screenshot of plotted signatures" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="plot-exposures">Plot exposures<a class="anchor" aria-label="anchor" href="#plot-exposures"></a>
 </h3>
 <p>Bar plots, box plots, violin plots and scatter plots can be used to
 visualize the exposure levels of each signature in each sample.</p>
-<p><img src="ui_screenshots/visual_exp.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/visual_exp.jpg" alt="screenshot of exposure section of data visualization tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>By default, a stacked bar plot sorted by the total number of
 mutations is used. Each stacked bar shows the proportion of exposure of
 each signature.</p>
-<p><img src="ui_screenshots/exp_plot1.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/exp_plot1.jpg" alt="screenshot of plotted exposures" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>The stacked bar plot can be ordered by signatures. If Signatures is
 selected in the Sort By option, a bucket list will show up to allow you
 select the signatures you want to use by dragging them from the left box
 to the right box. Users can also set a limit on the number of samples to
 display.</p>
-<p><img src="ui_screenshots/sorting.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/sorting.jpg" alt="screenshot of sorting options" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>This stacked bar plot is now ordered by the exposure of signature 1
 and only the top 400 samples were included here.</p>
-<p><img src="ui_screenshots/exp_plot2.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/exp_plot2.jpg" alt="screenshot of sorted predicted exposures" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>Box plot and violin plot can be used to visualize the distribution of
 exposures or compare exposures between different groups of samples.</p>
-<p><img src="ui_screenshots/exp_box_setting1.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/exp_box_setting1.jpg" alt="screenshot of settings" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>By default, a box plot of exposure for each signature will be
 shown.</p>
-<p><img src="ui_screenshots/exp_plot3.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/exp_plot3.jpg" alt="screenshot of boxplot of exposures" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>If an annotation file is provided, then you can visually compare the
 exposure of signatures among different groups.</p>
-<p><img src="ui_screenshots/exp_box_setting2.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/exp_box_setting2.jpg" alt="screenshot of settings" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>In this box plot, exposures of each signature were grouped by tumor
 types. We can find that signatures 1 and 5 had high activities in lung
 cancer samples, while signatures 3 and 8 had high activities in skin
 cancer samples.</p>
-<p><img src="ui_screenshots/exp_plot4.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/exp_plot4.jpg" alt="screenshot of exposures boxplot, grouped by tumor type" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>We can also group samples by signatures and then color by tumor
 types.</p>
-<p><img src="ui_screenshots/exp_box_setting3.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/exp_box_setting3.jpg" alt="screenshot of settings" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>This plot can be used to visualize and compare the distribution of
 exposure levels for signature across an annotation such as tumor
 type.</p>
-<p><img src="ui_screenshots/exp_plot5.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/exp_plot5.jpg" alt="screenshot of exposures boxplot, grouped by signature" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 </div>
 <div class="section level2">
@@ -331,12 +337,12 @@ dataset to those generated in other datasets or to those in the <a href="https:/
 database</a>. The threshold acts as a cutoff similarity score and can be
 any value between 0 and 1. Results will populate in a downloadable data
 table.</p>
-<p><img src="ui_screenshots/CompareTab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/CompareTab.jpg" alt="screenshot of compare signatures tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>Using the cosine metric with a threshold of 0.8,7 pairs of similar
 signatures from COSMIC. Our Signature1 had a high cosine similarity to
 Cosmic SBS4 indicating that some of our tumors have been exposed to
 cigarette smoke.</p>
-<p><img src="ui_screenshots/CompareTable.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/CompareTable.jpg" alt="screenshot of comparison table" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="differential-analysis-of-exposures-between-groups">Differential analysis of exposures between groups<a class="anchor" aria-label="anchor" href="#differential-analysis-of-exposures-between-groups"></a>
@@ -346,18 +352,18 @@ analysis on the signature exposures of annotated samples. There are 3
 methods to perform the differential analysis: Wilcoxon Rank Sum Test,
 Kruskal-Wallis Rank Sum Test, and a negative binomial regression
 (glm).</p>
-<p><img src="ui_screenshots/DATab.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/DATab.jpg" alt="screenshot of differential analysis tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>The Wilcoxon Rank Sum Test can be used to directly compare two groups
 of samples. Below we display the Wilcoxon Rank Sum Test results between
 LUAD and SKCM. Note that LUSC was ignored since it did not have a
 specified pair.</p>
-<p><img src="ui_screenshots/DAOptions.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/DAOptions.jpg" alt="screenshot of differential analysis settings" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>From our table, we can see several of our signatures are
 differentially exposed across tumor types. From our comparison analysis,
 we can hypothesize that signature1 may be related to tobacco smoke, and
 exposure to tobacco smoke occurs in lung cancers but not skin
 cancers.</p>
-<p><img src="ui_screenshots/WilcoxonTable.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/WilcoxonTable.jpg" alt="screenshot of differential analysis table" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="clustering-samples-based-on-exposures">Clustering samples based on exposures<a class="anchor" aria-label="anchor" href="#clustering-samples-based-on-exposures"></a>
@@ -368,35 +374,35 @@ packages to cluster samples based on exposure levels. After selecting
 the musica result object, it is recommended to use the “Explore Number
 of Clusters” box to help find the potential number of clusters in your
 data. (Note: gap statistic may take a longer time to calculate.)</p>
-<p><img src="ui_screenshots/cluster1.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/cluster1.jpg" alt="screenshot of clustering tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>This line plot shows the within cluster sum of squares for each
 number of clusters predicted using hierarchical clustering. The “elbow”
 of the curve can be used as a starting place for the cluster number.</p>
-<p><img src="ui_screenshots/wss.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/wss.jpg" alt="screenshot of within cluster sum of squares line plot" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>The “Clustering” box is where you perform the clustering analysis. In
 addition to clustering algorithm, several methods for calculating
 dissimilarity matrix, imported from the <a href="https://cran.r-project.org/web/packages/philentropy/index.html" class="external-link">philentropy</a>
 package, are also provided.</p>
-<p><img src="ui_screenshots/cluster2.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/cluster2.jpg" alt="screenshot of clustering box settings" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>This table is the output of clustering analysis, combined with
 annotation.</p>
-<p><img src="ui_screenshots/cluster_tbl.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/cluster_tbl.jpg" alt="screenshot of clustering analysis output" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>In the “Visualization” box, users can make scatter plots to visualize
 the clustering results on a UMAP panel. Three types of plots are
 provided.</p>
-<p><img src="ui_screenshots/cluster_visual.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/cluster_visual.jpg" alt="screenshot of visualization box settings" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>If “None” is selected, a single scatter plot will be made with points
 colored by cluster label.</p>
-<p><img src="ui_screenshots/umap3.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/umap3.jpg" alt="screenshot of scatter plot" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>If “Signature” is selected, a subplot is made for each combination of
 cluster label and signature. Points are colored by the level of the
 specific signature.</p>
-<p><img src="ui_screenshots/umap1.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/umap1.jpg" alt="screenshot of subplots" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 <p>If “Annotation” is selected, an additional select box will show up
 and let you choose one type of user-supplied annotation of interest. A
 subplot is generated for each combination of signature and category in
 the annotation. Points are colored by cluster label.</p>
-<p><img src="ui_screenshots/umap2.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/umap2.jpg" alt="screenshot of subplots" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="heatmap-of-exposures">Heatmap of exposures<a class="anchor" aria-label="anchor" href="#heatmap-of-exposures"></a>
@@ -415,7 +421,7 @@ subset by signatures, click the ‘Selected Signatures’ option and select
 the signatures to show. You can also select the ‘Samples’ and
 ‘Annotation’ options to subset by the available samples and
 annotations.</p>
-<p><img src="ui_screenshots/heatmap.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br><img src="ui_screenshots/heatmap1.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/heatmap.jpg" alt="screenshot of heatmap tab" style="border: 1px solid rgba(0,0,0,0.2)"><br><img src="articles/ui_screenshots/heatmap1.jpg" alt="screenshot of heatmap" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 <div class="section level3">
 <h3 id="download-results">Download results<a class="anchor" aria-label="anchor" href="#download-results"></a>
@@ -424,7 +430,7 @@ annotations.</p>
 will be saved as .rds files which can be reuploaded back into the app at
 a later time. Select the name of the musica object that click the
 Download button to save the file to your computer.</p>
-<p><img src="ui_screenshots/download.jpg" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
+<p><img src="articles/ui_screenshots/download.jpg" alt="screenshot of download tab" style="border: 1px solid rgba(0,0,0,0.2)"><br></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
