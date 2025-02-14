@@ -29,6 +29,8 @@
 #' compare_k_vals(musica, "SBS96", reps = 3, min_k = 1, max_k = 5)
 compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
                            error_type = "prop", algorithm = "nmf") {
+  
+  # make list of k values to try
   k_list <- c(min_k:max_k)
 
   # access count table
@@ -38,7 +40,7 @@ compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
   # generate bootstraped count tables
   boot_tables_all <- .gen_all_boots(count_table, reps)
 
-  # establish df for sil widths
+  # establish df for results
   results_df <- data.frame(
     k = NULL, sil_width = NULL, min_sil_width = NULL,
     max_sil_width = NULL, sterror_sil_width = NULL,
@@ -51,6 +53,7 @@ compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
 
   # loop through the k values to test
   for (index in seq_len(length(k_list))) {
+    
     message("\nk = ", k_list[index], ":\n", sep = "")
 
     # run discovery
@@ -60,7 +63,7 @@ compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
       boot_tables_all
     )
 
-    # result from unpreterbed count table
+    # result from unperturbed count table
     result_actual <- iterative_results[[1]]
 
     # all signatures predicted
@@ -249,6 +252,20 @@ plot_k_comparison <- function(k_comparison) {
   return(figure)
 }
 
+# ------------------------------------------------------------------------------
+
+# generate all bootstrapped count tables that will be used
+.gen_all_boots <- function(count_table, reps) {
+  
+  boot_tables_all <- NULL
+  
+  for (iteration in seq_len(reps)) {
+    boot_tables_all[[iteration]] <- .resample_count_table(count_table)
+  }
+  
+  return(boot_tables_all)
+}
+
 # sample same number of samples, with replacement
 .resample_count_table <- function(count_table) {
   colsums <- colSums(count_table)
@@ -267,19 +284,6 @@ plot_k_comparison <- function(k_comparison) {
 
   # return bootstrapped count table
   return(bootstrapped_count_table)
-}
-
-
-
-# generate all bootstrapped count tables that will be used
-.gen_all_boots <- function(count_table, reps) {
-  boot_tables_all <- NULL
-
-  for (iteration in seq_len(reps)) {
-    boot_tables_all[[iteration]] <- .resample_count_table(count_table)
-  }
-
-  return(boot_tables_all)
 }
 
 # get signatures for set number of iterations on bootstrapped
@@ -468,7 +472,7 @@ plot_k_comparison <- function(k_comparison) {
   # initialize error vector
   errors <- NULL
 
-  # calculate error for unpreterbed count table prediction
+  # calculate error for unperturbed count table prediction
   error <- .get_reconstruction_error(result_actual, count_table, error_type)
 
   # append to errors
