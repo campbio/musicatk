@@ -1,4 +1,12 @@
-# musicatk 2.0.0 (2023-10-30)
+# musicatk 2.2.1 (2025-07-15)
+* Removed conclust dependency
+* Fixed plotting issues with indels
+* Cosmetic changes to k value and plotting code
+
+# musicatk 2.2.0 (2025-04-15)
+* Updated version number to match Bioconductor
+
+# musicatk 2.0.0 (2024-10-30)
 * Restructure of the musica class to contain mutational signature discovery and prediction results, thus eliminating the need for the musica_result class.
 * Added new functionality to help determine the correct number of signatures to predict (k-value).
 * Musica objects can be created from variants or directly from count tables.
