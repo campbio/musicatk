@@ -13,13 +13,13 @@ navbar:
       href: https://www.camplab.net/musicatk
       aria-label: Home
     - text: "Installation"
-      href: articles/articles/installation.html
+      href: articles/installation.html
     - text: "Vignettes"
       menu:
       - text: "Analysis in the R console"
-        href: articles/articles/tutorial_tcga_cnsl.html
+        href: articles/tutorial_tcga_cnsl.html
       - text: "Analysis with the user interface"
-        href: articles/articles/tutorial_tcga_ui.html
+        href: articles/tutorial_tcga_ui.html
     - text: "Reference"
       href: reference/index.html
     - text: "News"
