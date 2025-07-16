@@ -257,6 +257,14 @@ plot_signatures <- function(musica,
   if (!is.null(y_max)) {
     p <- p + geom_blank(aes(y = ymax))
   }
+  
+  # Adjust theme
+  p <- .gg_default_theme(p, text_size = text_size) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+    theme(legend.position = "none") +
+    theme(plot.margin = margin(0, 1, 0, 1)) +
+    theme(strip.background = element_blank(), strip.text.y = element_blank())
+  
 
   # If SBS, need to change color of labels so one is white
   if (table_name == "SBS96") {
@@ -311,15 +319,8 @@ plot_signatures <- function(musica,
                                   fontface = "bold", size = 4, 
                                   color = label_colors)
   }
-
-
+  
   # Adjust theme
-  p <- .gg_default_theme(p, text_size = text_size) +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
-    theme(legend.position = "none") +
-    theme(plot.margin = margin(0, 1, 0, 1)) +
-    theme(strip.background = element_blank(), strip.text.y = element_blank())
-
   p2 <- .gg_default_theme(p2, text_size = text_size) +
     theme(plot.margin = margin(0, 1, 0, 1)) + # see function below
     theme(
@@ -359,8 +360,7 @@ plot_signatures <- function(musica,
     height <- 1
   }
 
-
-  #figure <- ggpubr::ggarrange(p2, p, ncol = 1, nrow = 2, heights = c(1, 15))
+  # combine signatures and motif labels
   figure <- ggpubr::ggarrange(p2, p, ncol = 1, nrow = 2, heights = c(height,15))
 
   if (isTRUE(plotly)) {

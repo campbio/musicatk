@@ -64,8 +64,7 @@ Imports:
     tidyverse,
     ggpubr,
     Matrix (>= 1.6.1),
-    scales,
-    conclust
+    scales
 Suggests:
     TCGAbiolinks,
     shinyBS,
