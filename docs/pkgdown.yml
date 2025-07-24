@@ -1,12 +1,13 @@
-pandoc: 3.1.11
-pkgdown: 2.1.0
+pandoc: '2.5'
+pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
-  articles/installation: installation.html
+  installation: installation.html
   musicatk: musicatk.html
-  articles/tutorial_tcga_cnsl: tutorial_tcga_cnsl.html
-  articles/tutorial_tcga_ui: tutorial_tcga_ui.html
-last_built: 2025-01-17T20:21Z
+  tutorial_tcga_cnsl: tutorial_tcga_cnsl.html
+  tutorial_tcga_ui: tutorial_tcga_ui.html
+last_built: 2025-07-23T15:07Z
 urls:
   reference: https://www.camplab.net/musicatk/reference
   article: https://www.camplab.net/musicatk/articles
+
