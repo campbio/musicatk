@@ -268,7 +268,7 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
   } else if (sample_type == "genome") {
     if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       cosmic_res <- musicatk::cosmic_v3_sbs_sigs
-    } else if (modality %in% c("DBS", "dbs", "doublet")) {
+    } else if (modality %in% c("DBS", "DBS78", "dbs", "doublet")) {
       cosmic_res <- musicatk::cosmic_v3_dbs_sigs
     } else if (modality %in% c(
       "INDEL", "Indel", "indel", "ind", "IND",
