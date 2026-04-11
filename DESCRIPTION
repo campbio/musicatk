@@ -64,7 +64,8 @@ Imports:
     tidyverse,
     ggpubr,
     Matrix (>= 1.6.1),
-    scales
+    scales,
+    lsei
 Suggests:
     TCGAbiolinks,
     shinyBS,
@@ -85,5 +86,34 @@ Suggests:
     shinyWidgets,
     cowplot,
     withr
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr
+Collate: 
+    'annotate_variants.R'
+    'benchmarking.R'
+    'class_count_table.R'
+    'class_musica.R'
+    'class_full_benchmark.R'
+    'class_result_collection.R'
+    'class_result_model.R'
+    'class_single_benchmark.R'
+    'compare_results.R'
+    'cosmic_data.R'
+    'differential_analysis.R'
+    'discovery_prediction.R'
+    'k_val_assit.R'
+    'kmeans.R'
+    'load_data.R'
+    'misc_functions.R'
+    'musicatk.R'
+    'plot_exposures.R'
+    'plot_heatmap.R'
+    'plot_sample_counts.R'
+    'plot_sample_reconstruction_error.R'
+    'plot_signatures.R'
+    'plotting.R'
+    'standard_tables.R'
+    'table_utils.R'
+    'test_data.R'
+    'umap.R'
+    'utils-pipe.R'
