@@ -1,7 +1,7 @@
 # Contributing to musicatk
 
 Thanks for contributing. This guide covers both human contributors and AI coding
-agents; the authoritative instructions for agents are in [AGENTS.md](AGENTS.md).
+agents; the authoritative instructions for agents are in [AGENTS.md](../AGENTS.md).
 
 ## Setup
 
@@ -11,6 +11,49 @@ BiocManager::install("musicatk", dependencies = TRUE)
 
 musicatk requires R >= 4.4.0 and depends on large BSgenome/TxDb annotation
 packages. The first install is slow. There is no compilation step.
+
+## Repository layout
+
+Alongside the standard R package directories, the repository carries a set of
+files supporting AI-assisted development. Each location has one job:
+
+```
+musicatk/
+├── AGENTS.md          canonical agent instructions — the file to edit
+├── CLAUDE.md          one line: @AGENTS.md
+├── GEMINI.md          one line: @AGENTS.md
+├── Makefile           canonical commands (make help)
+├── .lintr             lint rules; covers inst/shiny
+├── .claude/
+│   └── settings.json  what agents may and may not run (shared, committed)
+├── .github/
+│   ├── CONTRIBUTING.md  SECURITY.md  PULL_REQUEST_TEMPLATE.md
+│   └── workflows/       CI
+├── dev/               maintainer-facing, not shipped in the package
+│   ├── adr/           architecture decision records (README.md = index)
+│   ├── RELEASE.md     Bioconductor release checklist
+│   ├── ROADMAP.md     where the package is going
+│   ├── AUDIT.md       periodic dependency/deprecation audit
+│   ├── agent-log.md   findings awaiting triage into issues
+│   └── hooks/         lint-changed.sh, run after an agent edits an R file
+└── R/ man/ tests/ vignettes/ inst/ docs/     standard package structure
+```
+
+Three rules explain the placement:
+
+- **Root** holds only what agent harnesses auto-load, plus the `Makefile`.
+  `AGENTS.md` is the single source of truth and is self-contained — `CLAUDE.md`
+  and `GEMINI.md` just import it, so there is one file to keep current.
+- **`.github/`** holds the community health files GitHub surfaces on its own.
+- **`dev/`** holds maintainer documentation. One `.Rbuildignore` entry (`^dev$`)
+  keeps all of it out of the package tarball.
+
+`docs/` is pkgdown build output. Nothing is ever stored there by hand — that is
+why decision records live in `dev/adr/` rather than `docs/adr/`.
+
+Instructions tell agents what to know; `.claude/settings.json` controls what they
+are permitted to do. Anything that must never happen belongs in the settings file,
+not in prose.
 
 ## Branch and PR model
 
