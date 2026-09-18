@@ -1,0 +1,40 @@
+# lintr — style and static checks across R/ and inst/shiny.
+# inst/ is invisible to R CMD check, so this is the only guard on the Shiny app.
+#
+# NON-BLOCKING at first (continue-on-error). The package has never been linted:
+# 2,922 lints as of the scaffolding PR (1,583 in R/, 1,336 in inst/). Per the
+# playbook scope guard those are triaged into dev/agent-log.md, not fixed here.
+# Roughly half are mechanically fixable with `make style`. Flip this job to a
+# required check once the backlog is worked down.
+on:
+  push:
+    branches: [devel, master]
+  pull_request:
+    branches: [devel, master]
+
+name: lint
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::lintr, local::.
+          needs: lint
+
+      - name: Lint
+        run: lintr::lint_package()
+        shell: Rscript {0}
+        env:
+          LINTR_ERROR_ON_LINT: true

@@ -1,0 +1,13 @@
+linters: linters_with_defaults(
+    line_length_linter = line_length_linter(80),
+    object_name_linter = object_name_linter(styles = c("snake_case", "symbols")),
+    object_length_linter = NULL,
+    commented_code_linter = NULL
+  )
+exclusions: list(
+    "renv",
+    "docs",
+    "man",
+    "vignettes/articles"
+  )
+encoding: "UTF-8"

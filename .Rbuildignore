@@ -12,3 +12,11 @@
 ^pkgdown$
 vignettes/articles/GDCdata
 ^\.github$
+^Makefile$
+^AGENTS\.md$
+^CLAUDE\.md$
+^GEMINI\.md$
+^dev$
+^\.claude$
+^\.lintr$
+^campbio_ai_setup_playbook.*\.md$
