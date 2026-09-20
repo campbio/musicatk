@@ -10,3 +10,6 @@ musicatk.Rproj
 .Rprofile
 renv/
 renv.lock
+
+# Claude Code personal overrides
+.claude/settings.local.json

@@ -1,0 +1,53 @@
+# BiocCheck, run the way the Bioconductor build system runs it.
+#
+# Runs inside the official Bioconductor devel container so the BiocCheck, R, and
+# Bioconductor versions match the official build machines — otherwise CI results
+# diverge from the nightly build report.
+#
+# The weekly cron catches Bioconductor devel drift (deprecations, new check
+# rules) between commits, months before the release freeze.
+#
+# NON-BLOCKING at first (continue-on-error). Promote to a required check once
+# the package is clean. The nightly report at bioconductor.org/checkResults
+# remains the authoritative status — see dev/RELEASE.md.
+on:
+  push:
+    branches: [devel, master]
+  pull_request:
+    branches: [devel, master]
+  schedule:
+    - cron: '0 6 * * 1'   # Mondays 06:00 UTC
+  workflow_dispatch:
+
+name: BiocCheck
+
+jobs:
+  bioccheck:
+    runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker:devel
+    continue-on-error: true
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          BiocManager::install(c("BiocCheck", "remotes"), ask = FALSE)
+          remotes::install_deps(dependencies = TRUE, upgrade = "never")
+        shell: Rscript {0}
+
+      - name: Build tarball
+        run: R CMD build --no-build-vignettes .
+
+      - name: BiocCheck on the tarball
+        run: |
+          tarball <- Sys.glob("*.tar.gz")[1]
+          BiocCheck::BiocCheck(tarball)
+        shell: Rscript {0}
+
+      - name: BiocCheckGitClone on the checkout
+        run: BiocCheck::BiocCheckGitClone(".")
+        shell: Rscript {0}

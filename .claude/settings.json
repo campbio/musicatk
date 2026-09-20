@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(make test)",
+      "Bash(make check)",
+      "Bash(make bioccheck)",
+      "Bash(make docs)",
+      "Bash(make lint)",
+      "Bash(make build)",
+      "Bash(make site-check)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git blame:*)"
+    ],
+    "deny": [
+      "Edit(man/**)",
+      "Write(man/**)",
+      "Edit(NAMESPACE)",
+      "Write(NAMESPACE)",
+      "Edit(docs/**)",
+      "Write(docs/**)",
+      "Bash(rm -rf:*)",
+      "Bash(rm -r:*)",
+      "Bash(git clean:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(Rscript -e pkgdown::clean_site*)",
+      "Bash(Rscript -e pkgdown::deploy_to_branch*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash dev/hooks/lint-changed.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "_R_CHECK_FORCE_SUGGESTS_": "false"
+  }
+}
