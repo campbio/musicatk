@@ -144,6 +144,38 @@ reference:
 - title: Miscellaneous functions
   contents:
   - '`cosmic_v2_subtype_map`'
+- title: Benchmarking
+  desc: Functions to benchmark predicted signatures and exposures against a ground truth
+  contents:
+  - '`benchmark`'
+  - '`create_benchmark`'
+  - '`predict_and_benchmark`'
+  - '`benchmark_get_entry`'
+  - '`benchmark_get_prediction`'
+  - '`benchmark_get_comparison`'
+  - '`benchmark_plot_comparison`'
+  - '`benchmark_plot_signatures`'
+  - '`benchmark_plot_exposures`'
+  - '`benchmark_plot_composite_exposures`'
+  - '`benchmark_plot_duplicate_exposures`'
+- title: Accessing benchmark data
+  desc: Functions to access data within single_benchmark and full_benchmark objects
+  contents:
+  - '`indv_benchmarks`'
+  - '`ground_truth`'
+  - '`method_id`'
+  - '`description`'
+  - '`threshold`'
+  - '`adjustment_threshold`'
+  - '`single_summary`'
+  - '`initial_pred`'
+  - '`intermediate_pred`'
+  - '`final_pred`'
+  - '`initial_comparison`'
+  - '`intermediate_comparison`'
+  - '`final_comparison`'
+  - '`method_view_summary`'
+  - '`sig_view_summary`'
 - title: Data objects and classes
   contents:
   - '`musica_sbs96`'
@@ -159,6 +191,13 @@ reference:
   - '`count_table-class`'
   - '`result_collection-class`'
   - '`result_model-class`'
+  - '`single_benchmark-class`'
+  - '`full_benchmark-class`'
+  - '`full_benchmark_example`'
+  - '`example_predicted_sigs`'
+  - '`example_predicted_exp`'
+  - '`synthetic_breast_counts`'
+  - '`synthetic_breast_true_exposures`'
   - '`built_tables`'
   - '`musicatk`'
   - '`rc`'

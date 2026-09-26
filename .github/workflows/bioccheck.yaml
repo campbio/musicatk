@@ -33,10 +33,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Deps are read from DESCRIPTION and installed with BiocManager directly;
+      # no remotes/pak bootstrap. Fails loudly if anything did not install.
       - name: Install dependencies
         run: |
-          BiocManager::install(c("BiocCheck", "remotes"), ask = FALSE)
-          remotes::install_deps(dependencies = TRUE, upgrade = "never")
+          fields <- c("Depends", "Imports", "LinkingTo", "Suggests")
+          dcf <- read.dcf("DESCRIPTION", fields = fields)
+          deps <- unlist(strsplit(dcf[!is.na(dcf)], ","))
+          deps <- trimws(sub("\\(.*", "", deps))
+          base_pkgs <- rownames(installed.packages(priority = "base"))
+          deps <- setdiff(deps[deps != ""], c("R", base_pkgs))
+          pkgs <- c("BiocCheck", deps)
+          BiocManager::install(pkgs, ask = FALSE, update = FALSE)
+          print(warnings())
+          missing <- setdiff(pkgs, rownames(installed.packages()))
+          if (length(missing) > 0) {
+            stop("Failed to install: ", paste(missing, collapse = ", "))
+          }
         shell: Rscript {0}
 
       - name: Build tarball

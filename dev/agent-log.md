@@ -30,13 +30,11 @@ sig_view_summary, single_benchmark-class, single_summary,
 synthetic_breast_counts, synthetic_breast_true_exposures, threshold
 ```
 
-**Judgment required:** these are not all public API. Accessor generics such as
-`description`, `threshold`, `adjustment_threshold`, `method_id` and
-`ground_truth` may belong under `@keywords internal` instead of the index. A
-maintainer should split the list before anyone edits `_pkgdown.yml`.
-
-**Action:** open an issue. The `pkgdown-check` CI job is `continue-on-error`
-until it is closed, then flip it to required.
+**Resolved (2026-09-25).** The maintainer decided all 33 are public API and
+none go under `@keywords internal`. They were added to `_pkgdown.yml` in new
+"Benchmarking" and "Accessing benchmark data" sections, with the classes and
+datasets under "Data objects and classes". `check_pkgdown()` passes, and the
+`pkgdown-check` CI job is now blocking.
 
 ### 2. Tarball is at the Bioconductor size limit
 
@@ -109,8 +107,17 @@ bugs rather than style problems. `line_length_linter` (421) overlaps with what
 BiocCheck enforces independently, so that one has to be fixed regardless.
 
 **Action:** open two issues — one for the mechanical `make style` pass, one for
-triaging `object_usage_linter`. The `lint` CI job is `continue-on-error` until
-the count is down; flip it to required then.
+triaging `object_usage_linter`.
+
+**Update (2026-09-25).** The `lint` CI job now lints only the R files a PR
+changes, and it is blocking. New and edited files must be clean, and the
+backlog shrinks one file at a time. `.lintr` also disables `return_linter`
+(explicit `return()` is common Bioconductor style) and `object_usage_linter`
+(false positives from data.table and ggplot column names). That brings the
+full backlog (`make lint`) to 2,154. With `object_usage_linter` off, nothing
+checks for undefined globals or unused variables any more, so the triage issue
+is the only remaining guard. Re-enable the linter once the false positives are
+silenced with `utils::globalVariables()` or `# nolint`.
 
 **Note on config:** `.lintr` is DCF format and does not accept `#` comments — a
 comment line makes lintr abort with "Malformed config file". Also,

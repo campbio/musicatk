@@ -4,10 +4,9 @@
 # This job catches exported functions missing from the _pkgdown.yml reference
 # index, and runs in seconds.
 #
-# NON-BLOCKING at first (continue-on-error): as of the scaffolding PR the package
-# has 33 pre-existing missing topics, all from the benchmarking framework. Per the
-# playbook scope guard those are triaged into an issue rather than fixed here.
-# Flip to a required check once dev/agent-log.md's pkgdown finding is closed.
+# BLOCKING. The 33 benchmarking topics missing at scaffolding time were added to
+# the index (see dev/agent-log.md). Also mark this job as a required check in
+# the GitHub branch protection settings.
 on:
   pull_request:
     branches: [devel, master]
@@ -17,7 +16,6 @@ name: pkgdown-check
 jobs:
   pkgdown-check:
     runs-on: ubuntu-latest
-    continue-on-error: true
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
