@@ -63,7 +63,9 @@
       "Bash(make style)",
       "Bash(make site)",
       "Bash(make site-deploy)",
-      "Bash(make clean)"
+      "Bash(make clean)",
+      "Edit(~/.cache/r-bioc-dev-standards/**)",
+      "Write(~/.cache/r-bioc-dev-standards/**)"
     ]
   },
   "hooks": {
