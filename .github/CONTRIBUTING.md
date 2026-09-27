@@ -35,7 +35,7 @@ musicatk/
 │   ├── ROADMAP.md     where the package is going
 │   ├── AUDIT.md       periodic dependency/deprecation audit
 │   ├── agent-log.md   findings awaiting triage into issues
-│   └── hooks/         lint-changed.sh, run after an agent edits an R file
+│   └── hooks/         load-standards.sh (session start), lint-changed.sh
 └── R/ man/ tests/ vignettes/ inst/ docs/     standard package structure
 ```
 
@@ -60,11 +60,16 @@ not in prose.
 Campbell Lab members with write access branch directly on `campbio/musicatk`.
 External contributors fork and branch on their fork.
 
+`master` is the GitHub default branch, but it is an automatic copy of the
+current Bioconductor release, kept in sync by a GitHub Action. Never commit to
+it, branch from it, or open a PR against it.
+
 1. Branch from `devel`. Never commit directly to `devel` or `master`.
 2. Make your change. Run `make test` after every edit.
-3. Run `make check` before opening the PR.
+3. Run `make check-full` and `make bioccheck` before opening the PR.
 4. Add a `NEWS.md` entry for any user-facing change.
-5. Open the PR against `devel` and fill in the template.
+5. Open the PR against `devel` (not the suggested `master`) and fill in the
+   template.
 
 ## Canonical commands
 
@@ -74,8 +79,9 @@ agents, and CI alike.
 | Command | Purpose |
 |---|---|
 | `make test` | fast testthat loop — after every change |
-| `make check` | full `R CMD check` — before every PR |
-| `make bioccheck` | BiocCheck on the built tarball |
+| `make check` | quick `R CMD check` (no vignettes) — any time |
+| `make check-full` | full `R CMD check` — before every PR |
+| `make bioccheck` | BiocCheck on the built tarball — before every PR |
 | `make docs` | regenerate `man/` + `NAMESPACE` from roxygen |
 | `make lint` | lintr across `R/` and `inst/shiny` |
 | `make site-check` | verify the pkgdown reference index |
