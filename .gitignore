@@ -13,3 +13,6 @@ renv.lock
 
 # Claude Code personal overrides
 .claude/settings.local.json
+
+# git worktrees for isolated feature work
+.worktrees/

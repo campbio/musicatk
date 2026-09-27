@@ -1,18 +1,24 @@
-## Summary
+<!-- Base branch: devel. Use RELEASE_X_Y only for an approved release fix.
+     Never target main/master, which is updated automatically. -->
 
-<!-- What changes and why. Link the issue if there is one. -->
+## What changed and why
+
+<!-- Link the issue if there is one. -->
+
+## How it was tested
 
 ## Checklist
 
-- [ ] `make test` passes
-- [ ] `make check` passes (no new WARNINGs or NOTEs)
+- [ ] Tests added or updated, `make test` passes, and `make coverage`
+      didn't drop
+- [ ] `make check-full` and `make bioccheck` pass with no new errors or warnings
 - [ ] `make lint` clean for the files I touched
-- [ ] `NEWS.md` updated, if this is a user-facing change
-- [ ] `make docs` run, if I changed roxygen comments
-- [ ] New exported functions added to the `_pkgdown.yml` reference index
-      (`make site-check` passes)
+- [ ] `make docs` run, if roxygen comments changed
+- [ ] New exports added to `_pkgdown.yml`, and `make site-check` passes
+- [ ] NEWS.md updated for user-facing changes
+- [ ] Version bumped (z) if this will be pushed to Bioconductor
 - [ ] `/code-review` run on this branch
-- [ ] ADR linked below if this is an architectural or dependency change
+- [ ] Related issue linked
 - [ ] Shiny only: verified with a screenshot of the running app (`make app`)
 
 ## ADR
@@ -25,7 +31,8 @@
 <!-- REQUIRES HUMAN JUDGMENT — do not let an agent tick this for you.
      If this PR changes numerical results, signature inference, exposure
      prediction, or plotting semantics, state who verified the output is
-     scientifically correct and how. Passing tests is not sufficient. -->
+     scientifically correct and how. Passing tests is not sufficient.
+     Otherwise write "No change to results". -->
 
 ## Generated content
 

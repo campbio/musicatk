@@ -1,52 +1,52 @@
-# Canonical entry points for musicatk development.
-# Humans, agents, and CI all use these targets. Non-obvious flags live here.
+# Makefile for an r-bioc-dev-standards package. Run `make help` to list
+# targets. Recipe lines must start with a tab.
+#
+# The standard targets (test, check, bioccheck, ...) live in the shared
+# standards.mk in r-bioc-dev-standards, not here. It's downloaded to a cache
+# on first use and refreshed at every Claude session start.
 
-.PHONY: help test check bioccheck docs lint style site site-deploy app test-app clean
+# Package settings. Uncomment to change a default (see standards.mk).
+# FORCE_SUGGESTS = FALSE
 
-help:  ## list targets
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
+R_BIOC_STANDARDS_REF ?= v1
+R_BIOC_STANDARDS_BASE ?= https://raw.githubusercontent.com/campbio/r-bioc-dev-standards/$(R_BIOC_STANDARDS_REF)
+STANDARDS_MK := $(or $(XDG_CACHE_HOME),$(HOME)/.cache)/r-bioc-dev-standards/$(R_BIOC_STANDARDS_REF)/standards.mk
 
-test:  ## fast loop — run after every change
-	Rscript -e 'devtools::test()'
+include $(STANDARDS_MK)
 
-check:  ## full check — run before opening a PR
-	_R_CHECK_FORCE_SUGGESTS_=false Rscript -e 'rcmdcheck::rcmdcheck(args = c("--no-manual"), error_on = "warning")'
+$(STANDARDS_MK):
+	@mkdir -p "$(@D)"
+	curl -fsSL --max-time 30 "$(R_BIOC_STANDARDS_BASE)/shared/standards.mk" -o "$@.tmp"
+	@mv -f "$@.tmp" "$@"
 
-build:  ## build the source tarball
+# Extra targets for this package go below, each listed in AGENTS.md. To
+# replace a standard target, define it here; make warns that it overrides
+# the shared recipe.
+
+.PHONY: build style site site-deploy app test-app clean
+
+build:  ## Build the source tarball in the repo root
 	R CMD build .
 
-bioccheck:  ## build tarball first — matches how the Bioc build system runs it
-	R CMD build . && Rscript -e 'BiocCheck::BiocCheck(Sys.glob("*.tar.gz")); BiocCheck::BiocCheckGitClone(".")'
-
-docs:  ## regenerate man/ and NAMESPACE from roxygen comments
-	Rscript -e 'devtools::document()'
-
-lint:  ## lintr over R/ and inst/shiny
-	Rscript -e 'lintr::lint_package()'
-
-style:  ## apply styler (does not run in CI; run before committing)
+style:  ## Apply styler to the whole package (people only; not in CI)
 	Rscript -e 'styler::style_pkg()'
 
-site:  ## local full pkgdown build (slow — never use as routine verification)
+site:  ## Full local pkgdown build (people only; slow)
 	Rscript -e 'pkgdown::build_site()'
 
-site-deploy:  ## maintainer action: build locally, push to gh-pages
+site-deploy:  ## Maintainer action: build locally, push to gh-pages
 	Rscript -e 'pkgdown::deploy_to_branch()'
 
-site-check:  ## cheap structural check of the pkgdown reference index
-	Rscript -e 'pkgdown::check_pkgdown()'
-
-app:  ## launch the Shiny app for visual verification
+app:  ## Launch the Shiny app for visual verification
 	Rscript -e 'shiny::runApp(system.file("shiny", package = "musicatk"))'
 
-test-app:  ## shinytest2 smoke suite (PLACEHOLDER — tests/app/ does not exist yet)
+test-app:  ## shinytest2 smoke suite (placeholder until tests/app/ exists)
 	@if [ -d tests/app ]; then \
 		Rscript -e 'testthat::test_dir("tests/app")'; \
 		else \
-		echo "tests/app/ not present yet — see AGENTS.md (package-specific notes)."; \
+		echo "tests/app/ not present yet; see AGENTS.md (Tests)."; \
 		fi
 
-clean:  ## remove build artifacts
+clean:  ## Remove build artifacts (people only)
 	rm -f musicatk_*.tar.gz
 	rm -rf musicatk.Rcheck
