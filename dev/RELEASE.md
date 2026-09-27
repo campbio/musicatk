@@ -52,6 +52,21 @@ make check-full && make bioccheck              # re-verify after the merge
 git push bioc devel
 ```
 
+## On release day
+
+Bioconductor creates `RELEASE_X_Y` and bumps devel. Bring both to GitHub, so
+the stable-branch sync (`.github/workflows/sync-stable.yaml`) can update
+`master` and tag the release:
+
+```bash
+git fetch bioc
+git checkout devel && git merge bioc/devel && git push campbio devel
+git push campbio bioc/RELEASE_X_Y:refs/heads/RELEASE_X_Y
+```
+
+The sync runs daily, or start it from the Actions tab. It picks up the new
+release once https://bioconductor.org/config.yaml names it.
+
 ## After the release
 
 - [ ] Confirm the package appears in the new release on bioconductor.org.

@@ -34,21 +34,11 @@ visualization. A Shiny GUI in `inst/shiny` exposes the same workflow.
 - `dev/agent-log.md`: findings awaiting triage into GitHub issues
 - Pure R: no `src/`, no Rcpp, no compilation step.
 
-**Object model.** `musica` is the primary container. Slots: `variants`
-(data.table), `count_tables` (list), `sample_annotations` (data.frame),
-`result_list` (SimpleList). Since v2.0.0 it also holds discovery/prediction
-results, replacing the former `musica_result` class. `count_table` holds
-per-sample motif counts; `result_model` / `result_collection` hold signature
-results; `single_benchmark` / `full_benchmark` back `R/benchmarking.R`.
-
-Accessors are S4 generics with replacement forms: `variants()`, `tables()`,
-`samp_annot()`, `result_list()`, `sample_names()`, `signatures()`,
-`exposures()`, `modality()`, and others. Use these, never `@`, outside
-`R/class_*.R`.
-
 **Naming.** Exported functions and arguments are snake_case (`.lintr`
 enforces snake_case). Internal helpers are prefixed with `.`. Code is
-indented with 2 spaces (see Overrides).
+indented with 2 spaces: `.lintr` sets `indentation_linter(indent = 2L)` to
+match the existing code (4 spaces would report about 3,850 indentation
+lints), and converting would be a separate restyling PR.
 
 **pkgdown.** `docs/` is committed pkgdown output; the migration to a
 `gh-pages` branch hasn't been done. Treat it as generated: never hand-edit
@@ -62,6 +52,20 @@ unrelated PRs:
 - 48 committed macOS `" 2"` duplicate files, all under `docs/articles/`.
 - `vignettes/ui_screenshots` (4.7 MB) and `vignettes/figures` (496 KB) ship
   in the tarball though only `vignettes/articles/` references them.
+
+## Object model
+
+`musica` is the primary container. Slots: `variants` (data.table),
+`count_tables` (list), `sample_annotations` (data.frame), `result_list`
+(SimpleList). Since v2.0.0 it also holds discovery/prediction
+results, replacing the former `musica_result` class. `count_table` holds
+per-sample motif counts; `result_model` / `result_collection` hold signature
+results; `single_benchmark` / `full_benchmark` back `R/benchmarking.R`.
+
+Accessors are S4 generics with replacement forms: `variants()`, `tables()`,
+`samp_annot()`, `result_list()`, `sample_names()`, `signatures()`,
+`exposures()`, `modality()`, and others. Use these, never `@`, outside
+`R/class_*.R`.
 
 ## Tests
 
@@ -109,8 +113,4 @@ None.
 
 ## Overrides
 
-- Indentation is 2 spaces, not Bioconductor's 4: `.lintr` sets
-  `indentation_linter(indent = 2L)` to match the existing code. Converting
-  would be a separate restyling PR.
-- In addition to the standards' review step, run `/code-review` on the
-  branch before hand-off (it's a PR template item).
+None.
