@@ -74,7 +74,10 @@ it, branch from it, or open a PR against it.
 ## Canonical commands
 
 Use the Makefile. It is the single answer to "how do I run this", for humans,
-agents, and CI alike.
+agents, and CI alike. The standard targets come from the shared
+[r-bioc-dev-standards](https://github.com/campbio/r-bioc-dev-standards), so
+the first `make` on a new machine needs internet access to download them;
+the Makefile itself holds only musicatk's extra targets.
 
 | Command | Purpose |
 |---|---|
@@ -82,7 +85,7 @@ agents, and CI alike.
 | `make check` | quick `R CMD check` (no vignettes) — any time |
 | `make check-full` | full `R CMD check` — before every PR |
 | `make bioccheck` | BiocCheck on the built tarball — before every PR |
-| `make docs` | regenerate `man/` + `NAMESPACE` from roxygen |
+| `make docs` | regenerate `man/*.Rd` + `NAMESPACE` from roxygen |
 | `make lint` | lintr across `R/` and `inst/shiny` |
 | `make site-check` | verify the pkgdown reference index |
 | `make app` | launch the Shiny app |

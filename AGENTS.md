@@ -80,6 +80,9 @@ unrelated PRs:
 
 ## Extra make targets
 
+The standard targets come from the shared `standards.mk` in
+r-bioc-dev-standards; the Makefile holds only these extras.
+
 - `site-check` is a standard target; see the standards.
 - `test-app`: runs the shinytest2 suite (placeholder for now). Safe.
 - `build`: builds the source tarball in the repo root. Ask first.
