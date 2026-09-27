@@ -20,3 +20,4 @@ vignettes/articles/GDCdata
 ^\.claude$
 ^\.lintr$
 ^campbio_ai_setup_playbook.*\.md$
+^\.worktrees$

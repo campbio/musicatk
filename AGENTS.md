@@ -1,7 +1,13 @@
 # musicatk: notes for coding agents
 
 The shared development standards (r-bioc-dev-standards) load automatically
-at session start. This file adds only what is specific to this package.
+at session start in Claude Code. This file adds only what is specific to
+this package. Other agents (for example through GEMINI.md) don't get them
+automatically: read
+https://raw.githubusercontent.com/campbio/r-bioc-dev-standards/v1/standards.md
+(or the cached copy in `~/.cache/r-bioc-dev-standards/v1/`) before
+starting, and follow it; those agents also aren't bound by
+`.claude/settings.json`.
 
 ## About
 
@@ -43,8 +49,8 @@ lints), and converting would be a separate restyling PR.
 **pkgdown.** `docs/` is committed pkgdown output; the migration to a
 `gh-pages` branch hasn't been done. Treat it as generated: never hand-edit
 it, and never run `pkgdown::clean_site()` or `pkgdown::deploy_to_branch()`.
-To preview one page, use `pkgdown::build_article("<name>")` or
-`pkgdown::build_reference_index()`.
+To preview one article or vignette, run `make article FILTER=<name>`; it
+renders into a temporary folder and leaves `docs/` alone.
 
 **Known repo-hygiene issues**, tracked separately; don't fix them in
 unrelated PRs:
@@ -91,11 +97,16 @@ r-bioc-dev-standards; the Makefile holds only these extras.
 - `test-app`: runs the shinytest2 suite (placeholder for now). Safe.
 - `build`: builds the source tarball in the repo root. Ask first.
 - `app`: launches the Shiny app for visual verification. Ask first.
-- `style`: people only (denied in `.claude/settings.json`). It restyles the
-  whole package, which conflicts with "styler on new files only".
-- `site`, `site-deploy`: people only (denied). Agents never build or deploy
-  the pkgdown site.
-- `clean`: people only (denied). It deletes files.
+- `style`: people only. It restyles the whole package, which conflicts
+  with "styler on new files only".
+- `site`, `site-deploy`: people only. Agents never build or deploy the
+  pkgdown site. `site-deploy` pushes to the `campbio` remote
+  (`PKGDOWN_REMOTE` overrides it).
+- `clean`: people only. It deletes files.
+
+The people-only targets are listed in the Makefile's `PEOPLE_ONLY`, so make
+refuses them when run from Claude Code (in any position on the command
+line), and `.claude/settings.json` denies them too.
 
 ## Setup in a new worktree
 
