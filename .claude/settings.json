@@ -73,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/dev/hooks/load-standards.sh\""
+            "command": "bash dev/hooks/load-standards.sh"
           }
         ]
       }
