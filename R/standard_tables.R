@@ -603,9 +603,11 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
       sep = "_"
     )
   )
-  context <- c(
-    substr(motif[seq_len(24)], 7, 9),
-    unlist(lapply(strsplit(motif[25:83], "_"), "[[", 3))
+  context <- c(rep(c("1_1", "1_2", "1_3", "1_4", "1_5", "1_6+"), 2),
+  rep(c("1_0", "1_1", "1_2", "1_3", "1_4", "1_5+"), 2),
+  rep(c("1", "2", "3", "4", "5", "6+"), 4),
+    #substr(motif[seq_len(24)], 7, 9),
+    unlist(lapply(strsplit(motif[49:83], "_"), "[[", 4))
   )
   annotation <- data.frame(
     motif = motif, mutation = mutation,

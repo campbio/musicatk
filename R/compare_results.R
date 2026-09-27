@@ -272,7 +272,7 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
       cosmic_res <- musicatk::cosmic_v3_dbs_sigs
     } else if (modality %in% c(
       "INDEL", "Indel", "indel", "ind", "IND",
-      "ID"
+      "ID", "IND83"
     )) {
       cosmic_res <- musicatk::cosmic_v3_indel_sigs
     } else {

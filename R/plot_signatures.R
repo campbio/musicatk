@@ -217,7 +217,7 @@ plot_signatures <- function(musica,
   }
 
   if (is.null(plot_dat$df$context)) {
-    plot_dat$df$context <- annot$context
+    plot_dat$df$context <- rep(annot$context, each = num_sigs)
   }
 
   # Plot signatures
