@@ -3,36 +3,81 @@
   "permissions": {
     "allow": [
       "Bash(make test)",
+      "Bash(make test-one:*)",
       "Bash(make check)",
+      "Bash(make check-full)",
       "Bash(make bioccheck)",
       "Bash(make docs)",
       "Bash(make lint)",
-      "Bash(make build)",
+      "Bash(make coverage)",
       "Bash(make site-check)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git branch:*)",
-      "Bash(git blame:*)"
+      "Bash(git remote -v)",
+      "Bash(git fetch:*)",
+      "Bash(git switch:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git blame:*)",
+      "Bash(make test-app)"
     ],
     "deny": [
-      "Edit(man/**)",
-      "Write(man/**)",
+      "Bash(git push bioc:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(git branch -d:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git branch -f:*)",
+      "Bash(rm -r:*)",
+      "Bash(rm -rf:*)",
+      "Edit(man/*.Rd)",
+      "Write(man/*.Rd)",
       "Edit(NAMESPACE)",
       "Write(NAMESPACE)",
       "Edit(docs/**)",
       "Write(docs/**)",
-      "Bash(rm -rf:*)",
-      "Bash(rm -r:*)",
-      "Bash(git clean:*)",
-      "Bash(git push --force:*)",
-      "Bash(git push -f:*)",
+      "Edit(R/RcppExports.R)",
+      "Write(R/RcppExports.R)",
+      "Edit(src/RcppExports.cpp)",
+      "Write(src/RcppExports.cpp)",
+      "Edit(R/stanmodels.R)",
+      "Write(R/stanmodels.R)",
+      "Edit(src/stanExports_*)",
+      "Write(src/stanExports_*)",
+      "Edit(.claude/settings.json)",
+      "Write(.claude/settings.json)",
+      "Edit(Makefile)",
+      "Write(Makefile)",
+      "Edit(dev/hooks/**)",
+      "Write(dev/hooks/**)",
+      "Edit(.lintr)",
+      "Write(.lintr)",
       "Bash(Rscript -e pkgdown::clean_site*)",
-      "Bash(Rscript -e pkgdown::deploy_to_branch*)"
+      "Bash(Rscript -e pkgdown::deploy_to_branch*)",
+      "Bash(make style)",
+      "Bash(make site)",
+      "Bash(make site-deploy)",
+      "Bash(make clean)"
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/dev/hooks/load-standards.sh\""
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -44,8 +89,5 @@
         ]
       }
     ]
-  },
-  "env": {
-    "_R_CHECK_FORCE_SUGGESTS_": "false"
   }
 }
