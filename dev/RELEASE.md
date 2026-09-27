@@ -18,7 +18,7 @@ The Bioconductor build system performs the `y` bumps at release time. You bump
 
 ## Before the freeze
 
-- [ ] `make check` clean — no ERRORs, no WARNINGs, NOTEs triaged.
+- [ ] `make check-full` clean — no ERRORs, no WARNINGs, NOTEs triaged.
 - [ ] `make bioccheck` clean — this runs both `BiocCheck()` on the built tarball
       and `BiocCheckGitClone()` on the checkout.
 - [ ] Triage every remaining WARNING/NOTE into a GitHub issue with a fix plan.
@@ -29,9 +29,10 @@ The Bioconductor build system performs the `y` bumps at release time. You bump
 - [ ] `make site-check` passes — every exported function appears in the
       `_pkgdown.yml` reference index.
 - [ ] `/security-review` run on the release branch.
-- [ ] Tarball size checked: `R CMD build .` then inspect. Bioconductor guidance
-      is **under 5 MB**; musicatk has historically carried avoidable payload in
-      `vignettes/` (see dev/ROADMAP.md, technical debt).
+- [ ] Tarball size checked: `make bioccheck` prints it. BiocCheck requires
+      **under 10 MB**, with **no single file over 5 MB**; musicatk has
+      historically carried avoidable payload in `vignettes/` (see
+      dev/ROADMAP.md, technical debt).
 
 ## Syncing to Bioconductor
 
@@ -42,15 +43,12 @@ git remote set-url bioc git@git.bioconductor.org:packages/musicatk.git
 git remote -v   # verify before pushing
 ```
 
-> **Known issue:** as of 2026-09-18 the `bioc` remote in at least one working
-> copy pointed at `packages/celda.git`. Verify before every release push.
-
 Then:
 
 ```bash
 git fetch bioc
 git checkout devel && git merge bioc/devel     # reconcile
-make check && make bioccheck                   # re-verify after the merge
+make check-full && make bioccheck              # re-verify after the merge
 git push bioc devel
 ```
 
