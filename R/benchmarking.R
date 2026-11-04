@@ -72,7 +72,16 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
 
 # True exposures of one signature for 'samples', matched by sample name
 .true_exposure <- function(result_true, signature, samples) {
-  return(as.numeric(exposures(result_true)[signature, as.character(samples)]))
+  true_exposures <- exposures(result_true)
+  if (!signature %in% rownames(true_exposures)) {
+    stop(
+      "The ground truth has no exposures for signature '", signature, "' ",
+      "in its rows. A full_benchmark made with an older version of ",
+      "musicatk stores them the other way round; recreate it with ",
+      "create_benchmark()."
+    )
+  }
+  return(as.numeric(true_exposures[signature, as.character(samples)]))
 }
 
 #' @title Run the benchmark framework on a prediction

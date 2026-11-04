@@ -111,3 +111,19 @@ test_that("benchmark() handles one unchanged signature plus a duplicate", {
   )
   expect_true("Signature1" %in% colnames(signatures(intermediate)))
 })
+
+test_that("Benchmarks saved with older versions give a clear error", {
+  data(full_benchmark_example)
+  truth <- get_model(ground_truth(full_benchmark_example), "ground_truth",
+    "SBS96", "ground_truth"
+  )
+  samples <- colnames(exposures(truth))
+  # Older versions stored the truth samples x signatures, without names
+  legacy <- truth
+  legacy@exposures <- unname(t(exposures(truth)))
+  colnames(legacy@exposures) <- rownames(exposures(truth))
+  expect_error(
+    .true_exposure(legacy, "SBS1", samples),
+    regexp = "older version of musicatk"
+  )
+})
