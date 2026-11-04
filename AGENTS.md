@@ -9,6 +9,12 @@ https://raw.githubusercontent.com/campbio/r-bioc-dev-standards/v1/standards.md
 starting, and follow it; those agents also aren't bound by
 `.claude/settings.json`.
 
+In Claude Code, if the standards aren't in your context at session start,
+this clone has no `.claude/settings.json`, so neither the standards nor
+the permission guardrails are active: stop, and ask the developer to run
+`make claude-setup` in a terminal outside Claude Code (not with `!`, which
+runs inside it and is refused), then restart `claude`.
+
 ## About
 
 musicatk (MUtational SIgnature Comprehensive Analysis ToolKit) is a
@@ -106,7 +112,7 @@ r-bioc-dev-standards; the Makefile holds only these extras.
 
 The people-only targets are listed in the Makefile's `PEOPLE_ONLY`, so make
 refuses them when run from Claude Code (in any position on the command
-line), and `.claude/settings.json` denies them too.
+line), and `dev/claude-settings.json` adds deny rules for them too.
 
 ## Setup in a new worktree
 
