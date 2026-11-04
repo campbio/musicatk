@@ -46,3 +46,49 @@ test_that("Count tables have no columns for stale sample factor levels", {
     sample_names(dbs)
   )
 })
+
+test_that("combine_count_tables() and custom tables align samples by name", {
+  data(musica_sbs96)
+  sbs96 <- tables(musica_sbs96)$SBS96
+  counts <- get_count_table(sbs96)
+  samples <- colnames(counts)
+
+  # A second table whose columns are in the reverse order
+  reversed <- sbs96
+  reversed@count_table <- counts[, rev(samples)]
+  musica <- new("musica",
+    variants = variants(musica_sbs96),
+    count_tables = list(SBS96 = sbs96, reversed = reversed),
+    sample_annotations = data.frame(Samples = samples)
+  )
+  combine_count_tables(musica, c("SBS96", "reversed"), "combo")
+  combo <- get_count_table(tables(musica)$combo)
+  expect_identical(colnames(combo), samples)
+  expect_equal(unname(combo[97:192, ]), unname(counts))
+
+  # Custom tables use sample_names() order
+  custom <- new("musica",
+    variants = variants(musica_sbs96),
+    sample_annotations = data.frame(Samples = rev(samples))
+  )
+  build_custom_table(custom, "Variant_Type", "type_table")
+  type_counts <- get_count_table(tables(custom)$type_table)
+  expect_identical(colnames(type_counts), rev(samples))
+  per_sample <- table(as.character(variants(musica_sbs96)$sample))
+  expect_equal(colSums(type_counts), c(per_sample[rev(samples)]),
+    ignore_attr = TRUE
+  )
+
+  # Tables whose samples differ from sample_names() are refused
+  extra <- sbs96
+  extra@count_table <- counts[, -1]
+  wrong <- new("musica",
+    variants = variants(musica_sbs96),
+    count_tables = list(SBS96 = sbs96, extra = extra),
+    sample_annotations = data.frame(Samples = samples)
+  )
+  expect_error(
+    combine_count_tables(wrong, c("SBS96", "extra"), "combo"),
+    regexp = "do not match the sample names"
+  )
+})
