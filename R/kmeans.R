@@ -256,11 +256,11 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
     if (is.null(annotation) || !annotation %in% colnames(samp_annot(musica))) {
       stop("Sample annotation not found or invalid annotation column name.")
     } else {
-      annot <- samp_annot(musica) %>%
-        tibble::column_to_rownames(var = "Samples")
-      colnames(annot) <- "annotation"
-      annot[["annotation"]] <- factor(annot[["annotation"]])
-      clust_by_annot <- cbind(k_toplot, annot)
+      # Match the chosen annotation to the UMAP rows by sample name
+      annot_values <- .annot_for_samples(musica, annotation,
+                                         rownames(k_toplot))
+      clust_by_annot <- cbind(k_toplot,
+                              annotation = factor(annot_values))
       p <- ggplot2::ggplot(clust_by_annot,
                            aes_string(x = "UMAP_1", y = "UMAP_2",
                                       colour = "cluster")) +
