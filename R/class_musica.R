@@ -409,12 +409,11 @@ setMethod(
   f = "sample_names",
   signature = "musica",
   definition = function(object) {
-    if (is.null(object@sample_annotations) ||
-        nrow(object@sample_annotations) == 0 ||
-        is.null(object@sample_annotations$Sample)) {
-      s <- gtools::mixedsort(unique(object@variants$sample))
+    annot <- object@sample_annotations
+    if (nrow(annot) == 0 || !"Samples" %in% colnames(annot)) {
+      s <- gtools::mixedsort(unique(as.character(object@variants$sample)))
     } else {
-      s <- object@sample_annotations$Sample
+      s <- as.character(annot[["Samples"]])
     }
     return(s)
   }
