@@ -1309,20 +1309,24 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
   if (is.null(corrected_sigs) == FALSE){
     
-    unchanged_signatures <- as.data.frame(signatures)[, !colnames(signatures) %in% all_sigs_to_merge]
+    unchanged_signatures <- as.data.frame(signatures)[,
+      !colnames(signatures) %in% all_sigs_to_merge, drop = FALSE]
     corrected_sigs <- cbind(unchanged_signatures, corrected_sigs)
     
-    unchanged_exposures <- as.data.frame(exposures)[!rownames(exposures) %in% all_sigs_to_merge,]
+    unchanged_exposures <- as.data.frame(exposures)[
+      !rownames(exposures) %in% all_sigs_to_merge, , drop = FALSE]
     corrected_exposures <- rbind(unchanged_exposures, corrected_exposures)
     
   }
   
   else{
     
-    unchanged_signatures <- as.data.frame(signatures)[, !colnames(signatures) %in% all_sigs_to_merge]
+    unchanged_signatures <- as.data.frame(signatures)[,
+      !colnames(signatures) %in% all_sigs_to_merge, drop = FALSE]
     corrected_sigs <- unchanged_signatures
     
-    unchanged_exposures <- as.data.frame(exposures)[!rownames(exposures) %in% all_sigs_to_merge,]
+    unchanged_exposures <- as.data.frame(exposures)[
+      !rownames(exposures) %in% all_sigs_to_merge, , drop = FALSE]
     corrected_exposures <- unchanged_exposures
     
   }
@@ -1510,20 +1514,24 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
   if (is.null(corrected_sigs) == FALSE){
     
-    unchanged_signatures <- as.data.frame(signatures)[, !colnames(signatures) %in% composite_signatures]
+    unchanged_signatures <- as.data.frame(signatures)[,
+      !colnames(signatures) %in% composite_signatures, drop = FALSE]
     corrected_sigs <- cbind(unchanged_signatures, corrected_sigs)
     
-    unchanged_exposures <- as.data.frame(exposures)[!rownames(exposures) %in% composite_signatures,]
+    unchanged_exposures <- as.data.frame(exposures)[
+      !rownames(exposures) %in% composite_signatures, , drop = FALSE]
     corrected_exposures <- rbind(unchanged_exposures, corrected_exposures)
     
   }
   
   else{
     
-    unchanged_signatures <- as.data.frame(signatures)[, !colnames(signatures) %in% composite_signatures]
+    unchanged_signatures <- as.data.frame(signatures)[,
+      !colnames(signatures) %in% composite_signatures, drop = FALSE]
     corrected_sigs <- unchanged_signatures
     
-    unchanged_exposures <- as.data.frame(exposures)[!rownames(exposures) %in% composite_signatures,]
+    unchanged_exposures <- as.data.frame(exposures)[
+      !rownames(exposures) %in% composite_signatures, , drop = FALSE]
     corrected_exposures <- unchanged_exposures
     
   }

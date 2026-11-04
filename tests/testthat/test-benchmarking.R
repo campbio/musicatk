@@ -71,3 +71,43 @@ test_that("benchmark_plot_exposures() pairs exposures by sample name", {
   expect_equal(first$Predicted, unname(pred_exp))
   expect_equal(first$True, true_exp)
 })
+
+test_that("benchmark() handles one unchanged signature plus a duplicate", {
+  data(cosmic_v2_sigs)
+  set.seed(1)
+  true_signatures <- signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2")]
+  samples <- paste0("sample", seq_len(20))
+  true_exposures <- matrix(
+    sample(100:1000, 40, replace = TRUE),
+    nrow = 2, dimnames = list(colnames(true_signatures), samples)
+  )
+  counts <- round(true_signatures %*% true_exposures)
+  bench <- create_benchmark(true_signatures, true_exposures, counts, "SBS96")
+
+  # SBS1 predicted once; SBS2 split into two near-copies (a duplicate)
+  noise <- matrix(runif(96 * 2, 0, 0.002), ncol = 2)
+  split_sigs <- true_signatures[, c("SBS2", "SBS2")] + noise
+  split_sigs <- sweep(split_sigs, 2, colSums(split_sigs), "/")
+  predicted_sigs <- cbind(true_signatures[, "SBS1"], split_sigs)
+  colnames(predicted_sigs) <- c("Signature1", "Signature2", "Signature3")
+  predicted_exposures <- rbind(
+    true_exposures["SBS1", ],
+    true_exposures["SBS2", ] / 2,
+    true_exposures["SBS2", ] / 2
+  )
+  rownames(predicted_exposures) <- colnames(predicted_sigs)
+  prediction <- create_musica_from_counts(counts, "SBS96")
+  add_result(predicted_sigs, predicted_exposures, prediction, "result",
+    "SBS96", "split"
+  )
+
+  bench <- suppressWarnings(benchmark(bench, prediction, "split", "SBS96",
+    method_id = "split", plot = FALSE, make_copy = TRUE
+  ))
+  intermediate <- intermediate_pred(benchmark_get_entry(bench, "split"))
+  expect_identical(
+    rownames(exposures(intermediate)),
+    colnames(signatures(intermediate))
+  )
+  expect_true("Signature1" %in% colnames(signatures(intermediate)))
+})
