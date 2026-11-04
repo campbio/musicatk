@@ -32,3 +32,23 @@ test_that("combine_predict_grid() keeps sample order and model fields", {
   )
   expect_identical(model_id(combined_model), "combined")
 })
+
+test_that("combine_predict_grid() stops when models share samples", {
+  data(res_annot)
+  model <- get_model(res_annot, "result", "SBS96", "res_annot")
+  samples <- sample_names(res_annot)
+  grid <- add_result(signatures(model), exposures(model)[, samples[1:4]],
+    res_annot, "grid", "SBS96", "a",
+    make_copy = TRUE
+  )
+  grid <- add_result(signatures(model), exposures(model)[, samples[3:7]],
+    grid, "grid", "SBS96", "b",
+    make_copy = TRUE
+  )
+  expect_error(
+    combine_predict_grid(grid, "SBS96", model,
+      result_name = "grid", make_copy = TRUE
+    ),
+    regexp = "more than one model"
+  )
+})

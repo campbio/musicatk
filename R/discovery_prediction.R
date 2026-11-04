@@ -899,8 +899,23 @@ combine_predict_grid <- function(musica, modality, signature_res,
     samp <- samp[order(rownames(samp)), , drop = FALSE]
     comb <- cbind(comb, samp)
   }
-  # Put the combined exposure columns back in sample order
+  # Each sample must come from exactly one model; then restore sample order
+  shared <- unique(colnames(comb)[duplicated(colnames(comb))])
+  if (length(shared) > 0) {
+    stop(
+      "These samples are in more than one model being combined: ",
+      paste(shared, collapse = ", "), ". Use 'model_ids' to choose models ",
+      "that hold different samples."
+    )
+  }
   samples <- sample_names(musica)
+  unknown <- setdiff(colnames(comb), samples)
+  if (length(unknown) > 0) {
+    stop(
+      "These exposure samples are not in the 'musica' object: ",
+      paste(unknown, collapse = ", ")
+    )
+  }
   comb <- comb[, samples[samples %in% colnames(comb)], drop = FALSE]
 
   musica@result_list[[result_name]]@modality[[modality]] <-
