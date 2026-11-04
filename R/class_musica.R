@@ -359,9 +359,7 @@ setReplaceMethod(
   definition = function(object, name, value) {
     # Initialize sample annotations in musica object
     if (nrow(samp_annot(object)) == 0) {
-      samples <- unique(object@variants$sample)
-      sample_dt <- data.table::data.table(Samples = samples)
-      object@sample_annotations <- sample_dt
+      object@sample_annotations <- data.frame(Samples = sample_names(object))
     }
 
     if (length(name) != 1 || !is.character(name)) {

@@ -886,7 +886,8 @@ create_musica_from_variants <- function(x, genome,
 #' algorithms.
 #'
 #' @param x A data.table, matrix, or data.frame that contains counts of mutation
-#' types for each sample, with samples as columns.
+#' types for each sample, with samples as columns. The column names are used
+#' as the sample names and must be unique.
 #' @param variant_class Mutations are SBS, DBS, or Indel.
 #' @return Returns a musica object
 #' @examples
@@ -902,8 +903,17 @@ create_musica_from_counts <- function(x, variant_class) {
          matrix. ")
   }
 
-  # create empty musica object
-  musica <- new("musica")
+  if (is.null(colnames(x))) {
+    stop("'x' must have column names giving the sample names.")
+  }
+  if (anyDuplicated(colnames(x)) > 0 || anyNA(colnames(x))) {
+    stop("The column names (sample names) of 'x' must be unique.")
+  }
+
+  # create musica object with one annotation row per sample
+  musica <- new("musica",
+    sample_annotations = data.frame(Samples = colnames(x))
+  )
 
   if (variant_class %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
     if (nrow(x) != 96) {
