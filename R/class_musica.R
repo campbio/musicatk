@@ -112,6 +112,27 @@ subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
   return(musica)
 }
 
+# Values of one sample annotation column, matched by name to 'samples'
+# (for example the columns of an exposure matrix)
+.annot_for_samples <- function(musica, annotation, samples) {
+  annot <- samp_annot(musica)
+  if (length(annotation) != 1 || !annotation %in% colnames(annot)) {
+    stop(
+      "The annotation '", paste(annotation, collapse = ", "),
+      "' does not exist in the sample annotations. Current annotations ",
+      "are: ", paste(colnames(annot), collapse = ", ")
+    )
+  }
+  index <- match(as.character(samples), sample_names(musica))
+  if (anyNA(index)) {
+    stop(
+      "These samples are missing from the sample annotations: ",
+      paste(samples[is.na(index)], collapse = ", ")
+    )
+  }
+  return(annot[[annotation]][index])
+}
+
 .overwrite_samp_annot <- function(musica, new_annot) {
   eval.parent(substitute(musica@sample_annotations <- new_annot))
 }

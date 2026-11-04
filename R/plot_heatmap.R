@@ -111,8 +111,9 @@ plot_heatmap <- function(musica, model_name,
     if (any(!annotation %in% colnames(annot))) {
       stop("The given annotations are not present in the data")
     }
-    annot <- as.data.frame(annot)
-    annot <- annot[, annotation]
+    # Match annotation rows to the exposure columns by sample name
+    index <- match(colnames(exp), sample_names(musica))
+    annot <- as.data.frame(annot)[index, annotation, drop = FALSE]
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   if (!is.null(subset_signatures)) {

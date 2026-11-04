@@ -111,3 +111,19 @@ test_that(desc = "Diff Anal functionality", {
     regexp = "NaNs produced"
   )
 })
+
+test_that(desc = "Diff Anal pairs annotations with exposures by name", {
+  data("res_annot")
+  samp_annot(res_annot, "test") <- c("A", "B", "C", "A", "B", "C", "C")
+  exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")
+  annot <- samp_annot(res_annot)
+  groups <- annot$test[
+    match(colnames(exposure_matrix), as.character(annot$Samples))
+  ]
+  expected <- matrixTests::row_kruskalwallis(exposure_matrix, groups)$pvalue
+
+  observed <- exposure_differential_analysis(res_annot, "res_annot", "test",
+    method = "kruskal"
+  )
+  expect_equal(observed[["p-value"]], expected)
+})
