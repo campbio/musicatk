@@ -1,3 +1,14 @@
+# musicatk 2.7.2 (2026-11-04)
+* Samples are now matched by name everywhere. `sample_names()` (the `Samples` column of the sample annotations) sets the sample order; count tables and stored exposures follow it, and new validity methods for `musica`, `result_model` and `result_collection` check this (#153, #160). Objects saved with older versions whose tables are out of order give an error asking to rebuild the table with `overwrite = TRUE`.
+* `exposure_differential_analysis()`, `plot_heatmap()` and `plot_cluster()` pair annotations with exposures by sample name; before, results were wrong when the orders differed, as in the shipped `res_annot` (#153). `plot_cluster(group = "annotation")` now uses the `annotation` argument (#172).
+* The shipped musica datasets and `full_benchmark_example` were repaired so their annotations, count tables and exposures share one sample order; no count or exposure values changed. The vignette now matches `sample_annotations.txt` to the samples by name; before, 6 of 7 samples got the wrong `Tumor_Subtypes` label.
+* `sample_names()` returns a character vector and no longer partially matches a `Sample` column (#158).
+* `create_musica_from_counts()` stores the column names as sample names, so its objects can be annotated; it stops on missing or duplicated column names (#159).
+* `subset_musica_by_counts()` and `subset_musica_by_annotation()` also subset stored exposures (#155).
+* Count tables no longer get all-zero columns for samples removed by subsetting (#134), IND83 columns are named correctly (#131), and `combine_count_tables()` aligns samples by name (#133).
+* `combine_predict_grid()` returns exposures in sample order and sets `num_signatures` and `model_id` (#144).
+* `create_benchmark()` stores true exposures as signatures x samples and matches them to the count table by sample name; either orientation is accepted (#194).
+
 # musicatk 2.2.1 (2025-07-15)
 * Removed conclust dependency
 * Fixed plotting issues with indels
