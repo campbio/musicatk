@@ -34,3 +34,13 @@ test_that("create_musica_from_counts() sets sample names for annotation", {
     regexp = "must be unique"
   )
 })
+
+test_that("sample_names() without annotations keeps the variant level order", {
+  variants <- data.table::data.table(
+    chr = "chr1", start = 10, end = 10, ref = "C", alt = "A",
+    sample = factor(c("b", "a", "b"), levels = c("stale", "b", "a")),
+    Variant_Type = "SBS"
+  )
+  musica <- new("musica", variants = variants)
+  expect_identical(sample_names(musica), c("b", "a"))
+})

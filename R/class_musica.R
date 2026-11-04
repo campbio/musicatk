@@ -409,7 +409,14 @@ setMethod(
   definition = function(object) {
     annot <- object@sample_annotations
     if (nrow(annot) == 0 || !"Samples" %in% colnames(annot)) {
-      s <- gtools::mixedsort(unique(as.character(object@variants$sample)))
+      # Legacy objects without annotations: variant samples in factor
+      # level order, or sorted when the column is character
+      sample <- object@variants$sample
+      if (is.factor(sample)) {
+        s <- levels(droplevels(sample))
+      } else {
+        s <- gtools::mixedsort(unique(as.character(sample)))
+      }
     } else {
       s <- as.character(annot[["Samples"]])
     }
