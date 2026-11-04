@@ -28,9 +28,16 @@ sorted unique variant samples only for legacy objects without annotations.
 - Every variant sample is in `sample_names()`.
 
 Validity methods enforce this on `musica`, and check internal consistency
-of `result_model` (signature names match exposure rows, `num_signatures`)
-and `result_collection` (every entry is a named `result_model`). The
-`musica` replacement methods call `validObject()`.
+of `result_model` (signature names match exposure rows) and
+`result_collection` (every entry is a named `result_model`). The `musica`
+replacement methods for variants, tables, annotations, results and
+exposures call `validObject()`, as does `add_result()`, which also puts
+exposure columns in sample order by name.
+
+Deviation found in review: `num_signatures` is not checked, because the
+package itself builds models whose `num_signatures` is the full count
+while they hold a subset of signatures (`compare_results.R`,
+`benchmarking.R`); that belongs with PR K's model-storage cleanup.
 
 ## Changes
 

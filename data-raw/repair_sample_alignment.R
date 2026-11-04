@@ -98,8 +98,18 @@ truth <- ground_truth(full_benchmark_example)
 model <- get_model(truth, "ground_truth", "SBS96", "ground_truth")
 old_exposures <- exposures(model)
 count_samples <- colnames(get_count_table(tables(truth)$SBS96))
-stopifnot(nrow(old_exposures) == length(count_samples))
-# The truth was stored samples x signatures with the count-table row order
+true_signatures <- colnames(signatures(model))
+if (identical(rownames(old_exposures), true_signatures)) {
+  stop("full_benchmark_example is already signatures x samples.")
+}
+# The truth was stored samples x signatures in count-table column order;
+# its row names were dropped, so check the shape and any names present
+stopifnot(
+  nrow(old_exposures) == length(count_samples),
+  identical(colnames(old_exposures), true_signatures),
+  is.null(rownames(old_exposures)) ||
+    identical(rownames(old_exposures), count_samples)
+)
 new_exposures <- t(old_exposures)
 colnames(new_exposures) <- count_samples
 model@exposures <- new_exposures
