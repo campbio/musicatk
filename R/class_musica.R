@@ -536,8 +536,13 @@ setMethod(
       sample <- object@variants$sample
       if (is.factor(sample)) {
         s <- levels(droplevels(sample))
-      } else {
+      } else if (length(sample) > 0) {
         s <- gtools::mixedsort(unique(as.character(sample)))
+      } else if (length(object@count_tables) > 0) {
+        # Count-only objects: the first count table's columns
+        s <- as.character(colnames(object@count_tables[[1]]@count_table))
+      } else {
+        s <- character(0)
       }
     } else {
       s <- as.character(annot[["Samples"]])

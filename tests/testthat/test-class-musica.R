@@ -175,3 +175,16 @@ test_that("Exposure setters and add_result() check sample alignment", {
     regexp = "exposures of model 'unnamed'"
   )
 })
+
+test_that("Count-only objects from older versions still have sample names", {
+  data(musica_sbs96)
+  sbs96 <- tables(musica_sbs96)$SBS96
+  # Shape of a create_musica_from_counts() object saved before 2.7.2:
+  # a count table, no variants and no sample annotations
+  legacy <- new("musica")
+  legacy@count_tables <- list(SBS96 = sbs96)
+  expect_identical(sample_names(legacy), colnames(get_count_table(sbs96)))
+  expect_true(validObject(legacy))
+  samp_annot(legacy, "group") <- rep(c("a", "b"), c(3, 4))
+  expect_identical(samp_annot(legacy)$group, rep(c("a", "b"), c(3, 4)))
+})
