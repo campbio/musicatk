@@ -21,3 +21,28 @@ test_that("IND83 columns follow sample_names(), matched by name", {
   expect_identical(colnames(reverse_counts), rev(samples))
   expect_equal(reverse_counts[, samples], forward_counts)
 })
+
+test_that("Count tables have no columns for stale sample factor levels", {
+  g <- select_genome("hg38")
+  data(musica_sbs96_tiny)
+  tiny <- musica_sbs96_tiny
+  expect_warning(
+    build_standard_table(tiny, g, "SBS96", overwrite = TRUE),
+    regexp = "Overwriting counts table"
+  )
+  expect_identical(
+    colnames(get_count_table(tables(tiny)$SBS96)),
+    sample_names(tiny)
+  )
+
+  data(dbs_musica)
+  dbs <- dbs_musica
+  expect_warning(
+    build_standard_table(dbs, g, "DBS78", overwrite = TRUE),
+    regexp = "Overwriting counts table"
+  )
+  expect_identical(
+    colnames(get_count_table(tables(dbs)$DBS78)),
+    sample_names(dbs)
+  )
+})

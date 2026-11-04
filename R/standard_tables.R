@@ -71,8 +71,9 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
   )
   mutation <- factor(final_motif, levels = annotation$motif)
 
-  mut_table <- as.matrix(as.data.frame.matrix(xtabs(~ mutation + dat$sample)))
-  # xtabs adds dat$sample as dimname[2] so we remove it
+  sample <- .as_sample_factor(musica, dat$sample)
+  mut_table <- as.matrix(as.data.frame.matrix(xtabs(~ mutation + sample)))
+  # xtabs adds sample as dimname[2] so we remove it
   dimnames(mut_table) <- list(rownames(mut_table), colnames(mut_table))
 
   # Use COSMIC color scheme
@@ -179,7 +180,7 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
   maf_mut_id <- paste(final_mut_type, final_mut_context, dat[[strand_type]],
     sep = "_"
   )
-  tumor_id <- dat$sample
+  tumor_id <- .as_sample_factor(musica, dat$sample)
 
   ## Define all mutation types for 196 substitution scheme
   b1 <- rep(rep(c("A", "C", "G", "T"), each = 24), 2)
@@ -337,14 +338,7 @@ create_dbs78_table <- function(musica, overwrite = overwrite, verbose) {
     }
   }
   mut_table <- do.call(cbind, variant_tables)
-  colnames(mut_table) <- sample_names
-
-  full_tab <- matrix(
-    data = 0, nrow = length(full_motif),
-    ncol = length(levels(dbs$sample)),
-    dimnames = list(full_motif, levels(dbs$sample))
-  )
-  full_tab[, colnames(mut_table)] <- mut_table
+  dimnames(mut_table) <- list(full_motif, sample_names)
 
   annotation <- data.frame(
     motif = full_motif, mutation =
@@ -359,7 +353,7 @@ create_dbs78_table <- function(musica, overwrite = overwrite, verbose) {
   names(color_mapping) <- unique(annotation$mutation)
   tab <- .create_count_table(
     musica = musica, name = "DBS78",
-    count_table = full_tab,
+    count_table = mut_table,
     annotation = annotation,
     features = data.frame(mutation = full),
     type = as.character(dbs$Variant_Type),
@@ -510,8 +504,8 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   all_del <- as.data.frame(subset_variant_by_type(var, "DEL"))
   # Count every sample in sample_names() order, matched by name
   all_samples <- sample_names(musica)
-  all_ins$sample <- factor(as.character(all_ins$sample), levels = all_samples)
-  all_del$sample <- factor(as.character(all_del$sample), levels = all_samples)
+  all_ins$sample <- .as_sample_factor(musica, all_ins$sample)
+  all_del$sample <- .as_sample_factor(musica, all_del$sample)
 
   ins_len <- nchar(all_ins$alt)
   del_len <- nchar(all_del$ref)

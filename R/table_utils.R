@@ -71,6 +71,12 @@ extract_count_tables <- function(musica) {
   return(extract_count_tables(musica)[[modality]]@count_table)
 }
 
+# Factor of variant samples on sample_names(), so count tables get one
+# column per sample, in sample order, with no stale levels
+.as_sample_factor <- function(musica, samples) {
+  factor(as.character(samples), levels = sample_names(musica))
+}
+
 .subset_count_tables <- function(musica, samples) {
   tables <- tables(musica)
   table_names <- names(tables)
