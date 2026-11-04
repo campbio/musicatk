@@ -8,7 +8,8 @@ create_musica_from_counts(x, variant_class)
 }
 \arguments{
 \item{x}{A data.table, matrix, or data.frame that contains counts of mutation
-types for each sample, with samples as columns.}
+types for each sample, with samples as columns. The column names are used
+as the sample names and must be unique.}
 
 \item{variant_class}{Mutations are SBS, DBS, or Indel.}
 }

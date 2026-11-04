@@ -9,7 +9,11 @@ create_benchmark(true_signatures, true_exposures, count_table, variant_class)
 \arguments{
 \item{true_signatures}{A matrix of true signatures by mutational motifs}
 
-\item{true_exposures}{A matrix of samples by true signature weights}
+\item{true_exposures}{A matrix or data.frame of true signature weights,
+with samples as rows and signatures as columns (signatures as rows and
+samples as columns is also accepted). Sample names must match the column
+names of \code{count_table}, and signature names the column names of
+\code{true_signatures}; they are matched by name, not position.}
 
 \item{count_table}{Summary table with per-sample un-normalized motif counts}
 
