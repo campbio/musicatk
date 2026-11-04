@@ -69,12 +69,16 @@ setClass("musica",
     for (modality in names(collection@modality)) {
       models <- collection@modality[[modality]]
       for (model_id in names(models)) {
-        columns <- colnames(models[[model_id]]@exposures)
-        if (is.null(columns)) {
+        exposures <- models[[model_id]]@exposures
+        # An empty or single-NA placeholder matrix is not checked
+        if (length(exposures) == 0 ||
+              (length(exposures) == 1 && is.na(exposures))) {
           next
         }
-        # identical() also catches unknown or duplicated samples
-        if (!identical(columns, samples[samples %in% columns])) {
+        columns <- colnames(exposures)
+        # identical() also catches missing, unknown or duplicated samples
+        if (is.null(columns) ||
+              !identical(columns, samples[samples %in% columns])) {
           errors <- c(errors, paste0(
             "The exposures of model '", model_id, "' (", result_name, ", ",
             modality, ") must have sample names as columns, in the same ",

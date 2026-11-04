@@ -151,6 +151,7 @@ setReplaceMethod(
   signature = c("musica", "matrix"),
   definition = function(x, result, modality, model_id, value) {
     x@result_list[[result]]@modality[[modality]][[model_id]]@exposures <- value
+    methods::validObject(x)
     return(x)
   }
 )

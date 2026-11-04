@@ -138,3 +138,40 @@ test_that("result_model and result_collection validity", {
     regexp = "result_model"
   )
 })
+
+test_that("Exposure setters and add_result() check sample alignment", {
+  data(res_annot)
+  samples <- sample_names(res_annot)
+  model <- get_model(res_annot, "result", "SBS96", "res_annot")
+  reversed <- exposures(model)[, rev(samples)]
+
+  expect_error(
+    exposures(res_annot, "result", "SBS96", "res_annot") <- reversed,
+    regexp = "exposures of model 'res_annot'"
+  )
+  # add_result() matches columns by name and puts them in sample order
+  added <- add_result(signatures(model), reversed, res_annot, "result",
+    "SBS96", "reversed",
+    make_copy = TRUE
+  )
+  expect_identical(
+    exposures(added, "result", "SBS96", "reversed"),
+    exposures(model)
+  )
+  renamed <- exposures(model)
+  colnames(renamed)[1] <- "not_a_sample"
+  expect_error(
+    add_result(signatures(model), renamed, res_annot, "result", "SBS96",
+      "renamed",
+      make_copy = TRUE
+    ),
+    regexp = "exposures of model 'renamed'"
+  )
+  expect_error(
+    add_result(signatures(model), unname(exposures(model)), res_annot,
+      "result", "SBS96", "unnamed",
+      make_copy = TRUE
+    ),
+    regexp = "exposures of model 'unnamed'"
+  )
+})

@@ -1046,7 +1046,10 @@ create_musica_from_counts <- function(x, variant_class) {
 #' object.
 #'
 #' @param signatures A matrix or data.frame of signatures by mutational motifs
-#' @param exposures A matrix or data.frame of samples by signature weights
+#' @param exposures A matrix or data.frame of signature weights, with
+#' signatures as rows and samples as columns. The column names must be sample
+#' names from the \code{musica} object (all or some of them); columns are
+#' matched by name and put in \code{\link{sample_names}} order.
 #' @param musica Existing musica object to add the new model to
 #' @param result_name Name of result list entry to store the model in
 #' @param modality Modality of the model
@@ -1070,10 +1073,19 @@ add_result <- function(signatures, exposures, musica, result_name,
     var_name <- deparse(substitute(musica))
   }
   
+  # Put exposure columns in sample order, matched by sample name
+  exposures <- as.matrix(exposures)
+  samples <- sample_names(musica)
+  if (!is.null(colnames(exposures)) && all(colnames(exposures) %in% samples)) {
+    exposures <- exposures[, samples[samples %in% colnames(exposures)],
+      drop = FALSE
+    ]
+  }
+
   # create musica result object with given exposures and signatures
   model_result <- new("result_model",
     signatures = as.matrix(signatures),
-    exposures = as.matrix(exposures),
+    exposures = exposures,
     num_signatures = dim(signatures)[2],
     model_id = model_id, modality = modality
   )
@@ -1095,6 +1107,8 @@ add_result <- function(signatures, exposures, musica, result_name,
   
   # add result_model object in the list for the proper modality
   musica@result_list[[result_name]]@modality[[modality]][[model_id]] <- model_result
+  # exposures must have the sample names as columns, in sample order
+  methods::validObject(musica)
   
   if (make_copy == FALSE) {
     assign(var_name, musica, envir = parent.frame())
