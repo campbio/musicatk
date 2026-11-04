@@ -899,16 +899,13 @@ combine_predict_grid <- function(musica, modality, signature_res,
     samp <- samp[order(rownames(samp)), , drop = FALSE]
     comb <- cbind(comb, samp)
   }
+  # Put the combined exposure columns back in sample order
+  samples <- sample_names(musica)
+  comb <- comb[, samples[samples %in% colnames(comb)], drop = FALSE]
 
   musica@result_list[[result_name]]@modality[[modality]] <-
     get_modality(musica, result_name, modality)[!names(
       get_modality(musica, result_name, modality)) %in% model_ids]
-
-  grid_res <- new("result_model",
-    exposures = comb,
-    signatures = signatures(signature_res)[, sig_names],
-    modality = modality
-  )
 
   if (is.null(model_rename)) {
     model_id <- paste(model_ids, collapse = ".")
@@ -938,6 +935,14 @@ combine_predict_grid <- function(musica, modality, signature_res,
       }
     }
   }
+
+  grid_res <- new("result_model",
+    exposures = comb,
+    signatures = signatures(signature_res)[, sig_names, drop = FALSE],
+    num_signatures = length(sig_names),
+    model_id = model_id,
+    modality = modality
+  )
 
   musica@result_list[[result_name]]@modality[[modality]][[model_id]] <- grid_res
 
