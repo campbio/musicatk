@@ -98,9 +98,11 @@ extract_count_tables <- function(musica) {
   table_names <- names(tables)
   for (name in table_names) {
     sub_tab <- tables[[name]]
-    sub_tab@count_table <- sub_tab@count_table[, which(colnames(
-      sub_tab@count_table
-    ) %in% samples), drop = FALSE]
+    columns <- colnames(sub_tab@count_table)
+    sub_tab@count_table <- sub_tab@count_table[,
+      samples[samples %in% columns],
+      drop = FALSE
+    ]
     tables[[name]] <- sub_tab
   }
   return(tables)

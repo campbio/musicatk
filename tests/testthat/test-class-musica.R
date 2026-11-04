@@ -44,3 +44,21 @@ test_that("sample_names() without annotations keeps the variant level order", {
   musica <- new("musica", variants = variants)
   expect_identical(sample_names(musica), c("b", "a"))
 })
+
+test_that("Subsetting a musica object also subsets its results", {
+  data(res_annot)
+  lung <- subset_musica_by_annotation(res_annot, "Tumor_Subtypes", "Lung")
+  lung_exposures <- exposures(lung, "result", "SBS96", "res_annot")
+  expect_identical(colnames(lung_exposures), sample_names(lung))
+  expect_length(sample_names(lung), 4)
+  expect_identical(levels(variants(lung)$sample), sample_names(lung))
+
+  counts <- get_count_table(tables(res_annot)$SBS96)
+  keep <- colnames(counts)[colSums(counts) >= 100]
+  high <- subset_musica_by_counts(res_annot, "SBS96", 100)
+  expect_setequal(sample_names(high), keep)
+  expect_identical(
+    colnames(exposures(high, "result", "SBS96", "res_annot")),
+    sample_names(high)
+  )
+})
