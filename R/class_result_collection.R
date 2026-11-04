@@ -35,8 +35,9 @@ setClass("result_collection",
       ))
     }
     model_ids <- names(models)
-    if (is.null(model_ids) || any(model_ids == "") ||
-        anyDuplicated(model_ids) > 0) {
+    bad_ids <- is.null(model_ids) || any(model_ids == "") ||
+      anyDuplicated(model_ids) > 0
+    if (bad_ids) {
       errors <- c(errors, paste0(
         "The models of modality '", modality, "' must have unique names."
       ))

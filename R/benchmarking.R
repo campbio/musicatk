@@ -51,15 +51,17 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
   if (setequal(rownames(true_exposures), samples)) {
     true_exposures <- t(true_exposures)
   }
-  if (anyDuplicated(colnames(true_exposures)) > 0 ||
-      !setequal(colnames(true_exposures), samples)) {
+  sample_match <- anyDuplicated(colnames(true_exposures)) == 0 &&
+    setequal(colnames(true_exposures), samples)
+  if (!sample_match) {
     stop(
       "The sample names of 'true_exposures' must match the column names ",
       "of 'count_table'."
     )
   }
-  if (anyDuplicated(rownames(true_exposures)) > 0 ||
-      !setequal(rownames(true_exposures), signature_names)) {
+  signature_match <- anyDuplicated(rownames(true_exposures)) == 0 &&
+    setequal(rownames(true_exposures), signature_names)
+  if (!signature_match) {
     stop(
       "The signature names of 'true_exposures' must match the column ",
       "names of 'true_signatures'."
@@ -844,7 +846,8 @@ benchmark_plot_exposures <- function(full_benchmark, method_id, prediction){
     predicted_sig <- 
       comparison[index,4]
     predicted <- c(predicted, exposures(prediction)[predicted_sig,])
-    true <- c(true, .true_exposure(truth, true_sig, colnames(exposures(prediction))))
+    true <- c(true, .true_exposure(truth, true_sig,
+                                   colnames(exposures(prediction))))
     sig <- c(sig, rep(true_sig, ncol(exposures(prediction))))
     index <- index + 1
   }
@@ -940,8 +943,9 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
       
       #tmp_exposures <- exposures(after)[signature,]
       tmp_exposures <- as.data.frame(as.vector(exposures(before)[signature,]))
-      tmp_exposures_all <- cbind(tmp_exposures, 
-                                 as.data.frame(.true_exposure(result_true, duplicated_sig, colnames(exposures(before)))))
+      true_exp <- .true_exposure(result_true, duplicated_sig,
+                                 colnames(exposures(before)))
+      tmp_exposures_all <- cbind(tmp_exposures, as.data.frame(true_exp))
       colnames(tmp_exposures_all) <- c("Predicted", "True")
       tmp_exposures_all$Source <- signature
       
@@ -981,7 +985,9 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
     
     # get post-merge exposures
     tmp_exposures_list2 <- as.data.frame(as.vector(exposures(after)[new_sig_name,]))
-    after_exposures <- cbind(tmp_exposures_list2, as.data.frame(.true_exposure(result_true, duplicated_sig, colnames(exposures(after)))))
+    true_exp <- .true_exposure(result_true, duplicated_sig,
+                               colnames(exposures(after)))
+    after_exposures <- cbind(tmp_exposures_list2, as.data.frame(true_exp))
     colnames(after_exposures) <- c("Predicted", "True")
     
     rownames(after_exposures) <- c(1:num_samples)
@@ -1084,8 +1090,9 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
       # pre-correction exposures
       tmp_exp <- exposures(before)[composite_sig,]
       tmp_exp_list <- as.data.frame(as.vector(tmp_exp))
-      tmp_exp_all <- cbind(tmp_exp_list, 
-                           as.data.frame(.true_exposure(result_true, sig_components[component_index], colnames(exposures(before)))))
+      true_exp <- .true_exposure(result_true, sig_components[component_index],
+                                 colnames(exposures(before)))
+      tmp_exp_all <- cbind(tmp_exp_list, as.data.frame(true_exp))
       colnames(tmp_exp_all) <- c("Predicted", "True")
       tmp_exp_all$Source <- sig_components[component_index]
       
@@ -1128,8 +1135,9 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
       # post-correction exposure
       tmp_exp <- exposures(after)[colnames[component_index],]
       tmp_exp_list <- as.data.frame(as.vector(tmp_exp))
-      tmp_exp_all <- cbind(tmp_exp_list, 
-                           as.data.frame(.true_exposure(result_true, sig_components[component_index], colnames(exposures(after)))))
+      true_exp <- .true_exposure(result_true, sig_components[component_index],
+                                 colnames(exposures(after)))
+      tmp_exp_all <- cbind(tmp_exp_list, as.data.frame(true_exp))
       colnames(tmp_exp_all) <- c("Predicted", "True")
       tmp_exp_all$Source <- sig_components[component_index]
       
@@ -1209,8 +1217,9 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
       
       tmp_exposures <- exposures[signature,]
       tmp_exposures_list <- as.data.frame(as.vector(tmp_exposures))
-      tmp_exposures_all <- cbind(tmp_exposures_list, 
-                                 as.data.frame(.true_exposure(result_true, duplicated_sig, colnames(exposures))))
+      true_exp <- .true_exposure(result_true, duplicated_sig,
+                                 colnames(exposures))
+      tmp_exposures_all <- cbind(tmp_exposures_list, as.data.frame(true_exp))
       colnames(tmp_exposures_all) <- c("Predicted", "True")
       tmp_exposures_all$Source <- signature
       
@@ -1274,7 +1283,9 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
     # exposure plot after merging
     
     tmp_exposures_list <- as.data.frame(as.vector(merged_exposures))
-    tmp_exposures_all <- cbind(tmp_exposures_list, as.data.frame(.true_exposure(result_true, duplicated_sig, colnames(exposures))))
+    true_exp <- .true_exposure(result_true, duplicated_sig,
+                               colnames(exposures))
+    tmp_exposures_all <- cbind(tmp_exposures_list, as.data.frame(true_exp))
     colnames(tmp_exposures_all) <- c("Predicted", "True")
     
     rownames(tmp_exposures_all) <- c(1:num_samples)
@@ -1432,8 +1443,9 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
       # for plotting
       tmp_exp <- exposures[composite_sig,]
       tmp_exp_list <- as.data.frame(as.vector(tmp_exp))
-      tmp_exp_all <- cbind(tmp_exp_list, 
-                           as.data.frame(.true_exposure(result_true, sig_components[component_index], colnames(exposures)))) # GENERALIZE (was                                                                                                                      Signature not SBS)
+      true_exp <- .true_exposure(result_true, sig_components[component_index],
+                                 colnames(exposures))
+      tmp_exp_all <- cbind(tmp_exp_list, as.data.frame(true_exp)) # GENERALIZE
       colnames(tmp_exp_all) <- c("Predicted", "True")
       tmp_exp_all$Source <- sig_components[component_index]
       

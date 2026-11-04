@@ -19,8 +19,8 @@ test_that("create_benchmark() stores true exposures matched by sample name", {
   bench <- create_benchmark(true_signatures, shuffled,
     synthetic_breast_counts, "SBS96"
   )
-  truth <- exposures(ground_truth(bench), "ground_truth", "SBS96",
-    "ground_truth")
+  truth_musica <- ground_truth(bench)
+  truth <- exposures(truth_musica, "ground_truth", "SBS96", "ground_truth")
   expect_identical(colnames(truth), colnames(synthetic_breast_counts))
   expect_equal(truth, expected)
 
@@ -28,15 +28,16 @@ test_that("create_benchmark() stores true exposures matched by sample name", {
   bench_t <- create_benchmark(true_signatures, expected,
     synthetic_breast_counts, "SBS96"
   )
-  truth_t <- exposures(ground_truth(bench_t), "ground_truth", "SBS96",
-    "ground_truth")
+  truth_musica_t <- ground_truth(bench_t)
+  truth_t <- exposures(truth_musica_t, "ground_truth", "SBS96", "ground_truth")
   expect_equal(truth_t, expected)
 
   renamed <- synthetic_breast_true_exposures
   rownames(renamed)[1] <- "not_a_sample"
   expect_error(
-    create_benchmark(true_signatures, renamed, synthetic_breast_counts,
-      "SBS96"),
+    create_benchmark(
+      true_signatures, renamed, synthetic_breast_counts, "SBS96"
+    ),
     regexp = "sample names of 'true_exposures'"
   )
 })
@@ -52,8 +53,10 @@ test_that("benchmark_plot_exposures() pairs exposures by sample name", {
     synthetic_breast_counts, "SBS96"
   )
   prediction <- create_musica_from_counts(synthetic_breast_counts, "SBS96")
-  add_result(example_predicted_sigs, example_predicted_exp, prediction,
-    "result", "SBS96", "example_k8")
+  add_result(
+    example_predicted_sigs, example_predicted_exp, prediction,
+    "result", "SBS96", "example_k8"
+  )
   bench <- suppressWarnings(benchmark(bench, prediction, "example_k8",
     "SBS96",
     method_id = "example", plot = FALSE, make_copy = TRUE
@@ -63,8 +66,8 @@ test_that("benchmark_plot_exposures() pairs exposures by sample name", {
   first <- p$data[p$data$Sig == comparison$y_sig_name[1], ]
   predicted_sig <- comparison[1, 4]
   pred_exp <- example_predicted_exp[predicted_sig, ]
-  true_exp <- synthetic_breast_true_exposures[names(pred_exp),
-    comparison$y_sig_name[1]]
+  true_sig <- comparison$y_sig_name[1]
+  true_exp <- synthetic_breast_true_exposures[names(pred_exp), true_sig]
   expect_equal(first$Predicted, unname(pred_exp))
   expect_equal(first$True, true_exp)
 })

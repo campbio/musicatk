@@ -45,8 +45,8 @@ setClass(
         " signatures."
       ))
     } else if (!is.null(rownames(exposures)) &&
-               !is.null(colnames(signatures)) &&
-               !identical(rownames(exposures), colnames(signatures))) {
+                 !is.null(colnames(signatures)) &&
+                 !identical(rownames(exposures), colnames(signatures))) {
       errors <- c(errors, paste0(
         "The rownames of 'exposures' must match the colnames of ",
         "'signatures'."

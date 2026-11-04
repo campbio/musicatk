@@ -82,8 +82,9 @@ extract_count_tables <- function(musica) {
 .align_count_columns <- function(musica, count_table, name) {
   samples <- sample_names(musica)
   columns <- colnames(count_table)
-  if (is.null(columns) || anyDuplicated(columns) > 0 ||
-      !setequal(columns, samples)) {
+  matches <- !is.null(columns) && anyDuplicated(columns) == 0 &&
+    setequal(columns, samples)
+  if (!matches) {
     stop(
       "The columns of count table '", name, "' do not match the sample ",
       "names in the 'musica' object. Rebuild the table with ",
