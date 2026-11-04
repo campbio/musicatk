@@ -45,7 +45,8 @@ setClass("musica",
     errors <- c(errors, "Sample names must be unique and not NA.")
   }
 
-  variant_samples <- unique(as.character(object@variants$sample))
+  # unique() before as.character() keeps this cheap on large variant tables
+  variant_samples <- as.character(unique(object@variants$sample))
   missing <- setdiff(variant_samples, samples)
   if (length(missing) > 0) {
     errors <- c(errors, paste0(
