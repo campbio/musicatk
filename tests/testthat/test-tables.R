@@ -24,23 +24,31 @@ test_that("IND83 columns follow sample_names(), matched by name", {
 
 test_that("Count tables have no columns for stale sample factor levels", {
   g <- select_genome("hg38")
+  # Variants whose sample factor keeps levels for samples that are gone,
+  # as left behind by subsetting in older versions
+  add_stale_levels <- function(musica) {
+    variants <- variants(musica)
+    present <- sample_names(musica)
+    variants$sample <- factor(as.character(variants$sample),
+      levels = c("stale_1", present, "stale_2")
+    )
+    new("musica",
+      variants = variants,
+      sample_annotations = data.frame(Samples = present)
+    )
+  }
+
   data(musica_sbs96_tiny)
-  tiny <- musica_sbs96_tiny
-  expect_warning(
-    build_standard_table(tiny, g, "SBS96", overwrite = TRUE),
-    regexp = "Overwriting counts table"
-  )
+  tiny <- add_stale_levels(musica_sbs96_tiny)
+  build_standard_table(tiny, g, "SBS96")
   expect_identical(
     colnames(get_count_table(tables(tiny)$SBS96)),
     sample_names(tiny)
   )
 
   data(dbs_musica)
-  dbs <- dbs_musica
-  expect_warning(
-    build_standard_table(dbs, g, "DBS78", overwrite = TRUE),
-    regexp = "Overwriting counts table"
-  )
+  dbs <- add_stale_levels(dbs_musica)
+  build_standard_table(dbs, g, "DBS78")
   expect_identical(
     colnames(get_count_table(tables(dbs)$DBS78)),
     sample_names(dbs)

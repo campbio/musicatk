@@ -21,6 +21,13 @@ test_that(desc = "Testing Exposures Heatmap Plotting", {
 test_that(desc = "Heatmap annotations are matched to exposures by name", {
   data(res_annot)
   samp_annot(res_annot, "test") <- c("A", "B", "C", "A", "B", "C", "C")
+  # A model holding a subset of the samples
+  results <- result_list(res_annot)
+  model <- results[["result"]]@modality[["SBS96"]][["res_annot"]]
+  model@exposures <- model@exposures[, -2]
+  results[["result"]]@modality[["SBS96"]][["res_annot"]] <- model
+  result_list(res_annot) <- results
+
   exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")
   annot <- samp_annot(res_annot)
   expected <- annot$test[
