@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make test-app)",
+      "Bash(git fetch campbio)",
+      "Bash(git blame:*)"
+    ],
+    "ask": [],
+    "deny": [
+      "Bash(Rscript -e pkgdown::clean_site*)",
+      "Bash(Rscript -e pkgdown::deploy_to_branch*)",
+      "Bash(make style)",
+      "Bash(make site)",
+      "Bash(make site-deploy)",
+      "Bash(make clean)"
+    ]
+  },
+  "hooks": {}
+}
