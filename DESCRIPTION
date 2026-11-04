@@ -86,7 +86,6 @@ Suggests:
     shinyWidgets,
     cowplot,
     withr
-RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Collate: 
     'annotate_variants.R'
@@ -117,3 +116,4 @@ Collate:
     'test_data.R'
     'umap.R'
     'utils-pipe.R'
+Config/roxygen2/version: 8.1.0
