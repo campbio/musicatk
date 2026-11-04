@@ -185,6 +185,7 @@ subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
 }
 
 .subset_result_list <- function(result_list, samples) {
+  samples <- as.character(samples)
   for (result_name in names(result_list)) {
     collection <- result_list[[result_name]]
     for (modality in names(collection@modality)) {

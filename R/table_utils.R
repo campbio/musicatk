@@ -95,6 +95,8 @@ extract_count_tables <- function(musica) {
 }
 
 .subset_count_tables <- function(musica, samples) {
+  # Character, so a factor never indexes columns by its integer codes
+  samples <- as.character(samples)
   tables <- tables(musica)
   table_names <- names(tables)
   for (name in table_names) {

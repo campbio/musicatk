@@ -100,3 +100,15 @@ test_that("combine_count_tables() and custom tables align samples by name", {
     regexp = "do not match the sample names"
   )
 })
+
+test_that(".subset_count_tables() selects samples by name, not factor code", {
+  data(musica_sbs96)
+  samples <- sample_names(musica_sbs96)
+  # A factor whose integer codes point at other columns
+  wanted <- factor(samples[c(6, 7)], levels = rev(samples))
+  subset <- .subset_count_tables(musica_sbs96, wanted)
+  expect_identical(
+    colnames(get_count_table(subset$SBS96)),
+    samples[c(6, 7)]
+  )
+})
