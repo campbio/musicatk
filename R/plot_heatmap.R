@@ -116,7 +116,7 @@ plot_heatmap <- function(musica, model_name,
       .annot_for_samples(musica, column, colnames(exp))
     })
     names(annot) <- annotation
-    annot <- as.data.frame(annot)
+    annot <- data.frame(annot, check.names = FALSE)
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   if (!is.null(subset_signatures)) {

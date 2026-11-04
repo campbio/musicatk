@@ -38,3 +38,11 @@ test_that(desc = "Heatmap annotations are matched to exposures by name", {
   observed <- p@top_annotation@anno_list$test@fun@var_env$value
   expect_equal(unname(observed), expected)
 })
+
+test_that(desc = "Heatmap keeps annotation names that are not syntactic", {
+  data(res_annot)
+  subtypes <- samp_annot(res_annot)$Tumor_Subtypes
+  samp_annot(res_annot, "Tumor subtype") <- subtypes
+  p <- plot_heatmap(res_annot, "res_annot", annotation = "Tumor subtype")
+  expect_identical(names(p@top_annotation@anno_list), "Tumor subtype")
+})
