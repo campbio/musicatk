@@ -16,8 +16,8 @@ subset_musica_by_annotation(musica, annot_col, annot_names)
 }
 \value{
 Returns a new musica object with sample annotations, count tables,
-and variants subsetted to only contains samples of the specified annotation
-type
+variants, and the exposures of stored results subsetted to only contain
+samples of the specified annotation type
 }
 \description{
 Creates a new musica object subsetted to only one value of a sample
@@ -29,7 +29,10 @@ annot <- read.table(system.file("extdata", "sample_annotations.txt",
   package = "musicatk"
 ), sep = "\t", header = TRUE)
 
-samp_annot(musica_sbs96, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+# Match the annotation rows to the sample order in the musica object
+annot_rows <- match(sample_names(musica_sbs96), annot$Sample_Names)
+tumor_subtypes <- annot$Tumor_Subtypes[annot_rows]
+samp_annot(musica_sbs96, "Tumor_Subtypes") <- tumor_subtypes
 
 musica_sbs96 <- subset_musica_by_annotation(
   musica_sbs96, "Tumor_Subtypes",
