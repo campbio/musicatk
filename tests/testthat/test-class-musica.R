@@ -62,3 +62,79 @@ test_that("Subsetting a musica object also subsets its results", {
     sample_names(high)
   )
 })
+
+test_that("Shipped musica objects satisfy the sample alignment invariant", {
+  datasets <- c(
+    "musica", "musica_annot", "musica_sbs96", "musica_sbs96_tiny",
+    "dbs_musica", "indel_musica", "res", "res_annot"
+  )
+  for (dataset in datasets) {
+    env <- new.env()
+    data(list = dataset, envir = env)
+    expect_true(validObject(get(dataset, envir = env)), label = dataset)
+  }
+  data(full_benchmark_example)
+  expect_true(validObject(ground_truth(full_benchmark_example)))
+})
+
+test_that("musica validity rejects misaligned samples", {
+  data(res_annot)
+  samples <- sample_names(res_annot)
+  sbs96 <- tables(res_annot)$SBS96
+  reversed <- sbs96
+  reversed@count_table <- get_count_table(sbs96)[, rev(samples)]
+
+  expect_error(
+    new("musica",
+      variants = variants(res_annot),
+      count_tables = list(SBS96 = reversed),
+      sample_annotations = samp_annot(res_annot)
+    ),
+    regexp = "columns of count table 'SBS96'"
+  )
+  expect_error(
+    tables(res_annot) <- list(SBS96 = reversed),
+    regexp = "columns of count table 'SBS96'"
+  )
+  expect_error(
+    new("musica",
+      variants = variants(res_annot),
+      sample_annotations = data.frame(Samples = samples[-1])
+    ),
+    regexp = "variant samples are missing"
+  )
+  expect_error(
+    new("musica",
+      sample_annotations = data.frame(Samples = c("a", "a"))
+    ),
+    regexp = "must be unique"
+  )
+
+  model <- get_model(res_annot, "result", "SBS96", "res_annot")
+  model@exposures <- exposures(model)[, rev(samples)]
+  results <- result_list(res_annot)
+  results[["result"]]@modality[["SBS96"]][["res_annot"]] <- model
+  expect_error(
+    result_list(res_annot) <- results,
+    regexp = "exposures of model 'res_annot'"
+  )
+})
+
+test_that("result_model and result_collection validity", {
+  data(res)
+  model <- get_model(res, "result", "SBS96", "res")
+  wrong_names <- exposures(model)
+  rownames(wrong_names) <- c("x", "y", "z")
+  expect_error(
+    new("result_model",
+      signatures = signatures(model), exposures = wrong_names
+    ),
+    regexp = "rownames of 'exposures' must match"
+  )
+  expect_error(
+    new("result_collection",
+      modality = S4Vectors::SimpleList(SBS96 = list(res = "not a model"))
+    ),
+    regexp = "result_model"
+  )
+})

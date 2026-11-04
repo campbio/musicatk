@@ -6,8 +6,11 @@
 \title{The primary object that contains variants, count_tables,
 and samples annotations}
 \description{
-The primary object that contains variants, count_tables,
-and samples annotations
+Samples are matched by name, and \code{\link{sample_names}} (the
+\code{Samples} column of the sample annotations) sets their order: every
+count table has these samples as columns in this order, and the exposures
+of every stored model have all or some of them as columns in the same
+order. A validity method checks this.
 }
 \section{Slots}{
 

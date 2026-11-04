@@ -3,6 +3,12 @@
 #' The primary object that contains variants, count_tables,
 #' and samples annotations
 #'
+#' Samples are matched by name, and \code{\link{sample_names}} (the
+#' \code{Samples} column of the sample annotations) sets their order: every
+#' count table has these samples as columns in this order, and the exposures
+#' of every stored model have all or some of them as columns in the same
+#' order. A validity method checks this.
+#'
 #' @slot variants \code{data.table} of variants
 #' @slot count_tables Summary table with per-sample unnormalized motif counts
 #' @slot sample_annotations Sample-level annotations (e.g. age, sex, primary)
@@ -23,6 +29,66 @@ setClass("musica",
     result_list = S4Vectors::SimpleList()
   )
 )
+
+# Validity: sample_names() is the source of truth for sample order. Every
+# count table has exactly these columns in this order, every stored model's
+# exposures have an ordered subset of them, and every variant sample is one
+# of them.
+.valid_musica <- function(object) {
+  errors <- character()
+  samples <- sample_names(object)
+  annot <- object@sample_annotations
+  if (nrow(annot) > 0 && !"Samples" %in% colnames(annot)) {
+    errors <- c(errors, "'sample_annotations' must have a 'Samples' column.")
+  }
+  if (anyNA(samples) || anyDuplicated(samples) > 0) {
+    errors <- c(errors, "Sample names must be unique and not NA.")
+  }
+
+  variant_samples <- unique(as.character(object@variants$sample))
+  missing <- setdiff(variant_samples, samples)
+  if (length(missing) > 0) {
+    errors <- c(errors, paste0(
+      "These variant samples are missing from the sample names: ",
+      paste(utils::head(missing, 5), collapse = ", ")
+    ))
+  }
+
+  for (name in names(object@count_tables)) {
+    columns <- colnames(object@count_tables[[name]]@count_table)
+    if (!identical(as.character(columns), samples)) {
+      errors <- c(errors, paste0(
+        "The columns of count table '", name, "' must be the sample names ",
+        "in the same order. Rebuild the table with 'overwrite = TRUE'."
+      ))
+    }
+  }
+
+  for (result_name in names(object@result_list)) {
+    collection <- object@result_list[[result_name]]
+    for (modality in names(collection@modality)) {
+      models <- collection@modality[[modality]]
+      for (model_id in names(models)) {
+        columns <- colnames(models[[model_id]]@exposures)
+        if (is.null(columns)) {
+          next
+        }
+        # identical() also catches unknown or duplicated samples
+        if (!identical(columns, samples[samples %in% columns])) {
+          errors <- c(errors, paste0(
+            "The exposures of model '", model_id, "' (", result_name, ", ",
+            modality, ") must have sample names as columns, in the same ",
+            "order as the sample names."
+          ))
+        }
+      }
+    }
+  }
+
+  if (length(errors) == 0) TRUE else errors
+}
+
+setValidity("musica", .valid_musica)
 
 # Sample-Level object/methods -------------------------------
 
@@ -287,6 +353,7 @@ setReplaceMethod(
   signature = c("musica", "data.table"),
   definition = function(musica, value) {
     musica@variants <- value
+    methods::validObject(musica)
     return(musica)
   }
 )
@@ -344,6 +411,7 @@ setReplaceMethod(
       }
     }
     musica@count_tables <- value
+    methods::validObject(musica)
     return(musica)
   }
 )
@@ -423,6 +491,7 @@ setReplaceMethod(
       )
     }
     object@sample_annotations[[name]] <- value
+    methods::validObject(object)
     return(object)
   }
 )
@@ -518,6 +587,7 @@ setReplaceMethod(
   signature = c("musica", "SimpleList"),
   definition = function(musica, value) {
     musica@result_list <- value
+    methods::validObject(musica)
     return(musica)
   }
 )

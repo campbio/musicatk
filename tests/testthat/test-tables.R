@@ -53,18 +53,29 @@ test_that("combine_count_tables() and custom tables align samples by name", {
   counts <- get_count_table(sbs96)
   samples <- colnames(counts)
 
-  # A second table whose columns are in the reverse order
-  reversed <- sbs96
-  reversed@count_table <- counts[, rev(samples)]
   musica <- new("musica",
     variants = variants(musica_sbs96),
-    count_tables = list(SBS96 = sbs96, reversed = reversed),
+    count_tables = list(SBS96 = sbs96),
     sample_annotations = data.frame(Samples = samples)
   )
-  combine_count_tables(musica, c("SBS96", "reversed"), "combo")
-  combo <- get_count_table(tables(musica)$combo)
-  expect_identical(colnames(combo), samples)
-  expect_equal(unname(combo[97:192, ]), unname(counts))
+
+  # Columns in another order are put back in sample order by name
+  reversed_counts <- counts[, rev(samples)]
+  expect_identical(
+    .align_count_columns(musica, reversed_counts, "reversed"),
+    counts
+  )
+
+  # A table in another order, as saved by older versions, is not bound by
+  # position: combining stops and asks for the table to be rebuilt
+  reversed <- sbs96
+  reversed@count_table <- reversed_counts
+  legacy <- musica
+  legacy@count_tables$reversed <- reversed
+  expect_error(
+    combine_count_tables(legacy, c("SBS96", "reversed"), "combo"),
+    regexp = "count table 'reversed'"
+  )
 
   # Custom tables use sample_names() order
   custom <- new("musica",
@@ -82,11 +93,8 @@ test_that("combine_count_tables() and custom tables align samples by name", {
   # Tables whose samples differ from sample_names() are refused
   extra <- sbs96
   extra@count_table <- counts[, -1]
-  wrong <- new("musica",
-    variants = variants(musica_sbs96),
-    count_tables = list(SBS96 = sbs96, extra = extra),
-    sample_annotations = data.frame(Samples = samples)
-  )
+  wrong <- musica
+  wrong@count_tables$extra <- extra
   expect_error(
     combine_count_tables(wrong, c("SBS96", "extra"), "combo"),
     regexp = "do not match the sample names"
