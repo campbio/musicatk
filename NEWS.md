@@ -6,6 +6,7 @@
 * `create_musica_from_counts()` stores the column names as sample names, so its objects can be annotated; it stops on missing or duplicated column names (#159).
 * `subset_musica_by_counts()` and `subset_musica_by_annotation()` also subset stored exposures (#155).
 * Count tables no longer get all-zero columns for samples removed by subsetting (#134), IND83 columns are named correctly (#131), and `combine_count_tables()` aligns samples by name (#133).
+* `add_result()` matches exposure columns to the samples by name and puts them in sample order; unknown or missing sample names give an error.
 * `combine_predict_grid()` returns exposures in sample order and sets `num_signatures` and `model_id` (#144).
 * `create_benchmark()` stores true exposures as signatures x samples and matches them to the count table by sample name; either orientation is accepted (#194).
 
