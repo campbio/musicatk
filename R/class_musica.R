@@ -255,15 +255,16 @@ drop_na_variants <- function(variants, annot_col) {
 #' Return sample from musica_variant object
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param sample_name Sample name to subset by
-#' @return Returns sample data.frame subset to a single sample
+#' @param sample_name A character vector of one or more sample names to
+#' subset by
+#' @return Returns the variants of the samples in \code{sample_name}
 #' @examples
 #' data(musica)
 #' subset_variants_by_samples(musica, "TCGA-94-7557-01A-11D-2122-08")
 #' @export
 subset_variants_by_samples <- function(musica, sample_name) {
   return(variants(musica)[
-    which(variants(musica)$sample == sample_name),
+    which(variants(musica)$sample %in% sample_name),
   ])
 }
 

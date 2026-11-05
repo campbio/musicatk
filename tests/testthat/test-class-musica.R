@@ -188,3 +188,11 @@ test_that("Count-only objects from older versions still have sample names", {
   samp_annot(legacy, "group") <- rep(c("a", "b"), c(3, 4))
   expect_identical(samp_annot(legacy)$group, rep(c("a", "b"), c(3, 4)))
 })
+
+test_that("subset_variants_by_samples() keeps every requested sample", {
+  data(musica)
+  samples <- sample_names(musica)[1:2]
+  subset <- subset_variants_by_samples(musica, samples)
+  expect_equal(nrow(subset), sum(variants(musica)$sample %in% samples))
+  expect_setequal(as.character(unique(subset$sample)), samples)
+})

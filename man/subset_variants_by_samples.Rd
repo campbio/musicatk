@@ -9,10 +9,11 @@ subset_variants_by_samples(musica, sample_name)
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{sample_name}{Sample name to subset by}
+\item{sample_name}{A character vector of one or more sample names to
+subset by}
 }
 \value{
-Returns sample data.frame subset to a single sample
+Returns the variants of the samples in \code{sample_name}
 }
 \description{
 Return sample from musica_variant object
