@@ -1077,7 +1077,11 @@ setMethod(
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
 #' @param ... Other inputs
-#' @param value A modality
+#' @param value A modality. For a \code{\linkS4class{musica}} or
+#' \code{\linkS4class{result_collection}} object, the stored model is moved to
+#' the new modality, so it is retrieved by the new modality afterwards; a
+#' modality left without models is removed. A model with the same identifier
+#' in the new modality gives an error.
 #' @export
 setGeneric(
   name = "modality<-",
@@ -1104,11 +1108,39 @@ setReplaceMethod(
   f = "modality",
   signature = c("result_collection", "character"),
   definition = function(x, modality, model_id, value) {
-    update <- function(model) {
-      modality(model) <- value
-      return(model)
+    if (length(value) != 1 || is.na(value) || value == "") {
+      stop("The new 'modality' must be a single value that is not empty.")
     }
-    return(.update_model(x, modality, model_id, update))
+    models <- x@modality[[modality]]
+    .check_model_exists(models, modality, model_id)
+    model <- models[[model_id]]
+    modality(model) <- value
+    if (value == modality) {
+      models[[model_id]] <- model
+      x@modality[[modality]] <- models
+    } else {
+      # Store the model under its new modality
+      targets <- x@modality[[value]]
+      if (model_id %in% names(targets)) {
+        stop(
+          "A model named '", model_id, "' already exists in modality '",
+          value, "'."
+        )
+      }
+      if (is.null(targets)) {
+        targets <- list()
+      }
+      targets[[model_id]] <- model
+      models[[model_id]] <- NULL
+      x@modality[[value]] <- targets
+      if (length(models) == 0) {
+        x@modality[[modality]] <- NULL
+      } else {
+        x@modality[[modality]] <- models
+      }
+    }
+    methods::validObject(x)
+    return(x)
   }
 )
 

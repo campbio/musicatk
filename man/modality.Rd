@@ -46,7 +46,11 @@ modality. Used when \code{result} is a \code{\linkS4class{musica}} object.}
 \code{result} is a \code{\linkS4class{musica}} or
 \code{\linkS4class{result_collection}} object.}
 
-\item{value}{A modality}
+\item{value}{A modality. For a \code{\linkS4class{musica}} or
+\code{\linkS4class{result_collection}} object, the stored model is moved to
+the new modality, so it is retrieved by the new modality afterwards; a
+modality left without models is removed. A model with the same identifier
+in the new modality gives an error.}
 }
 \value{
 The modality for the model

@@ -90,3 +90,24 @@ test_that("model_id<- renames the stored model so get_model() finds it", {
     regexp = "not found"
   )
 })
+
+test_that("modality<- moves the stored model to the new modality", {
+  data(res)
+  collection <- result_list(res)[["result"]]
+  modality(collection, "SBS96", "res") <- "DBS78"
+  expect_identical(modality(collection, "DBS78", "res"), "DBS78")
+  expect_null(get_modality(collection, "SBS96"))
+
+  modality(res, "result", "SBS96", "res") <- "DBS78"
+  model <- get_model(res, "result", "DBS78", "res")
+  expect_identical(modality(model), "DBS78")
+  expect_null(get_modality(res, "result", "SBS96"))
+
+  # Moving onto a model with the same id in the new modality is an error
+  res <- add_result(signatures(model), exposures(model), res, "result",
+                    "SBS96", "res", make_copy = TRUE)
+  expect_error(
+    modality(res, "result", "SBS96", "res") <- "DBS78",
+    regexp = "already exists"
+  )
+})
