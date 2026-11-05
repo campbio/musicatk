@@ -48,6 +48,20 @@ test_that("result_model setters work on musica, collection and model", {
   expect_identical(credible_intervals(res, "result", "SBS96", "res"),
                    intervals)
   expect_identical(modality(res, "result", "SBS96", "res"), "SBS96")
+
+  # The stored model is validated, not only the object that holds it
+  expect_error(
+    modality(collection, "SBS96", "res") <- c("A", "B"),
+    regexp = "single value"
+  )
+  expect_error(
+    modality(res, "result", "SBS96", "res") <- c("A", "B"),
+    regexp = "single value"
+  )
+  expect_error(
+    num_signatures(res, "result", "SBS96", "missing") <- 5,
+    regexp = "not found"
+  )
 })
 
 test_that("model_id<- renames the stored model so get_model() finds it", {

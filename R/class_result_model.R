@@ -64,6 +64,42 @@ setClass(
 
 setValidity("result_model", .valid_result_model)
 
+# Helpers for the musica and result_collection setters below. They change a
+# stored model through the result_model setter, so the model's own validity
+# check runs (validObject() does not check objects nested in lists).
+
+.check_model_exists <- function(models, modality, model_id) {
+  if (length(model_id) != 1 || !model_id %in% names(models)) {
+    stop(
+      "The model '", paste(model_id, collapse = ", "), "' was not found ",
+      "in modality '", paste(modality, collapse = ", "), "'."
+    )
+  }
+  invisible(TRUE)
+}
+
+# Replace one model of a result_collection with update(model)
+.update_model <- function(collection, modality, model_id, update) {
+  models <- collection@modality[[modality]]
+  .check_model_exists(models, modality, model_id)
+  models[[model_id]] <- update(models[[model_id]])
+  collection@modality[[modality]] <- models
+  methods::validObject(collection)
+  return(collection)
+}
+
+# Replace one result_collection of a musica object with update(collection)
+.update_collection <- function(musica, result, update) {
+  if (length(result) != 1 || !result %in% names(musica@result_list)) {
+    stop(
+      "The result '", paste(result, collapse = ", "), "' was not found ",
+      "in the result list."
+    )
+  }
+  musica@result_list[[result]] <- update(musica@result_list[[result]])
+  return(musica)
+}
+
 #' @title Retrieve exposures from a result_model, result_collection, or musica
 #' object
 #' @description  The \code{exposure} matrix contains estimated amount of
@@ -370,10 +406,11 @@ setReplaceMethod(
   f = "num_signatures",
   signature = c("musica", "numeric"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@num_signatures <-
-      value
-    methods::validObject(x)
-    return(x)
+    update <- function(collection) {
+      num_signatures(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
@@ -382,9 +419,11 @@ setReplaceMethod(
   f = "num_signatures",
   signature = c("result_collection", "numeric"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@num_signatures <- value
-    methods::validObject(x)
-    return(x)
+    update <- function(model) {
+      num_signatures(model) <- value
+      return(model)
+    }
+    return(.update_model(x, modality, model_id, update))
   }
 )
 
@@ -482,10 +521,11 @@ setReplaceMethod(
   f = "other_parameters",
   signature = c("musica", "SimpleList"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@other_parameters <-
-      value
-    methods::validObject(x)
-    return(x)
+    update <- function(collection) {
+      other_parameters(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
@@ -494,9 +534,11 @@ setReplaceMethod(
   f = "other_parameters",
   signature = c("result_collection", "SimpleList"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@other_parameters <- value
-    methods::validObject(x)
-    return(x)
+    update <- function(model) {
+      other_parameters(model) <- value
+      return(model)
+    }
+    return(.update_model(x, modality, model_id, update))
   }
 )
 
@@ -596,10 +638,11 @@ setReplaceMethod(
   f = "credible_intervals",
   signature = c("musica", "SimpleList"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@
-      credible_intervals <- value
-    methods::validObject(x)
-    return(x)
+    update <- function(collection) {
+      credible_intervals(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
@@ -608,9 +651,11 @@ setReplaceMethod(
   f = "credible_intervals",
   signature = c("result_collection", "SimpleList"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@credible_intervals <- value
-    methods::validObject(x)
-    return(x)
+    update <- function(model) {
+      credible_intervals(model) <- value
+      return(model)
+    }
+    return(.update_model(x, modality, model_id, update))
   }
 )
 
@@ -922,14 +967,11 @@ setReplaceMethod(
   f = "model_id",
   signature = c("musica", "character"),
   definition = function(x, result, modality, model_id, value) {
-    collection <- x@result_list[[result]]
-    if (is.null(collection)) {
-      stop("The result '", result, "' was not found in the result list.")
+    update <- function(collection) {
+      model_id(collection, modality, model_id) <- value
+      return(collection)
     }
-    model_id(collection, modality, model_id) <- value
-    x@result_list[[result]] <- collection
-    methods::validObject(x)
-    return(x)
+    return(.update_collection(x, result, update))
   }
 )
 
@@ -942,12 +984,7 @@ setReplaceMethod(
       stop("The new 'model_id' must be a single value that is not empty.")
     }
     models <- x@modality[[modality]]
-    if (length(model_id) != 1 || !model_id %in% names(models)) {
-      stop(
-        "The model '", paste(model_id, collapse = ", "), "' was not found ",
-        "in modality '", modality, "'."
-      )
-    }
+    .check_model_exists(models, modality, model_id)
     if (value != model_id && value %in% names(models)) {
       stop(
         "A model named '", value, "' already exists in modality '",
@@ -1054,9 +1091,11 @@ setReplaceMethod(
   f = "modality",
   signature = c("musica", "character"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@modality <- value
-    methods::validObject(x)
-    return(x)
+    update <- function(collection) {
+      modality(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
@@ -1065,9 +1104,11 @@ setReplaceMethod(
   f = "modality",
   signature = c("result_collection", "character"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@modality <- value
-    methods::validObject(x)
-    return(x)
+    update <- function(model) {
+      modality(model) <- value
+      return(model)
+    }
+    return(.update_model(x, modality, model_id, update))
   }
 )
 
