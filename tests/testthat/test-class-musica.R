@@ -196,3 +196,12 @@ test_that("subset_variants_by_samples() keeps every requested sample", {
   expect_equal(nrow(subset), sum(variants(musica)$sample %in% samples))
   expect_setequal(as.character(unique(subset$sample)), samples)
 })
+
+test_that("subset_musica_by_annotation() reports values that are missing", {
+  data(res_annot)
+  expect_error(
+    subset_musica_by_annotation(res_annot, "Tumor_Subtypes", c("Nope", "No")),
+    regexp = "Nope, No not present in Tumor_Subtypes column",
+    fixed = TRUE
+  )
+})

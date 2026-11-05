@@ -151,10 +151,10 @@ subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
     samp_annot(musica)
   ) %in% annot_col)]] %in% annot_names)
   if (length(annotation_index) == 0) {
-    stop(paste(annot_names, " not present in ", annot_col,
-      " column, please review.",
-      sep = "", collapse = TRUE
-    ))
+    stop(
+      paste(annot_names, collapse = ", "), " not present in ", annot_col,
+      " column, please review."
+    )
   }
   annotation_samples <- sample_names(musica)[annotation_index]
   return(.subset_musica_samples(musica, annotation_samples))
