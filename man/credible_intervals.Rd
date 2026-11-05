@@ -6,9 +6,9 @@
 \alias{credible_intervals,result_collection-method}
 \alias{credible_intervals,result_model-method}
 \alias{credible_intervals<-}
-\alias{credible_intervals<-,musica,matrix-method}
-\alias{credible_intervals<-,result_collection,matrix-method}
-\alias{credible_intervals<-,result_model,matrix-method}
+\alias{credible_intervals<-,musica,SimpleList-method}
+\alias{credible_intervals<-,result_collection,SimpleList-method}
+\alias{credible_intervals<-,result_model,SimpleList-method}
 \title{Retrieve credible_intervals from a result_model, result_collection, or
 musica object}
 \usage{
@@ -22,11 +22,11 @@ credible_intervals(x, ...)
 
 credible_intervals(x, ...) <- value
 
-\S4method{credible_intervals}{musica,matrix}(x, result, modality, model_id) <- value
+\S4method{credible_intervals}{musica,SimpleList}(x, result, modality, model_id) <- value
 
-\S4method{credible_intervals}{result_collection,matrix}(x, modality, model_id) <- value
+\S4method{credible_intervals}{result_collection,SimpleList}(x, modality, model_id) <- value
 
-\S4method{credible_intervals}{result_model,matrix}(x) <- value
+\S4method{credible_intervals}{result_model,SimpleList}(x) <- value
 }
 \arguments{
 \item{x}{A \code{\linkS4class{musica}},

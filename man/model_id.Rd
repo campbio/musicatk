@@ -6,9 +6,9 @@
 \alias{model_id,result_collection-method}
 \alias{model_id,result_model-method}
 \alias{model_id<-}
-\alias{model_id<-,musica,matrix-method}
-\alias{model_id<-,result_collection,matrix-method}
-\alias{model_id<-,result_model,matrix-method}
+\alias{model_id<-,musica,character-method}
+\alias{model_id<-,result_collection,character-method}
+\alias{model_id<-,result_model,character-method}
 \title{Retrieve model_id from a result_model, result_collection, or musica
 object}
 \usage{
@@ -22,11 +22,11 @@ model_id(x, ...)
 
 model_id(x, ...) <- value
 
-\S4method{model_id}{musica,matrix}(x, result, modality, model_id) <- value
+\S4method{model_id}{musica,character}(x, result, modality, model_id) <- value
 
-\S4method{model_id}{result_collection,matrix}(x, modality, model_id) <- value
+\S4method{model_id}{result_collection,character}(x, modality, model_id) <- value
 
-\S4method{model_id}{result_model,matrix}(x) <- value
+\S4method{model_id}{result_model,character}(x) <- value
 }
 \arguments{
 \item{x}{A \code{\linkS4class{musica}},
@@ -46,7 +46,10 @@ model_id. Used when \code{result} is a \code{\linkS4class{musica}} object.}
 \code{result} is a \code{\linkS4class{musica}} or
 \code{\linkS4class{result_collection}} object.}
 
-\item{value}{Model identifier}
+\item{value}{The new model identifier. For a \code{\linkS4class{musica}}
+or \code{\linkS4class{result_collection}} object, the stored model is
+renamed too, so it is retrieved by the new identifier afterwards. An
+identifier that another model in the modality already uses gives an error.}
 }
 \value{
 The model_id for the model
