@@ -3,7 +3,7 @@
 * The setters `num_signatures<-`, `other_parameters<-`, `credible_intervals<-`, `model_id<-` and `modality<-` now work; they could never be called before. `model_id<-` on a `musica` or `result_collection` object also renames the stored model, so `get_model()` finds it by the new id (#156).
 * `hyperparameter<-` on a `musica` object now assigns the value; before, it always failed (#157).
 * `subset_musica_by_annotation()` gives its intended error when the requested values are missing (#163).
-* `samp_annot<-` accepts Date and POSIXct vectors, and `variants<-` accepts a `data.frame` (#164).
+* `samp_annot<-` accepts Date and date-time (POSIXct, POSIXlt) vectors, and `variants<-` accepts a `data.frame` (#164).
 * `subset_variants_by_samples()` returns all variants of every requested sample; with several names it returned only some of them (#48).
 
 # musicatk 2.7.2 (2026-11-04)
