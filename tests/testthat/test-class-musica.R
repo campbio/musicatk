@@ -206,7 +206,7 @@ test_that("subset_musica_by_annotation() reports values that are missing", {
   )
 })
 
-test_that("samp_annot<- accepts dates and variants<- accepts a data.frame", {
+test_that("samp_annot<- accepts Date and date-time vectors", {
   data(musica)
   n <- length(sample_names(musica))
   dates <- rep(as.Date("2026-01-01"), n)
@@ -223,7 +223,12 @@ test_that("samp_annot<- accepts dates and variants<- accepts a data.frame", {
     samp_annot(musica, "bad") <- as.list(seq_len(n)),
     regexp = "must be a vector"
   )
+  samp_annot(musica, "time_lt") <- as.POSIXlt(times)
+  expect_identical(samp_annot(musica)$time_lt, times)
+})
 
+test_that("variants<- accepts a data.frame", {
+  data(musica)
   variants_df <- as.data.frame(variants(musica))
   variants(musica) <- variants_df
   expect_s3_class(variants(musica), "data.table")
@@ -240,6 +245,12 @@ test_that("name_signatures() returns the musica object with new names", {
   )
   expect_identical(
     rownames(exposures(renamed, "result", "SBS96", "res")), new_names
+  )
+
+  # The first argument does not have to be a variable
+  renamed <- name_signatures(identity(res), "res", new_names)
+  expect_identical(
+    colnames(signatures(renamed, "result", "SBS96", "res")), new_names
   )
 
   # The caller's object is still renamed in place (see #205)

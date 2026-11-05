@@ -292,6 +292,7 @@ subset_variants_by_samples <- function(musica, sample_name) {
 #' @export
 name_signatures <- function(musica, model_id, name_vector, modality = "SBS96",
                             result_name = "result") {
+  target <- substitute(musica)
   # Get result object from musica object
   result <- get_model(musica,
     result = result_name,
@@ -306,18 +307,32 @@ name_signatures <- function(musica, model_id, name_vector, modality = "SBS96",
       num_sigs, ")."
     )
   }
-  # Rename in the caller's object too, as before; removing this in-place
-  # update is an API change tracked in #205. These lines must run before
-  # 'musica' is modified below, or substitute() returns the object instead
-  # of the caller's expression.
-  eval.parent(substitute(colnames(signatures(musica, result_name, modality,
-                                             model_id)) <- name_vector))
-  eval.parent(substitute(rownames(exposures(musica, result_name, modality,
-                                            model_id)) <- name_vector))
-
   colnames(signatures(musica, result_name, modality, model_id)) <- name_vector
   rownames(exposures(musica, result_name, modality, model_id)) <- name_vector
+
+  # Also update the caller's object in place, as before, when the argument
+  # can be assigned to. Removing this in-place update is an API change
+  # tracked in #205.
+  if (.is_assignable(target)) {
+    eval.parent(substitute(
+      target <- value,
+      list(target = target, value = musica)
+    ))
+  }
   return(invisible(musica))
+}
+
+# TRUE when 'expr' (an unevaluated argument) can be the target of an
+# assignment, such as x, x$y, x[["y"]] or x@y
+.is_assignable <- function(expr) {
+  if (is.name(expr)) {
+    return(TRUE)
+  }
+  if (is.call(expr) && length(expr) >= 2 &&
+        as.character(expr[[1]])[1] %in% c("$", "[[", "[", "@")) {
+    return(.is_assignable(expr[[2]]))
+  }
+  return(FALSE)
 }
 
 ################################################################################
@@ -509,6 +524,9 @@ setReplaceMethod(
 
     if (length(name) != 1 || !is.character(name)) {
       stop("The 'name' parameter must be a character of length 1.")
+    }
+    if (inherits(value, "POSIXlt")) {
+      value <- as.POSIXct(value)
     }
     if (is.list(value) || !is.null(dim(value))) {
       stop(
