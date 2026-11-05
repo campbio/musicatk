@@ -205,3 +205,27 @@ test_that("subset_musica_by_annotation() reports values that are missing", {
     fixed = TRUE
   )
 })
+
+test_that("samp_annot<- accepts dates and variants<- accepts a data.frame", {
+  data(musica)
+  n <- length(sample_names(musica))
+  dates <- rep(as.Date("2026-01-01"), n)
+  samp_annot(musica, "date") <- dates
+  expect_identical(samp_annot(musica)$date, dates)
+  times <- rep(as.POSIXct("2026-01-01 10:00:00", tz = "UTC"), n)
+  samp_annot(musica, "time") <- times
+  expect_identical(samp_annot(musica)$time, times)
+  expect_error(
+    samp_annot(musica, "bad") <- matrix(1, n, 2),
+    regexp = "must be a vector"
+  )
+  expect_error(
+    samp_annot(musica, "bad") <- as.list(seq_len(n)),
+    regexp = "must be a vector"
+  )
+
+  variants_df <- as.data.frame(variants(musica))
+  variants(musica) <- variants_df
+  expect_s3_class(variants(musica), "data.table")
+  expect_equal(nrow(variants(musica)), nrow(variants_df))
+})
