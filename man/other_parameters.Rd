@@ -6,9 +6,9 @@
 \alias{other_parameters,result_collection-method}
 \alias{other_parameters,result_model-method}
 \alias{other_parameters<-}
-\alias{other_parameters<-,musica,matrix-method}
-\alias{other_parameters<-,result_collection,matrix-method}
-\alias{other_parameters<-,result_model,matrix-method}
+\alias{other_parameters<-,musica,SimpleList-method}
+\alias{other_parameters<-,result_collection,SimpleList-method}
+\alias{other_parameters<-,result_model,SimpleList-method}
 \title{Retrieve other_parameters from a result_model, result_collection, or
 musica object}
 \usage{
@@ -22,11 +22,11 @@ other_parameters(x, ...)
 
 other_parameters(x, ...) <- value
 
-\S4method{other_parameters}{musica,matrix}(x, result, modality, model_id) <- value
+\S4method{other_parameters}{musica,SimpleList}(x, result, modality, model_id) <- value
 
-\S4method{other_parameters}{result_collection,matrix}(x, modality, model_id) <- value
+\S4method{other_parameters}{result_collection,SimpleList}(x, modality, model_id) <- value
 
-\S4method{other_parameters}{result_model,matrix}(x) <- value
+\S4method{other_parameters}{result_model,SimpleList}(x) <- value
 }
 \arguments{
 \item{x}{A \code{\linkS4class{musica}},

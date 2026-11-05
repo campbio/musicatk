@@ -6,9 +6,9 @@
 \alias{num_signatures,result_collection-method}
 \alias{num_signatures,result_model-method}
 \alias{num_signatures<-}
-\alias{num_signatures<-,musica,matrix-method}
-\alias{num_signatures<-,result_collection,matrix-method}
-\alias{num_signatures<-,result_model,matrix-method}
+\alias{num_signatures<-,musica,numeric-method}
+\alias{num_signatures<-,result_collection,numeric-method}
+\alias{num_signatures<-,result_model,numeric-method}
 \title{Retrieve num_signatures from a result_model, result_collection, or
 musica object}
 \usage{
@@ -22,11 +22,11 @@ num_signatures(x, ...)
 
 num_signatures(x, ...) <- value
 
-\S4method{num_signatures}{musica,matrix}(x, result, modality, model_id) <- value
+\S4method{num_signatures}{musica,numeric}(x, result, modality, model_id) <- value
 
-\S4method{num_signatures}{result_collection,matrix}(x, modality, model_id) <- value
+\S4method{num_signatures}{result_collection,numeric}(x, modality, model_id) <- value
 
-\S4method{num_signatures}{result_model,matrix}(x) <- value
+\S4method{num_signatures}{result_model,numeric}(x) <- value
 }
 \arguments{
 \item{x}{A \code{\linkS4class{musica}},

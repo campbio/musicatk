@@ -1,3 +1,11 @@
+# musicatk 2.7.3 (2026-11-05)
+* `name_signatures()` returns the renamed `musica` object (invisibly), so `res <- name_signatures(res, ...)` works; before, it returned the vector of names. The object passed in is still renamed in place as before (#154).
+* The setters `num_signatures<-`, `other_parameters<-`, `credible_intervals<-`, `model_id<-` and `modality<-` now work; they could never be called before. `model_id<-` and `modality<-` on a `musica` or `result_collection` object also rename or move the stored model, so `get_model()` finds it by the new id or modality (#156).
+* `hyperparameter<-` on a `musica` object now assigns the value; before, it always failed (#157).
+* `subset_musica_by_annotation()` gives its intended error when the requested values are missing (#163).
+* `samp_annot<-` accepts Date and date-time (POSIXct, POSIXlt) vectors, and `variants<-` accepts a `data.frame` (#164).
+* `subset_variants_by_samples()` returns all variants of every requested sample; with several names it returned only some of them (#48).
+
 # musicatk 2.7.2 (2026-11-04)
 * Samples are now matched by name everywhere. `sample_names()` (the `Samples` column of the sample annotations) sets the sample order; count tables and stored exposures follow it, and new validity methods for `musica`, `result_model` and `result_collection` check this (#153, #160). Objects saved with older versions whose tables are out of order give an error asking to rebuild the table with `overwrite = TRUE`; a `full_benchmark` saved with an older version must be recreated with `create_benchmark()`.
 * `exposure_differential_analysis()`, `plot_heatmap()` and `plot_cluster()` pair annotations with exposures by sample name; before, results were wrong when the orders differed, as in the shipped `res_annot` (#153). `plot_cluster(group = "annotation")` now uses the `annotation` argument (#172).

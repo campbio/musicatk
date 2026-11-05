@@ -188,3 +188,74 @@ test_that("Count-only objects from older versions still have sample names", {
   samp_annot(legacy, "group") <- rep(c("a", "b"), c(3, 4))
   expect_identical(samp_annot(legacy)$group, rep(c("a", "b"), c(3, 4)))
 })
+
+test_that("subset_variants_by_samples() keeps every requested sample", {
+  data(musica)
+  samples <- sample_names(musica)[1:2]
+  subset <- subset_variants_by_samples(musica, samples)
+  expect_equal(nrow(subset), sum(variants(musica)$sample %in% samples))
+  expect_setequal(as.character(unique(subset$sample)), samples)
+})
+
+test_that("subset_musica_by_annotation() reports values that are missing", {
+  data(res_annot)
+  expect_error(
+    subset_musica_by_annotation(res_annot, "Tumor_Subtypes", c("Nope", "No")),
+    regexp = "Nope, No not present in Tumor_Subtypes column",
+    fixed = TRUE
+  )
+})
+
+test_that("samp_annot<- accepts Date and date-time vectors", {
+  data(musica)
+  n <- length(sample_names(musica))
+  dates <- rep(as.Date("2026-01-01"), n)
+  samp_annot(musica, "date") <- dates
+  expect_identical(samp_annot(musica)$date, dates)
+  times <- rep(as.POSIXct("2026-01-01 10:00:00", tz = "UTC"), n)
+  samp_annot(musica, "time") <- times
+  expect_identical(samp_annot(musica)$time, times)
+  expect_error(
+    samp_annot(musica, "bad") <- matrix(1, n, 2),
+    regexp = "must be a vector"
+  )
+  expect_error(
+    samp_annot(musica, "bad") <- as.list(seq_len(n)),
+    regexp = "must be a vector"
+  )
+  samp_annot(musica, "time_lt") <- as.POSIXlt(times)
+  expect_identical(samp_annot(musica)$time_lt, times)
+})
+
+test_that("variants<- accepts a data.frame", {
+  data(musica)
+  variants_df <- as.data.frame(variants(musica))
+  variants(musica) <- variants_df
+  expect_s3_class(variants(musica), "data.table")
+  expect_equal(nrow(variants(musica)), nrow(variants_df))
+})
+
+test_that("name_signatures() returns the musica object with new names", {
+  data(res)
+  new_names <- c("smoking", "apobec", "unknown")
+  renamed <- name_signatures(res, "res", new_names)
+  expect_s4_class(renamed, "musica")
+  expect_identical(
+    colnames(signatures(renamed, "result", "SBS96", "res")), new_names
+  )
+  expect_identical(
+    rownames(exposures(renamed, "result", "SBS96", "res")), new_names
+  )
+
+  # The first argument does not have to be a variable
+  renamed <- name_signatures(identity(res), "res", new_names)
+  expect_identical(
+    colnames(signatures(renamed, "result", "SBS96", "res")), new_names
+  )
+
+  # The caller's object is still renamed in place (see #205)
+  data(res)
+  name_signatures(res, "res", new_names)
+  expect_identical(colnames(signatures(res, "result", "SBS96", "res")),
+                   new_names)
+})

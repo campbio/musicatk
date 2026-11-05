@@ -64,6 +64,42 @@ setClass(
 
 setValidity("result_model", .valid_result_model)
 
+# Helpers for the musica and result_collection setters below. They change a
+# stored model through the result_model setter, so the model's own validity
+# check runs (validObject() does not check objects nested in lists).
+
+.check_model_exists <- function(models, modality, model_id) {
+  if (length(model_id) != 1 || !model_id %in% names(models)) {
+    stop(
+      "The model '", paste(model_id, collapse = ", "), "' was not found ",
+      "in modality '", paste(modality, collapse = ", "), "'."
+    )
+  }
+  invisible(TRUE)
+}
+
+# Replace one model of a result_collection with update(model)
+.update_model <- function(collection, modality, model_id, update) {
+  models <- collection@modality[[modality]]
+  .check_model_exists(models, modality, model_id)
+  models[[model_id]] <- update(models[[model_id]])
+  collection@modality[[modality]] <- models
+  methods::validObject(collection)
+  return(collection)
+}
+
+# Replace one result_collection of a musica object with update(collection)
+.update_collection <- function(musica, result, update) {
+  if (length(result) != 1 || !result %in% names(musica@result_list)) {
+    stop(
+      "The result '", paste(result, collapse = ", "), "' was not found ",
+      "in the result list."
+    )
+  }
+  musica@result_list[[result]] <- update(musica@result_list[[result]])
+  return(musica)
+}
+
 #' @title Retrieve exposures from a result_model, result_collection, or musica
 #' object
 #' @description  The \code{exposure} matrix contains estimated amount of
@@ -368,30 +404,36 @@ setGeneric(
 #' @rdname num_signatures
 setReplaceMethod(
   f = "num_signatures",
-  signature = c("musica", "matrix"),
+  signature = c("musica", "numeric"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@num_signatures <-
-      value
-    return(x)
+    update <- function(collection) {
+      num_signatures(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
 #' @rdname num_signatures
 setReplaceMethod(
   f = "num_signatures",
-  signature = c("result_collection", "matrix"),
+  signature = c("result_collection", "numeric"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@num_signatures <- value
-    return(x)
+    update <- function(model) {
+      num_signatures(model) <- value
+      return(model)
+    }
+    return(.update_model(x, modality, model_id, update))
   }
 )
 
 #' @rdname num_signatures
 setReplaceMethod(
   f = "num_signatures",
-  signature = c("result_model", "matrix"),
+  signature = c("result_model", "numeric"),
   definition = function(x, value) {
     x@num_signatures <- value
+    methods::validObject(x)
     return(x)
   }
 )
@@ -477,30 +519,36 @@ setGeneric(
 #' @rdname other_parameters
 setReplaceMethod(
   f = "other_parameters",
-  signature = c("musica", "matrix"),
+  signature = c("musica", "SimpleList"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@other_parameters <-
-      value
-    return(x)
+    update <- function(collection) {
+      other_parameters(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
 #' @rdname other_parameters
 setReplaceMethod(
   f = "other_parameters",
-  signature = c("result_collection", "matrix"),
+  signature = c("result_collection", "SimpleList"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@other_parameters <- value
-    return(x)
+    update <- function(model) {
+      other_parameters(model) <- value
+      return(model)
+    }
+    return(.update_model(x, modality, model_id, update))
   }
 )
 
 #' @rdname other_parameters
 setReplaceMethod(
   f = "other_parameters",
-  signature = c("result_model", "matrix"),
+  signature = c("result_model", "SimpleList"),
   definition = function(x, value) {
     x@other_parameters <- value
+    methods::validObject(x)
     return(x)
   }
 )
@@ -588,30 +636,36 @@ setGeneric(
 #' @rdname credible_intervals
 setReplaceMethod(
   f = "credible_intervals",
-  signature = c("musica", "matrix"),
+  signature = c("musica", "SimpleList"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@
-      credible_intervals <- value
-    return(x)
+    update <- function(collection) {
+      credible_intervals(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
 #' @rdname credible_intervals
 setReplaceMethod(
   f = "credible_intervals",
-  signature = c("result_collection", "matrix"),
+  signature = c("result_collection", "SimpleList"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@credible_intervals <- value
-    return(x)
+    update <- function(model) {
+      credible_intervals(model) <- value
+      return(model)
+    }
+    return(.update_model(x, modality, model_id, update))
   }
 )
 
 #' @rdname credible_intervals
 setReplaceMethod(
   f = "credible_intervals",
-  signature = c("result_model", "matrix"),
+  signature = c("result_model", "SimpleList"),
   definition = function(x, value) {
     x@credible_intervals <- value
+    methods::validObject(x)
     return(x)
   }
 )
@@ -896,7 +950,10 @@ setMethod(
 #' \code{result} is a \code{\linkS4class{musica}} or
 #' \code{\linkS4class{result_collection}} object.
 #' @param ... Other inputs
-#' @param value Model identifier
+#' @param value The new model identifier. For a \code{\linkS4class{musica}}
+#' or \code{\linkS4class{result_collection}} object, the stored model is
+#' renamed too, so it is retrieved by the new identifier afterwards. An
+#' identifier that another model in the modality already uses gives an error.
 #' @export
 setGeneric(
   name = "model_id<-",
@@ -908,19 +965,36 @@ setGeneric(
 #' @rdname model_id
 setReplaceMethod(
   f = "model_id",
-  signature = c("musica", "matrix"),
+  signature = c("musica", "character"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@model_id <- value
-    return(x)
+    update <- function(collection) {
+      model_id(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
 #' @rdname model_id
 setReplaceMethod(
   f = "model_id",
-  signature = c("result_collection", "matrix"),
+  signature = c("result_collection", "character"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@model_id <- value
+    if (length(value) != 1 || is.na(value) || value == "") {
+      stop("The new 'model_id' must be a single value that is not empty.")
+    }
+    models <- x@modality[[modality]]
+    .check_model_exists(models, modality, model_id)
+    if (value != model_id && value %in% names(models)) {
+      stop(
+        "A model named '", value, "' already exists in modality '",
+        modality, "'."
+      )
+    }
+    model_id(models[[model_id]]) <- value
+    names(models)[names(models) == model_id] <- value
+    x@modality[[modality]] <- models
+    methods::validObject(x)
     return(x)
   }
 )
@@ -928,9 +1002,10 @@ setReplaceMethod(
 #' @rdname model_id
 setReplaceMethod(
   f = "model_id",
-  signature = c("result_model", "matrix"),
+  signature = c("result_model", "character"),
   definition = function(x, value) {
     x@model_id <- value
+    methods::validObject(x)
     return(x)
   }
 )
@@ -1000,9 +1075,13 @@ setMethod(
 #' \code{\linkS4class{result_collection}} object.
 #' @param model_id Model identifier to assign the modality. Used when
 #' \code{result} is a \code{\linkS4class{musica}} or
-#' @param ... Other inputs
 #' \code{\linkS4class{result_collection}} object.
-#' @param value A modality
+#' @param ... Other inputs
+#' @param value A modality. For a \code{\linkS4class{musica}} or
+#' \code{\linkS4class{result_collection}} object, the stored model is moved to
+#' the new modality, so it is retrieved by the new modality afterwards; a
+#' modality left without models is removed. A model with the same identifier
+#' in the new modality gives an error.
 #' @export
 setGeneric(
   name = "modality<-",
@@ -1014,19 +1093,53 @@ setGeneric(
 #' @rdname modality
 setReplaceMethod(
   f = "modality",
-  signature = c("musica", "matrix"),
+  signature = c("musica", "character"),
   definition = function(x, result, modality, model_id, value) {
-    x@result_list[[result]]@modality[[modality]][[model_id]]@modality <- value
-    return(x)
+    update <- function(collection) {
+      modality(collection, modality, model_id) <- value
+      return(collection)
+    }
+    return(.update_collection(x, result, update))
   }
 )
 
 #' @rdname modality
 setReplaceMethod(
   f = "modality",
-  signature = c("result_collection", "matrix"),
+  signature = c("result_collection", "character"),
   definition = function(x, modality, model_id, value) {
-    x@modality[[modality]][[model_id]]@modality <- value
+    if (length(value) != 1 || is.na(value) || value == "") {
+      stop("The new 'modality' must be a single value that is not empty.")
+    }
+    models <- x@modality[[modality]]
+    .check_model_exists(models, modality, model_id)
+    model <- models[[model_id]]
+    modality(model) <- value
+    if (value == modality) {
+      models[[model_id]] <- model
+      x@modality[[modality]] <- models
+    } else {
+      # Store the model under its new modality
+      targets <- x@modality[[value]]
+      if (model_id %in% names(targets)) {
+        stop(
+          "A model named '", model_id, "' already exists in modality '",
+          value, "'."
+        )
+      }
+      if (is.null(targets)) {
+        targets <- list()
+      }
+      targets[[model_id]] <- model
+      models[[model_id]] <- NULL
+      x@modality[[value]] <- targets
+      if (length(models) == 0) {
+        x@modality[[modality]] <- NULL
+      } else {
+        x@modality[[modality]] <- models
+      }
+    }
+    methods::validObject(x)
     return(x)
   }
 )
@@ -1034,9 +1147,10 @@ setReplaceMethod(
 #' @rdname modality
 setReplaceMethod(
   f = "modality",
-  signature = c("result_model", "matrix"),
+  signature = c("result_model", "character"),
   definition = function(x, value) {
     x@modality <- value
+    methods::validObject(x)
     return(x)
   }
 )

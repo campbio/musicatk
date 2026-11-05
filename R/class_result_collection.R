@@ -213,7 +213,8 @@ setReplaceMethod(
   f = "hyperparameter",
   signature = c("musica", "list"),
   definition = function(x, result, value) {
-    x@result_list[[result]]@hperparameter
+    x@result_list[[result]]@hyperparameter <- value
+    methods::validObject(x)
     return(x)
   }
 )
@@ -224,6 +225,7 @@ setReplaceMethod(
   signature = c("result_collection", "list"),
   definition = function(x, value) {
     x@hyperparameter <- value
+    methods::validObject(x)
     return(x)
   }
 )
