@@ -27,14 +27,16 @@ signature discovery or prediction.}
 Default \code{"result"}.}
 }
 \value{
-Musica object with user-defined signatures names
+The \code{\linkS4class{musica}} object with the user-defined
+signature names, invisibly. The object passed as \code{musica} is also
+updated in place.
 }
 \description{
 Rename signatures for a model
 }
 \examples{
 data(res)
-name_signatures(res,
+res <- name_signatures(res,
   model_id = "res",
   name_vector = c("smoking", "apobec", "unknown")
 )

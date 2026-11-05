@@ -280,10 +280,12 @@ subset_variants_by_samples <- function(musica, sample_name) {
 #' "IND83". Default \code{"SBS96"}.
 #' @param result_name Name of the result list entry containing the model.
 #' Default \code{"result"}.
-#' @return Musica object with user-defined signatures names
+#' @return The \code{\linkS4class{musica}} object with the user-defined
+#' signature names, invisibly. The object passed as \code{musica} is also
+#' updated in place.
 #' @examples
 #' data(res)
-#' name_signatures(res,
+#' res <- name_signatures(res,
 #'   model_id = "res",
 #'   name_vector = c("smoking", "apobec", "unknown")
 #' )
@@ -304,10 +306,18 @@ name_signatures <- function(musica, model_id, name_vector, modality = "SBS96",
       num_sigs, ")."
     )
   }
+  # Rename in the caller's object too, as before; removing this in-place
+  # update is an API change tracked in #205. These lines must run before
+  # 'musica' is modified below, or substitute() returns the object instead
+  # of the caller's expression.
   eval.parent(substitute(colnames(signatures(musica, result_name, modality,
                                              model_id)) <- name_vector))
   eval.parent(substitute(rownames(exposures(musica, result_name, modality,
                                             model_id)) <- name_vector))
+
+  colnames(signatures(musica, result_name, modality, model_id)) <- name_vector
+  rownames(exposures(musica, result_name, modality, model_id)) <- name_vector
+  return(invisible(musica))
 }
 
 ################################################################################

@@ -229,3 +229,22 @@ test_that("samp_annot<- accepts dates and variants<- accepts a data.frame", {
   expect_s3_class(variants(musica), "data.table")
   expect_equal(nrow(variants(musica)), nrow(variants_df))
 })
+
+test_that("name_signatures() returns the musica object with new names", {
+  data(res)
+  new_names <- c("smoking", "apobec", "unknown")
+  renamed <- name_signatures(res, "res", new_names)
+  expect_s4_class(renamed, "musica")
+  expect_identical(
+    colnames(signatures(renamed, "result", "SBS96", "res")), new_names
+  )
+  expect_identical(
+    rownames(exposures(renamed, "result", "SBS96", "res")), new_names
+  )
+
+  # The caller's object is still renamed in place (see #205)
+  data(res)
+  name_signatures(res, "res", new_names)
+  expect_identical(colnames(signatures(res, "result", "SBS96", "res")),
+                   new_names)
+})
