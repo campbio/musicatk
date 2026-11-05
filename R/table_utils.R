@@ -71,14 +71,41 @@ extract_count_tables <- function(musica) {
   return(extract_count_tables(musica)[[modality]]@count_table)
 }
 
+# Factor of variant samples on sample_names(), so count tables get one
+# column per sample, in sample order, with no stale levels
+.as_sample_factor <- function(musica, samples) {
+  factor(as.character(samples), levels = sample_names(musica))
+}
+
+# Put count-table columns in sample_names() order; stop when the columns
+# are not exactly the samples in the musica object
+.align_count_columns <- function(musica, count_table, name) {
+  samples <- sample_names(musica)
+  columns <- colnames(count_table)
+  matches <- !is.null(columns) && anyDuplicated(columns) == 0 &&
+    setequal(columns, samples)
+  if (!matches) {
+    stop(
+      "The columns of count table '", name, "' do not match the sample ",
+      "names in the 'musica' object. Rebuild the table with ",
+      "'overwrite = TRUE'."
+    )
+  }
+  count_table[, samples, drop = FALSE]
+}
+
 .subset_count_tables <- function(musica, samples) {
+  # Character, so a factor never indexes columns by its integer codes
+  samples <- as.character(samples)
   tables <- tables(musica)
   table_names <- names(tables)
   for (name in table_names) {
     sub_tab <- tables[[name]]
-    sub_tab@count_table <- sub_tab@count_table[, which(colnames(
-      sub_tab@count_table
-    ) %in% samples), drop = FALSE]
+    columns <- colnames(sub_tab@count_table)
+    sub_tab@count_table <- sub_tab@count_table[,
+      samples[samples %in% columns],
+      drop = FALSE
+    ]
     tables[[name]] <- sub_tab
   }
   return(tables)
@@ -129,6 +156,8 @@ extract_count_tables <- function(musica) {
     }
   }
   # Check for color_variable in column names of annotation
+
+  count_table <- .align_count_columns(musica, count_table, name)
 
   tab <- new("count_table",
     name = name, count_table = count_table,
@@ -195,7 +224,7 @@ build_custom_table <- function(musica, variant_annotation, name,
   # Check that variant column exists
   if (variant_annotation %in% colnames(variants)) {
     column_data <- variants[[variant_annotation]]
-    sample_names <- unique(variants$sample)
+    sample_names <- sample_names(musica)
     num_samples <- length(sample_names)
     default_factor <- levels(factor(column_data))
     variant_tables <- vector("list", length = num_samples)
@@ -310,7 +339,10 @@ combine_count_tables <- function(musica, to_comb, name,
     comb_type <- NULL
     comb_annotation <- NULL
     for (comb in to_comb) {
-      comb_table <- rbind(comb_table, get_count_table(tab[[comb]]))
+      comb_table <- rbind(
+        comb_table,
+        .align_count_columns(musica, get_count_table(tab[[comb]]), comb)
+      )
       comb_features <- rbind(comb_features, get_count_features(tab[[comb]]))
       comb_type <- c(comb_type, as.character(get_count_type(tab[[comb]])))
       comb_annotation <- rbind(comb_annotation, get_annot_tab(tab[[comb]]))

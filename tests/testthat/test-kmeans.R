@@ -54,3 +54,18 @@ test_that(desc = "Test kmeans visualization function", {
                     clusters = clust_out, group = "none", plotly = FALSE)
   expect_true(ggplot2::is.ggplot(p))
 })
+
+test_that(desc = "plot_cluster uses the chosen annotation, matched by name", {
+  data(res_annot)
+  samp_annot(res_annot, "test") <- c("A", "B", "C", "A", "B", "C", "C")
+  clust_out <- cluster_exposure(musica = res_annot, model_name = "res_annot",
+                                nclust = 2, iter.max = 15)
+  create_umap(res_annot, model_name = "res_annot")
+  p <- plot_cluster(musica = res_annot, model_name = "res_annot",
+                    clusters = clust_out, group = "annotation",
+                    annotation = "test", plotly = FALSE)
+  umap_samples <- rownames(umap(res_annot, "result", "SBS96", "res_annot"))
+  annot <- samp_annot(res_annot)
+  expected <- annot$test[match(umap_samples, as.character(annot$Samples))]
+  expect_equal(as.character(p$data$annotation), expected)
+})

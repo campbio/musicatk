@@ -15,8 +15,9 @@ subset_musica_by_counts(musica, table_name, num_counts)
 }
 \value{
 Returns a new musica object with sample annotations, count tables,
-and variants subsetted to only contains samples with the specified minimum
-number of counts (column sums) in the specified table
+variants, and the exposures of stored results subsetted to only contain
+samples with the specified minimum number of counts (column sums) in the
+specified table
 }
 \description{
 Creates a new musica subsetted to only samples with enough variants

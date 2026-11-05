@@ -21,6 +21,33 @@ setClass("result_collection",
   )
 )
 
+# Validity: each modality entry is a named list of result_model objects
+.valid_result_collection <- function(object) {
+  errors <- character()
+  for (modality in names(object@modality)) {
+    models <- object@modality[[modality]]
+    if (length(models) == 0) {
+      next
+    }
+    if (!all(vapply(models, methods::is, logical(1), "result_model"))) {
+      errors <- c(errors, paste0(
+        "Every entry of modality '", modality, "' must be a result_model."
+      ))
+    }
+    model_ids <- names(models)
+    bad_ids <- is.null(model_ids) || any(model_ids == "") ||
+      anyDuplicated(model_ids) > 0
+    if (bad_ids) {
+      errors <- c(errors, paste0(
+        "The models of modality '", modality, "' must have unique names."
+      ))
+    }
+  }
+  if (length(errors) == 0) TRUE else errors
+}
+
+setValidity("result_collection", .valid_result_collection)
+
 #' @title Retrieve a specific modality entry from a musica or result_collection
 #' object
 #' @description  \code{modality} list contains model results for a modality

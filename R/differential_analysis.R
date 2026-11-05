@@ -72,11 +72,8 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
   method <- match.arg(method)
   model <- get_model(musica, result_name, modality, model_name)
 
-  annotations <- samp_annot(musica)[[annotation]]
-  if (is.null(annotations)) {
-    stop(annotation, " does not exist.")
-  }
   exposures <- exposures(model)
+  annotations <- .annot_for_samples(musica, annotation, colnames(exposures))
   groups <- unique(annotations) %>% sort()
   annotations <- factor(annotations)
   if (length(groups) < 2) {

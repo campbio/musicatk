@@ -339,21 +339,24 @@ compare_results(musica,
 
 ## Adding sample annotations
 
-We first must add an annotation to the `musica` object
-```{r annotations}
-annot <- read.table(system.file("extdata", "sample_annotations.txt",
-                                package = "musicatk"),
-                    sep = "\t", header = TRUE)
-samp_annot(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes
-```
-
-Note that the annotations can also be added directly the `musica` object in the beginning using the same function: `samp_annot(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes`. These annotations will then automatically be included in any down-stream result object.
-
-* **Be sure that the annotation vector being supplied is in the same order as the samples in the `musica` object.** You can view the sample order with the `sample_names` function:
+We first must add an annotation to the `musica` object. The annotation vector must be in the same order as the samples in the `musica` object, which you can view with the `sample_names` function:
 
 ```{r sample_names}
 sample_names(musica)
 ```
+
+The rows of the annotation file are in a different order, so we match them to the sample names before adding the annotation:
+
+```{r annotations}
+annot <- read.table(system.file("extdata", "sample_annotations.txt",
+                                package = "musicatk"),
+                    sep = "\t", header = TRUE)
+# Find the annotation row for each sample in the musica object
+annot_rows <- match(sample_names(musica), annot$Sample_Names)
+samp_annot(musica, "Tumor_Subtypes") <- annot$Tumor_Subtypes[annot_rows]
+```
+
+Note that the annotations can also be added directly the `musica` object in the beginning using the same function. These annotations will then automatically be included in any down-stream result object.
 
 ## Plotting exposures by a Sample Annotation
 

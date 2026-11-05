@@ -27,6 +27,43 @@ setClass(
   )
 )
 
+# Validity: signatures (motifs x signatures) and exposures (signatures x
+# samples) must describe the same signatures. An empty or single-NA
+# placeholder matrix is not checked.
+.valid_result_model <- function(object) {
+  errors <- character()
+  is_placeholder <- function(x) {
+    length(x) == 0 || (length(x) == 1 && is.na(x))
+  }
+  signatures <- object@signatures
+  exposures <- object@exposures
+  if (!is_placeholder(signatures) && !is_placeholder(exposures)) {
+    if (ncol(signatures) != nrow(exposures)) {
+      errors <- c(errors, paste0(
+        "'exposures' must have one row per signature (column of ",
+        "'signatures'): ", nrow(exposures), " rows for ", ncol(signatures),
+        " signatures."
+      ))
+    } else if (!is.null(rownames(exposures)) &&
+                 !is.null(colnames(signatures)) &&
+                 !identical(rownames(exposures), colnames(signatures))) {
+      errors <- c(errors, paste0(
+        "The rownames of 'exposures' must match the colnames of ",
+        "'signatures'."
+      ))
+    }
+  }
+  if (length(object@model_id) > 1) {
+    errors <- c(errors, "'model_id' must be a single value.")
+  }
+  if (length(object@modality) > 1) {
+    errors <- c(errors, "'modality' must be a single value.")
+  }
+  if (length(errors) == 0) TRUE else errors
+}
+
+setValidity("result_model", .valid_result_model)
+
 #' @title Retrieve exposures from a result_model, result_collection, or musica
 #' object
 #' @description  The \code{exposure} matrix contains estimated amount of
@@ -114,6 +151,7 @@ setReplaceMethod(
   signature = c("musica", "matrix"),
   definition = function(x, result, modality, model_id, value) {
     x@result_list[[result]]@modality[[modality]][[model_id]]@exposures <- value
+    methods::validObject(x)
     return(x)
   }
 )

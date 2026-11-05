@@ -2,7 +2,7 @@
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^data-raw/$
+^data-raw$
 ^codecov\.yml$
 ^\.travis\.yml$
 ^renv*

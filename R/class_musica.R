@@ -3,6 +3,12 @@
 #' The primary object that contains variants, count_tables,
 #' and samples annotations
 #'
+#' Samples are matched by name, and \code{\link{sample_names}} (the
+#' \code{Samples} column of the sample annotations) sets their order: every
+#' count table has these samples as columns in this order, and the exposures
+#' of every stored model have all or some of them as columns in the same
+#' order. A validity method checks this.
+#'
 #' @slot variants \code{data.table} of variants
 #' @slot count_tables Summary table with per-sample unnormalized motif counts
 #' @slot sample_annotations Sample-level annotations (e.g. age, sex, primary)
@@ -24,6 +30,71 @@ setClass("musica",
   )
 )
 
+# Validity: sample_names() is the source of truth for sample order. Every
+# count table has exactly these columns in this order, every stored model's
+# exposures have an ordered subset of them, and every variant sample is one
+# of them.
+.valid_musica <- function(object) {
+  errors <- character()
+  samples <- sample_names(object)
+  annot <- object@sample_annotations
+  if (nrow(annot) > 0 && !"Samples" %in% colnames(annot)) {
+    errors <- c(errors, "'sample_annotations' must have a 'Samples' column.")
+  }
+  if (anyNA(samples) || anyDuplicated(samples) > 0) {
+    errors <- c(errors, "Sample names must be unique and not NA.")
+  }
+
+  # unique() before as.character() keeps this cheap on large variant tables
+  variant_samples <- as.character(unique(object@variants$sample))
+  missing <- setdiff(variant_samples, samples)
+  if (length(missing) > 0) {
+    errors <- c(errors, paste0(
+      "These variant samples are missing from the sample names: ",
+      paste(utils::head(missing, 5), collapse = ", ")
+    ))
+  }
+
+  for (name in names(object@count_tables)) {
+    columns <- colnames(object@count_tables[[name]]@count_table)
+    if (!identical(as.character(columns), samples)) {
+      errors <- c(errors, paste0(
+        "The columns of count table '", name, "' must be the sample names ",
+        "in the same order. Rebuild the table with 'overwrite = TRUE'."
+      ))
+    }
+  }
+
+  for (result_name in names(object@result_list)) {
+    collection <- object@result_list[[result_name]]
+    for (modality in names(collection@modality)) {
+      models <- collection@modality[[modality]]
+      for (model_id in names(models)) {
+        exposures <- models[[model_id]]@exposures
+        # An empty or single-NA placeholder matrix is not checked
+        if (length(exposures) == 0 ||
+              (length(exposures) == 1 && is.na(exposures))) {
+          next
+        }
+        columns <- colnames(exposures)
+        # identical() also catches missing, unknown or duplicated samples
+        if (is.null(columns) ||
+              !identical(columns, samples[samples %in% columns])) {
+          errors <- c(errors, paste0(
+            "The exposures of model '", model_id, "' (", result_name, ", ",
+            modality, ") must have sample names as columns, in the same ",
+            "order as the sample names."
+          ))
+        }
+      }
+    }
+  }
+
+  if (length(errors) == 0) TRUE else errors
+}
+
+setValidity("musica", .valid_musica)
+
 # Sample-Level object/methods -------------------------------
 
 #' Creates a new musica subsetted to only samples with enough variants
@@ -32,8 +103,9 @@ setClass("musica",
 #' @param table_name Name of table used for subsetting
 #' @param num_counts Minimum sum count value to drop samples
 #' @return Returns a new musica object with sample annotations, count tables,
-#' and variants subsetted to only contains samples with the specified minimum
-#' number of counts (column sums) in the specified table
+#' variants, and the exposures of stored results subsetted to only contain
+#' samples with the specified minimum number of counts (column sums) in the
+#' specified table
 #' @examples
 #' data(musica_sbs96)
 #' subset_musica_by_counts(musica_sbs96, "SBS96", 20)
@@ -41,29 +113,7 @@ setClass("musica",
 subset_musica_by_counts <- function(musica, table_name, num_counts) {
   tab <- .extract_count_table(musica, table_name)
   min_samples <- colnames(tab)[which(colSums(tab) >= num_counts)]
-
-  tables(musica) <- .subset_count_tables(musica, min_samples)
-
-  # Subset variants
-  variants(musica) <- variants(musica)[
-    which(variants(musica)$sample %in% min_samples),
-  ]
-
-  # Subset sample annotations
-  if (nrow(samp_annot(musica)) != 0) {
-    .overwrite_samp_annot(
-      musica = musica,
-      new_annot =
-        samp_annot(musica)[
-          which(samp_annot(musica)$Samples
-                %in% min_samples), ,
-          drop = FALSE
-        ]
-    )
-    # samp_annot(musica) <- samp_annot(musica)[which(
-    #  samp_annot(musica)$Samples %in% min_samples), ]
-  }
-  return(musica)
+  return(.subset_musica_samples(musica, min_samples))
 }
 
 #' Creates a new musica object subsetted to only one value of a sample
@@ -73,15 +123,18 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 #' @param annot_col Annotation class to use for subsetting
 #' @param annot_names Annotational value to subset to
 #' @return Returns a new musica object with sample annotations, count tables,
-#' and variants subsetted to only contains samples of the specified annotation
-#' type
+#' variants, and the exposures of stored results subsetted to only contain
+#' samples of the specified annotation type
 #' @examples
 #' data(musica_sbs96)
 #' annot <- read.table(system.file("extdata", "sample_annotations.txt",
 #'   package = "musicatk"
 #' ), sep = "\t", header = TRUE)
 #'
-#' samp_annot(musica_sbs96, "Tumor_Subtypes") <- annot$Tumor_Subtypes
+#' # Match the annotation rows to the sample order in the musica object
+#' annot_rows <- match(sample_names(musica_sbs96), annot$Sample_Names)
+#' tumor_subtypes <- annot$Tumor_Subtypes[annot_rows]
+#' samp_annot(musica_sbs96, "Tumor_Subtypes") <- tumor_subtypes
 #'
 #' musica_sbs96 <- subset_musica_by_annotation(
 #'   musica_sbs96, "Tumor_Subtypes",
@@ -103,17 +156,84 @@ subset_musica_by_annotation <- function(musica, annot_col, annot_names) {
       sep = "", collapse = TRUE
     ))
   }
-  .overwrite_samp_annot(musica, samp_annot(musica)[annotation_index, ])
-  annotation_samples <- samp_annot(musica)$"Samples"
-  tables(musica) <- .subset_count_tables(musica, samples = annotation_samples)
-  variants(musica) <- variants(musica)[
-    which(variants(musica)$sample %in% annotation_samples),
-  ]
+  annotation_samples <- sample_names(musica)[annotation_index]
+  return(.subset_musica_samples(musica, annotation_samples))
+}
+
+# Keep only 'samples' in the variants, sample annotations, count tables and
+# the exposures and UMAPs of every stored model, in sample_names() order
+.subset_musica_samples <- function(musica, samples) {
+  all_samples <- sample_names(musica)
+  keep <- all_samples[all_samples %in% samples]
+
+  musica@count_tables <- .subset_count_tables(musica, keep)
+
+  variants <- musica@variants
+  variants <- variants[which(variants$sample %in% keep), ]
+  if (is.factor(variants$sample)) {
+    variants$sample <- factor(as.character(variants$sample), levels = keep)
+  }
+  musica@variants <- variants
+
+  annot <- musica@sample_annotations
+  if (nrow(annot) != 0) {
+    annot <- annot[match(keep, all_samples), , drop = FALSE]
+    if (is.factor(annot$Samples)) {
+      annot$Samples <- factor(as.character(annot$Samples), levels = keep)
+    }
+    rownames(annot) <- NULL
+    musica@sample_annotations <- annot
+  }
+
+  musica@result_list <- .subset_result_list(musica@result_list, keep)
   return(musica)
 }
 
-.overwrite_samp_annot <- function(musica, new_annot) {
-  eval.parent(substitute(musica@sample_annotations <- new_annot))
+.subset_result_list <- function(result_list, samples) {
+  samples <- as.character(samples)
+  for (result_name in names(result_list)) {
+    collection <- result_list[[result_name]]
+    for (modality in names(collection@modality)) {
+      for (model_id in names(collection@modality[[modality]])) {
+        model <- collection@modality[[modality]][[model_id]]
+        exposures <- model@exposures
+        model@exposures <- exposures[,
+          samples[samples %in% colnames(exposures)],
+          drop = FALSE
+        ]
+        umap <- model@umap
+        if (!is.null(rownames(umap))) {
+          model@umap <- umap[samples[samples %in% rownames(umap)], ,
+            drop = FALSE
+          ]
+        }
+        collection@modality[[modality]][[model_id]] <- model
+      }
+    }
+    result_list[[result_name]] <- collection
+  }
+  return(result_list)
+}
+
+# Values of one sample annotation column, matched by name to 'samples'
+# (for example the columns of an exposure matrix)
+.annot_for_samples <- function(musica, annotation, samples) {
+  annot <- samp_annot(musica)
+  if (length(annotation) != 1 || !annotation %in% colnames(annot)) {
+    stop(
+      "The annotation '", paste(annotation, collapse = ", "),
+      "' does not exist in the sample annotations. Current annotations ",
+      "are: ", paste(colnames(annot), collapse = ", ")
+    )
+  }
+  index <- match(as.character(samples), sample_names(musica))
+  if (anyNA(index)) {
+    stop(
+      "These samples are missing from the sample annotations: ",
+      paste(samples[is.na(index)], collapse = ", ")
+    )
+  }
+  return(annot[[annotation]][index])
 }
 
 drop_na_variants <- function(variants, annot_col) {
@@ -239,6 +359,7 @@ setReplaceMethod(
   signature = c("musica", "data.table"),
   definition = function(musica, value) {
     musica@variants <- value
+    methods::validObject(musica)
     return(musica)
   }
 )
@@ -296,6 +417,7 @@ setReplaceMethod(
       }
     }
     musica@count_tables <- value
+    methods::validObject(musica)
     return(musica)
   }
 )
@@ -359,9 +481,7 @@ setReplaceMethod(
   definition = function(object, name, value) {
     # Initialize sample annotations in musica object
     if (nrow(samp_annot(object)) == 0) {
-      samples <- unique(object@variants$sample)
-      sample_dt <- data.table::data.table(Samples = samples)
-      object@sample_annotations <- sample_dt
+      object@sample_annotations <- data.frame(Samples = sample_names(object))
     }
 
     if (length(name) != 1 || !is.character(name)) {
@@ -377,6 +497,7 @@ setReplaceMethod(
       )
     }
     object@sample_annotations[[name]] <- value
+    methods::validObject(object)
     return(object)
   }
 )
@@ -409,12 +530,23 @@ setMethod(
   f = "sample_names",
   signature = "musica",
   definition = function(object) {
-    if (is.null(object@sample_annotations) ||
-        nrow(object@sample_annotations) == 0 ||
-        is.null(object@sample_annotations$Sample)) {
-      s <- gtools::mixedsort(unique(object@variants$sample))
+    annot <- object@sample_annotations
+    if (nrow(annot) == 0 || !"Samples" %in% colnames(annot)) {
+      # Legacy objects without annotations: variant samples in factor
+      # level order, or sorted when the column is character
+      sample <- object@variants$sample
+      if (is.factor(sample)) {
+        s <- levels(droplevels(sample))
+      } else if (length(sample) > 0) {
+        s <- gtools::mixedsort(unique(as.character(sample)))
+      } else if (length(object@count_tables) > 0) {
+        # Count-only objects: the first count table's columns
+        s <- as.character(colnames(object@count_tables[[1]]@count_table))
+      } else {
+        s <- character(0)
+      }
     } else {
-      s <- object@sample_annotations$Sample
+      s <- as.character(annot[["Samples"]])
     }
     return(s)
   }
@@ -466,6 +598,7 @@ setReplaceMethod(
   signature = c("musica", "SimpleList"),
   definition = function(musica, value) {
     musica@result_list <- value
+    methods::validObject(musica)
     return(musica)
   }
 )

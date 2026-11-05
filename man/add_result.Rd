@@ -17,7 +17,10 @@ add_result(
 \arguments{
 \item{signatures}{A matrix or data.frame of signatures by mutational motifs}
 
-\item{exposures}{A matrix or data.frame of samples by signature weights}
+\item{exposures}{A matrix or data.frame of signature weights, with
+signatures as rows and samples as columns. The column names must be sample
+names from the \code{musica} object (all or some of them); columns are
+matched by name and put in \code{\link{sample_names}} order.}
 
 \item{musica}{Existing musica object to add the new model to}
 

@@ -1,13 +1,14 @@
+# roxygen2 8 needs each @importFrom on one line, so these exceed 80 columns
+# nolint start: line_length_linter.
 #' @importFrom IRanges IRanges findOverlaps
 #' @importFrom GenomicFeatures genes
 #' @importFrom S4Vectors queryHits decode subjectHits
 #' @importFrom GenomicRanges strand
-#' @importFrom TxDb.Hsapiens.UCSC.hg38.knownGene
-#' TxDb.Hsapiens.UCSC.hg38.knownGene
-#' @importFrom TxDb.Hsapiens.UCSC.hg19.knownGene
-#' TxDb.Hsapiens.UCSC.hg19.knownGene
+#' @importFrom TxDb.Hsapiens.UCSC.hg38.knownGene TxDb.Hsapiens.UCSC.hg38.knownGene
+#' @importFrom TxDb.Hsapiens.UCSC.hg19.knownGene TxDb.Hsapiens.UCSC.hg19.knownGene
 #' @importFrom data.table data.table
 NULL
+# nolint end
 
 #' Uses a genome object to find context and add it to the variant table
 #'
