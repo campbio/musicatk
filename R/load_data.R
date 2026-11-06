@@ -1033,8 +1033,8 @@ create_musica_from_counts <- function(x, variant_class) {
       "T>G" = "#E7C9C6FF"
     )
 
-    # update count table rownames with SBS96 standard naming
-    rownames(x) <- annotation$motif
+    # match count table rows to the SBS96 motifs by name
+    x <- .match_count_rows(x, annotation$motif, "SBS96")
 
     # create count table object
     tab <- new("count_table",
@@ -1098,7 +1098,8 @@ create_musica_from_counts <- function(x, variant_class) {
     color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
     names(color_mapping) <- unique(annotation$mutation)
 
-    rownames(x) <- annotation$motif
+    # match count table rows to the DBS78 motifs by name
+    x <- .match_count_rows(x, annotation$motif, "DBS78")
 
     # create count table object
     tab <- new("count_table",
@@ -1126,6 +1127,30 @@ create_musica_from_counts <- function(x, variant_class) {
   return(musica)
 }
 
+
+
+# Puts the rows of a count matrix in the order of 'motifs', matching them
+# by row name. Without row names, the rows are assumed to be in that order.
+.match_count_rows <- function(x, motifs, table_name) {
+  if (is.null(rownames(x))) {
+    message(
+      "'x' has no row names, so its rows are assumed to be in the ",
+      "standard ", table_name, " order (", motifs[1], ", ", motifs[2],
+      ", ...)."
+    )
+    rownames(x) <- motifs
+    return(x)
+  }
+  unmatched <- setdiff(rownames(x), motifs)
+  if (length(unmatched) > 0 || anyDuplicated(rownames(x)) > 0) {
+    stop(
+      "The row names of 'x' must be the ", length(motifs), " standard ",
+      table_name, " motif names, such as '", motifs[1], "'. Row names ",
+      "not matched: ", paste(utils::head(unmatched, 5), collapse = ", ")
+    )
+  }
+  return(x[motifs, , drop = FALSE])
+}
 
 
 #' Load an external model into a musica object

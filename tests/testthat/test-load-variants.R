@@ -133,3 +133,32 @@ test_that("Variants on contigs missing from the genome are dropped", {
   )
   expect_identical(variants(musica)$chr, "chr1")
 })
+
+test_that("create_musica_from_counts matches rows to motifs by name", {
+  # Issue #116
+  data(musica)
+  counts <- get_count_table(extract_count_tables(musica)$SBS96)
+  reversed <- counts[rev(seq_len(nrow(counts))), ]
+  from_reversed <- create_musica_from_counts(reversed, "SBS96")
+  expect_identical(get_count_table(tables(from_reversed)$SBS96), counts)
+
+  misnamed <- counts
+  rownames(misnamed)[1] <- "A[C>A]A"
+  expect_error(
+    create_musica_from_counts(misnamed, "SBS96"),
+    regexp = "row names"
+  )
+
+  unnamed <- unname(counts)
+  colnames(unnamed) <- colnames(counts)
+  expect_message(
+    from_unnamed <- create_musica_from_counts(unnamed, "SBS96"),
+    regexp = "no row names"
+  )
+  expect_identical(get_count_table(tables(from_unnamed)$SBS96), counts)
+
+  data(dbs_musica)
+  dbs <- get_count_table(extract_count_tables(dbs_musica)$DBS78)
+  from_dbs <- create_musica_from_counts(dbs[rev(seq_len(nrow(dbs))), ], "DBS")
+  expect_identical(get_count_table(tables(from_dbs)$DBS78), dbs)
+})
