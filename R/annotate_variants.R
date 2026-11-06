@@ -297,18 +297,19 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' Add replication strand annotation to SBS variants based on bedgraph file
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param rep_range A GRanges object whose first metadata column labels
-#' each range \code{"leading"} or \code{"lagging"}, on the same genome build
-#' as the variants. Use the bundled \code{\link{rep_range}} for hg19 and
-#' \code{\link{rep_range_hg38}} for hg38.
+#' @param rep_range The genome build of the variants, \code{"hg19"} or
+#' \code{"hg38"}, to use the bundled replication strand data
+#' (\code{\link{rep_range}} or \code{\link{rep_range_hg38}}). Or a GRanges
+#' object on the same build as the variants, whose first metadata column
+#' labels each range \code{"leading"} or \code{"lagging"}.
 #' @param build_table Automatically build a table from this annotation
 #' @return None
 #' @examples
 #' data(musica)
-#' data(rep_range_hg38)
-#' annotate_replication_strand(musica, rep_range_hg38)
+#' annotate_replication_strand(musica, "hg38")
 #' @export
 annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
+  rep_range <- .select_rep_range(rep_range)
   dat <- variants(musica)
   sbs_index <- which(dat$Variant_Type == "SBS")
   sbs <- subset_variant_by_type(dat, "SBS")
@@ -347,4 +348,30 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
     )
     eval.parent(substitute(tables(musica)[["Replication_Strand"]] <- tab))
   }
+}
+
+# Return rep_range if it is a GRanges, or the bundled replication strand
+# data for a build name
+.select_rep_range <- function(rep_range) {
+  if (methods::is(rep_range, "GRanges")) {
+    return(rep_range)
+  }
+  build <- ""
+  if (is.atomic(rep_range) && length(rep_range) == 1) {
+    build <- as.character(rep_range)
+  }
+  name <- if (build %in% c("19", "hg19")) {
+    "rep_range"
+  } else if (build %in% c("38", "hg38")) {
+    "rep_range_hg38"
+  } else {
+    stop(
+      "rep_range must be a GRanges object, or \"hg19\" or \"hg38\" for ",
+      "the bundled replication strand data",
+      call. = FALSE
+    )
+  }
+  env <- new.env(parent = emptyenv())
+  utils::data(list = name, package = "musicatk", envir = env)
+  env[[name]]
 }

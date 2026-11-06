@@ -63,3 +63,33 @@ test_that("rep_range_hg38 swaps labels in inverted regions", {
     "leading"
   )
 })
+
+test_that("annotate_replication_strand accepts a build name", {
+  # "hg19" and "hg38" pick the bundled object for that build
+  expect_identical(
+    rep_strand_at("chr8", c(85000L, 230000L), "hg19", "hg19"),
+    rep_strand_at("chr8", c(85000L, 230000L), "hg19", rep_range)
+  )
+  expect_identical(
+    rep_strand_at("chr2", c(90359036L, 135000L), "hg38", "hg38"),
+    rep_strand_at("chr2", c(90359036L, 135000L), "hg38", rep_range_hg38)
+  )
+  expect_identical(
+    rep_strand_at("chr8", 135000L, "hg38", "38"),
+    "lagging"
+  )
+})
+
+test_that("annotate_replication_strand rejects other rep_range values", {
+  msg <- "rep_range must be a GRanges object, or \"hg19\" or \"hg38\""
+  data(musica)
+  expect_error(annotate_replication_strand(musica, "mm10"), msg,
+    fixed = TRUE
+  )
+  expect_error(annotate_replication_strand(musica, c("hg19", "hg38")), msg,
+    fixed = TRUE
+  )
+  expect_error(annotate_replication_strand(musica, data.frame()), msg,
+    fixed = TRUE
+  )
+})

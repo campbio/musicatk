@@ -775,9 +775,6 @@ parse_delete_event <- function(idstr) {
 
 
 ###################### Nathan's Code ##########################################
-  # rep_range (hg19) and rep_range_hg38 for SBS192 replication strand
-  data(rep_range)
-  data(rep_range_hg38)
   # needed to predict cosmic sigs
   data("cosmic_v2_sigs")
   data("cosmic_v3_sbs_sigs")
@@ -1161,18 +1158,14 @@ parse_delete_event <- function(idstr) {
         strand_type <- "Transcript_Strand"
       }
       if (input$select_table == "SBS192 - Replication_Strand") {
-        builds <- list(hg19 = rep_range, hg38 = rep_range_hg38)
-        rep_obj <- builds[[input$table_genome_list]]
-        if (is.null(rep_obj)) {
-          msg <- "Replication strand is available for hg19 and hg38 only."
-          shinyalert::shinyalert(title = "Error", text = msg)
-          return()
-        }
-        annotate_replication_strand(vals$musica, rep_obj, build_table = FALSE)
         table_name <- "SBS192"
         strand_type <- "Replication_Strand"
       }
       tryCatch({
+        if (identical(strand_type, "Replication_Strand")) {
+          annotate_replication_strand(vals$musica, input$table_genome_list,
+                                      build_table = FALSE)
+        }
         build_standard_table(vals$musica,
                              select_genome(input$table_genome_list),
                              modality = table_name,

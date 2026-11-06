@@ -661,3 +661,7 @@ package logic in the app, against the standards' no-logic-in-the-app rule.
 the package: for example, `annotate_replication_strand()` could accept a
 build name, as `annotate_transcript_strand()` does. The app would then pass
 `input$table_genome_list` straight through.
+
+**Resolved in the same branch:** the maintainer approved having
+`annotate_replication_strand()` take `"hg19"`/`"hg38"`, and the app now
+passes the selected genome straight through.

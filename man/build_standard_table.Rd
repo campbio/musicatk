@@ -61,8 +61,7 @@ annotate_transcript_strand(musica, "hg38")
 build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 
 data(musica)
-data(rep_range_hg38)
-annotate_replication_strand(musica, rep_range_hg38)
+annotate_replication_strand(musica, "hg38")
 build_standard_table(musica, g, "SBS192", "Replication_Strand")
 
 data(dbs_musica)
