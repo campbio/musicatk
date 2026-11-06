@@ -27,8 +27,9 @@ plus strand is the lagging-strand template.
 In regions that are inverted between hg19 and hg38, the plus strand of
 hg38 is the minus strand of hg19, so the label is swapped. Positions
 where bins with different labels land on each other are left out, as
-are the 95 bins that don't map. Neighbouring ranges with the same label
-are merged, so the ranges are segments rather than 10 kb bins.
+are the 95 bins that don't map and hg38 bases with no hg19 counterpart.
+Neighbouring ranges with the same label are merged, so the ranges are
+segments rather than 10 kb bins.
 
 \code{data-raw/rep_range.R} in the package source builds the object.
 }

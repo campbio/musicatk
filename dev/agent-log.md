@@ -629,3 +629,25 @@ signatures and total exposure preserved.
 - Benchmarking needs BEN-4 and BEN-3 fixed before comparing models, accepts a
   stored model only by name, and has no exposure-accuracy metric or room for
   runtime and uncertainty.
+
+---
+
+## 2026-11-06: rep_range work (#220)
+
+Found by `/code-review` on the #220 branch. Not fixed there.
+
+### 1. `inst/shiny/server_tables.R` is dead code
+
+`app.R` sources only `ui.R` and `server.R`, and `server.R` defines its own
+`add_tables()`. The copy in `server_tables.R` is never used. It has also
+drifted: it passes `table_name =` to `build_standard_table()`, which no
+longer has that argument, so it would fail if it were ever sourced. Remove
+it, or source it in place of the copy in `server.R`.
+
+### 2. Shiny: replication-strand genome check comes after the overwrite prompt
+
+In `server.R`, the check that the selected genome has a replication strand
+object (hg19 or hg38 only) runs inside `add_tables()`. That is after the
+"overwrite existing table?" modal. A user with an SBS192_Rep table who
+picks mm10 confirms the overwrite, and only then sees the error. The table
+isn't changed.

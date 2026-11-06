@@ -93,7 +93,9 @@ rep_range <- hg19
 chain_gz <- file.path(tempdir(), basename(chain_url))
 utils::download.file(chain_url, chain_gz, mode = "wb")
 chain_file <- sub("\\.gz$", "", chain_gz)
-writeLines(readLines(gzfile(chain_gz)), chain_file)
+chain_con <- gzfile(chain_gz)
+writeLines(readLines(chain_con), chain_file)
+close(chain_con)
 chain <- rtracklayer::import.chain(chain_file)
 
 src <- hg19
