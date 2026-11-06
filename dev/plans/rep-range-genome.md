@@ -19,7 +19,7 @@ script that builds the object, so nobody could rebuild or check it.
 `rep_range` is GEO GSM4305465 (`WT_siLIG1_rep1_rfd_10kb.bw`, GSE134225):
 HCT116 cells with ligase 1 depleted, GLOE-seq, hg19, 10 kb bins.
 
-- Every one of its 280,760 bins matches a bin in that file.
+- Every one of its 280,760 ranges matches a range in that file.
 - Each label is the sign of the bin's RFD: `lagging` where RFD > 0,
   `leading` where RFD < 0. Bins where RFD = 0 were dropped.
 - GEO defines RFD = (REV - FWD) / (REV + FWD).
@@ -35,7 +35,10 @@ pairs have different labels.
 
 - **`data-raw/rep_range.R`** (new, build-ignored). It takes the place of
   the missing original script.
-  - Downloads GSM4305465 and labels each bin by the sign of RFD.
+  - Downloads GSM4305465 and labels each bin by the sign of RFD. The
+    file has 280,770 non-zero ranges: the old object had merged 10 pairs
+    of neighbouring bins with the same label, so the check compares the
+    positions each label covers.
   - Keeps chr1-22, X, Y and M, as the current object does, and drops
     bins where RFD = 0.
   - Makes the starts 1-based.
@@ -50,13 +53,16 @@ pairs have different labels.
     - Abutting pieces of the same bin are merged.
     - Where pieces of different bins overlap, the overlap is kept only
       if the labels agree. Bins that don't map are dropped.
+    - Neighbouring ranges with the same label are merged, which keeps every
+      label and cuts the file to about a third.
     - Seqinfo is set from `BSgenome.Hsapiens.UCSC.hg38`.
   - Both objects keep the metadata column name `X`, so existing code
     that reads `rep_range$X` still works.
   - rtracklayer is used only by this script, so DESCRIPTION is
     unchanged.
-- **`data/rep_range.rda`** is regenerated, and **`data/rep_range_hg38.rda`**
-  is new (about 250 KB).
+- **`data/rep_range.rda`** is regenerated (105 KB), and
+  **`data/rep_range_hg38.rda`** is new (272 KB, after neighbouring ranges
+  with the same label are merged).
 - **`R/cosmic_data.R`**: the docs for `rep_range` give the source sample,
   the build, the meaning of the labels (RFD, not timing), and the
   1-based bins. New docs for `rep_range_hg38` describe the liftover and

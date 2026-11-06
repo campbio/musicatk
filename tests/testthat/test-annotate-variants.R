@@ -57,7 +57,7 @@ test_that("annotate_replication_strand works when the last rows aren't SBS", {
   # Issue #118
   g <- select_genome("hg38")
   data(rep_range)
-  # rep_range calls chr8:80000-90000 lagging
+  # rep_range calls chr8:80001-90000 lagging
   tab <- data.frame(
     chr = "chr8", start = c(85000L, 85010L), end = c(85000L, 85010L),
     ref = c("C", "-"), alt = c("A", "A"), sample = "S1"

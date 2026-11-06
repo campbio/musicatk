@@ -6,21 +6,22 @@
 \title{Replication strand of the hg38 genome as a GRanges object}
 \format{
 A \code{"GRanges"} object with 89,121 ranges, tagged with genome
-`"hg38"`. Its one metadata column, `X`, is `"leading"` or `"lagging"`.
-See [annotate_replication_strand()].
+\code{"hg38"}. Its one metadata column, \code{X}, is \code{"leading"} or
+\code{"lagging"}. See \code{\link{annotate_replication_strand}}.
 }
 \source{
-Lifted over from [rep_range]; GEO sample GSM4305465, series
-<https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE134225>
+Lifted over from \code{\link{rep_range}}; GEO sample
+GSM4305465, series
+\url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE134225}
 }
 \usage{
 data(rep_range_hg38)
 }
 \description{
-[rep_range] lifted over from hg19 to hg38 (GRCh38) with the UCSC
-hg19ToHg38 chain. Use it with variants called on hg38. The labels mean
-the same as in [rep_range]: `"lagging"` means the plus strand is the
-lagging-strand template.
+\code{\link{rep_range}} lifted over from hg19 to hg38 (GRCh38) with the
+UCSC hg19ToHg38 chain. Use it with variants called on hg38. The labels
+mean the same as in \code{\link{rep_range}}: \code{"lagging"} means the
+plus strand is the lagging-strand template.
 }
 \details{
 In regions that are inverted between hg19 and hg38, the plus strand of
@@ -29,7 +30,7 @@ where bins with different labels land on each other are left out, as
 are the 95 bins that don't map. Neighbouring ranges with the same label
 are merged, so the ranges are segments rather than 10 kb bins.
 
-`data-raw/rep_range.R` in the package source builds the object.
+\code{data-raw/rep_range.R} in the package source builds the object.
 }
 \references{
 Sriramachandran, A. M. et al. (2020)
