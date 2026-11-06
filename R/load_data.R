@@ -272,10 +272,11 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 #' alternate allele carried by the sample gets its own row: with ALT
 #' \code{A,T}, a GT of \code{0/2} gives only the \code{T} allele. If
 #' \code{"exclude"} is selected, then these rows will be removed; in an
-#' \linkS4class{ExpandedVCF}, rows that share a chromosome, position and
-#' reference allele are removed. An \linkS4class{ExpandedVCF} no longer
-#' records which allele each row is, so every row with a non-reference GT
-#' is kept. Default \code{"expand"}.
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF}, rows that share a
+#' chromosome, position and reference allele are removed. An
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF} no longer records which
+#' allele each row is, so every row with a non-reference GT is kept.
+#' Default \code{"expand"}.
 #' @param extra_fields Optionally extract additional fields from the \code{INFO}
 #' section of the VCF. Fields with one value per alternate allele
 #' (\code{Number=A}) get the value for each allele; other fields with
@@ -500,10 +501,11 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 #' alternate allele carried by the sample gets its own row: with ALT
 #' \code{A,T}, a GT of \code{0/2} gives only the \code{T} allele. If
 #' \code{"exclude"} is selected, then these rows will be removed; in an
-#' \linkS4class{ExpandedVCF}, rows that share a chromosome, position and
-#' reference allele are removed. An \linkS4class{ExpandedVCF} no longer
-#' records which allele each row is, so every row with a non-reference GT
-#' is kept. Default \code{"expand"}.
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF}, rows that share a
+#' chromosome, position and reference allele are removed. An
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF} no longer records which
+#' allele each row is, so every row with a non-reference GT is kept.
+#' Default \code{"expand"}.
 #' @param extra_fields Optionally extract additional fields from the \code{INFO}
 #' section of the VCF. Fields with one value per alternate allele
 #' (\code{Number=A}) get the value for each allele; other fields with
