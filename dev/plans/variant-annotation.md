@@ -58,15 +58,15 @@ bundled variant dataset is hg38. The Shiny app also passes the hg19
   and the vignette use `"hg38"`. The `rep_range` docs and the `rep_range`
   argument of `annotate_replication_strand()` say it is hg19 and must
   match the variants' build; the replication examples get a comment
-  saying so. Follow-up issue: an hg38 `rep_range`, and the Shiny app
-  using `rep_range` for every genome.
+  saying so. Follow-up: #220 (an hg38 `rep_range`, and the Shiny app
+  using `rep_range` for every genome).
 - **Dropped motifs (#135).** One helper, `.warn_unmatched_motifs()`, used
   by `create_sbs96_table()` and `create_sbs192_table()`: it warns with
   the number of variants not in the schema and suggests checking that
   `g` is the build the variants were called on.
 
 Out of scope: an SBS in two overlapping genes on opposite strands keeps
-the last gene's strand (unchanged); the in-place mutation pattern (#205);
+the last gene's strand (unchanged, #221); the in-place mutation pattern (#205);
 the misplaced "it to the musica" in the `add_flank_to_variants` roxygen
 (#124).
 
