@@ -1,3 +1,8 @@
+# musicatk 2.7.6 (2026-11-06)
+* New `rep_range_hg38`: `rep_range` lifted over to hg38, for annotating replication strand on hg38 variants. Labels are swapped in regions inverted between the builds. The examples and the Shiny app use the object that matches the genome build; the app no longer offers replication strand for mm9 or mm10 (#220).
+* `rep_range` is tagged with genome `"hg19"` and its chromosome lengths, and is documented with its source (GEO GSM4305465) and what `"leading"` and `"lagging"` mean. `data-raw/rep_range.R` rebuilds both objects (#220).
+* `rep_range` bins are 1-based. Before, neighbouring bins shared an edge position, so a variant on an edge could match two bins and take whichever label came last. Replication strand changes only for variants on a bin edge (#220).
+
 # musicatk 2.7.5 (2026-11-06)
 * `annotate_transcript_strand()` leaves SBS outside genes as `NA`; before, they got the string `"NA"` and were labelled `"T"`. SBS192_Trans tables now count only SBS in genes, so their counts drop (on `data(musica)`, from 884 to 807) (#105).
 * `add_flank_to_variants()` takes the flank of A>* and G>* SBS from the pyrimidine strand; before, a left flank returned the bases 3' of the mutated base and a right flank those 5' of it (#104).
