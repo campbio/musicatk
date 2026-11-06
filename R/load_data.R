@@ -806,9 +806,13 @@ create_musica_from_variants <- function(x, genome,
   all_fields <- c(.required_musica_headers(), extra_fields)
   dt <- dt[, all_fields, with = FALSE]
 
-  # Columns may be factors (data.frame) or text (character matrix)
-  for (col in c("chr", "ref", "alt", "sample")) {
+  # Columns may be factors (data.frame) or text (character matrix), and
+  # bases may be lowercase
+  for (col in c("chr", "sample")) {
     data.table::set(dt, j = col, value = as.character(dt[[col]]))
+  }
+  for (col in c("ref", "alt")) {
+    data.table::set(dt, j = col, value = toupper(as.character(dt[[col]])))
   }
   for (col in c("start", "end")) {
     data.table::set(dt, j = col, value = as.integer(as.character(dt[[col]])))

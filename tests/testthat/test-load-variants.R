@@ -32,3 +32,16 @@ test_that("create_musica_from_variants accepts matrices and factors", {
   expect_identical(variants(from_factors)$ref, c("C", "G"))
   expect_identical(variants(from_factors)$Variant_Type, c("SBS", "SBS"))
 })
+
+test_that("Lowercase bases are read as uppercase, not as compound", {
+  # Issue #123
+  g <- select_genome("hg38")
+  tab <- variant_table(
+    start = c(1000L, 2000L), ref = c("c", "g"), alt = c("t", "gtt")
+  )
+  musica <- create_musica_from_variants(tab, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  expect_identical(variants(musica)$ref, c("C", "-"))
+  expect_identical(variants(musica)$alt, c("T", "TT"))
+})
