@@ -131,3 +131,15 @@ test_that("annotate_variant_length accepts factor ref and alt columns", {
 
   expect_equal(variants(musica)$Variant_Length, c(2, -3))
 })
+
+test_that("annotate_transcript_strand rejects other objects clearly", {
+  data(musica)
+  expect_error(
+    annotate_transcript_strand(musica, GenomicRanges::GRanges()),
+    regexp = "Please select hg19, hg38, or provide a TxDb object"
+  )
+  expect_error(
+    annotate_transcript_strand(musica, c("hg19", "hg38")),
+    regexp = "Please select hg19, hg38, or provide a TxDb object"
+  )
+})

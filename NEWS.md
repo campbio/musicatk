@@ -4,7 +4,7 @@
 * `annotate_transcript_strand()` accepts a `TxDb` object for `genome_build` (#117).
 * `annotate_replication_strand()` no longer fails, or copies one strand to every row, when the variant table doesn't end in SBS. Variants without a replication strand are `NA` rather than the string `"NA"` (#118).
 * `annotate_variant_length()` gives indels a length: the number of inserted bases, or minus the number of deleted bases. Before, every indel length was `NA` (#119).
-* SBS96 and SBS192 tables warn when variants are left out because their motif isn't in the table, for example when `g` is not the genome build the variants were called on (#135).
+* SBS96 and SBS192 tables warn when variants are left out because their motif isn't in the table. For SBS96 this happens when a reference base doesn't match `g`, for example when `g` is not the genome build the variants were called on; for both tables, when the context has N bases (#135).
 * Examples and the vignette use the hg38 genome for the hg38 example data. The `rep_range` docs say it is on hg19 (#120).
 
 # musicatk 2.7.4 (2026-11-05)

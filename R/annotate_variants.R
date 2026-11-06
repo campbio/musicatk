@@ -77,15 +77,13 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
 
   final_mut_context[ind] <- flank[ind]
 
-  # Get mutation context info for those on "-" strand
-  ind <- rev_ind
+  # Get mutation context info for those on "-" strand, reverse complemented
+  # so only 6 mutation categories instead of 12
+  rev_flank <- Biostrings::reverseComplement(
+    Biostrings::DNAStringSet(flank[rev_ind])
+  )
 
-  # Reverse complement the context so only 6 mutation categories instead of 12
-  rev_flank <- flank[ind] %>%
-    Biostrings::DNAStringSet() %>%
-    Biostrings::reverseComplement()
-
-  final_mut_context[ind] <- as.character(rev_flank)
+  final_mut_context[rev_ind] <- as.character(rev_flank)
   dat[[output_column]] <- final_mut_context
   eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
@@ -226,13 +224,18 @@ subset_variant_by_type <- function(tab, type) {
 #' @export
 annotate_transcript_strand <- function(musica, genome_build,
                                        build_table = TRUE) {
+  # Anything but a TxDb or a single build name gets the error below
+  build <- ""
+  if (is.atomic(genome_build) && length(genome_build) == 1) {
+    build <- as.character(genome_build)
+  }
   if (methods::is(genome_build, "TxDb")) {
     genes <- genes(genome_build)
-  } else if (genome_build %in% c("19", "hg19")) {
+  } else if (build %in% c("19", "hg19")) {
     genes <- genes(
       TxDb.Hsapiens.UCSC.hg19.knownGene
     )
-  } else if (genome_build %in% c("38", "hg38")) {
+  } else if (build %in% c("38", "hg38")) {
     genes <- genes(
       TxDb.Hsapiens.UCSC.hg38.knownGene
     )
@@ -343,6 +346,6 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
         factor(c("leading", "lagging")),
       return_instead = FALSE
     )
-    eval.parent(substitute(musica@count_tables[["Replication_Strand"]] <- tab))
+    eval.parent(substitute(tables(musica)[["Replication_Strand"]] <- tab))
   }
 }
