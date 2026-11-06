@@ -37,3 +37,18 @@ test_that("Intergenic SBS have no transcript strand", {
   counts <- get_count_table(tables(musica)$Transcript_Strand)
   expect_equal(sum(counts), sum(!is.na(sbs_strand)))
 })
+
+test_that("annotate_transcript_strand accepts a TxDb object", {
+  # Issue #117
+  data(musica)
+  by_name <- musica
+  by_txdb <- musica
+  txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCSC.hg38.knownGene
+  annotate_transcript_strand(by_name, "hg38", build_table = FALSE)
+  annotate_transcript_strand(by_txdb, txdb, build_table = FALSE)
+
+  expect_identical(
+    variants(by_txdb)$Transcript_Strand,
+    variants(by_name)$Transcript_Strand
+  )
+})

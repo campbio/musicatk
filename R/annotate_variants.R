@@ -217,7 +217,9 @@ subset_variant_by_type <- function(tab, type) {
 #' @export
 annotate_transcript_strand <- function(musica, genome_build,
                                        build_table = TRUE) {
-  if (genome_build %in% c("19", "hg19")) {
+  if (methods::is(genome_build, "TxDb")) {
+    genes <- genes(genome_build)
+  } else if (genome_build %in% c("19", "hg19")) {
     genes <- genes(
       TxDb.Hsapiens.UCSC.hg19.knownGene
     )
@@ -225,10 +227,8 @@ annotate_transcript_strand <- function(musica, genome_build,
     genes <- genes(
       TxDb.Hsapiens.UCSC.hg38.knownGene
     )
-  } else if (methods::isClass(genome_build, "TxDb")) {
-    genes <- genome_build
   } else {
-    stop("Please select hg19, hg38, or provde a TxDb object")
+    stop("Please select hg19, hg38, or provide a TxDb object")
   }
 
   dat <- variants(musica)
