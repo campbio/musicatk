@@ -11,7 +11,14 @@ add_tables <- function(input, vals) {
         strand_type <- "Transcript_Strand"
     }
     if (input$select_table == "SBS192 - Replication_Strand") {
-        annotate_replication_strand(vals$musica, rep_range, build_table = FALSE)
+      builds <- list(hg19 = rep_range, hg38 = rep_range_hg38)
+      rep_obj <- builds[[input$table_genome_list]]
+      if (is.null(rep_obj)) {
+        msg <- "Replication strand is available for hg19 and hg38 only."
+        shinyalert::shinyalert(title = "Error", text = msg)
+        return()
+      }
+      annotate_replication_strand(vals$musica, rep_obj, build_table = FALSE)
         table_name <- "SBS192"
         strand_type <- "Replication_Strand"
     }
