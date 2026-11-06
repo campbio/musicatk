@@ -97,7 +97,7 @@ g <- select_genome("hg38")
 ```
 
 ## Creating a musica object
-The last preprocessing step is to create an object with the variants and the genome using the `create_musica_from_variants` function. This function will perform checks to ensure that the chromosome names and reference alleles in the input variant object match those in supplied BSgenome object. These checks can be turned off by setting `check_ref_chromosomes = FALSE` and `check_ref_bases = FALSE`, respectively. This function also looks for adjacent single base substitutions (SBSs) and will convert them to double base substitutions (DBSs). To disable this automatic conversion, set `convert_dbs = FALSE`. 
+The last preprocessing step is to create an object with the variants and the genome using the `create_musica_from_variants` function. This function will perform checks to ensure that the chromosome names and reference alleles in the input variant object match those in supplied BSgenome object. These checks can be turned off by setting `check_ref_chromosomes = FALSE` and `check_ref_bases = FALSE`, respectively. This function also looks for adjacent single base substitutions (SBSs) in the same sample and will convert pairs of them to double base substitutions (DBSs). A run of three or more adjacent SBSs becomes one multi-nucleotide variant (MNV), which is not counted in the standard count tables. To disable this automatic conversion, set `convert_dbs = FALSE`. 
 
 ```{r create_musica}
 musica <- create_musica_from_variants(x = variants, genome = g)

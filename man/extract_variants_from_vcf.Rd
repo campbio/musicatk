@@ -36,16 +36,26 @@ Default \code{NULL}.}
 \item{multiallele}{Multialleles are when multiple alternative variants
 are listed in the same row in the vcf. One of \code{"expand"} or
 \code{"exclude"}. If \code{"expand"} is selected, then each
-alternate allele will be given their own rows. If \code{"exclude"} is
-selected, then these rows will be removed. Default \code{"expand"}.}
+alternate allele carried by the sample gets its own row: with ALT
+\code{A,T}, a GT of \code{0/2} gives only the \code{T} allele. If
+\code{"exclude"} is selected, then these rows will be removed. An
+\linkS4class{ExpandedVCF} no longer records which allele each row is, so
+every row with a non-reference GT is kept. Default \code{"expand"}.}
 
 \item{extra_fields}{Optionally extract additional fields from the \code{INFO}
-section of the VCF. Default \code{NULL}.}
+section of the VCF. Fields with one value per alternate allele
+(\code{Number=A}) get the value for each allele; other fields with
+several values are joined with commas. Default \code{NULL}.}
 }
 \value{
 Returns a data.table of variants from a vcf
 }
 \description{
+Variants are assigned to the sample selected by \code{id} using its GT
+field. If the VCF has no GT field, all variants passing the filter are
+assigned to the sample. A VCF without sample columns needs \code{rename}.
+}
+\details{
 Aaron - Need to describe differnce between ID, and name in the header, and
 rename in terms of naming the sample. Need to describe differences in
 multiallelic choices. Also need to describe the automatic error fixing

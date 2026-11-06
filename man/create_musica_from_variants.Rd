@@ -62,10 +62,16 @@ id for each variant. Default \code{"sample"}.}
 the musica object. Default \code{NULL}.}
 
 \item{standardize_indels}{Flag to convert indel style (e.g. `C > CAT`
-becomes `- > AT` and `GCACA > G` becomes `CACA > -`)}
+becomes `- > AT` and `GCACA > G` becomes `CACA > -`). Deletions are moved
+to start at the first deleted base, as in MAF files; insertions keep
+\code{start} at the base before the insertion. Indels whose first base
+differs between \code{ref} and \code{alt} (e.g. `A > GGT`) are complex
+and are removed. Default \code{TRUE}.}
 
-\item{convert_dbs}{Flag to convert adjacent SBS into DBS (original SBS are
-removed)}
+\item{convert_dbs}{Flag to convert adjacent SBS in the same sample into
+DBS (original SBS are removed). A run of three or more adjacent SBS
+becomes one variant of type \code{"MNV"}, which is not included in the
+standard count tables. Default \code{TRUE}.}
 
 \item{verbose}{Whether to print status messages during error checking.
 Default \code{TRUE}.}

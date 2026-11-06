@@ -9,7 +9,10 @@ create_musica_from_counts(x, variant_class)
 \arguments{
 \item{x}{A data.table, matrix, or data.frame that contains counts of mutation
 types for each sample, with samples as columns. The column names are used
-as the sample names and must be unique.}
+as the sample names and must be unique. If \code{x} has row names, they
+must be the standard motif names (e.g. \code{"C>A_ACA"} for SBS96 or
+\code{"AC>NN_CA"} for DBS78), and the rows are matched to the motifs by
+name. Without row names, the rows must be in the standard motif order.}
 
 \item{variant_class}{Mutations are SBS, DBS, or Indel.}
 }
