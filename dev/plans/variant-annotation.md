@@ -62,8 +62,10 @@ bundled variant dataset is hg38. The Shiny app also passes the hg19
   using `rep_range` for every genome).
 - **Dropped motifs (#135).** One helper, `.warn_unmatched_motifs()`, used
   by `create_sbs96_table()` and `create_sbs192_table()`: it warns with
-  the number of variants not in the schema and suggests checking that
-  `g` is the build the variants were called on.
+  the number of variants not in the schema and names the likely causes:
+  a reference base that doesn't match `g`, or N bases in the context.
+  SBS192 builds the context from the variant's own ref, so there only N
+  bases trigger it.
 
 Out of scope: an SBS in two overlapping genes on opposite strands keeps
 the last gene's strand (unchanged, #221); the in-place mutation pattern (#205);
@@ -84,8 +86,8 @@ code, in a new `tests/testthat/test-annotate-variants.R` (and
 - #118: a table whose last rows are not SBS annotates without error;
   non-SBS rows are `NA`.
 - #119: INS `-`>`AT` is 2, DEL `ATG`>`-` is -3; SBS 1 and DBS 2.
-- #135: an SBS whose ref doesn't match the genome warns for SBS96 and
-  SBS192.
+- #135: an SBS whose ref doesn't match the genome warns for SBS96; an
+  SBS with N flanks warns for SBS96 and SBS192.
 
 ## Docs, NEWS, version
 

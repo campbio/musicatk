@@ -101,8 +101,9 @@ extract_count_tables <- function(musica) {
   if (unmatched > 0) {
     warning(
       unmatched, " of ", length(motifs), " variants have motifs not in the ",
-      name, " schema and were not counted. Check that 'g' is the genome ",
-      "build the variants were called on.",
+      name, " schema and were not counted. Their reference base may not ",
+      "match 'g' (check it is the build the variants were called on), or ",
+      "their context may include N bases.",
       call. = FALSE
     )
   }
