@@ -271,9 +271,11 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 #' \code{"exclude"}. If \code{"expand"} is selected, then each
 #' alternate allele carried by the sample gets its own row: with ALT
 #' \code{A,T}, a GT of \code{0/2} gives only the \code{T} allele. If
-#' \code{"exclude"} is selected, then these rows will be removed. An
-#' \linkS4class{ExpandedVCF} no longer records which allele each row is, so
-#' every row with a non-reference GT is kept. Default \code{"expand"}.
+#' \code{"exclude"} is selected, then these rows will be removed; in an
+#' \linkS4class{ExpandedVCF}, rows that share a chromosome, position and
+#' reference allele are removed. An \linkS4class{ExpandedVCF} no longer
+#' records which allele each row is, so every row with a non-reference GT
+#' is kept. Default \code{"expand"}.
 #' @param extra_fields Optionally extract additional fields from the \code{INFO}
 #' section of the VCF. Fields with one value per alternate allele
 #' (\code{Number=A}) get the value for each allele; other fields with
@@ -297,13 +299,18 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
   # Configure ID
   vcf_samples <- colnames(vcf)
   if (length(vcf_samples) == 0) {
+    if (!is.null(id)) {
+      stop(
+        "The VCF has no sample columns, so the id '", id, "' can't be ",
+        "selected. Use 'rename' to name the sample instead."
+      )
+    }
     if (is.null(rename)) {
       stop(
         "The VCF has no sample columns. Use 'rename' to give a name to ",
         "the sample these variants belong to."
       )
     }
-    id <- NULL
   } else if (is.null(id)) {
     id <- vcf_samples[1]
   } else {
@@ -407,17 +414,12 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
   }
 
   if (sum(keep) == 0) {
-    if (!identical(id, vcf_name)) {
-      warning(
-        "All variants matched the reference allele ",
-        "for: ", vcf_name, " (", id, ")"
-      )
-    } else {
-      warning(
-        "All variants matched the reference allele ",
-        "for id: ", id
-      )
-    }
+    warning(
+      "No variants were found for sample: ", vcf_name,
+      if (!identical(id, vcf_name)) paste0(" (", id, ")"),
+      ". The VCF has no variant rows left after filtering, or all ",
+      "genotypes matched the reference allele."
+    )
     return(NULL)
   }
   vcf <- vcf[which(keep), ]
@@ -488,9 +490,11 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 #' \code{"exclude"}. If \code{"expand"} is selected, then each
 #' alternate allele carried by the sample gets its own row: with ALT
 #' \code{A,T}, a GT of \code{0/2} gives only the \code{T} allele. If
-#' \code{"exclude"} is selected, then these rows will be removed. An
-#' \linkS4class{ExpandedVCF} no longer records which allele each row is, so
-#' every row with a non-reference GT is kept. Default \code{"expand"}.
+#' \code{"exclude"} is selected, then these rows will be removed; in an
+#' \linkS4class{ExpandedVCF}, rows that share a chromosome, position and
+#' reference allele are removed. An \linkS4class{ExpandedVCF} no longer
+#' records which allele each row is, so every row with a non-reference GT
+#' is kept. Default \code{"expand"}.
 #' @param extra_fields Optionally extract additional fields from the \code{INFO}
 #' section of the VCF. Fields with one value per alternate allele
 #' (\code{Number=A}) get the value for each allele; other fields with
@@ -864,6 +868,18 @@ create_musica_from_variants <- function(x, genome,
     dt <- .check_variant_genome(dt = dt, genome = genome)
   }
 
+  # Variants on contigs that aren't in the genome can't be checked or
+  # counted
+  missing_chr <- !dt$chr %in% GenomeInfoDb::seqnames(genome)
+  if (any(missing_chr)) {
+    warning(
+      sum(missing_chr), " variants are on chromosomes not found in the ",
+      "'genome' object and were excluded: ",
+      paste(unique(dt$chr[missing_chr]), collapse = ", ")
+    )
+    dt <- dt[!missing_chr, ]
+  }
+
   if (isTRUE(check_ref_bases)) {
     if (isTRUE(verbose)) {
       message(
@@ -926,6 +942,7 @@ create_musica_from_variants <- function(x, genome,
       del_ref <- dt$ref[del]
       dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
       dt$start[del] <- dt$start[del] + 1L
+      dt$end[del] <- dt$start[del] + nchar(dt$ref[del]) - 1L
     }
   }
 
@@ -1380,19 +1397,6 @@ add_result <- function(signatures, exposures, musica, result_name,
         }
       }
     }
-  }
-
-  # Variants on contigs that aren't in the genome can't be checked or
-  # counted
-  chr <- as.character(dt[[chr_header]])
-  missing_chr <- !chr %in% genome_u
-  if (any(missing_chr)) {
-    warning(
-      sum(missing_chr), " variants are on chromosomes not found in the ",
-      "'genome' object and were excluded: ",
-      paste(unique(chr[missing_chr]), collapse = ", ")
-    )
-    dt <- dt[!missing_chr, ]
   }
   return(dt)
 }

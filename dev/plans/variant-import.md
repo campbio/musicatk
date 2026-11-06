@@ -81,6 +81,19 @@ Prefer functions from packages already imported; no new internal helpers.
   name. Any other row names stop with an error. Without row names the
   standard order is assumed, with a message.
 
+## Deviations found in review
+
+- `create_musica_from_counts()` uses one small internal helper,
+  `.match_count_rows()`, because the SBS96 and DBS78 branches need the same
+  check; there is no other new helper.
+- The missing-contig check (#115) runs in `create_musica_from_variants()`
+  whether or not `check_ref_chromosomes` is set, since count tables can't
+  be built for those variants either.
+- Deletions also get `end` set from the deleted bases, so hand-made tables
+  with `end == start` are handled.
+- Only the six required columns are converted from factors; extra fields
+  are left as given.
+
 ## Tests
 
 Test first, one regression test per issue, in `tests/testthat/test-load-vcf.R`

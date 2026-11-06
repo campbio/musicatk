@@ -23,6 +23,19 @@ test_that("multiallele = 'expand' keeps only the alleles each sample has", {
   expect_identical(as.character(s1$alt), "A")
   expect_identical(as.character(s2$alt), "T")
   expect_identical(as.character(s3$alt), c("A", "T"))
+
+  # Haploid and partly missing genotypes
+  path <- write_test_vcf(
+    list(c("chr1", "100", ".", "C", "A,T", ".", "PASS", ".", "GT",
+           "2", "./1", "./.")),
+    samples = c("S1", "S2", "S3")
+  )
+  expect_identical(extract_variants_from_vcf_file(path, id = "S1")$alt, "T")
+  expect_identical(extract_variants_from_vcf_file(path, id = "S2")$alt, "A")
+  expect_warning(
+    expect_null(extract_variants_from_vcf_file(path, id = "S3")),
+    regexp = "S3"
+  )
 })
 
 test_that("multiallele = 'exclude' drops only multiallelic sites", {
@@ -77,6 +90,10 @@ test_that("VCFs without a GT field keep all variants", {
     extract_variants_from_vcf_file(sites_only),
     regexp = "rename"
   )
+  expect_error(
+    extract_variants_from_vcf_file(sites_only, id = "TUMOR", rename = "T1"),
+    regexp = "no sample columns"
+  )
   dt <- suppressMessages(
     extract_variants_from_vcf_file(sites_only, rename = "T1")
   )
@@ -120,6 +137,14 @@ test_that("extract_variants() reads gzipped VCF files", {
   gz_path <- sub("\\.bgz$", ".gz", bgz_path)
   file.rename(bgz_path, gz_path)
   dt <- extract_variants(gz_path, verbose = FALSE)
+  expect_identical(dt$alt, "A")
+
+  bgz_path <- VariantAnnotation::writeVcf(
+    VariantAnnotation::readVcf(path),
+    tempfile(fileext = ".vcf"),
+    index = TRUE
+  )
+  dt <- extract_variants(bgz_path, verbose = FALSE)
   expect_identical(dt$alt, "A")
 })
 

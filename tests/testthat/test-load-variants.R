@@ -64,6 +64,13 @@ test_that("VCF-style deletions get the coordinates of the deleted bases", {
     check_ref_bases = FALSE, verbose = FALSE
   ))
   expect_identical(from_vcf[1, ], from_maf[1, ])
+  # A hand-made table with 'end' equal to 'start' gets the same coordinates
+  one_base_end <- vcf_style
+  one_base_end$end[1] <- 100L
+  from_one_base_end <- variants(create_musica_from_variants(one_base_end, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  ))
+  expect_identical(from_one_base_end[1, ], from_maf[1, ])
   # Insertions keep 'start' as the base before the insertion
   expect_identical(from_vcf$start[2], 200L)
   expect_identical(from_vcf$ref[2], "-")
@@ -117,6 +124,16 @@ test_that("Adjacent SBS are merged within a sample only", {
   expect_identical(c(mnv$start, mnv$end), c(3000L, 3002L))
   expect_identical(c(mnv$ref, mnv$alt), c("ACG", "CGT"))
   expect_identical(nrow(v), 4L)
+
+  # Two SBS at one position are not merged with their neighbour
+  same_position <- variant_table(
+    start = c(4000L, 4000L, 4001L), ref = c("A", "A", "C"),
+    alt = c("C", "G", "T")
+  )
+  v <- variants(create_musica_from_variants(same_position, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  ))
+  expect_identical(v$Variant_Type, c("SBS", "SBS", "SBS"))
 })
 
 test_that("Variants on contigs missing from the genome are dropped", {
@@ -129,6 +146,15 @@ test_that("Variants on contigs missing from the genome are dropped", {
   )
   expect_warning(
     musica <- create_musica_from_variants(tab, g, verbose = FALSE),
+    regexp = "chrFoo"
+  )
+  expect_identical(variants(musica)$chr, "chr1")
+
+  # Also when the chromosome style check is turned off
+  expect_warning(
+    musica <- create_musica_from_variants(tab, g,
+      check_ref_chromosomes = FALSE, verbose = FALSE
+    ),
     regexp = "chrFoo"
   )
   expect_identical(variants(musica)$chr, "chr1")
