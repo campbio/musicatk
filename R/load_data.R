@@ -775,7 +775,7 @@ create_musica_from_variants <- function(x, genome,
                                         convert_dbs = TRUE,
                                         verbose = TRUE) {
   used_fields <- c(.required_musica_headers(), extra_fields)
-  if (canCoerce(x, "data.table")) {
+  if (inherits(x, c("matrix", "data.frame")) || canCoerce(x, "data.table")) {
     dt <- data.table::as.data.table(x)
   } else {
     stop(
@@ -805,6 +805,14 @@ create_musica_from_variants <- function(x, genome,
   # Subset to necessary columns and add variant type
   all_fields <- c(.required_musica_headers(), extra_fields)
   dt <- dt[, all_fields, with = FALSE]
+
+  # Columns may be factors (data.frame) or text (character matrix)
+  for (col in c("chr", "ref", "alt", "sample")) {
+    data.table::set(dt, j = col, value = as.character(dt[[col]]))
+  }
+  for (col in c("start", "end")) {
+    data.table::set(dt, j = col, value = as.integer(as.character(dt[[col]])))
+  }
   dt <- add_variant_type(dt)
 
   # Some non-variants are included (e.g. T>T). These will be removed

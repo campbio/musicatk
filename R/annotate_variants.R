@@ -140,13 +140,15 @@ drop_annotation <- function(musica, column_name) {
 #' musicatk:::add_variant_type(variants)
 #' @keywords internal
 add_variant_type <- function(tab) {
+  ref <- as.character(tab$ref)
+  alt <- as.character(tab$alt)
   type <- rep(NA, nrow(tab))
-  type[which(nchar(tab$ref) == 1 & nchar(tab$alt) == 1)] <- "SBS"
-  type[which(nchar(tab$ref) == 2 & nchar(tab$alt) == 2)] <- "DBS"
-  type[which(tab$ref == "-")] <- "INS"
-  type[which(tab$alt == "-")] <- "DEL"
-  type[which(nchar(tab$ref) < nchar(tab$alt))] <- "INS"
-  type[which(nchar(tab$ref) > nchar(tab$alt))] <- "DEL"
+  type[which(nchar(ref) == 1 & nchar(alt) == 1)] <- "SBS"
+  type[which(nchar(ref) == 2 & nchar(alt) == 2)] <- "DBS"
+  type[which(ref == "-")] <- "INS"
+  type[which(alt == "-")] <- "DEL"
+  type[which(nchar(ref) < nchar(alt))] <- "INS"
+  type[which(nchar(ref) > nchar(alt))] <- "DEL"
   type[which(is.na(type))] <- "unknown"
   tab[["Variant_Type"]] <- type
   return(tab)
