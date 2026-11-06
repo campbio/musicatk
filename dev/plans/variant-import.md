@@ -93,6 +93,10 @@ Prefer functions from packages already imported; no new internal helpers.
   with `end == start` are handled.
 - Only the six required columns are converted from factors; extra fields
   are left as given.
+- `create_musica_from_counts()` converts COSMIC/SigProfiler row names
+  (`A[C>A]A`, `AC>CA`) to musicatk motif names before matching. Without
+  this, COSMIC-ordered tables that loaded correctly before would be
+  rejected. Approved by the maintainer on 2026-11-05.
 
 ## Tests
 
@@ -114,8 +118,6 @@ required. Each test must fail on its assertion before the fix.
 - Shipped `dbs_musica`/`indel_musica`: no `data-raw/` script builds them
   from variants, so they aren't rebuilt. Whether they contain cross-sample
   DBS merges is unverified.
-- Converting SigProfiler row names in `create_musica_from_counts()`: a
-  separate feature issue.
 - ID83 counter fixes: PR D.
 
 ## Follow-up check

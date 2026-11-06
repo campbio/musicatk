@@ -180,7 +180,7 @@ test_that("create_musica_from_counts matches rows to motifs by name", {
   expect_identical(get_count_table(tables(from_reversed)$SBS96), counts)
 
   misnamed <- counts
-  rownames(misnamed)[1] <- "A[C>A]A"
+  rownames(misnamed)[1] <- "not_a_motif"
   expect_error(
     create_musica_from_counts(misnamed, "SBS96"),
     regexp = "row names"
@@ -201,8 +201,24 @@ test_that("create_musica_from_counts matches rows to motifs by name", {
     regexp = "Duplicated: C>A_ACA.*Missing: C>A_ACC"
   )
 
+  # COSMIC/SigProfiler names (A[C>A]A, AC>CA) are converted, in any order
+  bracket <- counts
+  motif <- rownames(counts)
+  rownames(bracket) <- paste0(
+    substr(motif, 5, 5), "[", substr(motif, 1, 3), "]", substr(motif, 7, 7)
+  )
+  bracket <- bracket[order(rownames(bracket)), ]
+  from_bracket <- create_musica_from_counts(bracket, "SBS96")
+  expect_identical(get_count_table(tables(from_bracket)$SBS96), counts)
+
   data(dbs_musica)
   dbs <- get_count_table(extract_count_tables(dbs_musica)$DBS78)
   from_dbs <- create_musica_from_counts(dbs[rev(seq_len(nrow(dbs))), ], "DBS")
   expect_identical(get_count_table(tables(from_dbs)$DBS78), dbs)
+
+  dbs_bracket <- dbs
+  rownames(dbs_bracket) <- sub("NN_", "", rownames(dbs))
+  dbs_bracket <- dbs_bracket[order(rownames(dbs_bracket)), ]
+  from_dbs_bracket <- create_musica_from_counts(dbs_bracket, "DBS")
+  expect_identical(get_count_table(tables(from_dbs_bracket)$DBS78), dbs)
 })

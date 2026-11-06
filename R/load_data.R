@@ -1034,8 +1034,10 @@ create_musica_from_variants <- function(x, genome,
 #' types for each sample, with samples as columns. The column names are used
 #' as the sample names and must be unique. If \code{x} has row names, they
 #' must be the standard motif names (e.g. \code{"C>A_ACA"} for SBS96 or
-#' \code{"AC>NN_CA"} for DBS78), and the rows are matched to the motifs by
-#' name. Without row names, the rows must be in the standard motif order.
+#' \code{"AC>NN_CA"} for DBS78) or the COSMIC/SigProfiler names
+#' (e.g. \code{"A[C>A]A"} or \code{"AC>CA"}), and the rows are matched to the
+#' motifs by name. Without row names, the rows must be in the standard motif
+#' order.
 #' @param variant_class Mutations are SBS, DBS, or Indel.
 #' @return Returns a musica object
 #' @examples
@@ -1189,8 +1191,17 @@ create_musica_from_counts <- function(x, variant_class) {
 
 
 # Puts the rows of a count matrix in the order of 'motifs', matching them
-# by row name. Without row names, the rows are assumed to be in that order.
+# by row name. COSMIC/SigProfiler names are converted to musicatk names
+# first: A[C>A]G becomes C>A_ACG and AC>CA becomes AC>NN_CA. Without row
+# names, the rows are assumed to be in the order of 'motifs'.
 .match_count_rows <- function(x, motifs, table_name) {
+  if (!is.null(rownames(x))) {
+    rownames(x) <- sub(
+      "^([ACGT])\\[(([ACGT])>[ACGT])\\]([ACGT])$", "\\2_\\1\\3\\4",
+      rownames(x)
+    )
+    rownames(x) <- sub("^([ACGT]{2})>([ACGT]{2})$", "\\1>NN_\\2", rownames(x))
+  }
   if (is.null(rownames(x))) {
     message(
       "'x' has no row names, so its rows are assumed to be in the ",

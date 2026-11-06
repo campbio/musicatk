@@ -10,7 +10,7 @@
 * Indels whose first base differs between `ref` and `alt` (for example `A > GGT`) are removed as complex variants with a message; before, they were rewritten as indels (#109).
 * `convert_dbs = TRUE` merges adjacent SBS only within a sample; before, SBS from different samples could become one DBS, and unsorted neighbours were missed. A run of three or more adjacent SBS becomes one variant of type `"MNV"`, which no standard count table includes. DBS78 and SBS96 counts can change (#107).
 * Variants on chromosomes missing from the genome are removed with a warning; before, they crashed the reference check (#115).
-* `create_musica_from_counts()` matches rows to motifs by row name; before, it overwrote the row names, so tables in another order were mislabelled. Unknown row names give an error (#116).
+* `create_musica_from_counts()` matches rows to motifs by row name; before, it overwrote the row names, so tables in another order were mislabelled. COSMIC/SigProfiler row names (`A[C>A]A`, `AC>CA`) are converted to musicatk motif names; other row names give an error (#116).
 
 # musicatk 2.7.3 (2026-11-05)
 * `name_signatures()` returns the renamed `musica` object (invisibly), so `res <- name_signatures(res, ...)` works; before, it returned the vector of names. The object passed in is still renamed in place as before (#154).
