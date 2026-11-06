@@ -118,3 +118,18 @@ test_that("Adjacent SBS are merged within a sample only", {
   expect_identical(c(mnv$ref, mnv$alt), c("ACG", "CGT"))
   expect_identical(nrow(v), 4L)
 })
+
+test_that("Variants on contigs missing from the genome are dropped", {
+  # Issue #115
+  g <- select_genome("hg38")
+  base <- as.character(BSgenome::getSeq(g, "chr1", 1000000, 1000000))
+  tab <- variant_table(
+    chr = c("chr1", "chrFoo"), start = c(1000000L, 500L),
+    ref = c(base, "A"), alt = c(setdiff(c("A", "C"), base)[1], "C")
+  )
+  expect_warning(
+    musica <- create_musica_from_variants(tab, g, verbose = FALSE),
+    regexp = "chrFoo"
+  )
+  expect_identical(variants(musica)$chr, "chr1")
+})

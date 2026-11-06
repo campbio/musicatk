@@ -1330,6 +1330,19 @@ add_result <- function(signatures, exposures, musica, result_name,
       }
     }
   }
+
+  # Variants on contigs that aren't in the genome can't be checked or
+  # counted
+  chr <- as.character(dt[[chr_header]])
+  missing_chr <- !chr %in% genome_u
+  if (any(missing_chr)) {
+    warning(
+      sum(missing_chr), " variants are on chromosomes not found in the ",
+      "'genome' object and were excluded: ",
+      paste(unique(chr[missing_chr]), collapse = ", ")
+    )
+    dt <- dt[!missing_chr, ]
+  }
   return(dt)
 }
 
