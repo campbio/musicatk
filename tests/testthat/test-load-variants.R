@@ -89,3 +89,32 @@ test_that("Indels whose first base doesn't match are removed as complex", {
   expect_identical(variants(musica)$ref, c("-", "A"))
   expect_identical(variants(musica)$alt, c("TT", "-"))
 })
+
+test_that("Adjacent SBS are merged within a sample only", {
+  # Issue #107
+  g <- select_genome("hg38")
+  tab <- variant_table(
+    start = c(1000L, 1001L, 2001L, 2000L, 3000L, 3001L, 3002L),
+    ref = c("C", "G", "T", "A", "A", "C", "G"),
+    alt = c("A", "T", "G", "C", "C", "G", "T"),
+    sample = c("S1", "S2", "S1", "S1", "S1", "S1", "S1")
+  )
+  musica <- create_musica_from_variants(tab, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  v <- variants(musica)
+  # Adjacent positions in different samples stay SBS
+  separate <- v$start %in% c(1000L, 1001L)
+  expect_identical(v$Variant_Type[separate], c("SBS", "SBS"))
+  # Unsorted adjacent SBS in one sample become one DBS
+  dbs <- v[v$Variant_Type == "DBS", ]
+  expect_identical(nrow(dbs), 1L)
+  expect_identical(c(dbs$start, dbs$end), c(2000L, 2001L))
+  expect_identical(c(dbs$ref, dbs$alt), c("AT", "CG"))
+  # A run of three is one MNV with all three bases
+  mnv <- v[v$Variant_Type == "MNV", ]
+  expect_identical(nrow(mnv), 1L)
+  expect_identical(c(mnv$start, mnv$end), c(3000L, 3002L))
+  expect_identical(c(mnv$ref, mnv$alt), c("ACG", "CGT"))
+  expect_identical(nrow(v), 4L)
+})

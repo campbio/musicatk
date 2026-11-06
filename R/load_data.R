@@ -910,17 +910,49 @@ create_musica_from_variants <- function(x, genome,
     if (isTRUE(verbose)) {
       message("Converting adjacent SBS into DBS")
     }
+    # Find runs of SBS at adjacent positions in the same sample and
+    # chromosome. Sorting by position first keeps each run's rows in
+    # position order.
     sbs <- which(dt$Variant_Type == "SBS")
-    adjacent <- which(diff(dt$start) == 1)
-    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent + 1 %in% sbs &
-                                dt$chr[adjacent] == dt$chr[adjacent + 1])]
-    if (length(dbs_ind) > 0) {
-      message(length(dbs_ind), " SBS converted to DBS")
-      dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
-      dt$ref[dbs_ind] <- paste0(dt$ref[dbs_ind], dt$ref[dbs_ind + 1])
-      dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
-      dt$Variant_Type[dbs_ind] <- "DBS"
-      dt <- dt[-(dbs_ind + 1), ]
+    sbs <- sbs[order(dt$start[sbs])]
+    sbs_ranges <- GenomicRanges::GRanges(
+      seqnames = paste(dt$sample[sbs], dt$chr[sbs], sep = "\t"),
+      ranges = IRanges::IRanges(start = dt$start[sbs], width = 1)
+    )
+    runs <- GenomicRanges::reduce(sbs_ranges, with.revmap = TRUE)
+    revmap <- S4Vectors::mcols(runs)$revmap
+    # Skip runs with two SBS at one position
+    is_run <- lengths(revmap) > 1 & IRanges::width(runs) == lengths(revmap)
+    revmap <- revmap[is_run]
+    if (length(revmap) > 0) {
+      run_id <- rep(seq_along(revmap), lengths(revmap))
+      run_rows <- sbs[unlist(revmap)]
+      # Each run becomes one variant in the row of its first SBS in the
+      # table: a DBS for two bases, an MNV for three or more
+      keep <- min(S4Vectors::splitAsList(run_rows, run_id))
+      run_size <- lengths(revmap)
+      dt$start[keep] <- min(
+        S4Vectors::splitAsList(dt$start[run_rows], run_id)
+      )
+      dt$end[keep] <- dt$start[keep] + run_size - 1L
+      dt$ref[keep] <- S4Vectors::unstrsplit(
+        S4Vectors::splitAsList(dt$ref[run_rows], run_id)
+      )
+      dt$alt[keep] <- S4Vectors::unstrsplit(
+        S4Vectors::splitAsList(dt$alt[run_rows], run_id)
+      )
+      dt$Variant_Type[keep] <- ifelse(run_size == 2, "DBS", "MNV")
+      num_dbs <- sum(run_size == 2)
+      num_mnv <- sum(run_size > 2)
+      if (num_dbs > 0) {
+        message(num_dbs, " pairs of adjacent SBS converted to DBS")
+      }
+      if (num_mnv > 0) {
+        message(
+          num_mnv, " runs of three or more adjacent SBS converted to MNV"
+        )
+      }
+      dt <- dt[-setdiff(run_rows, keep), ]
     }
   }
 
