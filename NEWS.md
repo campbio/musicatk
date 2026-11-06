@@ -1,3 +1,17 @@
+# musicatk 2.7.4 (2026-11-05)
+* `extract_variants_from_vcf()` with `multiallele = "expand"` gives each sample only the alternate alleles in its GT; before, a sample carrying any alternate allele at a multiallelic site got all of them (#106).
+* `multiallele = "exclude"` returns `alt` as a character column and no longer drops every indel from an `ExpandedVCF` (#110).
+* VCFs without a GT field (for example from Strelka) keep all variants passing the filter, with a message; before, they returned `NULL`. Such a VCF with several sample columns needs `id` or `rename`, and one without sample columns needs `rename` (#111).
+* `extra_fields` keeps the column name of a single INFO field, gives per-allele (`Number=A`) fields the value for each allele, and joins other multi-value fields with commas (#121).
+* `extract_variants_from_vcf_file()` with `fix_vcf_errors = TRUE` removes malformed lines and reads the rest, with a warning; before, it returned the function `stats::dt` (#112).
+* `extract_variants()` reads `.vcf.gz` and `.maf.gz` files (#113).
+* `create_musica_from_variants()` accepts a matrix and factor columns (#114), and reads lowercase bases as uppercase instead of removing them (#123).
+* `create_musica_from_variants()` moves VCF-style deletions to start at the first deleted base, as in MAF files, so a deletion gets the same ID83 bin from either format. ID83 counts from VCF input can change (#108).
+* Indels whose first base differs between `ref` and `alt` (for example `A > GGT`) are removed as complex variants with a message; before, they were rewritten as indels (#109).
+* `convert_dbs = TRUE` merges adjacent SBS only within a sample; before, SBS from different samples could become one DBS, and unsorted neighbours were missed. A run of three or more adjacent SBS becomes one variant of type `"MNV"`, which no standard count table includes. DBS78 and SBS96 counts can change (#107).
+* Variants on chromosomes missing from the genome are removed with a warning; before, they crashed the reference check (#115).
+* `create_musica_from_counts()` matches rows to motifs by row name; before, it overwrote the row names, so tables in another order were mislabelled. COSMIC/SigProfiler row names (`A[C>A]A`, `AC>CA`) are converted to musicatk motif names; other row names give an error (#116).
+
 # musicatk 2.7.3 (2026-11-05)
 * `name_signatures()` returns the renamed `musica` object (invisibly), so `res <- name_signatures(res, ...)` works; before, it returned the vector of names. The object passed in is still renamed in place as before (#154).
 * The setters `num_signatures<-`, `other_parameters<-`, `credible_intervals<-`, `model_id<-` and `modality<-` now work; they could never be called before. `model_id<-` and `modality<-` on a `musica` or `result_collection` object also rename or move the stored model, so `get_model()` finds it by the new id or modality (#156).

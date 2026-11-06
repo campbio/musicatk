@@ -49,14 +49,25 @@ sample name. Default \code{c(".vcf",".vcf.gz",".gz")}}
 \item{multiallele}{Multialleles are when multiple alternative variants
 are listed in the same row in the vcf. One of \code{"expand"} or
 \code{"exclude"}. If \code{"expand"} is selected, then each
-alternate allele will be given their own rows. If \code{"exclude"} is
-selected, then these rows will be removed. Default \code{"expand"}.}
+alternate allele carried by the sample gets its own row: with ALT
+\code{A,T}, a GT of \code{0/2} gives only the \code{T} allele. If
+\code{"exclude"} is selected, then these rows will be removed; in an
+\link[VariantAnnotation:VCF-class]{ExpandedVCF}, rows that share a
+chromosome, position and reference allele are removed. An
+\link[VariantAnnotation:VCF-class]{ExpandedVCF} no longer records which
+allele each row is, so every row with a non-reference GT is kept.
+Default \code{"expand"}.}
 
 \item{extra_fields}{Optionally extract additional fields from the \code{INFO}
-section of the VCF. Default \code{NULL}.}
+section of the VCF. Fields with one value per alternate allele
+(\code{Number=A}) get the value for each allele; other fields with
+several values are joined with commas. Default \code{NULL}.}
 
 \item{fix_vcf_errors}{Attempt to automatically fix VCF file
-formatting errors.}
+formatting errors. If the file can't be read, lines with a REF or ALT of
+\code{0}, stray header lines, and lines with the wrong number of fields
+are removed, with a warning, and the rest is read again.
+Default \code{TRUE}.}
 }
 \value{
 Returns a data.table of variants extracted from a vcf

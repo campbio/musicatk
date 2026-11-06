@@ -198,7 +198,9 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
         sample_col = sample_col
       )
     } else if (is(input, "character")) {
-      if (tools::file_ext(input) %in% c("vcf", "vcf.gz")) {
+      # Look past a compression suffix, so "x.vcf.gz" is read as a VCF
+      file_type <- tools::file_ext(sub("\\.b?gz$", "", input))
+      if (file_type == "vcf") {
         dt <- extract_variants_from_vcf_file(
           vcf_file = input,
           id = id[i],
@@ -211,7 +213,7 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
           extra_fields = extra_fields,
           fix_vcf_errors = fix_vcf_errors
         )
-      } else if (tools::file_ext(input) %in% c("maf", "maf.gz")) {
+      } else if (file_type == "maf") {
         dt <- extract_variants_from_maf_file(
           maf_file = input,
           extra_fields = extra_fields
@@ -243,6 +245,10 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 
 #' Extracts variants from a VariantAnnotation VCF object
 #'
+#' Variants are assigned to the sample selected by \code{id} using its GT
+#' field. If the VCF has no GT field, all variants passing the filter are
+#' assigned to the sample. A VCF without sample columns needs \code{rename}.
+#'
 #' Aaron - Need to describe differnce between ID, and name in the header, and
 #' rename in terms of naming the sample. Need to describe differences in
 #' multiallelic choices. Also need to describe the automatic error fixing
@@ -263,10 +269,18 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 #' @param multiallele Multialleles are when multiple alternative variants
 #' are listed in the same row in the vcf. One of \code{"expand"} or
 #' \code{"exclude"}. If \code{"expand"} is selected, then each
-#' alternate allele will be given their own rows. If \code{"exclude"} is
-#' selected, then these rows will be removed. Default \code{"expand"}.
+#' alternate allele carried by the sample gets its own row: with ALT
+#' \code{A,T}, a GT of \code{0/2} gives only the \code{T} allele. If
+#' \code{"exclude"} is selected, then these rows will be removed; in an
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF}, rows that share a
+#' chromosome, position and reference allele are removed. An
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF} no longer records which
+#' allele each row is, so every row with a non-reference GT is kept.
+#' Default \code{"expand"}.
 #' @param extra_fields Optionally extract additional fields from the \code{INFO}
-#' section of the VCF. Default \code{NULL}.
+#' section of the VCF. Fields with one value per alternate allele
+#' (\code{Number=A}) get the value for each allele; other fields with
+#' several values are joined with commas. Default \code{NULL}.
 #' @return Returns a data.table of variants from a vcf
 #' @examples
 #' vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
@@ -283,20 +297,23 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
                                       extra_fields = NULL) {
   multiallele <- match.arg(multiallele)
 
-  # Process MultiAllelic Sites
-  num_alleles <- lengths(VariantAnnotation::fixed(vcf)[, "ALT"])
-  if (multiallele == "expand") {
-    vcf <- VariantAnnotation::expand(vcf)
-  } else {
-    multi_allelic <- which(num_alleles != 1)
-    if (length(multi_allelic) > 0) {
-      vcf <- vcf[-multi_allelic, ]
-    }
-  }
-
   # Configure ID
   vcf_samples <- colnames(vcf)
-  if (is.null(id)) {
+  id_given <- !is.null(id)
+  if (length(vcf_samples) == 0) {
+    if (!is.null(id)) {
+      stop(
+        "The VCF has no sample columns, so the id '", id, "' can't be ",
+        "selected. Use 'rename' to name the sample instead."
+      )
+    }
+    if (is.null(rename)) {
+      stop(
+        "The VCF has no sample columns. Use 'rename' to give a name to ",
+        "the sample these variants belong to."
+      )
+    }
+  } else if (is.null(id)) {
     id <- vcf_samples[1]
   } else {
     if (!(id %in% vcf_samples)) {
@@ -344,40 +361,87 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
     vcf <- vcf[pass, ]
   }
 
-  # Find variants in that sample (alt allele having number other than 0)
-  pass <- stringr::str_detect(VariantAnnotation::geno(vcf)$GT[, id], "[1-9]")
-  if (sum(pass) == 0) {
-    if (id != vcf_name) {
-      warning(
-        "All variants matched the reference allele ",
-        "for: ", vcf_name, " (", id, ")"
-      )
-    } else {
-      warning(
-        "All variants matched the reference allele ",
-        "for id: ", id
+  # Genotypes of the selected sample. Without them, every variant is kept.
+  gt <- NULL
+  if (!is.null(id) && "GT" %in% names(VariantAnnotation::geno(vcf))) {
+    gt <- VariantAnnotation::geno(vcf)$GT[, id]
+  } else {
+    # Without GT the sample can't be chosen from the data
+    if (length(vcf_samples) > 1 && !id_given && is.null(rename)) {
+      stop(
+        "The VCF has no GT field and several sample columns (",
+        paste(vcf_samples, collapse = ", "), "). Use 'id' or 'rename' ",
+        "to say which sample the variants belong to."
       )
     }
+    message(
+      "The VCF has no GT field for sample '", vcf_name, "'. All variants ",
+      "passing the filter are assigned to it."
+    )
+  }
+
+  if (is(vcf, "CollapsedVCF")) {
+    # One row per ALT allele. Keep only the alleles listed in the sample's
+    # GT (0/2 keeps the second ALT allele), since expand() copies the GT
+    # unchanged to every allele of the site.
+    num_alleles <- lengths(VariantAnnotation::alt(vcf))
+    if (multiallele == "exclude") {
+      single <- which(num_alleles == 1)
+      vcf <- vcf[single, ]
+      gt <- gt[single]
+      num_alleles <- num_alleles[single]
+    }
+    site <- rep(seq_along(num_alleles), num_alleles)
+    allele <- sequence(num_alleles)
+    vcf <- VariantAnnotation::expand(vcf)
+    if (is.null(gt)) {
+      keep <- rep(TRUE, length(site))
+    } else {
+      gt_alleles <- strsplit(gt, "[/|]")
+      carried <- paste(
+        rep(seq_along(gt_alleles), lengths(gt_alleles)),
+        unlist(gt_alleles)
+      )
+      keep <- paste(site, allele) %in% carried
+    }
+  } else {
+    # An ExpandedVCF no longer records which allele each row is, so any
+    # non-reference GT keeps the row
+    if (multiallele == "exclude") {
+      rows <- SummarizedExperiment::rowRanges(vcf)
+      site <- paste(
+        GenomicRanges::seqnames(rows), IRanges::start(rows), rows$REF
+      )
+      single <- which(!site %in% site[duplicated(site)])
+      vcf <- vcf[single, ]
+      gt <- gt[single]
+    }
+    if (is.null(gt)) {
+      keep <- rep(TRUE, nrow(vcf))
+    } else {
+      keep <- stringr::str_detect(gt, "[1-9]") %in% TRUE
+    }
+  }
+
+  if (sum(keep) == 0) {
+    warning(
+      "No variants were found for sample: ", vcf_name,
+      if (!is.null(id) && !identical(id, vcf_name)) paste0(" (", id, ")"),
+      ". The VCF has no variant rows left after filtering, or all ",
+      "genotypes matched the reference allele."
+    )
     return(NULL)
   }
-  vcf <- vcf[pass, ]
+  vcf <- vcf[which(keep), ]
 
-  # What does this do?
   rows <- SummarizedExperiment::rowRanges(vcf)
-  dt <- cbind(
-    data.table::as.data.table(rows)[, c(
-      "seqnames", "REF", "ALT",
-      "start", "end"
-    )],
-    "sample" = vcf_name
-  )
-
-  data.table::setnames(
-    dt, c(
-      "seqnames", "start", "end",
-      "REF", "ALT", "sample"
-    ),
-    .required_musica_headers()
+  dt <- data.table::data.table(
+    chr = as.character(GenomicRanges::seqnames(rows)),
+    start = IRanges::start(rows),
+    end = IRanges::end(rows),
+    ref = as.character(rows$REF),
+    alt = as.character(rows$ALT),
+    sample = vcf_name
   )
 
   # Add extra columns if requested
@@ -391,7 +455,17 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
       )
     }
     temp <- intersect(extra_fields, colnames(info_field))
-    dt <- cbind(dt, info_field[, temp])
+    for (field in temp) {
+      # Fields with several values per row are joined with commas
+      value <- info_field[[field]]
+      if (is(value, "List")) {
+        value <- S4Vectors::unstrsplit(
+          methods::as(value, "CharacterList"),
+          sep = ","
+        )
+      }
+      data.table::set(dt, j = field, value = unname(value))
+    }
   }
   return(dt)
 }
@@ -424,12 +498,23 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 #' @param multiallele Multialleles are when multiple alternative variants
 #' are listed in the same row in the vcf. One of \code{"expand"} or
 #' \code{"exclude"}. If \code{"expand"} is selected, then each
-#' alternate allele will be given their own rows. If \code{"exclude"} is
-#' selected, then these rows will be removed. Default \code{"expand"}.
+#' alternate allele carried by the sample gets its own row: with ALT
+#' \code{A,T}, a GT of \code{0/2} gives only the \code{T} allele. If
+#' \code{"exclude"} is selected, then these rows will be removed; in an
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF}, rows that share a
+#' chromosome, position and reference allele are removed. An
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF} no longer records which
+#' allele each row is, so every row with a non-reference GT is kept.
+#' Default \code{"expand"}.
 #' @param extra_fields Optionally extract additional fields from the \code{INFO}
-#' section of the VCF. Default \code{NULL}.
+#' section of the VCF. Fields with one value per alternate allele
+#' (\code{Number=A}) get the value for each allele; other fields with
+#' several values are joined with commas. Default \code{NULL}.
 #' @param fix_vcf_errors Attempt to automatically fix VCF file
-#' formatting errors.
+#' formatting errors. If the file can't be read, lines with a REF or ALT of
+#' \code{0}, stray header lines, and lines with the wrong number of fields
+#' are removed, with a warning, and the rest is read again.
+#' Default \code{TRUE}.
 #' @return Returns a data.table of variants extracted from a vcf
 #' @examples
 #' vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
@@ -466,79 +551,62 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
     }
   }
 
-  # Automatically try to fix some types of errors in VCF files
-  if (is(vcf, "try-error") && fix_vcf_errors) {
-    alt_input <- utils::read.table(vcf_file,
-      stringsAsFactors = FALSE,
-      check.names = FALSE, comment.char = "", skip = 7,
-      header = TRUE
-    )
-    sample_header_name <- names(alt_input[10])
-    vcf_columns <- c(
-      "#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER",
-      "INFO", "FORMAT"
-    )
-    if (!all(vcf_columns %in% names(alt_input))) {
-      stop(paste("VCF File: ", vcf_file,
-        " could not be recovered, please review.",
-        " \nAdditional information: \n", vcf[1],
-        sep = ""
-      ))
+  # Automatically try to fix some types of errors in VCF files: remove body
+  # lines with a REF or ALT of 0, stray header lines, or the wrong number of
+  # fields, then read the remaining lines again
+  if (is(vcf, "try-error")) {
+    if (!isTRUE(fix_vcf_errors)) {
+      stop(
+        "VCF File: ", vcf_file,
+        " is malformed and automatic error fixing is disabled.",
+        " \nAdditional information: \n", vcf[1]
+      )
     }
-    non_letters <- rawToChar(as.raw(c(32:47, 58:64, 91, 93:96, 123:126)),
-      multiple = TRUE
-    )
-    malformed_rows <- c(
-      which(alt_input$REF == 0), which(alt_input$ALT == 0),
-      grep("#", alt_input$`#CHROM`)
-    )
-    if (length(malformed_rows) > 0) {
-      alt_input <- alt_input[-malformed_rows, ]
-    } else {
-      stop(paste("VCF File: ", vcf_file,
-        " could not be recovered, please review.",
-        " \nAdditional information: \n", vcf[1],
-        sep = ""
-      ))
+    lines <- readLines(vcf_file)
+    column_line <- which(startsWith(lines, "#CHROM"))[1]
+    if (is.na(column_line)) {
+      stop(
+        "VCF File: ", vcf_file, " could not be recovered, please review.",
+        " It has no '#CHROM' header line.",
+        " \nAdditional information: \n", vcf[1]
+      )
     }
-    alt_input[, "End_Position"] <- alt_input[, "POS"]
-    alt_input <- alt_input[, colnames(alt_input)[c(
-      seq_len(2), ncol(alt_input),
-      seq(4, (ncol(alt_input) - 1))
-    )]]
-
-    # Needs to be changed so that it creates a VCF object which can be
-    # passed to extract_variants_from_vcf
-    # dt <- cbind(data.table::as.data.table(alt_input[, c("#CHROM", "POS",
-    #                                                    "End_Position", "REF",
-    #                                                    "ALT", "QUAL",
-    #                                                    "FILTER")]),
-    #            Tumor_Sample_Barcode = vcf_name, data.table::as.data.table(
-    #              alt_input[, c("INFO", "FORMAT", sample_header_name), drop =
-    #                          FALSE])) %>% dplyr::rename(
-    #                            "Tumor_Seq_Allele1" = "REF",
-    #                            "Tumor_Seq_Allele2" = "ALT", "Chromosome" =
-    #                              "#CHROM", "Start_Position" = "POS",
-    #                            "Alleles" = sample_header_name)
-    # warning(paste("\nVCF File: ", vcf_file,
-    #           " is malformed but could be recovered, review optional.",
-    #           " \nAdditional information: \n", vcf[1],
-    #           sep = ""))
-  } else if (is(vcf, "try-error")) {
-    stop(
-      "VCF File: ", vcf_file,
-      " is malformed and automatic error fixing is disabled.",
-      " \nAdditional information: \n", vcf[1]
-    )
-  } else {
-    dt <- extract_variants_from_vcf(
-      vcf = vcf, id = id, rename = rename,
-      sample_field = sample_field,
-      multiallele = multiallele,
-      filter = filter,
-      extra_fields = extra_fields
+    body <- lines[-seq_len(column_line)]
+    fields <- strsplit(body, "\t", fixed = TRUE)
+    num_fields <- lengths(strsplit(lines[column_line], "\t", fixed = TRUE))
+    malformed <- startsWith(body, "#") |
+      lengths(fields) != num_fields |
+      vapply(fields, "[", character(1), 4) %in% "0" |
+      vapply(fields, "[", character(1), 5) %in% "0"
+    if (!any(malformed)) {
+      stop(
+        "VCF File: ", vcf_file, " could not be recovered, please review.",
+        " \nAdditional information: \n", vcf[1]
+      )
+    }
+    repaired_file <- tempfile(fileext = ".vcf")
+    on.exit(unlink(repaired_file), add = TRUE)
+    writeLines(c(lines[seq_len(column_line)], body[!malformed]), repaired_file)
+    vcf <- try(VariantAnnotation::readVcf(repaired_file), silent = TRUE)
+    if (is(vcf, "try-error")) {
+      stop(
+        "VCF File: ", vcf_file, " could not be recovered, please review.",
+        " \nAdditional information: \n", vcf[1]
+      )
+    }
+    warning(
+      "VCF File: ", vcf_file, " is malformed. ", sum(malformed),
+      " malformed lines were removed before extracting variants."
     )
   }
+
+  dt <- extract_variants_from_vcf(
+    vcf = vcf, id = id, rename = rename,
+    sample_field = sample_field,
+    multiallele = multiallele,
+    filter = filter,
+    extra_fields = extra_fields
+  )
   return(dt)
 }
 
@@ -711,9 +779,15 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' @param extra_fields Which additional fields to extract and include in
 #' the musica object. Default \code{NULL}.
 #' @param standardize_indels Flag to convert indel style (e.g. `C > CAT`
-#' becomes `- > AT` and `GCACA > G` becomes `CACA > -`)
-#' @param convert_dbs Flag to convert adjacent SBS into DBS (original SBS are
-#' removed)
+#' becomes `- > AT` and `GCACA > G` becomes `CACA > -`). Deletions are moved
+#' to start at the first deleted base, as in MAF files; insertions keep
+#' \code{start} at the base before the insertion. Indels whose first base
+#' differs between \code{ref} and \code{alt} (e.g. `A > GGT`) are complex
+#' and are removed. Default \code{TRUE}.
+#' @param convert_dbs Flag to convert adjacent SBS in the same sample into
+#' DBS (original SBS are removed). A run of three or more adjacent SBS
+#' becomes one variant of type \code{"MNV"}, which is not included in the
+#' standard count tables. Default \code{TRUE}.
 #' @param verbose Whether to print status messages during error checking.
 #' Default \code{TRUE}.
 #' @return Returns a musica object
@@ -739,7 +813,7 @@ create_musica_from_variants <- function(x, genome,
                                         convert_dbs = TRUE,
                                         verbose = TRUE) {
   used_fields <- c(.required_musica_headers(), extra_fields)
-  if (canCoerce(x, "data.table")) {
+  if (inherits(x, c("matrix", "data.frame")) || canCoerce(x, "data.table")) {
     dt <- data.table::as.data.table(x)
   } else {
     stop(
@@ -769,6 +843,18 @@ create_musica_from_variants <- function(x, genome,
   # Subset to necessary columns and add variant type
   all_fields <- c(.required_musica_headers(), extra_fields)
   dt <- dt[, all_fields, with = FALSE]
+
+  # Columns may be factors (data.frame) or text (character matrix), and
+  # bases may be lowercase
+  for (col in c("chr", "sample")) {
+    data.table::set(dt, j = col, value = as.character(dt[[col]]))
+  }
+  for (col in c("ref", "alt")) {
+    data.table::set(dt, j = col, value = toupper(as.character(dt[[col]])))
+  }
+  for (col in c("start", "end")) {
+    data.table::set(dt, j = col, value = as.integer(as.character(dt[[col]])))
+  }
   dt <- add_variant_type(dt)
 
   # Some non-variants are included (e.g. T>T). These will be removed
@@ -793,6 +879,25 @@ create_musica_from_variants <- function(x, genome,
     dt <- .check_variant_genome(dt = dt, genome = genome)
   }
 
+  # Variants on contigs that aren't in the genome can't be checked or
+  # counted
+  missing_chr <- !dt$chr %in% GenomeInfoDb::seqnames(genome)
+  if (any(missing_chr)) {
+    warning(
+      sum(missing_chr), " variants are on chromosomes not found in the ",
+      "'genome' object and were excluded: ",
+      paste(unique(dt$chr[missing_chr]), collapse = ", ")
+    )
+    dt <- dt[!missing_chr, ]
+  }
+  if (nrow(dt) == 0) {
+    stop(
+      "No variants are left after removing those on chromosomes not found ",
+      "in the 'genome' object. Check that the chromosome names match ",
+      "'seqnames(genome)' or set 'check_ref_chromosomes = TRUE'."
+    )
+  }
+
   if (isTRUE(check_ref_bases)) {
     if (isTRUE(verbose)) {
       message(
@@ -807,45 +912,55 @@ create_musica_from_variants <- function(x, genome,
     if (isTRUE(verbose)) {
       message("Standardizing INS/DEL style")
     }
-    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in%
-                        c("A", "T", "G", "C", "-"))
-    if (length(comp_ins > 0)) {
+    bases <- c("A", "T", "G", "C")
+    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% c(bases, "-"))
+    if (length(comp_ins) > 0) {
       message("Removing ", length(comp_ins), " compound insertions")
       dt <- dt[-comp_ins, ]
     }
 
-    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in%
-                        c("A", "T", "G", "C", "-"))
-    if (length(comp_del > 0)) {
+    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% c(bases, "-"))
+    if (length(comp_del) > 0) {
       message("Removing ", length(comp_del), " compound deletions")
       dt <- dt[-comp_del, ]
     }
 
-    ins <- which(dt$Variant_Type == "INS" & dt$ref %in%
-                   c("A", "T", "G", "C"))
-    if (length(ins)) {
+    # VCF-style indels start with an anchor base shared by ref and alt (the
+    # rule VariantAnnotation's isInsertion() and isDeletion() use). When the
+    # first bases differ, the variant is complex, not an indel.
+    ins <- dt$Variant_Type == "INS" & dt$ref %in% bases
+    del <- dt$Variant_Type == "DEL" & dt$alt %in% bases
+    complex <- which(
+      (ins & substr(dt$alt, 1, 1) != dt$ref) |
+        (del & substr(dt$ref, 1, 1) != dt$alt)
+    )
+    if (length(complex) > 0) {
+      message(
+        "Removing ", length(complex), " complex variants whose first ",
+        "base differs between the reference and alternate alleles"
+      )
+      dt <- dt[-complex, ]
+    }
+
+    # Remove the anchor base. Insertions keep 'start' as the base before
+    # the insertion; deletions move 'start' to the first deleted base, so
+    # 'start' to 'end' covers the deleted bases as in MAF files.
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% bases)
+    if (length(ins) > 0) {
       message("Converting ", length(ins), " insertions")
       dt$ref[ins] <- "-"
       ins_alt <- dt$alt[ins]
       dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
     }
 
-    ins <- which(dt$Variant_Type == "INS" & dt$ref %in%
-                   c("A", "T", "G", "C"))
-    if (length(ins)) {
-      message("Converting ", length(ins), " insertions")
-      dt$ref[ins] <- "-"
-      ins_alt <- dt$alt[ins]
-      dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
-    }
-
-    del <- which(dt$Variant_Type == "DEL" & dt$alt %in%
-                   c("A", "T", "G", "C"))
-    if (length(del)) {
+    del <- which(dt$Variant_Type == "DEL" & dt$alt %in% bases)
+    if (length(del) > 0) {
       message("Converting ", length(del), " deletions")
       dt$alt[del] <- "-"
       del_ref <- dt$ref[del]
       dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
+      dt$start[del] <- dt$start[del] + 1L
+      dt$end[del] <- dt$start[del] + nchar(dt$ref[del]) - 1L
     }
   }
 
@@ -853,17 +968,49 @@ create_musica_from_variants <- function(x, genome,
     if (isTRUE(verbose)) {
       message("Converting adjacent SBS into DBS")
     }
+    # Find runs of SBS at adjacent positions in the same sample and
+    # chromosome. Sorting by position first keeps each run's rows in
+    # position order.
     sbs <- which(dt$Variant_Type == "SBS")
-    adjacent <- which(diff(dt$start) == 1)
-    dbs_ind <- adjacent[which(adjacent %in% sbs & adjacent + 1 %in% sbs &
-                                dt$chr[adjacent] == dt$chr[adjacent + 1])]
-    if (length(dbs_ind) > 0) {
-      message(length(dbs_ind), " SBS converted to DBS")
-      dt$end[dbs_ind] <- dt$end[dbs_ind] + 1
-      dt$ref[dbs_ind] <- paste0(dt$ref[dbs_ind], dt$ref[dbs_ind + 1])
-      dt$alt[dbs_ind] <- paste0(dt$alt[dbs_ind], dt$alt[dbs_ind + 1])
-      dt$Variant_Type[dbs_ind] <- "DBS"
-      dt <- dt[-(dbs_ind + 1), ]
+    sbs <- sbs[order(dt$start[sbs])]
+    sbs_ranges <- GenomicRanges::GRanges(
+      seqnames = paste(dt$sample[sbs], dt$chr[sbs], sep = "\t"),
+      ranges = IRanges::IRanges(start = dt$start[sbs], width = 1)
+    )
+    runs <- GenomicRanges::reduce(sbs_ranges, with.revmap = TRUE)
+    revmap <- S4Vectors::mcols(runs)$revmap
+    # Skip runs with two SBS at one position
+    is_run <- lengths(revmap) > 1 & IRanges::width(runs) == lengths(revmap)
+    revmap <- revmap[is_run]
+    if (length(revmap) > 0) {
+      run_id <- rep(seq_along(revmap), lengths(revmap))
+      run_rows <- sbs[unlist(revmap)]
+      # Each run becomes one variant in the row of its first SBS in the
+      # table: a DBS for two bases, an MNV for three or more
+      keep <- min(S4Vectors::splitAsList(run_rows, run_id))
+      run_size <- lengths(revmap)
+      dt$start[keep] <- min(
+        S4Vectors::splitAsList(dt$start[run_rows], run_id)
+      )
+      dt$end[keep] <- dt$start[keep] + run_size - 1L
+      dt$ref[keep] <- S4Vectors::unstrsplit(
+        S4Vectors::splitAsList(dt$ref[run_rows], run_id)
+      )
+      dt$alt[keep] <- S4Vectors::unstrsplit(
+        S4Vectors::splitAsList(dt$alt[run_rows], run_id)
+      )
+      dt$Variant_Type[keep] <- ifelse(run_size == 2, "DBS", "MNV")
+      num_dbs <- sum(run_size == 2)
+      num_mnv <- sum(run_size > 2)
+      if (num_dbs > 0) {
+        message(num_dbs, " pairs of adjacent SBS converted to DBS")
+      }
+      if (num_mnv > 0) {
+        message(
+          num_mnv, " runs of three or more adjacent SBS converted to MNV"
+        )
+      }
+      dt <- dt[-setdiff(run_rows, keep), ]
     }
   }
 
@@ -887,7 +1034,12 @@ create_musica_from_variants <- function(x, genome,
 #'
 #' @param x A data.table, matrix, or data.frame that contains counts of mutation
 #' types for each sample, with samples as columns. The column names are used
-#' as the sample names and must be unique.
+#' as the sample names and must be unique. If \code{x} has row names, they
+#' must be the standard motif names (e.g. \code{"C>A_ACA"} for SBS96 or
+#' \code{"AC>NN_CA"} for DBS78) or the COSMIC/SigProfiler names
+#' (e.g. \code{"A[C>A]A"} or \code{"AC>CA"}), and the rows are matched to the
+#' motifs by name. Without row names, the rows must be in the standard motif
+#' order.
 #' @param variant_class Mutations are SBS, DBS, or Indel.
 #' @return Returns a musica object
 #' @examples
@@ -944,8 +1096,8 @@ create_musica_from_counts <- function(x, variant_class) {
       "T>G" = "#E7C9C6FF"
     )
 
-    # update count table rownames with SBS96 standard naming
-    rownames(x) <- annotation$motif
+    # match count table rows to the SBS96 motifs by name
+    x <- .match_count_rows(x, annotation$motif, "SBS96")
 
     # create count table object
     tab <- new("count_table",
@@ -1009,7 +1161,8 @@ create_musica_from_counts <- function(x, variant_class) {
     color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
     names(color_mapping) <- unique(annotation$mutation)
 
-    rownames(x) <- annotation$motif
+    # match count table rows to the DBS78 motifs by name
+    x <- .match_count_rows(x, annotation$motif, "DBS78")
 
     # create count table object
     tab <- new("count_table",
@@ -1037,6 +1190,44 @@ create_musica_from_counts <- function(x, variant_class) {
   return(musica)
 }
 
+
+
+# Puts the rows of a count matrix in the order of 'motifs', matching them
+# by row name. COSMIC/SigProfiler names are converted to musicatk names
+# first: A[C>A]G becomes C>A_ACG and AC>CA becomes AC>NN_CA. Without row
+# names, the rows are assumed to be in the order of 'motifs'.
+.match_count_rows <- function(x, motifs, table_name) {
+  if (!is.null(rownames(x))) {
+    rownames(x) <- sub(
+      "^([ACGT])\\[(([ACGT])>[ACGT])\\]([ACGT])$", "\\2_\\1\\3\\4",
+      rownames(x)
+    )
+    rownames(x) <- sub("^([ACGT]{2})>([ACGT]{2})$", "\\1>NN_\\2", rownames(x))
+  }
+  if (is.null(rownames(x))) {
+    message(
+      "'x' has no row names, so its rows are assumed to be in the ",
+      "standard ", table_name, " order (", motifs[1], ", ", motifs[2],
+      ", ...)."
+    )
+    rownames(x) <- motifs
+    return(x)
+  }
+  unmatched <- setdiff(rownames(x), motifs)
+  duplicated_names <- unique(rownames(x)[duplicated(rownames(x))])
+  if (length(unmatched) > 0 || length(duplicated_names) > 0) {
+    stop(
+      "The row names of 'x' must be the ", length(motifs), " standard ",
+      table_name, " motif names, such as '", motifs[1], "'. ",
+      "Not matched: ", paste(utils::head(unmatched, 5), collapse = ", "),
+      ". Duplicated: ",
+      paste(utils::head(duplicated_names, 5), collapse = ", "),
+      ". Missing: ",
+      paste(utils::head(setdiff(motifs, rownames(x)), 5), collapse = ", ")
+    )
+  }
+  return(x[motifs, , drop = FALSE])
+}
 
 
 #' Load an external model into a musica object
