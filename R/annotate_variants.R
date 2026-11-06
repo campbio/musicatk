@@ -23,7 +23,7 @@ NULL
 #' it to the musica
 #' @examples
 #' data(musica_sbs96_tiny)
-#' g <- select_genome("19")
+#' g <- select_genome("hg38")
 #' add_flank_to_variants(musica_sbs96_tiny, g, 1, 2)
 #' add_flank_to_variants(musica_sbs96_tiny, g, -2, -1)
 #' @export
@@ -45,35 +45,45 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
 
   if (sign(flank_start) == 1) {
     center <- dat$end
+    mirror_center <- dat$start
   } else {
     center <- dat$start
+    mirror_center <- dat$end
   }
   ref <- dat$ref
   type <- mut_type
 
+  forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
+  rev_change <- c("A>G", "A>T", "A>C", "G>T", "G>C", "G>A")
+  rev_ind <- type %in% rev_change
+
+  # For a purine reference, the flank on the pyrimidine strand lies on the
+  # other side of the variant on the "+" strand
+  flank_from <- ifelse(rev_ind, mirror_center - flank_end,
+    center + flank_start
+  )
+  flank_to <- ifelse(rev_ind, mirror_center - flank_start,
+    center + flank_end
+  )
+
   # Mutation Context
-  flank <- VariantAnnotation::getSeq(g, chr, center + flank_start,
-    center + flank_end,
+  flank <- VariantAnnotation::getSeq(g, chr, flank_from, flank_to,
     as.character = TRUE
   )
   final_mut_context <- rep(NA, length(ref))
 
   # Get mutation context info for those on "+" strand
-  forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
   ind <- type %in% forward_change
 
   final_mut_context[ind] <- flank[ind]
 
-  # Get mutation context info for those on "-" strand
-  rev_change <- c("A>G", "A>T", "A>C", "G>T", "G>C", "G>A")
-  ind <- type %in% rev_change
+  # Get mutation context info for those on "-" strand, reverse complemented
+  # so only 6 mutation categories instead of 12
+  rev_flank <- Biostrings::reverseComplement(
+    Biostrings::DNAStringSet(flank[rev_ind])
+  )
 
-  # Reverse complement the context so only 6 mutation categories instead of 12
-  rev_flank <- flank[ind] %>%
-    Biostrings::DNAStringSet() %>%
-    Biostrings::reverseComplement()
-
-  final_mut_context[ind] <- as.character(rev_flank)
+  final_mut_context[rev_ind] <- as.character(rev_flank)
   dat[[output_column]] <- final_mut_context
   eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
@@ -94,6 +104,11 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
 #' Adds an annotation to the input musica's variant table with length of each
 #' variant
 #'
+#' The \code{Variant_Length} column is 1 for SBS and 2 for DBS. For indels it
+#' is the number of inserted bases (positive) or deleted bases (negative), so
+#' an insertion of \code{AT} is 2 and a deletion of \code{ATG} is -3. Other
+#' variant types get \code{NA}.
+#'
 #' @param musica Input samples
 #' @return None
 #' @examples
@@ -106,9 +121,13 @@ annotate_variant_length <- function(musica) {
   var_length <- rep(NA, nrow(dat))
   var_length[which(dat$Variant_Type == "SBS")] <- 1
   var_length[which(dat$Variant_Type == "DBS")] <- 2
-  indels <- which(dat$Variant_Type == "indel")
-  var_length[indels] <- nchar(dat$alt[indels]) -
-    nchar(dat$ref[indels])
+  indels <- which(dat$Variant_Type %in% c("INS", "DEL"))
+  # "-" stands for no bases
+  ref <- as.character(dat$ref[indels])
+  alt <- as.character(dat$alt[indels])
+  ref_length <- ifelse(ref == "-", 0L, nchar(ref))
+  alt_length <- ifelse(alt == "-", 0L, nchar(alt))
+  var_length[indels] <- alt_length - ref_length
   dat[["Variant_Length"]] <- var_length
   eval.parent(substitute(variants(musica) <- dat))
 }
@@ -201,22 +220,27 @@ subset_variant_by_type <- function(tab, type) {
 #' @return None
 #' @examples
 #' data(musica)
-#' annotate_transcript_strand(musica, 19)
+#' annotate_transcript_strand(musica, "hg38")
 #' @export
 annotate_transcript_strand <- function(musica, genome_build,
                                        build_table = TRUE) {
-  if (genome_build %in% c("19", "hg19")) {
+  # Anything but a TxDb or a single build name gets the error below
+  build <- ""
+  if (is.atomic(genome_build) && length(genome_build) == 1) {
+    build <- as.character(genome_build)
+  }
+  if (methods::is(genome_build, "TxDb")) {
+    genes <- genes(genome_build)
+  } else if (build %in% c("19", "hg19")) {
     genes <- genes(
       TxDb.Hsapiens.UCSC.hg19.knownGene
     )
-  } else if (genome_build %in% c("38", "hg38")) {
+  } else if (build %in% c("38", "hg38")) {
     genes <- genes(
       TxDb.Hsapiens.UCSC.hg38.knownGene
     )
-  } else if (methods::isClass(genome_build, "TxDb")) {
-    genes <- genome_build
   } else {
-    stop("Please select hg19, hg38, or provde a TxDb object")
+    stop("Please select hg19, hg38, or provide a TxDb object")
   }
 
   dat <- variants(musica)
@@ -225,7 +249,7 @@ annotate_transcript_strand <- function(musica, genome_build,
 
   # Create VRanges object to determine strand of variants within genes
   vrange <- VariantAnnotation::VRanges(
-    seqnames = sbs$chr, ranges =
+    seqnames = as.character(sbs$chr), ranges =
       IRanges(
         sbs$start,
         sbs$end
@@ -234,7 +258,7 @@ annotate_transcript_strand <- function(musica, genome_build,
       sbs$alt
   )
   overlaps <- findOverlaps(vrange, genes)
-  transcribed_variants <- rep("NA", nrow(dat))
+  transcribed_variants <- rep(NA_character_, nrow(dat))
   transcribed_variants[sbs_index[queryHits(overlaps)]] <- as.character(decode(
     strand(genes[subjectHits(overlaps)])
   ))
@@ -263,7 +287,8 @@ annotate_transcript_strand <- function(musica, genome_build,
     tab <- build_custom_table(
       musica = dat_musica, variant_annotation =
         "Transcript_Strand", name =
-        "Transcript_Strand", return_instead = TRUE
+        "Transcript_Strand", data_factor = factor(c("T", "U")),
+      return_instead = TRUE
     )
     eval.parent(substitute(tables(musica)[["Transcript_Strand"]] <- tab))
   }
@@ -272,12 +297,16 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' Add replication strand annotation to SBS variants based on bedgraph file
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param rep_range A GRanges object with replication timing as metadata
+#' @param rep_range A GRanges object with replication timing as metadata,
+#' on the same genome build as the variants. The bundled
+#' \code{\link{rep_range}} is hg19.
 #' @param build_table Automatically build a table from this annotation
 #' @return None
 #' @examples
 #' data(musica)
 #' data(rep_range)
+#' # rep_range is hg19 and musica is hg38: with your own data, use
+#' # replication timing on the build your variants were called on
 #' annotate_replication_strand(musica, rep_range)
 #' @export
 annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
@@ -287,7 +316,7 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
 
   # Create GRanges object to determine strand of variants within genes
   dat_range <- GenomicRanges::GRanges(
-    seqnames = sbs$chr, ranges =
+    seqnames = as.character(sbs$chr), ranges =
       IRanges(
         sbs$start,
         sbs$end
@@ -296,11 +325,11 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
       sbs$alt
   )
   overlaps <- GenomicRanges::findOverlaps(dat_range, rep_range)
-  repl_variants <- rep("NA", length(dat_range))
+  repl_variants <- rep(NA_character_, nrow(dat))
   repl_variants[sbs_index[S4Vectors::queryHits(overlaps)]] <-
-    GenomicRanges::elementMetadata(rep_range)@listData[[1]][
+    as.character(S4Vectors::mcols(rep_range)[[1]][
       S4Vectors::subjectHits(overlaps)
-    ]
+    ])
   dat[["Replication_Strand"]] <- repl_variants
   eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
@@ -317,6 +346,6 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
         factor(c("leading", "lagging")),
       return_instead = FALSE
     )
-    eval.parent(substitute(musica@count_tables[["Replication_Strand"]] <- tab))
+    eval.parent(substitute(tables(musica)[["Replication_Strand"]] <- tab))
   }
 }

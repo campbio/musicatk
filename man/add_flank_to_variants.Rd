@@ -36,7 +36,7 @@ Uses a genome object to find context and add it to the variant table
 }
 \examples{
 data(musica_sbs96_tiny)
-g <- select_genome("19")
+g <- select_genome("hg38")
 add_flank_to_variants(musica_sbs96_tiny, g, 1, 2)
 add_flank_to_variants(musica_sbs96_tiny, g, -2, -1)
 }

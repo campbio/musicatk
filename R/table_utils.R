@@ -94,6 +94,22 @@ extract_count_tables <- function(musica) {
   count_table[, samples, drop = FALSE]
 }
 
+# Warn when variants have motifs outside a table's schema, since the count
+# table would otherwise leave them out without saying so
+.warn_unmatched_motifs <- function(motifs, schema, name) {
+  unmatched <- sum(!motifs %in% schema)
+  if (unmatched > 0) {
+    warning(
+      unmatched, " of ", length(motifs), " variants have motifs not in the ",
+      name, " schema and were not counted. Their reference base may not ",
+      "match 'g' (check it is the build the variants were called on), or ",
+      "their context may include N bases.",
+      call. = FALSE
+    )
+  }
+  invisible(unmatched)
+}
+
 .subset_count_tables <- function(musica, samples) {
   # Character, so a factor never indexes columns by its integer codes
   samples <- as.character(samples)
@@ -203,7 +219,7 @@ extract_count_tables <- function(musica) {
 #' count_tables list and nothing is returned
 #' @examples
 #' data(musica)
-#' annotate_transcript_strand(musica, "19", build_table = FALSE)
+#' annotate_transcript_strand(musica, "hg38", build_table = FALSE)
 #' build_custom_table(musica, "Transcript_Strand", "Transcript_Strand",
 #'   data_factor = factor(c("T", "U"))
 #' )
@@ -306,12 +322,12 @@ build_custom_table <- function(musica, variant_annotation, name,
 #' @param overwrite Overwrite existing count table
 #' @return None
 #' @examples
-#' g <- select_genome("19")
+#' g <- select_genome("hg38")
 #'
 #' data(musica)
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #'
-#' annotate_transcript_strand(musica, "19")
+#' annotate_transcript_strand(musica, "hg38")
 #' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 #'
 #' combine_count_tables(musica, c("SBS96", "SBS192_Trans"), "combo")

@@ -39,12 +39,12 @@ None
 Combines tables into a single table that can be used for discovery/prediction
 }
 \examples{
-g <- select_genome("19")
+g <- select_genome("hg38")
 
 data(musica)
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 
-annotate_transcript_strand(musica, "19")
+annotate_transcript_strand(musica, "hg38")
 build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 
 combine_count_tables(musica, c("SBS96", "SBS192_Trans"), "combo")

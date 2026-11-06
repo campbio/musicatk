@@ -108,7 +108,8 @@
 #' Supplementary data converted from bigWig to bedgraph to GRanges, with low
 #' RFD indicating the leading strand and high RFD indicating lagging strand and
 #' removing uninformative zero RFD intervals. Timing data is 10kb bins from
-#' a colon cancer sample.
+#' a colon cancer sample. Coordinates are on the hg19 (GRCh37) genome build,
+#' so use it only with variants called on hg19.
 #'
 #' @docType data
 #'

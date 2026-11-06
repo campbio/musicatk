@@ -120,3 +120,31 @@ test_that(".subset_count_tables() selects samples by name, not factor code", {
     samples[c(6, 7)]
   )
 })
+
+test_that("SBS tables warn about variants whose motif isn't in the schema", {
+  # Issue #135
+  g <- select_genome("hg38")
+  # hg38 chr1:43430030 is G, so the first ref doesn't match the genome;
+  # chr1:5000 lies in the N gap at the start of chr1, so its flanks are N
+  tab <- data.frame(
+    chr = "chr1", start = c(43430030L, 43430032L, 5000L),
+    end = c(43430030L, 43430032L, 5000L), ref = "C", alt = "A",
+    sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  expect_warning(
+    build_standard_table(musica, g, "SBS96"),
+    regexp = "2 of 3 variants have motifs not in the SBS96 schema"
+  )
+  expect_equal(sum(get_count_table(tables(musica)$SBS96)), 1)
+
+  dat <- variants(musica)
+  dat$Transcript_Strand <- "T"
+  variants(musica) <- dat
+  expect_warning(
+    build_standard_table(musica, g, "SBS192", "Transcript_Strand"),
+    regexp = "1 of 3 variants have motifs not in the SBS192_Trans schema"
+  )
+})

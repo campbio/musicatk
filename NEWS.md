@@ -1,3 +1,12 @@
+# musicatk 2.7.5 (2026-11-06)
+* `annotate_transcript_strand()` leaves SBS outside genes as `NA`; before, they got the string `"NA"` and were labelled `"T"`. SBS192_Trans tables now count only SBS in genes, so their counts drop (on `data(musica)`, from 884 to 807) (#105).
+* `add_flank_to_variants()` takes the flank of A>* and G>* SBS from the pyrimidine strand; before, a left flank returned the bases 3' of the mutated base and a right flank those 5' of it (#104).
+* `annotate_transcript_strand()` accepts a `TxDb` object for `genome_build` (#117).
+* `annotate_replication_strand()` no longer fails, or copies one strand to every row, when the variant table doesn't end in SBS. Variants without a replication strand are `NA` rather than the string `"NA"` (#118).
+* `annotate_variant_length()` gives indels a length: the number of inserted bases, or minus the number of deleted bases. Before, every indel length was `NA` (#119).
+* SBS96 and SBS192 tables warn when variants are left out because their motif isn't in the table. For SBS96 this happens when a reference base doesn't match `g`, for example when `g` is not the genome build the variants were called on; for both tables, when the context has N bases (#135).
+* Examples and the vignette use the hg38 genome for the hg38 example data. The `rep_range` docs say it is on hg19 (#120).
+
 # musicatk 2.7.4 (2026-11-05)
 * `extract_variants_from_vcf()` with `multiallele = "expand"` gives each sample only the alternate alleles in its GT; before, a sample carrying any alternate allele at a multiallelic site got all of them (#106).
 * `multiallele = "exclude"` returns `alt` as a character column and no longer drops every indel from an `ExpandedVCF` (#110).

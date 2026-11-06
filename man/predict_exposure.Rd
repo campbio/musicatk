@@ -63,7 +63,7 @@ and \code{"decompTumor2Sig"}.
 \examples{
 data(musica)
 data(cosmic_v2_sigs)
-g <- select_genome("19")
+g <- select_genome("hg38")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 result <- predict_exposure(
   musica = musica, modality = "SBS96",

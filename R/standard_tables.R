@@ -69,6 +69,7 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
   mut_id <- apply(cbind(mut, mut_trinuc), 1, paste,
     collapse = "_"
   )
+  .warn_unmatched_motifs(final_motif, annotation$motif, "SBS96")
   mutation <- factor(final_motif, levels = annotation$motif)
 
   sample <- .as_sample_factor(musica, dat$sample)
@@ -129,6 +130,12 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
   dat <- variants(musica)
   dat <- subset_variant_by_type(dat, "SBS")
   dat <- drop_na_variants(dat, strand_type)
+  if (nrow(dat) == 0) {
+    stop(
+      "No SBS have a ", strand_type, " annotation, so there is nothing ",
+      "to count. Check that the annotation used the variants' genome build."
+    )
+  }
 
   chr <- dat$chr
   range_start <- dat$start
@@ -197,6 +204,10 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
     collapse = "_"
   )
 
+  table_name <- paste0("SBS192_", ifelse(
+    strand_type == "Transcript_Strand", "Trans", "Rep"
+  ))
+  .warn_unmatched_motifs(maf_mut_id, mut_id, table_name)
   mutation <- factor(maf_mut_id, levels = mut_id)
 
   mut_table <- xtabs(~ mutation + tumor_id)
@@ -224,9 +235,7 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
   color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
   names(color_mapping) <- unique(annotation$mutation)
   tab <- .create_count_table(
-    musica = musica, name = paste0("SBS192_", ifelse(
-      strand_type == "Transcript_Strand", "Trans", "Rep"
-    )),
+    musica = musica, name = table_name,
     count_table = mut_table,
     annotation = annotation,
     features = data.frame(mutation = maf_mut_id),
@@ -423,17 +432,19 @@ rc <- function(dna) {
 #' @return No object will be returned. The count tables will be automatically
 #' added to the \code{musica} object.
 #' @examples
-#' g <- select_genome("19")
+#' g <- select_genome("hg38")
 #'
 #' data(musica)
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #'
 #' data(musica)
-#' annotate_transcript_strand(musica, "19")
+#' annotate_transcript_strand(musica, "hg38")
 #' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 #'
 #' data(musica)
 #' data(rep_range)
+#' # rep_range is hg19 and musica is hg38: with your own data, use
+#' # replication timing on the build your variants were called on
 #' annotate_replication_strand(musica, rep_range)
 #' build_standard_table(musica, g, "SBS192", "Replication_Strand")
 #'
