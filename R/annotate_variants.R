@@ -299,7 +299,7 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
 
   # Create GRanges object to determine strand of variants within genes
   dat_range <- GenomicRanges::GRanges(
-    seqnames = sbs$chr, ranges =
+    seqnames = as.character(sbs$chr), ranges =
       IRanges(
         sbs$start,
         sbs$end
@@ -308,11 +308,11 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
       sbs$alt
   )
   overlaps <- GenomicRanges::findOverlaps(dat_range, rep_range)
-  repl_variants <- rep("NA", length(dat_range))
+  repl_variants <- rep(NA_character_, nrow(dat))
   repl_variants[sbs_index[S4Vectors::queryHits(overlaps)]] <-
-    GenomicRanges::elementMetadata(rep_range)@listData[[1]][
+    as.character(S4Vectors::mcols(rep_range)[[1]][
       S4Vectors::subjectHits(overlaps)
-    ]
+    ])
   dat[["Replication_Strand"]] <- repl_variants
   eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
