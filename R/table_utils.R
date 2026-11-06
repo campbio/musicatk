@@ -94,6 +94,21 @@ extract_count_tables <- function(musica) {
   count_table[, samples, drop = FALSE]
 }
 
+# Warn when variants have motifs outside a table's schema, since the count
+# table would otherwise leave them out without saying so
+.warn_unmatched_motifs <- function(motifs, schema, name) {
+  unmatched <- sum(!motifs %in% schema)
+  if (unmatched > 0) {
+    warning(
+      unmatched, " of ", length(motifs), " variants have motifs not in the ",
+      name, " schema and were not counted. Check that 'g' is the genome ",
+      "build the variants were called on.",
+      call. = FALSE
+    )
+  }
+  invisible(unmatched)
+}
+
 .subset_count_tables <- function(musica, samples) {
   # Character, so a factor never indexes columns by its integer codes
   samples <- as.character(samples)
