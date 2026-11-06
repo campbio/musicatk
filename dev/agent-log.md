@@ -638,6 +638,8 @@ Found by `/code-review` on the #220 branch. Not fixed there.
 
 ### 1. `inst/shiny/server_tables.R` is dead code
 
+Filed as #226.
+
 `app.R` sources only `ui.R` and `server.R`, and `server.R` defines its own
 `add_tables()`. The copy in `server_tables.R` is never used. It has also
 drifted: it passes `table_name =` to `build_standard_table()`, which no
@@ -645,6 +647,8 @@ longer has that argument, so it would fail if it were ever sourced. Remove
 it, or source it in place of the copy in `server.R`.
 
 ### 2. Shiny: replication-strand genome check comes after the overwrite prompt
+
+Filed as #227.
 
 In `server.R`, the check that the selected genome has a replication strand
 object (hg19 or hg38 only) runs inside `add_tables()`. That is after the
