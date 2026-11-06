@@ -106,6 +106,11 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
 #' Adds an annotation to the input musica's variant table with length of each
 #' variant
 #'
+#' The \code{Variant_Length} column is 1 for SBS and 2 for DBS. For indels it
+#' is the number of inserted bases (positive) or deleted bases (negative), so
+#' an insertion of \code{AT} is 2 and a deletion of \code{ATG} is -3. Other
+#' variant types get \code{NA}.
+#'
 #' @param musica Input samples
 #' @return None
 #' @examples
@@ -118,9 +123,11 @@ annotate_variant_length <- function(musica) {
   var_length <- rep(NA, nrow(dat))
   var_length[which(dat$Variant_Type == "SBS")] <- 1
   var_length[which(dat$Variant_Type == "DBS")] <- 2
-  indels <- which(dat$Variant_Type == "indel")
-  var_length[indels] <- nchar(dat$alt[indels]) -
-    nchar(dat$ref[indels])
+  indels <- which(dat$Variant_Type %in% c("INS", "DEL"))
+  # "-" stands for no bases
+  ref_length <- ifelse(dat$ref[indels] == "-", 0L, nchar(dat$ref[indels]))
+  alt_length <- ifelse(dat$alt[indels] == "-", 0L, nchar(dat$alt[indels]))
+  var_length[indels] <- alt_length - ref_length
   dat[["Variant_Length"]] <- var_length
   eval.parent(substitute(variants(musica) <- dat))
 }

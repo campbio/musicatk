@@ -70,3 +70,24 @@ test_that("annotate_replication_strand works when the last rows aren't SBS", {
   annotate_replication_strand(musica, rep_range, build_table = FALSE)
   expect_identical(variants(musica)$Replication_Strand, c("lagging", NA))
 })
+
+test_that("annotate_variant_length gives signed indel lengths", {
+  # Issue #119
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = c(1000L, 2000L, 3000L, 4000L),
+    end = c(1000L, 2001L, 3000L, 4002L),
+    ref = c("C", "AC", "-", "ATG"), alt = c("A", "GT", "AT", "-"),
+    sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  annotate_variant_length(musica)
+  dat <- variants(musica)
+  lengths <- stats::setNames(dat$Variant_Length, dat$Variant_Type)
+
+  expect_equal(lengths[c("SBS", "DBS", "INS", "DEL")],
+    c(SBS = 1, DBS = 2, INS = 2, DEL = -3)
+  )
+})

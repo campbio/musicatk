@@ -14,8 +14,10 @@ annotate_variant_length(musica)
 None
 }
 \description{
-Adds an annotation to the input musica's variant table with length of each
-variant
+The \code{Variant_Length} column is 1 for SBS and 2 for DBS. For indels it
+is the number of inserted bases (positive) or deleted bases (negative), so
+an insertion of \code{AT} is 2 and a deletion of \code{ATG} is -3. Other
+variant types get \code{NA}.
 }
 \examples{
 data(musica)
