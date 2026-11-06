@@ -6,6 +6,10 @@ object that matches the build in the examples and the Shiny app. The
 purine-reference strand flip (#222) gets its own PR. Storing the genome
 build in `musica` is #225.
 
+Added on 2026-11-06, after the code review, with the maintainer's
+approval: `annotate_replication_strand()` also accepts a build name for
+`rep_range`, and the app passes the selected genome straight through.
+
 ## Problem
 
 `rep_range` has hg19 coordinates, but it doesn't record that: there is no
@@ -67,12 +71,21 @@ pairs have different labels.
   the build, the meaning of the labels (RFD, not timing), and the
   1-based bins. New docs for `rep_range_hg38` describe the liftover and
   what was dropped.
-- **`R/annotate_variants.R`, `R/standard_tables.R`**: the `rep_range` docs
-  name both objects. The examples use `rep_range_hg38` with the hg38
-  `musica`, so the hg19 caveat comment goes.
-- **Shiny** (`inst/shiny/server.R`; `server_tables.R` is never sourced, so it is left alone): use `rep_range` for
-  hg19 and `rep_range_hg38` for hg38. For other genomes, show an error
-  instead of annotating.
+- **`annotate_replication_strand()`**: `rep_range` takes a GRanges, as
+  before, or a build name. `"hg19"`/`"19"` uses the bundled `rep_range`
+  and `"hg38"`/`"38"` uses `rep_range_hg38`, the same names
+  `annotate_transcript_strand()` accepts. Anything else stops: "rep_range
+  must be a GRanges object, or \"hg19\" or \"hg38\" for the bundled
+  replication strand data". The argument keeps its name so existing calls
+  still work.
+- **`R/annotate_variants.R`, `R/standard_tables.R`**: the examples use
+  `annotate_replication_strand(musica, "hg38")`, so the hg19 caveat
+  comment goes.
+- **Shiny** (`inst/shiny/server.R`): pass the selected genome to
+  `annotate_replication_strand()` inside the existing `tryCatch`, so the
+  error for mm9/mm10 comes from the package. Drop the `data(rep_range)`
+  call, which the app no longer needs. `server_tables.R` is never
+  sourced, so it is left alone.
 - **NEWS, version 2.7.6.**
 
 ## Effect on results
@@ -90,12 +103,16 @@ In `tests/testthat/test-rep-range.R`:
 - `genome()` is `hg19` for `rep_range` and `hg38` for
   `rep_range_hg38`, with chromosome lengths set.
 - Neither object has overlapping ranges.
-- `rep_range` labels chr8:80001-90000 `lagging`. A variant at
-  chr8:90000 gets that bin's label, and annotation stays the same for an
-  interior position.
+- On a bin edge where the labels change (hg19 chr8:230000, which ends a
+  leading bin and is next to a lagging one), a variant gets one label,
+  from its own bin.
 - In `rep_range_hg38`, a bin that lifts over 1:1 keeps its label.
 - A bin in an inverted region gets the swapped label at its hg38
   position.
+- `"hg19"` and `"hg38"` give the same labels as passing `rep_range` and
+  `rep_range_hg38`.
+- `"mm10"`, a length-2 vector and a data.frame each stop with the clear
+  error.
 
 ## Checks
 
