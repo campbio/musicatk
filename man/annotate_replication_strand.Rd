@@ -9,9 +9,13 @@ annotate_replication_strand(musica, rep_range, build_table = TRUE)
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{rep_range}{A GRanges object with replication timing as metadata,
-on the same genome build as the variants. The bundled
-\code{\link{rep_range}} is hg19.}
+\item{rep_range}{The genome build of the variants, to use the bundled
+replication strand data: \code{"hg19"} (also \code{"19"} or
+\code{"GRCh37"}) uses \code{\link{rep_range}}, and \code{"hg38"} (also
+\code{"38"} or \code{"GRCh38"}) uses \code{\link{rep_range_hg38}}. Case
+doesn't matter. Or a GRanges object on the same build as the variants,
+whose first metadata column labels each range \code{"leading"} or
+\code{"lagging"}.}
 
 \item{build_table}{Automatically build a table from this annotation}
 }
@@ -23,8 +27,5 @@ Add replication strand annotation to SBS variants based on bedgraph file
 }
 \examples{
 data(musica)
-data(rep_range)
-# rep_range is hg19 and musica is hg38: with your own data, use
-# replication timing on the build your variants were called on
-annotate_replication_strand(musica, rep_range)
+annotate_replication_strand(musica, "hg38")
 }

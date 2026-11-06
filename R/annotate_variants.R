@@ -297,19 +297,21 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' Add replication strand annotation to SBS variants based on bedgraph file
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param rep_range A GRanges object with replication timing as metadata,
-#' on the same genome build as the variants. The bundled
-#' \code{\link{rep_range}} is hg19.
+#' @param rep_range The genome build of the variants, to use the bundled
+#' replication strand data: \code{"hg19"} (also \code{"19"} or
+#' \code{"GRCh37"}) uses \code{\link{rep_range}}, and \code{"hg38"} (also
+#' \code{"38"} or \code{"GRCh38"}) uses \code{\link{rep_range_hg38}}. Case
+#' doesn't matter. Or a GRanges object on the same build as the variants,
+#' whose first metadata column labels each range \code{"leading"} or
+#' \code{"lagging"}.
 #' @param build_table Automatically build a table from this annotation
 #' @return None
 #' @examples
 #' data(musica)
-#' data(rep_range)
-#' # rep_range is hg19 and musica is hg38: with your own data, use
-#' # replication timing on the build your variants were called on
-#' annotate_replication_strand(musica, rep_range)
+#' annotate_replication_strand(musica, "hg38")
 #' @export
 annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
+  rep_range <- .select_rep_range(rep_range)
   dat <- variants(musica)
   sbs_index <- which(dat$Variant_Type == "SBS")
   sbs <- subset_variant_by_type(dat, "SBS")
@@ -348,4 +350,29 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
     )
     eval.parent(substitute(tables(musica)[["Replication_Strand"]] <- tab))
   }
+}
+
+# Return rep_range if it is a GRanges, or the bundled replication strand
+# data for a build name
+.select_rep_range <- function(rep_range) {
+  if (methods::is(rep_range, "GRanges")) {
+    return(rep_range)
+  }
+  build <- ""
+  if (is.atomic(rep_range) && length(rep_range) == 1) {
+    build <- tolower(as.character(rep_range))
+  }
+  name <- if (build %in% c("19", "hg19", "grch37")) {
+    "rep_range"
+  } else if (build %in% c("38", "hg38", "grch38")) {
+    "rep_range_hg38"
+  } else {
+    stop(
+      "Replication strand data is bundled for hg19 and hg38 only. For ",
+      "another genome build, pass rep_range as a GRanges object.",
+      call. = FALSE
+    )
+  }
+  # The lazy-loaded copy, so the .rda isn't read again on every call
+  getExportedValue("musicatk", name)
 }

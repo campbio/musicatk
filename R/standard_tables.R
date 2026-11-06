@@ -442,10 +442,7 @@ rc <- function(dna) {
 #' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 #'
 #' data(musica)
-#' data(rep_range)
-#' # rep_range is hg19 and musica is hg38: with your own data, use
-#' # replication timing on the build your variants were called on
-#' annotate_replication_strand(musica, rep_range)
+#' annotate_replication_strand(musica, "hg38")
 #' build_standard_table(musica, g, "SBS192", "Replication_Strand")
 #'
 #' data(dbs_musica)

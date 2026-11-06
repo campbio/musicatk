@@ -103,20 +103,34 @@
 #' @source COSMIC v3, <https://cancer.sanger.ac.uk/cosmic/signatures>
 "cosmic_v3_indel_sigs"
 
-#' Replication Timing Data as GRanges Object
+#' Replication strand of the hg19 genome as a GRanges object
 #'
-#' Supplementary data converted from bigWig to bedgraph to GRanges, with low
-#' RFD indicating the leading strand and high RFD indicating lagging strand and
-#' removing uninformative zero RFD intervals. Timing data is 10kb bins from
-#' a colon cancer sample. Coordinates are on the hg19 (GRCh37) genome build,
-#' so use it only with variants called on hg19.
+#' Leading and lagging replication strand on the hg19 (GRCh37) genome
+#' build, from the replication fork directionality (RFD) that GLOE-seq
+#' measured in 10 kb bins in HCT116 colon cancer cells with ligase 1
+#' depleted. Neighbouring bins with the same RFD are stored as one range,
+#' so a few ranges are 20 to 50 kb. Use it only with variants called on
+#' hg19; for hg38 use \code{\link{rep_range_hg38}}.
+#'
+#' Each bin is labelled by the sign of its RFD, (REV - FWD) / (REV + FWD).
+#' In these cells the breaks GLOE-seq captures lie on the newly made
+#' lagging strand. A positive RFD therefore means the fork moves toward
+#' higher coordinates, and the plus (reference) strand is copied as the
+#' lagging strand. So \code{"lagging"} means the plus strand is the
+#' lagging-strand template, and \code{"leading"} means it is the
+#' leading-strand template. Bins where the RFD is 0 carry no direction and
+#' are left out.
+#'
+#' \code{data-raw/rep_range.R} in the package source builds the object.
 #'
 #' @docType data
 #'
 #' @usage data(rep_range)
 #'
-#' @format An object of class \code{"GRanges"}; see
-#' [annotate_replication_strand()].
+#' @format A \code{"GRanges"} object with 280,770 ranges, tagged with
+#' genome \code{"hg19"}. Its one metadata column, \code{X}, is
+#' \code{"leading"} or \code{"lagging"}. See
+#' \code{\link{annotate_replication_strand}}.
 #'
 #' @keywords datasets
 #'
@@ -125,5 +139,42 @@
 #' Single-Strand Breaks, and Lesions by GLOE-Seq. ([Molecular Cell]
 #' (doi:10.1016/j.molcel.2020.03.027))
 #'
-#' @source GEO, <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE134225>
+#' @source GEO sample GSM4305465 (\code{WT_siLIG1_rep1}, 10 kb RFD), series
+#' \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE134225}
 "rep_range"
+
+#' Replication strand of the hg38 genome as a GRanges object
+#'
+#' \code{\link{rep_range}} lifted over from hg19 to hg38 (GRCh38) with the
+#' UCSC hg19ToHg38 chain. Use it with variants called on hg38. The labels
+#' mean the same as in \code{\link{rep_range}}: \code{"lagging"} means the
+#' plus strand is the lagging-strand template.
+#'
+#' In regions that are inverted between hg19 and hg38, the plus strand of
+#' hg38 is the minus strand of hg19, so the label is swapped. Positions
+#' where bins with different labels land on each other are left out, as
+#' are the 95 bins that don't map and hg38 bases with no hg19 counterpart.
+#' Neighbouring ranges with the same label are merged, so the ranges are
+#' segments rather than 10 kb bins.
+#'
+#' \code{data-raw/rep_range.R} in the package source builds the object.
+#'
+#' @docType data
+#'
+#' @usage data(rep_range_hg38)
+#'
+#' @format A \code{"GRanges"} object with 89,121 ranges, tagged with genome
+#' \code{"hg38"}. Its one metadata column, \code{X}, is \code{"leading"} or
+#' \code{"lagging"}. See \code{\link{annotate_replication_strand}}.
+#'
+#' @keywords datasets
+#'
+#' @references Sriramachandran, A. M. et al. (2020)
+#' Genome-wide Nucleotide-Resolution Mapping of DNA Replication Patterns,
+#' Single-Strand Breaks, and Lesions by GLOE-Seq. ([Molecular Cell]
+#' (doi:10.1016/j.molcel.2020.03.027))
+#'
+#' @source Lifted over from \code{\link{rep_range}}; GEO sample
+#' GSM4305465, series
+#' \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE134225}
+"rep_range_hg38"
