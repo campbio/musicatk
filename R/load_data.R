@@ -198,7 +198,9 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
         sample_col = sample_col
       )
     } else if (is(input, "character")) {
-      if (tools::file_ext(input) %in% c("vcf", "vcf.gz")) {
+      # Look past a compression suffix, so "x.vcf.gz" is read as a VCF
+      file_type <- tools::file_ext(sub("\\.b?gz$", "", input))
+      if (file_type == "vcf") {
         dt <- extract_variants_from_vcf_file(
           vcf_file = input,
           id = id[i],
@@ -211,7 +213,7 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
           extra_fields = extra_fields,
           fix_vcf_errors = fix_vcf_errors
         )
-      } else if (tools::file_ext(input) %in% c("maf", "maf.gz")) {
+      } else if (file_type == "maf") {
         dt <- extract_variants_from_maf_file(
           maf_file = input,
           extra_fields = extra_fields

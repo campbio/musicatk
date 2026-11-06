@@ -105,6 +105,24 @@ test_that("fix_vcf_errors = TRUE recovers the variants of a malformed VCF", {
   )
 })
 
+test_that("extract_variants() reads gzipped VCF files", {
+  # Issue #113
+  path <- write_test_vcf(
+    list(c("chr1", "100", ".", "C", "A", ".", "PASS", ".", "GT", "0/1")),
+    samples = "S1"
+  )
+  # writeVcf(index = TRUE) writes a bgzipped "<file>.bgz"
+  bgz_path <- VariantAnnotation::writeVcf(
+    VariantAnnotation::readVcf(path),
+    tempfile(fileext = ".vcf"),
+    index = TRUE
+  )
+  gz_path <- sub("\\.bgz$", ".gz", bgz_path)
+  file.rename(bgz_path, gz_path)
+  dt <- extract_variants(gz_path, verbose = FALSE)
+  expect_identical(dt$alt, "A")
+})
+
 test_that("extra_fields keeps names and handles per-allele INFO fields", {
   # Issue #121
   path <- write_test_vcf(
