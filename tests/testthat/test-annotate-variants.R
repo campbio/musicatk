@@ -91,3 +91,25 @@ test_that("annotate_variant_length gives signed indel lengths", {
     c(SBS = 1, DBS = 2, INS = 2, DEL = -3)
   )
 })
+
+test_that("Transcript strand works when no SBS is in a gene", {
+  # Issue #105: intergenic SBS are NA, so all of them can be dropped
+  g <- select_genome("hg38")
+  # chr1:5000 lies in the N gap at the start of chr1, outside any gene
+  tab <- data.frame(
+    chr = "chr1", start = 5000L, end = 5000L, ref = "C", alt = "A",
+    sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  annotate_transcript_strand(musica, "hg38")
+
+  counts <- get_count_table(tables(musica)$Transcript_Strand)
+  expect_identical(rownames(counts), c("T", "U"))
+  expect_equal(sum(counts), 0)
+  expect_error(
+    build_standard_table(musica, g, "SBS192", "Transcript_Strand"),
+    regexp = "No SBS have a Transcript_Strand annotation"
+  )
+})

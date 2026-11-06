@@ -282,7 +282,8 @@ annotate_transcript_strand <- function(musica, genome_build,
     tab <- build_custom_table(
       musica = dat_musica, variant_annotation =
         "Transcript_Strand", name =
-        "Transcript_Strand", return_instead = TRUE
+        "Transcript_Strand", data_factor = factor(c("T", "U")),
+      return_instead = TRUE
     )
     eval.parent(substitute(tables(musica)[["Transcript_Strand"]] <- tab))
   }

@@ -130,6 +130,12 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
   dat <- variants(musica)
   dat <- subset_variant_by_type(dat, "SBS")
   dat <- drop_na_variants(dat, strand_type)
+  if (nrow(dat) == 0) {
+    stop(
+      "No SBS have a ", strand_type, " annotation, so there is nothing ",
+      "to count. Check that the annotation used the variants' genome build."
+    )
+  }
 
   chr <- dat$chr
   range_start <- dat$start
