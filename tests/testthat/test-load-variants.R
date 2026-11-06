@@ -69,3 +69,23 @@ test_that("VCF-style deletions get the coordinates of the deleted bases", {
   expect_identical(from_vcf$ref[2], "-")
   expect_identical(from_vcf$alt[2], "TT")
 })
+
+test_that("Indels whose first base doesn't match are removed as complex", {
+  # Issue #109
+  g <- select_genome("hg38")
+  tab <- variant_table(
+    start = c(100L, 200L, 300L, 400L),
+    end = c(100L, 202L, 300L, 401L),
+    ref = c("A", "AGT", "G", "CA"),
+    alt = c("GGT", "C", "GTT", "C")
+  )
+  expect_message(
+    musica <- create_musica_from_variants(tab, g,
+      check_ref_bases = FALSE, verbose = FALSE
+    ),
+    regexp = "2 complex"
+  )
+  expect_identical(variants(musica)$start, c(300L, 401L))
+  expect_identical(variants(musica)$ref, c("-", "A"))
+  expect_identical(variants(musica)$alt, c("TT", "-"))
+})

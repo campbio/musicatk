@@ -855,25 +855,40 @@ create_musica_from_variants <- function(x, genome,
     if (isTRUE(verbose)) {
       message("Standardizing INS/DEL style")
     }
-    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in%
-                        c("A", "T", "G", "C", "-"))
+    bases <- c("A", "T", "G", "C")
+    comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in% c(bases, "-"))
     if (length(comp_ins) > 0) {
       message("Removing ", length(comp_ins), " compound insertions")
       dt <- dt[-comp_ins, ]
     }
 
-    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in%
-                        c("A", "T", "G", "C", "-"))
+    comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in% c(bases, "-"))
     if (length(comp_del) > 0) {
       message("Removing ", length(comp_del), " compound deletions")
       dt <- dt[-comp_del, ]
     }
 
+    # VCF-style indels start with an anchor base shared by ref and alt (the
+    # rule VariantAnnotation's isInsertion() and isDeletion() use). When the
+    # first bases differ, the variant is complex, not an indel.
+    ins <- dt$Variant_Type == "INS" & dt$ref %in% bases
+    del <- dt$Variant_Type == "DEL" & dt$alt %in% bases
+    complex <- which(
+      (ins & substr(dt$alt, 1, 1) != dt$ref) |
+        (del & substr(dt$ref, 1, 1) != dt$alt)
+    )
+    if (length(complex) > 0) {
+      message(
+        "Removing ", length(complex), " complex variants whose first ",
+        "base differs between the reference and alternate alleles"
+      )
+      dt <- dt[-complex, ]
+    }
+
     # Remove the anchor base. Insertions keep 'start' as the base before
     # the insertion; deletions move 'start' to the first deleted base, so
     # 'start' to 'end' covers the deleted bases as in MAF files.
-    ins <- which(dt$Variant_Type == "INS" & dt$ref %in%
-                   c("A", "T", "G", "C"))
+    ins <- which(dt$Variant_Type == "INS" & dt$ref %in% bases)
     if (length(ins) > 0) {
       message("Converting ", length(ins), " insertions")
       dt$ref[ins] <- "-"
@@ -881,8 +896,7 @@ create_musica_from_variants <- function(x, genome,
       dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
     }
 
-    del <- which(dt$Variant_Type == "DEL" & dt$alt %in%
-                   c("A", "T", "G", "C"))
+    del <- which(dt$Variant_Type == "DEL" & dt$alt %in% bases)
     if (length(del) > 0) {
       message("Converting ", length(del), " deletions")
       dt$alt[del] <- "-"
