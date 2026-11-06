@@ -237,7 +237,7 @@ annotate_transcript_strand <- function(musica, genome_build,
 
   # Create VRanges object to determine strand of variants within genes
   vrange <- VariantAnnotation::VRanges(
-    seqnames = sbs$chr, ranges =
+    seqnames = as.character(sbs$chr), ranges =
       IRanges(
         sbs$start,
         sbs$end
@@ -246,7 +246,7 @@ annotate_transcript_strand <- function(musica, genome_build,
       sbs$alt
   )
   overlaps <- findOverlaps(vrange, genes)
-  transcribed_variants <- rep("NA", nrow(dat))
+  transcribed_variants <- rep(NA_character_, nrow(dat))
   transcribed_variants[sbs_index[queryHits(overlaps)]] <- as.character(decode(
     strand(genes[subjectHits(overlaps)])
   ))

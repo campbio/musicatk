@@ -24,3 +24,16 @@ test_that("add_flank_to_variants reads flanks on the pyrimidine strand", {
   # Pyrimidine reference: plus-strand bases 5' of the C
   expect_identical(dat$lflank_2_to_1[!purine], "GT")
 })
+
+test_that("Intergenic SBS have no transcript strand", {
+  # Issue #105
+  data(musica)
+  annotate_transcript_strand(musica, "hg38")
+  dat <- variants(musica)
+  sbs_strand <- dat$Transcript_Strand[dat$Variant_Type == "SBS"]
+
+  expect_true(any(is.na(sbs_strand)))
+  expect_true(all(sbs_strand %in% c("T", "U", NA)))
+  counts <- get_count_table(tables(musica)$Transcript_Strand)
+  expect_equal(sum(counts), sum(!is.na(sbs_strand)))
+})
