@@ -651,3 +651,13 @@ object (hg19 or hg38 only) runs inside `add_tables()`. That is after the
 "overwrite existing table?" modal. A user with an SBS192_Rep table who
 picks mm10 confirms the overwrite, and only then sees the error. The table
 isn't changed.
+
+### 3. Shiny: genome-to-replication-object lookup lives in the app
+
+`server.R` `add_tables()` maps the selected genome to `rep_range` (hg19) or
+`rep_range_hg38` (hg38) and shows an error for any other genome. That is
+package logic in the app, against the standards' no-logic-in-the-app rule.
+`inst/` is invisible to R CMD check, so it is untested. It should move into
+the package: for example, `annotate_replication_strand()` could accept a
+build name, as `annotate_transcript_strand()` does. The app would then pass
+`input$table_genome_list` straight through.
