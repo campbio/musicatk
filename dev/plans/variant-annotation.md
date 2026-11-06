@@ -24,8 +24,8 @@ bundled variant dataset is hg38. The Shiny app also passes the hg19
 ## Effect on earlier results
 
 - SBS192_Trans counts only SBS inside genes. Before, every intergenic SBS
-  was counted as "T"; on `data(musica)` the table totals 587 rather
-  than 879. SBS192_Rep and SBS96 are unchanged.
+  was counted as "T"; on `data(musica)` the table totals 807 rather
+  than 884. SBS192_Rep and SBS96 are unchanged.
 - `add_flank_to_variants()` changes for A>* and G>* SBS (half of all SBS
   before collapsing). Nothing in the package or the app calls it.
 - `Variant_Length` is filled for INS/DEL; before, it was `NA`.
