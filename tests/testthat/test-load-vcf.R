@@ -9,3 +9,103 @@ test_that(desc = "Testing VCF Input", {
   expect_s3_class(vcf, "data.table")
   expect_equal(nrow(vcf), 121)
 })
+
+test_that("multiallele = 'expand' keeps only the alleles each sample has", {
+  # Issue #106: S1 carries A, S2 carries T, S3 carries both
+  path <- write_test_vcf(
+    list(c("chr1", "100", ".", "C", "A,T", ".", "PASS", ".", "GT",
+           "0/1", "0/2", "1/2")),
+    samples = c("S1", "S2", "S3")
+  )
+  s1 <- extract_variants_from_vcf_file(path, id = "S1")
+  s2 <- extract_variants_from_vcf_file(path, id = "S2")
+  s3 <- extract_variants_from_vcf_file(path, id = "S3")
+  expect_identical(as.character(s1$alt), "A")
+  expect_identical(as.character(s2$alt), "T")
+  expect_identical(as.character(s3$alt), c("A", "T"))
+})
+
+test_that("multiallele = 'exclude' drops only multiallelic sites", {
+  # Issue #110
+  path <- write_test_vcf(
+    list(
+      c("chr1", "100", ".", "C", "A,T", ".", "PASS", ".", "GT", "1/2"),
+      c("chr1", "200", ".", "G", "A", ".", "PASS", ".", "GT", "0/1"),
+      c("chr1", "300", ".", "G", "GTT", ".", "PASS", ".", "GT", "0/1")
+    ),
+    samples = "S1"
+  )
+  collapsed <- extract_variants_from_vcf_file(path, multiallele = "exclude")
+  expect_type(collapsed$alt, "character")
+  expect_identical(collapsed$alt, c("A", "GTT"))
+
+  vcf <- VariantAnnotation::readVcf(path)
+  expanded <- extract_variants_from_vcf(
+    VariantAnnotation::expand(vcf),
+    multiallele = "exclude"
+  )
+  expect_type(expanded$alt, "character")
+  expect_identical(expanded$alt, c("A", "GTT"))
+})
+
+test_that("VCFs without a GT field keep all variants", {
+  # Issue #111
+  rows <- list(
+    c("chr1", "100", ".", "C", "A", ".", "PASS", ".", "DP", "10"),
+    c("chr1", "200", ".", "G", "T", ".", "PASS", ".", "DP", "12")
+  )
+  path <- write_test_vcf(rows,
+    samples = "TUMOR",
+    format = paste0(
+      "##FORMAT=<ID=DP,Number=1,Type=Integer,",
+      "Description=\"Depth\">"
+    )
+  )
+  expect_message(
+    dt <- extract_variants_from_vcf_file(path),
+    regexp = "no GT field"
+  )
+  expect_identical(dt$alt, c("A", "T"))
+  expect_identical(as.character(dt$sample), c("TUMOR", "TUMOR"))
+
+  # A VCF with no sample columns needs a name for the sample
+  sites_only <- write_test_vcf(
+    lapply(rows, "[", seq_len(8)),
+    samples = character(0), format = character(0)
+  )
+  expect_error(
+    extract_variants_from_vcf_file(sites_only),
+    regexp = "rename"
+  )
+  dt <- suppressMessages(
+    extract_variants_from_vcf_file(sites_only, rename = "T1")
+  )
+  expect_identical(as.character(dt$sample), c("T1", "T1"))
+})
+
+test_that("extra_fields keeps names and handles per-allele INFO fields", {
+  # Issue #121
+  path <- write_test_vcf(
+    list(
+      c("chr1", "100", ".", "C", "A,T", ".", "PASS",
+        "DP=10;AF=0.1,0.2;TAG=x,y,z", "GT", "1/2"),
+      c("chr1", "200", ".", "G", "A", ".", "PASS",
+        "DP=12;AF=0.3;TAG=w", "GT", "0/1")
+    ),
+    samples = "S1",
+    info = c(
+      "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Depth\">",
+      "##INFO=<ID=AF,Number=A,Type=Float,Description=\"Frequency\">",
+      "##INFO=<ID=TAG,Number=.,Type=String,Description=\"Tags\">"
+    )
+  )
+  one <- extract_variants_from_vcf_file(path, extra_fields = "DP")
+  expect_true("DP" %in% colnames(one))
+  expect_identical(one$DP, c(10L, 10L, 12L))
+
+  all <- extract_variants_from_vcf_file(path,
+    extra_fields = c("DP", "AF", "TAG")
+  )
+  expect_equal(all$AF, c(0.1, 0.2, 0.3))
+  expect_identical(all$TAG, c("x,y,z", "x,y,z", "w"))
+})

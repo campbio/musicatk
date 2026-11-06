@@ -283,20 +283,17 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
                                       extra_fields = NULL) {
   multiallele <- match.arg(multiallele)
 
-  # Process MultiAllelic Sites
-  num_alleles <- lengths(VariantAnnotation::fixed(vcf)[, "ALT"])
-  if (multiallele == "expand") {
-    vcf <- VariantAnnotation::expand(vcf)
-  } else {
-    multi_allelic <- which(num_alleles != 1)
-    if (length(multi_allelic) > 0) {
-      vcf <- vcf[-multi_allelic, ]
-    }
-  }
-
   # Configure ID
   vcf_samples <- colnames(vcf)
-  if (is.null(id)) {
+  if (length(vcf_samples) == 0) {
+    if (is.null(rename)) {
+      stop(
+        "The VCF has no sample columns. Use 'rename' to give a name to ",
+        "the sample these variants belong to."
+      )
+    }
+    id <- NULL
+  } else if (is.null(id)) {
     id <- vcf_samples[1]
   } else {
     if (!(id %in% vcf_samples)) {
@@ -344,10 +341,62 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
     vcf <- vcf[pass, ]
   }
 
-  # Find variants in that sample (alt allele having number other than 0)
-  pass <- stringr::str_detect(VariantAnnotation::geno(vcf)$GT[, id], "[1-9]")
-  if (sum(pass) == 0) {
-    if (id != vcf_name) {
+  # Genotypes of the selected sample. Without them, every variant is kept.
+  gt <- NULL
+  if (!is.null(id) && "GT" %in% names(VariantAnnotation::geno(vcf))) {
+    gt <- VariantAnnotation::geno(vcf)$GT[, id]
+  } else {
+    message(
+      "The VCF has no GT field for sample '", vcf_name, "'. All variants ",
+      "passing the filter are assigned to it."
+    )
+  }
+
+  if (is(vcf, "CollapsedVCF")) {
+    # One row per ALT allele. Keep only the alleles listed in the sample's
+    # GT (0/2 keeps the second ALT allele), since expand() copies the GT
+    # unchanged to every allele of the site.
+    num_alleles <- lengths(VariantAnnotation::alt(vcf))
+    if (multiallele == "exclude") {
+      single <- which(num_alleles == 1)
+      vcf <- vcf[single, ]
+      gt <- gt[single]
+      num_alleles <- num_alleles[single]
+    }
+    site <- rep(seq_along(num_alleles), num_alleles)
+    allele <- sequence(num_alleles)
+    vcf <- VariantAnnotation::expand(vcf)
+    if (is.null(gt)) {
+      keep <- rep(TRUE, length(site))
+    } else {
+      gt_alleles <- strsplit(gt, "[/|]")
+      carried <- paste(
+        rep(seq_along(gt_alleles), lengths(gt_alleles)),
+        unlist(gt_alleles)
+      )
+      keep <- paste(site, allele) %in% carried
+    }
+  } else {
+    # An ExpandedVCF no longer records which allele each row is, so any
+    # non-reference GT keeps the row
+    if (multiallele == "exclude") {
+      rows <- SummarizedExperiment::rowRanges(vcf)
+      site <- paste(
+        GenomicRanges::seqnames(rows), IRanges::start(rows), rows$REF
+      )
+      single <- which(!site %in% site[duplicated(site)])
+      vcf <- vcf[single, ]
+      gt <- gt[single]
+    }
+    if (is.null(gt)) {
+      keep <- rep(TRUE, nrow(vcf))
+    } else {
+      keep <- stringr::str_detect(gt, "[1-9]") %in% TRUE
+    }
+  }
+
+  if (sum(keep) == 0) {
+    if (!identical(id, vcf_name)) {
       warning(
         "All variants matched the reference allele ",
         "for: ", vcf_name, " (", id, ")"
@@ -360,24 +409,16 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
     }
     return(NULL)
   }
-  vcf <- vcf[pass, ]
+  vcf <- vcf[which(keep), ]
 
-  # What does this do?
   rows <- SummarizedExperiment::rowRanges(vcf)
-  dt <- cbind(
-    data.table::as.data.table(rows)[, c(
-      "seqnames", "REF", "ALT",
-      "start", "end"
-    )],
-    "sample" = vcf_name
-  )
-
-  data.table::setnames(
-    dt, c(
-      "seqnames", "start", "end",
-      "REF", "ALT", "sample"
-    ),
-    .required_musica_headers()
+  dt <- data.table::data.table(
+    chr = as.character(GenomicRanges::seqnames(rows)),
+    start = IRanges::start(rows),
+    end = IRanges::end(rows),
+    ref = as.character(rows$REF),
+    alt = as.character(rows$ALT),
+    sample = vcf_name
   )
 
   # Add extra columns if requested
@@ -391,7 +432,17 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
       )
     }
     temp <- intersect(extra_fields, colnames(info_field))
-    dt <- cbind(dt, info_field[, temp])
+    for (field in temp) {
+      # Fields with several values per row are joined with commas
+      value <- info_field[[field]]
+      if (is(value, "List")) {
+        value <- S4Vectors::unstrsplit(
+          methods::as(value, "CharacterList"),
+          sep = ","
+        )
+      }
+      data.table::set(dt, j = field, value = unname(value))
+    }
   }
   return(dt)
 }
