@@ -297,11 +297,13 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' Add replication strand annotation to SBS variants based on bedgraph file
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param rep_range The genome build of the variants, \code{"hg19"} or
-#' \code{"hg38"}, to use the bundled replication strand data
-#' (\code{\link{rep_range}} or \code{\link{rep_range_hg38}}). Or a GRanges
-#' object on the same build as the variants, whose first metadata column
-#' labels each range \code{"leading"} or \code{"lagging"}.
+#' @param rep_range The genome build of the variants, to use the bundled
+#' replication strand data: \code{"hg19"} (also \code{"19"} or
+#' \code{"GRCh37"}) uses \code{\link{rep_range}}, and \code{"hg38"} (also
+#' \code{"38"} or \code{"GRCh38"}) uses \code{\link{rep_range_hg38}}. Case
+#' doesn't matter. Or a GRanges object on the same build as the variants,
+#' whose first metadata column labels each range \code{"leading"} or
+#' \code{"lagging"}.
 #' @param build_table Automatically build a table from this annotation
 #' @return None
 #' @examples
@@ -358,20 +360,19 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
   }
   build <- ""
   if (is.atomic(rep_range) && length(rep_range) == 1) {
-    build <- as.character(rep_range)
+    build <- tolower(as.character(rep_range))
   }
-  name <- if (build %in% c("19", "hg19")) {
+  name <- if (build %in% c("19", "hg19", "grch37")) {
     "rep_range"
-  } else if (build %in% c("38", "hg38")) {
+  } else if (build %in% c("38", "hg38", "grch38")) {
     "rep_range_hg38"
   } else {
     stop(
-      "rep_range must be a GRanges object, or \"hg19\" or \"hg38\" for ",
-      "the bundled replication strand data",
+      "Replication strand data is bundled for hg19 and hg38 only. For ",
+      "another genome build, pass rep_range as a GRanges object.",
       call. = FALSE
     )
   }
-  env <- new.env(parent = emptyenv())
-  utils::data(list = name, package = "musicatk", envir = env)
-  env[[name]]
+  # The lazy-loaded copy, so the .rda isn't read again on every call
+  getExportedValue("musicatk", name)
 }

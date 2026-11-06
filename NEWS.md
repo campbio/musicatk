@@ -1,6 +1,6 @@
 # musicatk 2.7.6 (2026-11-06)
 * New `rep_range_hg38`: `rep_range` lifted over to hg38, for annotating replication strand on hg38 variants. Labels are swapped in regions inverted between the builds. The examples and the Shiny app use the object that matches the genome build; for mm9 or mm10 the app now shows an error instead of annotating with human data (#220).
-* `annotate_replication_strand()` accepts the genome build for `rep_range`: `"hg19"` uses `rep_range` and `"hg38"` uses `rep_range_hg38`. A GRanges still works as before (#220).
+* `annotate_replication_strand()` accepts the genome build for `rep_range`: `"hg19"` (or `"GRCh37"`) uses `rep_range` and `"hg38"` (or `"GRCh38"`) uses `rep_range_hg38`. A GRanges still works as before (#220).
 * `rep_range` is tagged with genome `"hg19"` and its chromosome lengths, and is documented with its source (GEO GSM4305465) and what `"leading"` and `"lagging"` mean. `data-raw/rep_range.R` rebuilds both objects (#220).
 * `rep_range` bins are 1-based. Before, neighbouring bins shared an edge position, so a variant on an edge could match two bins and take whichever label came last. Replication strand changes only for variants on a bin edge (#220).
 

@@ -74,14 +74,14 @@ test_that("annotate_replication_strand accepts a build name", {
     rep_strand_at("chr2", c(90359036L, 135000L), "hg38", "hg38"),
     rep_strand_at("chr2", c(90359036L, 135000L), "hg38", rep_range_hg38)
   )
-  expect_identical(
-    rep_strand_at("chr8", 135000L, "hg38", "38"),
-    "lagging"
-  )
+  for (build in c("38", "HG38", "GRCh38")) {
+    expect_identical(rep_strand_at("chr8", 135000L, "hg38", build), "lagging")
+  }
+  expect_identical(rep_strand_at("chr8", 85000L, "hg19", "GRCh37"), "lagging")
 })
 
 test_that("annotate_replication_strand rejects other rep_range values", {
-  msg <- "rep_range must be a GRanges object, or \"hg19\" or \"hg38\""
+  msg <- "Replication strand data is bundled for hg19 and hg38 only"
   data(musica)
   expect_error(annotate_replication_strand(musica, "mm10"), msg,
     fixed = TRUE

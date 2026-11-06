@@ -9,11 +9,13 @@ annotate_replication_strand(musica, rep_range, build_table = TRUE)
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{rep_range}{The genome build of the variants, \code{"hg19"} or
-\code{"hg38"}, to use the bundled replication strand data
-(\code{\link{rep_range}} or \code{\link{rep_range_hg38}}). Or a GRanges
-object on the same build as the variants, whose first metadata column
-labels each range \code{"leading"} or \code{"lagging"}.}
+\item{rep_range}{The genome build of the variants, to use the bundled
+replication strand data: \code{"hg19"} (also \code{"19"} or
+\code{"GRCh37"}) uses \code{\link{rep_range}}, and \code{"hg38"} (also
+\code{"38"} or \code{"GRCh38"}) uses \code{\link{rep_range_hg38}}. Case
+doesn't matter. Or a GRanges object on the same build as the variants,
+whose first metadata column labels each range \code{"leading"} or
+\code{"lagging"}.}
 
 \item{build_table}{Automatically build a table from this annotation}
 }

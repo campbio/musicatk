@@ -72,12 +72,12 @@ pairs have different labels.
   1-based bins. New docs for `rep_range_hg38` describe the liftover and
   what was dropped.
 - **`annotate_replication_strand()`**: `rep_range` takes a GRanges, as
-  before, or a build name. `"hg19"`/`"19"` uses the bundled `rep_range`
-  and `"hg38"`/`"38"` uses `rep_range_hg38`, the same names
-  `annotate_transcript_strand()` accepts. Anything else stops: "rep_range
-  must be a GRanges object, or \"hg19\" or \"hg38\" for the bundled
-  replication strand data". The argument keeps its name so existing calls
-  still work.
+  before, or a build name, in any case. `"hg19"`, `"19"` and `"GRCh37"`
+  use the bundled `rep_range`; `"hg38"`, `"38"` and `"GRCh38"` use
+  `rep_range_hg38`. Anything else stops with "Replication strand data is
+  bundled for hg19 and hg38 only. For another genome build, pass
+  rep_range as a GRanges object." That wording also reads well in the
+  app. The argument keeps its name so existing calls still work.
 - **`R/annotate_variants.R`, `R/standard_tables.R`**: the examples use
   `annotate_replication_strand(musica, "hg38")`, so the hg19 caveat
   comment goes.
