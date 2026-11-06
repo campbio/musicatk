@@ -45,28 +45,40 @@ add_flank_to_variants <- function(musica, g, flank_start, flank_end,
 
   if (sign(flank_start) == 1) {
     center <- dat$end
+    mirror_center <- dat$start
   } else {
     center <- dat$start
+    mirror_center <- dat$end
   }
   ref <- dat$ref
   type <- mut_type
 
+  forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
+  rev_change <- c("A>G", "A>T", "A>C", "G>T", "G>C", "G>A")
+  rev_ind <- type %in% rev_change
+
+  # For a purine reference, the flank on the pyrimidine strand lies on the
+  # other side of the variant on the "+" strand
+  flank_from <- ifelse(rev_ind, mirror_center - flank_end,
+    center + flank_start
+  )
+  flank_to <- ifelse(rev_ind, mirror_center - flank_start,
+    center + flank_end
+  )
+
   # Mutation Context
-  flank <- VariantAnnotation::getSeq(g, chr, center + flank_start,
-    center + flank_end,
+  flank <- VariantAnnotation::getSeq(g, chr, flank_from, flank_to,
     as.character = TRUE
   )
   final_mut_context <- rep(NA, length(ref))
 
   # Get mutation context info for those on "+" strand
-  forward_change <- c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
   ind <- type %in% forward_change
 
   final_mut_context[ind] <- flank[ind]
 
   # Get mutation context info for those on "-" strand
-  rev_change <- c("A>G", "A>T", "A>C", "G>T", "G>C", "G>A")
-  ind <- type %in% rev_change
+  ind <- rev_ind
 
   # Reverse complement the context so only 6 mutation categories instead of 12
   rev_flank <- flank[ind] %>%
