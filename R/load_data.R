@@ -517,79 +517,62 @@ extract_variants_from_vcf_file <- function(vcf_file, id = NULL, rename = NULL,
     }
   }
 
-  # Automatically try to fix some types of errors in VCF files
-  if (is(vcf, "try-error") && fix_vcf_errors) {
-    alt_input <- utils::read.table(vcf_file,
-      stringsAsFactors = FALSE,
-      check.names = FALSE, comment.char = "", skip = 7,
-      header = TRUE
-    )
-    sample_header_name <- names(alt_input[10])
-    vcf_columns <- c(
-      "#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER",
-      "INFO", "FORMAT"
-    )
-    if (!all(vcf_columns %in% names(alt_input))) {
-      stop(paste("VCF File: ", vcf_file,
-        " could not be recovered, please review.",
-        " \nAdditional information: \n", vcf[1],
-        sep = ""
-      ))
+  # Automatically try to fix some types of errors in VCF files: remove body
+  # lines with a REF or ALT of 0, stray header lines, or the wrong number of
+  # fields, then read the remaining lines again
+  if (is(vcf, "try-error")) {
+    if (!isTRUE(fix_vcf_errors)) {
+      stop(
+        "VCF File: ", vcf_file,
+        " is malformed and automatic error fixing is disabled.",
+        " \nAdditional information: \n", vcf[1]
+      )
     }
-    non_letters <- rawToChar(as.raw(c(32:47, 58:64, 91, 93:96, 123:126)),
-      multiple = TRUE
-    )
-    malformed_rows <- c(
-      which(alt_input$REF == 0), which(alt_input$ALT == 0),
-      grep("#", alt_input$`#CHROM`)
-    )
-    if (length(malformed_rows) > 0) {
-      alt_input <- alt_input[-malformed_rows, ]
-    } else {
-      stop(paste("VCF File: ", vcf_file,
-        " could not be recovered, please review.",
-        " \nAdditional information: \n", vcf[1],
-        sep = ""
-      ))
+    lines <- readLines(vcf_file)
+    column_line <- which(startsWith(lines, "#CHROM"))[1]
+    if (is.na(column_line)) {
+      stop(
+        "VCF File: ", vcf_file, " could not be recovered, please review.",
+        " It has no '#CHROM' header line.",
+        " \nAdditional information: \n", vcf[1]
+      )
     }
-    alt_input[, "End_Position"] <- alt_input[, "POS"]
-    alt_input <- alt_input[, colnames(alt_input)[c(
-      seq_len(2), ncol(alt_input),
-      seq(4, (ncol(alt_input) - 1))
-    )]]
-
-    # Needs to be changed so that it creates a VCF object which can be
-    # passed to extract_variants_from_vcf
-    # dt <- cbind(data.table::as.data.table(alt_input[, c("#CHROM", "POS",
-    #                                                    "End_Position", "REF",
-    #                                                    "ALT", "QUAL",
-    #                                                    "FILTER")]),
-    #            Tumor_Sample_Barcode = vcf_name, data.table::as.data.table(
-    #              alt_input[, c("INFO", "FORMAT", sample_header_name), drop =
-    #                          FALSE])) %>% dplyr::rename(
-    #                            "Tumor_Seq_Allele1" = "REF",
-    #                            "Tumor_Seq_Allele2" = "ALT", "Chromosome" =
-    #                              "#CHROM", "Start_Position" = "POS",
-    #                            "Alleles" = sample_header_name)
-    # warning(paste("\nVCF File: ", vcf_file,
-    #           " is malformed but could be recovered, review optional.",
-    #           " \nAdditional information: \n", vcf[1],
-    #           sep = ""))
-  } else if (is(vcf, "try-error")) {
-    stop(
-      "VCF File: ", vcf_file,
-      " is malformed and automatic error fixing is disabled.",
-      " \nAdditional information: \n", vcf[1]
-    )
-  } else {
-    dt <- extract_variants_from_vcf(
-      vcf = vcf, id = id, rename = rename,
-      sample_field = sample_field,
-      multiallele = multiallele,
-      filter = filter,
-      extra_fields = extra_fields
+    body <- lines[-seq_len(column_line)]
+    fields <- strsplit(body, "\t", fixed = TRUE)
+    num_fields <- lengths(strsplit(lines[column_line], "\t", fixed = TRUE))
+    malformed <- startsWith(body, "#") |
+      lengths(fields) != num_fields |
+      vapply(fields, "[", character(1), 4) %in% "0" |
+      vapply(fields, "[", character(1), 5) %in% "0"
+    if (!any(malformed)) {
+      stop(
+        "VCF File: ", vcf_file, " could not be recovered, please review.",
+        " \nAdditional information: \n", vcf[1]
+      )
+    }
+    repaired_file <- tempfile(fileext = ".vcf")
+    on.exit(unlink(repaired_file), add = TRUE)
+    writeLines(c(lines[seq_len(column_line)], body[!malformed]), repaired_file)
+    vcf <- try(VariantAnnotation::readVcf(repaired_file), silent = TRUE)
+    if (is(vcf, "try-error")) {
+      stop(
+        "VCF File: ", vcf_file, " could not be recovered, please review.",
+        " \nAdditional information: \n", vcf[1]
+      )
+    }
+    warning(
+      "VCF File: ", vcf_file, " is malformed. ", sum(malformed),
+      " malformed lines were removed before extracting variants."
     )
   }
+
+  dt <- extract_variants_from_vcf(
+    vcf = vcf, id = id, rename = rename,
+    sample_field = sample_field,
+    multiallele = multiallele,
+    filter = filter,
+    extra_fields = extra_fields
+  )
   return(dt)
 }
 

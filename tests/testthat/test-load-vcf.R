@@ -83,6 +83,28 @@ test_that("VCFs without a GT field keep all variants", {
   expect_identical(as.character(dt$sample), c("T1", "T1"))
 })
 
+test_that("fix_vcf_errors = TRUE recovers the variants of a malformed VCF", {
+  # Issue #112: a REF of "0" makes readVcf() fail
+  path <- write_test_vcf(
+    list(
+      c("chr1", "100", ".", "C", "A", ".", "PASS", ".", "GT", "0/1"),
+      c("chr1", "150", ".", "0", "A", ".", "PASS", ".", "GT", "0/1"),
+      c("chr1", "200", ".", "G", "T", ".", "PASS", ".", "GT", "0/1")
+    ),
+    samples = "S1"
+  )
+  expect_warning(
+    dt <- extract_variants_from_vcf_file(path),
+    regexp = "1 malformed"
+  )
+  expect_s3_class(dt, "data.table")
+  expect_identical(dt$start, c(100L, 200L))
+  expect_error(
+    extract_variants_from_vcf_file(path, fix_vcf_errors = FALSE),
+    regexp = "malformed"
+  )
+})
+
 test_that("extra_fields keeps names and handles per-allele INFO fields", {
   # Issue #121
   path <- write_test_vcf(
