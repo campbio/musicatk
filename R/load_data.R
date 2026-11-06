@@ -857,30 +857,24 @@ create_musica_from_variants <- function(x, genome,
     }
     comp_ins <- which(dt$Variant_Type == "INS" & !dt$ref %in%
                         c("A", "T", "G", "C", "-"))
-    if (length(comp_ins > 0)) {
+    if (length(comp_ins) > 0) {
       message("Removing ", length(comp_ins), " compound insertions")
       dt <- dt[-comp_ins, ]
     }
 
     comp_del <- which(dt$Variant_Type == "DEL" & !dt$alt %in%
                         c("A", "T", "G", "C", "-"))
-    if (length(comp_del > 0)) {
+    if (length(comp_del) > 0) {
       message("Removing ", length(comp_del), " compound deletions")
       dt <- dt[-comp_del, ]
     }
 
+    # Remove the anchor base. Insertions keep 'start' as the base before
+    # the insertion; deletions move 'start' to the first deleted base, so
+    # 'start' to 'end' covers the deleted bases as in MAF files.
     ins <- which(dt$Variant_Type == "INS" & dt$ref %in%
                    c("A", "T", "G", "C"))
-    if (length(ins)) {
-      message("Converting ", length(ins), " insertions")
-      dt$ref[ins] <- "-"
-      ins_alt <- dt$alt[ins]
-      dt$alt[ins] <- substr(ins_alt, 2, nchar(ins_alt))
-    }
-
-    ins <- which(dt$Variant_Type == "INS" & dt$ref %in%
-                   c("A", "T", "G", "C"))
-    if (length(ins)) {
+    if (length(ins) > 0) {
       message("Converting ", length(ins), " insertions")
       dt$ref[ins] <- "-"
       ins_alt <- dt$alt[ins]
@@ -889,11 +883,12 @@ create_musica_from_variants <- function(x, genome,
 
     del <- which(dt$Variant_Type == "DEL" & dt$alt %in%
                    c("A", "T", "G", "C"))
-    if (length(del)) {
+    if (length(del) > 0) {
       message("Converting ", length(del), " deletions")
       dt$alt[del] <- "-"
       del_ref <- dt$ref[del]
       dt$ref[del] <- substr(del_ref, 2, nchar(del_ref))
+      dt$start[del] <- dt$start[del] + 1L
     }
   }
 
