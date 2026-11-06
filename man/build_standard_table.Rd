@@ -51,17 +51,19 @@ used in COSMIC V3. \code{"Indel"} generates a table for insertions and
 deletions following the schema used in COSMIC V3.
 }
 \examples{
-g <- select_genome("19")
+g <- select_genome("hg38")
 
 data(musica)
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 
 data(musica)
-annotate_transcript_strand(musica, "19")
+annotate_transcript_strand(musica, "hg38")
 build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 
 data(musica)
 data(rep_range)
+# rep_range is hg19 and musica is hg38: with your own data, use
+# replication timing on the build your variants were called on
 annotate_replication_strand(musica, rep_range)
 build_standard_table(musica, g, "SBS192", "Replication_Strand")
 

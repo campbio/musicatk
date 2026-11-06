@@ -23,7 +23,7 @@ NULL
 #' it to the musica
 #' @examples
 #' data(musica_sbs96_tiny)
-#' g <- select_genome("19")
+#' g <- select_genome("hg38")
 #' add_flank_to_variants(musica_sbs96_tiny, g, 1, 2)
 #' add_flank_to_variants(musica_sbs96_tiny, g, -2, -1)
 #' @export
@@ -220,7 +220,7 @@ subset_variant_by_type <- function(tab, type) {
 #' @return None
 #' @examples
 #' data(musica)
-#' annotate_transcript_strand(musica, 19)
+#' annotate_transcript_strand(musica, "hg38")
 #' @export
 annotate_transcript_strand <- function(musica, genome_build,
                                        build_table = TRUE) {
@@ -291,12 +291,16 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' Add replication strand annotation to SBS variants based on bedgraph file
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param rep_range A GRanges object with replication timing as metadata
+#' @param rep_range A GRanges object with replication timing as metadata,
+#' on the same genome build as the variants. The bundled
+#' \code{\link{rep_range}} is hg19.
 #' @param build_table Automatically build a table from this annotation
 #' @return None
 #' @examples
 #' data(musica)
 #' data(rep_range)
+#' # rep_range is hg19 and musica is hg38: with your own data, use
+#' # replication timing on the build your variants were called on
 #' annotate_replication_strand(musica, rep_range)
 #' @export
 annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {

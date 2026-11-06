@@ -218,7 +218,7 @@ extract_count_tables <- function(musica) {
 #' count_tables list and nothing is returned
 #' @examples
 #' data(musica)
-#' annotate_transcript_strand(musica, "19", build_table = FALSE)
+#' annotate_transcript_strand(musica, "hg38", build_table = FALSE)
 #' build_custom_table(musica, "Transcript_Strand", "Transcript_Strand",
 #'   data_factor = factor(c("T", "U"))
 #' )
@@ -321,12 +321,12 @@ build_custom_table <- function(musica, variant_annotation, name,
 #' @param overwrite Overwrite existing count table
 #' @return None
 #' @examples
-#' g <- select_genome("19")
+#' g <- select_genome("hg38")
 #'
 #' data(musica)
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #'
-#' annotate_transcript_strand(musica, "19")
+#' annotate_transcript_strand(musica, "hg38")
 #' build_standard_table(musica, g, "SBS192", "Transcript_Strand")
 #'
 #' combine_count_tables(musica, c("SBS96", "SBS192_Trans"), "combo")

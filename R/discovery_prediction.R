@@ -40,7 +40,7 @@ NULL
 #' depending on the \code{make_copy} parameter.
 #' @examples
 #' data(musica)
-#' g <- select_genome("19")
+#' g <- select_genome("hg38")
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #' discover_signatures(
 #'   musica = musica, modality = "SBS96",
@@ -234,7 +234,7 @@ discover_signatures <- function(musica, modality, num_signatures,
 #' @examples
 #' data(musica)
 #' data(cosmic_v2_sigs)
-#' g <- select_genome("19")
+#' g <- select_genome("hg38")
 #' build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 #' result <- predict_exposure(
 #'   musica = musica, modality = "SBS96",

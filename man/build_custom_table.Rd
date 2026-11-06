@@ -59,7 +59,7 @@ Builds a custom table from specified user variants
 }
 \examples{
 data(musica)
-annotate_transcript_strand(musica, "19", build_table = FALSE)
+annotate_transcript_strand(musica, "hg38", build_table = FALSE)
 build_custom_table(musica, "Transcript_Strand", "Transcript_Strand",
   data_factor = factor(c("T", "U"))
 )

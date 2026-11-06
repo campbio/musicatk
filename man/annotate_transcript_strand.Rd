@@ -22,5 +22,5 @@ Add transcript strand annotation to SBS variants (defined in genes only)
 }
 \examples{
 data(musica)
-annotate_transcript_strand(musica, 19)
+annotate_transcript_strand(musica, "hg38")
 }

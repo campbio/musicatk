@@ -72,7 +72,7 @@ function and mutation count tables need to be created using functions such as
 }
 \examples{
 data(musica)
-g <- select_genome("19")
+g <- select_genome("hg38")
 build_standard_table(musica, g, "SBS96", overwrite = TRUE)
 discover_signatures(
   musica = musica, modality = "SBS96",
