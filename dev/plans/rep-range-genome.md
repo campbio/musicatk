@@ -70,7 +70,7 @@ pairs have different labels.
 - **`R/annotate_variants.R`, `R/standard_tables.R`**: the `rep_range` docs
   name both objects. The examples use `rep_range_hg38` with the hg38
   `musica`, so the hg19 caveat comment goes.
-- **Shiny** (`inst/shiny/server.R`, `server_tables.R`): use `rep_range` for
+- **Shiny** (`inst/shiny/server.R`; `server_tables.R` is never sourced, so it is left alone): use `rep_range` for
   hg19 and `rep_range_hg38` for hg38. For other genomes, show an error
   instead of annotating.
 - **NEWS, version 2.7.6.**
