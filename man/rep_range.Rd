@@ -3,23 +3,36 @@
 \docType{data}
 \name{rep_range}
 \alias{rep_range}
-\title{Replication Timing Data as GRanges Object}
+\title{Replication strand of the hg19 genome as a GRanges object}
 \format{
-An object of class \code{"GRanges"}; see
-[annotate_replication_strand()].
+A \code{"GRanges"} object with 280,770 ranges, tagged with
+genome `"hg19"`. Its one metadata column, `X`, is `"leading"` or
+`"lagging"`. See [annotate_replication_strand()].
 }
 \source{
-GEO, <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE134225>
+GEO sample GSM4305465 (`WT_siLIG1_rep1`, 10 kb RFD), series
+<https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE134225>
 }
 \usage{
 data(rep_range)
 }
 \description{
-Supplementary data converted from bigWig to bedgraph to GRanges, with low
-RFD indicating the leading strand and high RFD indicating lagging strand and
-removing uninformative zero RFD intervals. Timing data is 10kb bins from
-a colon cancer sample. Coordinates are on the hg19 (GRCh37) genome build,
-so use it only with variants called on hg19.
+Leading and lagging replication strand in 10 kb bins on the hg19
+(GRCh37) genome build, from the replication fork directionality (RFD)
+that GLOE-seq measured in HCT116 colon cancer cells with ligase 1
+depleted. Use it only with variants called on hg19; for hg38 use
+[rep_range_hg38].
+}
+\details{
+Each bin is labelled by the sign of its RFD, (REV - FWD) / (REV + FWD).
+In these cells the breaks GLOE-seq captures lie on the newly made
+lagging strand. A positive RFD therefore means the fork moves toward
+higher coordinates, and the plus (reference) strand is copied as the
+lagging strand. So `"lagging"` means the plus strand is the
+lagging-strand template, and `"leading"` means it is the leading-strand
+template. Bins where the RFD is 0 carry no direction and are left out.
+
+`data-raw/rep_range.R` in the package source builds the object.
 }
 \references{
 Sriramachandran, A. M. et al. (2020)

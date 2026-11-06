@@ -187,6 +187,7 @@ reference:
   - '`res`'
   - '`res_annot`'
   - '`rep_range`'
+  - '`rep_range_hg38`'
   - '`musica-class`'
   - '`count_table-class`'
   - '`result_collection-class`'
