@@ -125,8 +125,10 @@ annotate_variant_length <- function(musica) {
   var_length[which(dat$Variant_Type == "DBS")] <- 2
   indels <- which(dat$Variant_Type %in% c("INS", "DEL"))
   # "-" stands for no bases
-  ref_length <- ifelse(dat$ref[indels] == "-", 0L, nchar(dat$ref[indels]))
-  alt_length <- ifelse(dat$alt[indels] == "-", 0L, nchar(dat$alt[indels]))
+  ref <- as.character(dat$ref[indels])
+  alt <- as.character(dat$alt[indels])
+  ref_length <- ifelse(ref == "-", 0L, nchar(ref))
+  alt_length <- ifelse(alt == "-", 0L, nchar(alt))
   var_length[indels] <- alt_length - ref_length
   dat[["Variant_Length"]] <- var_length
   eval.parent(substitute(variants(musica) <- dat))

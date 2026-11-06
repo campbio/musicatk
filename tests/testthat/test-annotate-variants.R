@@ -113,3 +113,21 @@ test_that("Transcript strand works when no SBS is in a gene", {
     regexp = "No SBS have a Transcript_Strand annotation"
   )
 })
+
+test_that("annotate_variant_length accepts factor ref and alt columns", {
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = c(3000L, 4000L), end = c(3000L, 4002L),
+    ref = c("-", "ATG"), alt = c("AT", "-"), sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  dat <- variants(musica)
+  dat$ref <- factor(dat$ref)
+  dat$alt <- factor(dat$alt)
+  variants(musica) <- dat
+  annotate_variant_length(musica)
+
+  expect_equal(variants(musica)$Variant_Length, c(2, -3))
+})
