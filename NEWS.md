@@ -1,7 +1,7 @@
 # musicatk 2.7.4 (2026-11-05)
 * `extract_variants_from_vcf()` with `multiallele = "expand"` gives each sample only the alternate alleles in its GT; before, a sample carrying any alternate allele at a multiallelic site got all of them (#106).
 * `multiallele = "exclude"` returns `alt` as a character column and no longer drops every indel from an `ExpandedVCF` (#110).
-* VCFs without a GT field (for example from Strelka) keep all variants passing the filter, with a message; before, they returned `NULL`. A VCF without sample columns needs `rename` (#111).
+* VCFs without a GT field (for example from Strelka) keep all variants passing the filter, with a message; before, they returned `NULL`. Such a VCF with several sample columns needs `id` or `rename`, and one without sample columns needs `rename` (#111).
 * `extra_fields` keeps the column name of a single INFO field, gives per-allele (`Number=A`) fields the value for each allele, and joins other multi-value fields with commas (#121).
 * `extract_variants_from_vcf_file()` with `fix_vcf_errors = TRUE` removes malformed lines and reads the rest, with a warning; before, it returned the function `stats::dt` (#112).
 * `extract_variants()` reads `.vcf.gz` and `.maf.gz` files (#113).

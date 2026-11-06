@@ -81,6 +81,24 @@ test_that("VCFs without a GT field keep all variants", {
   expect_identical(dt$alt, c("A", "T"))
   expect_identical(as.character(dt$sample), c("TUMOR", "TUMOR"))
 
+  # With several sample columns, the sample must be chosen
+  two_samples <- write_test_vcf(
+    lapply(rows, c, "8"),
+    samples = c("NORMAL", "TUMOR"),
+    format = paste0(
+      "##FORMAT=<ID=DP,Number=1,Type=Integer,",
+      "Description=\"Depth\">"
+    )
+  )
+  expect_error(
+    extract_variants_from_vcf_file(two_samples),
+    regexp = "'id' or 'rename'"
+  )
+  dt <- suppressMessages(
+    extract_variants_from_vcf_file(two_samples, id = "TUMOR")
+  )
+  expect_identical(as.character(dt$sample), c("TUMOR", "TUMOR"))
+
   # A VCF with no sample columns needs a name for the sample
   sites_only <- write_test_vcf(
     lapply(rows, "[", seq_len(8)),
@@ -98,6 +116,16 @@ test_that("VCFs without a GT field keep all variants", {
     extract_variants_from_vcf_file(sites_only, rename = "T1")
   )
   expect_identical(as.character(dt$sample), c("T1", "T1"))
+
+  empty <- write_test_vcf(list(),
+    samples = character(0), format = character(0)
+  )
+  expect_warning(
+    suppressMessages(
+      extract_variants_from_vcf_file(empty, rename = "T1", filter = FALSE)
+    ),
+    regexp = "sample: T1\\. "
+  )
 })
 
 test_that("fix_vcf_errors = TRUE recovers the variants of a malformed VCF", {

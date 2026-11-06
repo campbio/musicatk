@@ -133,7 +133,7 @@ drop_annotation <- function(musica, column_name) {
 #'
 #' @param tab Input variant table
 #' @return Returns the inputted variant table with variant type ("SBS", "DBS",
-#' "INS", "DEL") added as an appended "Variant_Type" column
+#' "MNV", "INS", "DEL") added as an appended "Variant_Type" column
 #' @examples
 #' data(musica)
 #' variants <- variants(musica)
@@ -145,6 +145,7 @@ add_variant_type <- function(tab) {
   type <- rep(NA, nrow(tab))
   type[which(nchar(ref) == 1 & nchar(alt) == 1)] <- "SBS"
   type[which(nchar(ref) == 2 & nchar(alt) == 2)] <- "DBS"
+  type[which(nchar(ref) > 2 & nchar(ref) == nchar(alt))] <- "MNV"
   type[which(ref == "-")] <- "INS"
   type[which(alt == "-")] <- "DEL"
   type[which(nchar(ref) < nchar(alt))] <- "INS"

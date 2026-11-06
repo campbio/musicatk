@@ -11,7 +11,7 @@ add_variant_type(tab)
 }
 \value{
 Returns the inputted variant table with variant type ("SBS", "DBS",
-"INS", "DEL") added as an appended "Variant_Type" column
+"MNV", "INS", "DEL") added as an appended "Variant_Type" column
 }
 \description{
 Generates a variant type table

@@ -298,6 +298,7 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 
   # Configure ID
   vcf_samples <- colnames(vcf)
+  id_given <- !is.null(id)
   if (length(vcf_samples) == 0) {
     if (!is.null(id)) {
       stop(
@@ -364,6 +365,14 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
   if (!is.null(id) && "GT" %in% names(VariantAnnotation::geno(vcf))) {
     gt <- VariantAnnotation::geno(vcf)$GT[, id]
   } else {
+    # Without GT the sample can't be chosen from the data
+    if (length(vcf_samples) > 1 && !id_given && is.null(rename)) {
+      stop(
+        "The VCF has no GT field and several sample columns (",
+        paste(vcf_samples, collapse = ", "), "). Use 'id' or 'rename' ",
+        "to say which sample the variants belong to."
+      )
+    }
     message(
       "The VCF has no GT field for sample '", vcf_name, "'. All variants ",
       "passing the filter are assigned to it."
@@ -416,7 +425,7 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
   if (sum(keep) == 0) {
     warning(
       "No variants were found for sample: ", vcf_name,
-      if (!identical(id, vcf_name)) paste0(" (", id, ")"),
+      if (!is.null(id) && !identical(id, vcf_name)) paste0(" (", id, ")"),
       ". The VCF has no variant rows left after filtering, or all ",
       "genotypes matched the reference allele."
     )
@@ -879,6 +888,13 @@ create_musica_from_variants <- function(x, genome,
     )
     dt <- dt[!missing_chr, ]
   }
+  if (nrow(dt) == 0) {
+    stop(
+      "No variants are left after removing those on chromosomes not found ",
+      "in the 'genome' object. Check that the chromosome names match ",
+      "'seqnames(genome)' or set 'check_ref_chromosomes = TRUE'."
+    )
+  }
 
   if (isTRUE(check_ref_bases)) {
     if (isTRUE(verbose)) {
@@ -1185,11 +1201,16 @@ create_musica_from_counts <- function(x, variant_class) {
     return(x)
   }
   unmatched <- setdiff(rownames(x), motifs)
-  if (length(unmatched) > 0 || anyDuplicated(rownames(x)) > 0) {
+  duplicated_names <- unique(rownames(x)[duplicated(rownames(x))])
+  if (length(unmatched) > 0 || length(duplicated_names) > 0) {
     stop(
       "The row names of 'x' must be the ", length(motifs), " standard ",
-      table_name, " motif names, such as '", motifs[1], "'. Row names ",
-      "not matched: ", paste(utils::head(unmatched, 5), collapse = ", ")
+      table_name, " motif names, such as '", motifs[1], "'. ",
+      "Not matched: ", paste(utils::head(unmatched, 5), collapse = ", "),
+      ". Duplicated: ",
+      paste(utils::head(duplicated_names, 5), collapse = ", "),
+      ". Missing: ",
+      paste(utils::head(setdiff(motifs, rownames(x)), 5), collapse = ", ")
     )
   }
   return(x[motifs, , drop = FALSE])

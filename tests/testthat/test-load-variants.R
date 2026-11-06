@@ -124,6 +124,8 @@ test_that("Adjacent SBS are merged within a sample only", {
   expect_identical(c(mnv$start, mnv$end), c(3000L, 3002L))
   expect_identical(c(mnv$ref, mnv$alt), c("ACG", "CGT"))
   expect_identical(nrow(v), 4L)
+  # add_variant_type() gives the same types again
+  expect_identical(musicatk:::add_variant_type(v)$Variant_Type, v$Variant_Type)
 
   # Two SBS at one position are not merged with their neighbour
   same_position <- variant_table(
@@ -158,6 +160,15 @@ test_that("Variants on contigs missing from the genome are dropped", {
     regexp = "chrFoo"
   )
   expect_identical(variants(musica)$chr, "chr1")
+
+  # A clear error when no variant is left
+  unmapped <- variant_table(chr = "1", start = 100L, ref = "A", alt = "C")
+  expect_error(
+    suppressWarnings(create_musica_from_variants(unmapped, g,
+      check_ref_chromosomes = FALSE, verbose = FALSE
+    )),
+    regexp = "No variants are left"
+  )
 })
 
 test_that("create_musica_from_counts matches rows to motifs by name", {
@@ -182,6 +193,13 @@ test_that("create_musica_from_counts matches rows to motifs by name", {
     regexp = "no row names"
   )
   expect_identical(get_count_table(tables(from_unnamed)$SBS96), counts)
+
+  duplicated_row <- counts
+  rownames(duplicated_row)[2] <- rownames(counts)[1]
+  expect_error(
+    create_musica_from_counts(duplicated_row, "SBS96"),
+    regexp = "Duplicated: C>A_ACA.*Missing: C>A_ACC"
+  )
 
   data(dbs_musica)
   dbs <- get_count_table(extract_count_tables(dbs_musica)$DBS78)
