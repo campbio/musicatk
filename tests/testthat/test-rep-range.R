@@ -97,11 +97,13 @@ test_that("annotate_replication_strand rejects other rep_range values", {
 test_that("A>* and G>* SBS take the label of the opposite strand", {
   # Issue #222: rep_range labels the plus strand, but SBS192 counts an
   # A>* or G>* SBS on the minus strand, where its pyrimidine is.
-  # hg19 chr8:80001-90000 is lagging, so the minus strand there is leading.
+  # hg19 chr8:80001-90000 is lagging, so the minus strand there is leading;
+  # chr8:220001-230000 is leading, so the minus strand there is lagging.
+  pos <- rep(c(85000L, 225000L), each = 4)
   tab <- data.frame(
-    chr = "chr8", start = 85000L, end = 85000L,
+    chr = "chr8", start = pos, end = pos,
     ref = c("C", "T", "G", "A"), alt = c("A", "C", "T", "G"),
-    sample = paste0("S", 1:4)
+    sample = paste0("S", seq_along(pos))
   )
   musica <- create_musica_from_variants(tab, select_genome("hg19"),
     check_ref_bases = FALSE, verbose = FALSE
@@ -109,7 +111,26 @@ test_that("A>* and G>* SBS take the label of the opposite strand", {
   annotate_replication_strand(musica, rep_range, build_table = FALSE)
   expect_identical(
     variants(musica)$Replication_Strand,
-    c("lagging", "lagging", "leading", "leading")
+    c(
+      "lagging", "lagging", "leading", "leading",
+      "leading", "leading", "lagging", "lagging"
+    )
+  )
+})
+
+test_that("A>* and G>* SBS are swapped with the hg38 build name too", {
+  # Issue #222: hg38 chr8:130001-140000 is lagging
+  tab <- data.frame(
+    chr = "chr8", start = 135000L, end = 135000L,
+    ref = c("C", "G"), alt = c("A", "T"), sample = c("S1", "S2")
+  )
+  musica <- create_musica_from_variants(tab, select_genome("hg38"),
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  annotate_replication_strand(musica, "hg38", build_table = FALSE)
+  expect_identical(
+    variants(musica)$Replication_Strand,
+    c("lagging", "leading")
   )
 })
 
