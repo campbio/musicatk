@@ -143,3 +143,24 @@ test_that("annotate_transcript_strand rejects other objects clearly", {
     regexp = "Please select hg19, hg38, or provide a TxDb object"
   )
 })
+
+test_that("SBS in genes on both strands have no transcript strand", {
+  # Issue #221
+  g <- select_genome("hg38")
+  # On hg38, chr1:11020563 lies in one plus-strand gene, and chr1:58682403
+  # in a plus-strand gene and a minus-strand gene
+  tab <- data.frame(
+    chr = "chr1", start = c(11020563L, 58682403L),
+    end = c(11020563L, 58682403L), ref = c("C", "A"), alt = c("A", "G"),
+    sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  annotate_transcript_strand(musica, "hg38")
+
+  # A C>A in a plus-strand gene is on the coding (untranscribed) strand
+  expect_identical(variants(musica)$Transcript_Strand, c("U", NA))
+  counts <- get_count_table(tables(musica)$Transcript_Strand)
+  expect_equal(sum(counts), 1)
+})
