@@ -219,10 +219,10 @@ subset_variant_by_type <- function(tab, type) {
 #' @param build_table Automatically build a table from this annotation
 #' @details Each SBS in a gene gets \code{"T"} (transcribed) or \code{"U"}
 #' (untranscribed): the strand its pyrimidine (C or T) reference base is
-#' on, relative to the gene. SBS outside genes, and SBS in genes on both
-#' strands (where the transcribed strand is unknown), get \code{NA}. They
-#' are left out of the Transcript_Strand table and of SBS192 tables built
-#' with \code{"Transcript_Strand"}.
+#' on, relative to the gene. SBS outside genes, and SBS in overlapping
+#' genes on opposite strands (where the transcribed strand is unknown), get
+#' \code{NA}. They are left out of the Transcript_Strand table and of
+#' SBS192 tables built with \code{"Transcript_Strand"}.
 #' @return None
 #' @examples
 #' data(musica)
@@ -271,7 +271,7 @@ annotate_transcript_strand <- function(musica, genome_build,
   transcribed_variants <- rep(NA_character_, nrow(dat))
   transcribed_variants[on_plus] <- "+"
   transcribed_variants[on_minus] <- "-"
-  # In genes on both strands, the transcribed strand is unknown
+  # In overlapping genes on opposite strands, the transcribed strand is unknown
   transcribed_variants[intersect(on_plus, on_minus)] <- NA
 
   # Match transcription and +, -, to account for reverse complement

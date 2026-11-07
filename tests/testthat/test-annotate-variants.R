@@ -144,11 +144,20 @@ test_that("annotate_transcript_strand rejects other objects clearly", {
   )
 })
 
-test_that("SBS in genes on both strands have no transcript strand", {
+test_that("SBS in overlapping genes on opposite strands have no strand", {
   # Issue #221
   g <- select_genome("hg38")
   # On hg38, chr1:11020563 lies in one plus-strand gene, and chr1:58682403
   # in a plus-strand gene and a minus-strand gene
+  txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCSC.hg38.knownGene
+  genes <- suppressMessages(GenomicFeatures::genes(txdb))
+  gene_strands <- function(pos) {
+    site <- GenomicRanges::GRanges("chr1", IRanges::IRanges(pos, pos))
+    hits <- IRanges::subsetByOverlaps(genes, site)
+    sort(as.character(GenomicRanges::strand(hits)))
+  }
+  expect_identical(gene_strands(11020563L), "+")
+  expect_identical(gene_strands(58682403L), c("-", "+"))
   tab <- data.frame(
     chr = "chr1", start = c(11020563L, 58682403L),
     end = c(11020563L, 58682403L), ref = c("C", "A"), alt = c("A", "G"),
