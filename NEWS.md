@@ -1,3 +1,6 @@
+# musicatk 2.7.7 (2026-11-06)
+* `annotate_replication_strand()` gives A>* and G>* SBS the replication strand of their pyrimidine, the strand SBS192 counts them on. `rep_range` labels the plus strand, so these SBS now take the opposite label: a G>T in a lagging range is a C>A on the leading-strand template. Before, they kept the plus-strand label, so they were counted on the wrong strand in SBS192_Rep tables. SBS192_Rep counts and the `Replication_Strand` table change for every SBS with an A or G reference base; SBS with a C or T reference base are unchanged. Re-run `annotate_replication_strand()` on objects annotated with an earlier version before building SBS192_Rep. A GRanges passed as `rep_range` must label the plus strand, as `rep_range` does (#222).
+
 # musicatk 2.7.6 (2026-11-06)
 * New `rep_range_hg38`: `rep_range` lifted over to hg38, for annotating replication strand on hg38 variants. Labels are swapped in regions inverted between the builds. The examples and the Shiny app use the object that matches the genome build; for mm9 or mm10 the app now shows an error instead of annotating with human data (#220).
 * `annotate_replication_strand()` accepts the genome build for `rep_range`: `"hg19"` (or `"GRCh37"`) uses `rep_range` and `"hg38"` (or `"GRCh38"`) uses `rep_range_hg38`. A GRanges still works as before (#220).
