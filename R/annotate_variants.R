@@ -303,9 +303,17 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' \code{"38"} or \code{"GRCh38"}) uses \code{\link{rep_range_hg38}}. Case
 #' doesn't matter. Or a GRanges object on the same build as the variants,
 #' whose first metadata column labels each range \code{"leading"} or
-#' \code{"lagging"}.
+#' \code{"lagging"} for the plus strand: \code{"lagging"} means the plus
+#' strand is the lagging-strand template, as in \code{\link{rep_range}}.
 #' @param build_table Automatically build a table from this annotation
 #' @return None
+#' @details Each SBS gets the replication strand of its pyrimidine (C or T)
+#' reference base, the strand it is counted on in SBS192 tables. SBS with
+#' a C or T reference base take the label of the range they fall in. SBS
+#' with an A or G reference base have their pyrimidine on the minus
+#' strand, so they take the opposite label: a G>T in a \code{"lagging"}
+#' range is a C>A on the leading-strand template and is labelled
+#' \code{"leading"}.
 #' @examples
 #' data(musica)
 #' annotate_replication_strand(musica, "hg38")
@@ -332,6 +340,10 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
     as.character(S4Vectors::mcols(rep_range)[[1]][
       S4Vectors::subjectHits(overlaps)
     ])
+  # rep_range labels the plus strand. SBS192 counts each SBS on the strand
+  # of its pyrimidine, which for A>* and G>* is the minus strand, so these
+  # take the opposite label
+  repl_variants <- .swap_rep_strand(repl_variants, dat$ref %in% c("A", "G"))
   dat[["Replication_Strand"]] <- repl_variants
   eval.parent(substitute(variants(musica) <- dat))
   if (build_table) {
@@ -350,6 +362,15 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
     )
     eval.parent(substitute(tables(musica)[["Replication_Strand"]] <- tab))
   }
+}
+
+# Swap "leading" and "lagging" where swap is TRUE; other labels are kept
+.swap_rep_strand <- function(strand, swap) {
+  leading <- swap & strand %in% "leading"
+  lagging <- swap & strand %in% "lagging"
+  strand[leading] <- "lagging"
+  strand[lagging] <- "leading"
+  strand
 }
 
 # Return rep_range if it is a GRanges, or the bundled replication strand

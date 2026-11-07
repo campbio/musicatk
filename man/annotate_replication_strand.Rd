@@ -15,7 +15,8 @@ replication strand data: \code{"hg19"} (also \code{"19"} or
 \code{"38"} or \code{"GRCh38"}) uses \code{\link{rep_range_hg38}}. Case
 doesn't matter. Or a GRanges object on the same build as the variants,
 whose first metadata column labels each range \code{"leading"} or
-\code{"lagging"}.}
+\code{"lagging"} for the plus strand: \code{"lagging"} means the plus
+strand is the lagging-strand template, as in \code{\link{rep_range}}.}
 
 \item{build_table}{Automatically build a table from this annotation}
 }
@@ -24,6 +25,15 @@ None
 }
 \description{
 Add replication strand annotation to SBS variants based on bedgraph file
+}
+\details{
+Each SBS gets the replication strand of its pyrimidine (C or T)
+reference base, the strand it is counted on in SBS192 tables. SBS with
+a C or T reference base take the label of the range they fall in. SBS
+with an A or G reference base have their pyrimidine on the minus
+strand, so they take the opposite label: a G>T in a \code{"lagging"}
+range is a C>A on the leading-strand template and is labelled
+\code{"leading"}.
 }
 \examples{
 data(musica)
