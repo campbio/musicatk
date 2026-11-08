@@ -247,6 +247,16 @@ test_that("MAFs without records or with only silent variants are read", {
   dt <- extract_variants_from_maf_file(silent)
   expect_identical(nrow(dt), 3L)
 
+  # Also when the classes aren't ones read.maf() knows
+  fields <- strsplit(records[classes == "Silent"][1:3], "\t", fixed = TRUE)
+  renamed <- vapply(fields, function(x) {
+    x[9] <- "Splice_Site_SNP"
+    paste(x, collapse = "\t")
+  }, character(1))
+  renamed_maf <- tempfile(fileext = ".maf")
+  writeLines(c(lines[header], renamed), renamed_maf)
+  expect_identical(nrow(extract_variants_from_maf_file(renamed_maf)), 3L)
+
   # One empty MAF doesn't stop the others from being read
   lusc <- extract_variants_from_maf_file(maf_file)
   expect_warning(

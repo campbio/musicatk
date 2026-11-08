@@ -460,8 +460,8 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
     chr = as.character(GenomicRanges::seqnames(rows)),
     start = IRanges::start(rows),
     end = IRanges::end(rows),
-    ref = as.character(rows$REF),
-    alt = as.character(rows$ALT),
+    ref = toupper(as.character(rows$REF)),
+    alt = toupper(as.character(rows$ALT)),
     sample = vcf_name
   )
   dt <- .trim_alleles(dt)
@@ -757,54 +757,31 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
 #' maf <- extract_variants_from_maf_file(maf_file = maf_file)
 #' @export
 extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
-  if (!.maf_has_records(maf_file)) {
+  # Read the file as maftools::read.maf() does, so a file without records
+  # can be reported before read.maf() stops on it
+  records <- data.table::fread(
+    file = maf_file, sep = "\t", stringsAsFactors = FALSE,
+    data.table = TRUE, showProgress = FALSE, header = TRUE, fill = TRUE,
+    skip = "Hugo_Symbol", quote = ""
+  )
+  if (nrow(records) == 0) {
     warning("MAF file ", maf_file, " has no variant records.")
     return(NULL)
   }
   maf <- tryCatch(
-    maftools::read.maf(maf_file, verbose = FALSE),
+    maftools::read.maf(records, verbose = FALSE),
     error = function(e) {
-      # read.maf() stops when no record is non-synonymous. Reading again
-      # with every class as non-synonymous keeps silent and non-coding
-      # records; any other error is raised again by this call.
-      maftools::read.maf(maf_file,
-        vc_nonSyn = .maf_variant_classes(), verbose = FALSE
+      if (!grepl("No non-synonymous", conditionMessage(e))) {
+        stop(e)
+      }
+      # Every record is silent or non-coding: count every class in the
+      # file as non-synonymous, so read.maf() keeps them all
+      maftools::read.maf(records,
+        vc_nonSyn = unique(records$Variant_Classification), verbose = FALSE
       )
     }
   )
   return(extract_variants_from_maf(maf = maf, extra_fields = extra_fields))
-}
-
-# Whether a MAF file has at least one record after its comment and column
-# header lines. Reads only as far as the first record.
-.maf_has_records <- function(maf_file) {
-  con <- file(maf_file, open = "r")
-  on.exit(close(con))
-  lines_seen <- 0L
-  repeat {
-    lines <- readLines(con, n = 1000L)
-    if (length(lines) == 0) {
-      return(FALSE)
-    }
-    lines_seen <- lines_seen +
-      sum(!startsWith(lines, "#") & nzchar(trimws(lines)))
-    if (lines_seen >= 2L) {
-      return(TRUE)
-    }
-  }
-}
-
-# The Variant_Classification values of the MAF specification
-.maf_variant_classes <- function() {
-  c(
-    "Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins",
-    "Missense_Mutation", "Nonsense_Mutation", "Nonstop_Mutation",
-    "Silent", "Splice_Site", "Splice_Region", "Translation_Start_Site",
-    "3'UTR", "3'Flank", "5'UTR", "5'Flank", "IGR", "Intron", "RNA",
-    "Targeted_Region", "De_novo_Start_InFrame", "De_novo_Start_OutOfFrame",
-    "Start_Codon_SNP", "Start_Codon_Del", "Start_Codon_Ins",
-    "Stop_Codon_Del", "Stop_Codon_Ins", "lincRNA", "Unknown"
-  )
 }
 
 #' Creates a musica object from a variant table
@@ -1518,18 +1495,19 @@ add_result <- function(signatures, exposures, musica, result_name,
   if (length(ix) == 0) {
     return(dt)
   }
-  # Number of leading bases shared by a and b, up to max_shared
+  # Number of leading bases shared by a and b, up to max_shared, compared
+  # one position at a time across all rows
   shared <- function(a, b, max_shared) {
-    vapply(seq_along(a), function(i) {
-      n <- 0L
-      while (n < max_shared[i]) {
-        if (substr(a[i], n + 1L, n + 1L) != substr(b[i], n + 1L, n + 1L)) {
-          break
-        }
-        n <- n + 1L
-      }
-      n
-    }, integer(1))
+    n <- integer(length(a))
+    open <- max_shared > 0L
+    k <- 1L
+    while (any(open)) {
+      open <- open & substr(a, k, k) == substr(b, k, k)
+      n[open] <- k
+      open <- open & k < max_shared
+      k <- k + 1L
+    }
+    n
   }
   ref <- dt$ref[ix]
   alt <- dt$alt[ix]

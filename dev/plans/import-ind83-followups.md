@@ -48,14 +48,17 @@ All in `R/load_data.R` and `R/standard_tables.R`.
   `filter` docs in `extract_variants()`, `extract_variants_from_vcf()` and
   `extract_variants_from_vcf_file()` say `.` counts as passing.
 - **#241.** In `extract_variants_from_maf_file()`:
-  - A MAF with no records (only comment and header lines) warns, naming
-    the file, and returns `NULL`, as VCFs do. Checked by reading lines
-    until the first record, so large files are not read twice.
-  - Otherwise call `read.maf()` as now. If it fails, call it again with
-    `vc_nonSyn` set to every standard MAF `Variant_Classification`, so
-    silent-only files are read. Normal files are read exactly as before
-    (same rows, same order); any other error surfaces from the second
-    call.
+  - Read the file with `data.table::fread()` using the arguments
+    `read.maf()` itself uses (`skip = "Hugo_Symbol"`, `quote = ""`,
+    `fill = TRUE`), and pass the table to `read.maf()`, so the file is
+    parsed once and exactly as before.
+  - A MAF with no records warns, naming the file, and returns `NULL`, as
+    VCFs do.
+  - If `read.maf()` stops with "No non-synonymous", call it again on the
+    same table with `vc_nonSyn` set to the classes in the file, so
+    silent-only files (and files with class names `read.maf()` doesn't
+    know) are read. Normal files give the same rows in the same order;
+    any other error is raised unchanged.
   - `@return` says `NULL` is returned for a MAF without records.
 - **#215.** `extract_variants_from_vcf()` leaves out alleles whose ALT has
   characters other than A, C, G, T and N (`*`, `<DEL>`, breakends, `.`),
@@ -67,20 +70,23 @@ All in `R/load_data.R` and `R/standard_tables.R`.
   (keeping at least one base of each allele), then the shared prefix,
   keeping one anchor base when the lengths differ and none when they are
   equal. `start` moves by the trimmed prefix and `end` is
-  `start + nchar(ref) - 1`. Only rows with both alleles longer than one
-  base can change. So `ATG>AT` becomes `TG>T` one base on, a simple
-  deletion; `AT>GT` becomes the SBS `A>G`; `ATG>AG` becomes `AT>A`.
+  `start + nchar(ref) - 1`. Alleles are uppercased first. Only rows with
+  both alleles longer than one base can change. So `ATG>AT` becomes
+  `TG>T` one base on, a simple deletion; `AT>GT` becomes the SBS `A>G`; `ATG>AG` becomes `AT>A`.
   Complex alleles with different first bases (`A>GTT`) are unchanged and
   are still removed as complex later. VCF input only.
 - **#233.** `.classify_indels()` clamps flanks to `1 .. seqlengths(g)`.
   A flank that falls wholly outside the chromosome is empty. Shorter
-  flanks just count fewer repeats or less microhomology.
+  flanks just count fewer repeats or less microhomology. Lengths are
+  looked up by chromosome name (`chr` can be a factor), and indels on
+  chromosomes missing from `g` stop with an error naming them.
 - **#234.** `create_ind83_table()` stops when an insertion's `ref` or a
   deletion's `alt` isn't `-`, saying how many and to build the musica
   object with `standardize_indels = TRUE`. The `standardize_indels` docs
   say IND83 needs it.
 - **#236.** `create_ind83_table()` calls `.warn_unmatched_motifs()` on the
-  labels before counting, as SBS96 does.
+  labels before counting, as SBS96 does, with a hint that fits IND83
+  (an N in the inserted or deleted bases).
 
 ## Tests
 
@@ -100,8 +106,10 @@ code. Tiny fixtures from `write_test_vcf()` and temporary MAFs.
   with GT `1/2` gives `AT>A` and the SBS `A>G`; REF `ATG`, ALT `AG` gives
   `AT>A`. Through `create_musica_from_variants()` (no ref check) none is
   removed as compound and the types are DEL, DEL, DEL, SBS, DEL.
-- #233 (`test-tables.R`): an insertion at hg38 chrM:3 and a deletion of
-  the last base of chrM build an IND83 table counting both.
+- #233 (`test-tables.R`): insertions at hg38 chrM:2 and chrM:3 get
+  `INS_T_1_1` and `INS_T_1_0`, and a deletion of the last base of chrM is
+  counted. A factor `chr` gets the same bins, and a chromosome missing
+  from `g` stops with an error naming it.
 - #234 (`test-tables.R`): chr1:153056355 `C>CT` with
   `standardize_indels = FALSE` stops with an error naming
   `standardize_indels`.

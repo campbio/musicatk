@@ -553,7 +553,9 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   # Count every sample in sample_names() order, matched by name, and every
   # motif, whichever indel classes are present
   labels <- .classify_indels(indels, g)
-  .warn_unmatched_motifs(labels, motifs, "IND83")
+  .warn_unmatched_motifs(labels, motifs, "IND83",
+    hint = "Their inserted or deleted bases may include N."
+  )
   labels <- factor(labels, levels = motifs)
   samples <- .as_sample_factor(musica, indels$sample)
   dimlist <- list(row_names = motifs, column_names = levels(samples))
@@ -670,20 +672,28 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   left_end <- ifelse(ins, indels$start, indels$start - 1L)
   right_start <- ifelse(ins, indels$start + 1L, indels$start + len)
   # Flanks stop at the chromosome ends; a flank wholly outside is empty
-  chr_length <- GenomeInfoDb::seqlengths(g)[indels$chr]
+  chr <- as.character(indels$chr)
+  chr_length <- GenomeInfoDb::seqlengths(g)[chr]
+  if (anyNA(chr_length)) {
+    stop(
+      "Indels are on chromosomes not found in 'g': ",
+      paste(unique(chr[is.na(chr_length)]), collapse = ", "),
+      ". Check that 'g' is the genome the variants were called on."
+    )
+  }
   left_start <- pmax(left_end - width + 1L, 1L)
   right_end <- pmin(right_start + width - 1L, chr_length)
   has_left <- left_end >= 1L
   has_right <- right_start <= chr_length
   lflank <- rflank <- character(nrow(indels))
   if (any(has_left)) {
-    lflank[has_left] <- VariantAnnotation::getSeq(g, indels$chr[has_left],
+    lflank[has_left] <- VariantAnnotation::getSeq(g, chr[has_left],
       left_start[has_left], left_end[has_left],
       as.character = TRUE
     )
   }
   if (any(has_right)) {
-    rflank[has_right] <- VariantAnnotation::getSeq(g, indels$chr[has_right],
+    rflank[has_right] <- VariantAnnotation::getSeq(g, chr[has_right],
       right_start[has_right], right_end[has_right],
       as.character = TRUE
     )

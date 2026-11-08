@@ -244,6 +244,17 @@ test_that("ALT '*' and symbolic alleles are left out", {
   )
   expect_identical(dt$start, 100L)
   expect_identical(dt$alt, "A")
+
+  # With a symbolic allele, ALT isn't uppercased by readVcf(); lowercase
+  # alleles are still trimmed
+  path <- write_test_vcf(
+    list(c("chr1", "100", ".", "ATG", "a,at,<DEL>", ".", "PASS", ".", "GT",
+           "1/2")),
+    samples = "S1"
+  )
+  dt <- extract_variants_from_vcf_file(path)
+  expect_identical(dt$ref, c("ATG", "TG"))
+  expect_identical(dt$alt, c("A", "T"))
 })
 
 test_that("VCF alleles are trimmed to their minimal form", {
