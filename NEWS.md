@@ -1,3 +1,12 @@
+# musicatk 2.7.10 (2026-11-08)
+* `extract_variants()` and the VCF readers keep records whose FILTER is `.` (no filters applied) when `filter = TRUE`, as well as `PASS`. Before, VCFs that mark passing calls with `.`, such as the PCAWG consensus VCFs, returned no variants. When no record passes, the warning lists the FILTER values found (#214).
+* `extract_variants()` and `extract_variants_from_maf_file()` read MAFs whose records are all silent or non-coding; before, `maftools::read.maf()` stopped with "No non-synonymous mutations found". A MAF with no records gives a warning and no variants, as a VCF does, so one such file no longer stops `extract_variants()` from reading the others (#241).
+* VCF alleles are trimmed to their minimal form. Splitting a multiallelic site can leave alleles that share more than one base: REF `ATG` with ALT `A,AT` gave `ATG>AT`, which was removed as a compound deletion, and REF `AT` with ALT `A,GT` gave the DBS `AT>GT`. They are now the deletion `TG>T` and the SBS `A>G`. Counts change only for VCFs with multiallelic sites or other alleles that share more than one base; the bundled example files have none (#213).
+* ALT `*` (an allele missing because of an overlapping deletion) and symbolic alleles such as `<DEL>` are left out of VCF input with a message. Before, `*` was counted as an SBS (#215).
+* IND83 tables count indels near the start or end of a chromosome, using the flank that is there; before, the whole table failed (#233).
+* `build_standard_table(..., "IND83")` stops with an error when indels are not standardized (built with `standardize_indels = FALSE`); before, the VCF anchor base was counted as part of the indel and gave wrong bins (#234).
+* IND83 tables warn when indels are left out because their motif isn't in the table, for example an insertion of `N` (#236).
+
 # musicatk 2.7.9 (2026-11-08)
 * IND83 tables put some indels in the wrong bin. On `indel_musica`, 16 of 300 indels move to another bin (12 of the 56 1 bp insertions, 3 longer insertions and 1 microhomology deletion); totals are unchanged. Rebuild IND83 tables made with an earlier version (#9):
   * Insertion flanks start next to the insertion. Before, the left flank skipped the base before the insertion, and for MAF insertions the right flank skipped the base after it, so for example chr1:153056355 +T in `indel_musica` was `INS_T_1_4` instead of `INS_T_1_5+` (#129).

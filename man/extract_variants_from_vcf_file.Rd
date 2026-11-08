@@ -43,8 +43,8 @@ If a character vector is given, then all the strings
 in the vector will removed from the end of the filename before setting the
 sample name. Default \code{c(".vcf",".vcf.gz",".gz")}}
 
-\item{filter}{Exclude variants that do not have a \code{PASS} in the
-\code{FILTER} column of the VCF. Default \code{TRUE}.}
+\item{filter}{Exclude variants whose \code{FILTER} column is not
+\code{PASS} or \code{.} (no filters applied). Default \code{TRUE}.}
 
 \item{multiallele}{Multialleles are when multiple alternative variants
 are listed in the same row in the vcf. One of \code{"expand"} or

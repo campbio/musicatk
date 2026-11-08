@@ -202,3 +202,87 @@ test_that("extra_fields keeps names and handles per-allele INFO fields", {
   expect_equal(all$AF, c(0.1, 0.2, 0.3))
   expect_identical(all$TAG, c("x,y,z", "x,y,z", "w"))
 })
+
+test_that("filter = TRUE keeps FILTER '.' and names the values seen", {
+  # Issue #214
+  path <- write_test_vcf(
+    list(
+      c("chr1", "100", ".", "C", "A", ".", "PASS", ".", "GT", "0/1"),
+      c("chr1", "200", ".", "G", "T", ".", ".", ".", "GT", "0/1"),
+      c("chr1", "300", ".", "G", "C", ".", "LowQual", ".", "GT", "0/1")
+    ),
+    samples = "S1"
+  )
+  dt <- extract_variants_from_vcf_file(path)
+  expect_identical(dt$start, c(100L, 200L))
+
+  failed <- write_test_vcf(
+    list(
+      c("chr1", "300", ".", "G", "C", ".", "LowQual", ".", "GT", "0/1"),
+      c("chr1", "400", ".", "G", "C", ".", "NORMALPANEL", ".", "GT", "0/1")
+    ),
+    samples = "S1"
+  )
+  expect_warning(
+    expect_null(extract_variants_from_vcf_file(failed)),
+    regexp = "LowQual, NORMALPANEL"
+  )
+})
+
+test_that("ALT '*' and symbolic alleles are left out", {
+  # Issue #215
+  path <- write_test_vcf(
+    list(
+      c("chr1", "100", ".", "C", "A,*", ".", "PASS", ".", "GT", "1/2"),
+      c("chr1", "200", ".", "G", "<DEL>", ".", "PASS", ".", "GT", "0/1")
+    ),
+    samples = "S1"
+  )
+  expect_message(
+    dt <- extract_variants_from_vcf_file(path),
+    regexp = "2 alternate alleles"
+  )
+  expect_identical(dt$start, 100L)
+  expect_identical(dt$alt, "A")
+
+  # With a symbolic allele, ALT isn't uppercased by readVcf(); lowercase
+  # alleles are still trimmed
+  path <- write_test_vcf(
+    list(c("chr1", "100", ".", "ATG", "a,at,<DEL>", ".", "PASS", ".", "GT",
+           "1/2")),
+    samples = "S1"
+  )
+  dt <- extract_variants_from_vcf_file(path)
+  expect_identical(dt$ref, c("ATG", "TG"))
+  expect_identical(dt$alt, c("A", "T"))
+})
+
+test_that("VCF alleles are trimmed to their minimal form", {
+  # Issue #213: multiallelic sites split into alleles that share bases
+  path <- write_test_vcf(
+    list(
+      c("chr1", "100", ".", "ATG", "A,AT", ".", "PASS", ".", "GT", "1/2"),
+      c("chr1", "200", ".", "AT", "A,GT", ".", "PASS", ".", "GT", "1/2"),
+      c("chr1", "300", ".", "ATG", "AG", ".", "PASS", ".", "GT", "0/1"),
+      c("chr1", "400", ".", "A", "GTT", ".", "PASS", ".", "GT", "0/1")
+    ),
+    samples = "S1"
+  )
+  dt <- extract_variants_from_vcf_file(path)
+  expect_identical(dt$start, c(100L, 101L, 200L, 200L, 300L, 400L))
+  expect_identical(dt$end, c(102L, 102L, 201L, 200L, 301L, 400L))
+  expect_identical(dt$ref, c("ATG", "TG", "AT", "A", "AT", "A"))
+  expect_identical(dt$alt, c("A", "T", "A", "G", "A", "GTT"))
+
+  # None is removed as compound; only the complex A>GTT is removed
+  g <- select_genome("hg38")
+  expect_no_message(
+    musica <- create_musica_from_variants(dt, g,
+      check_ref_bases = FALSE, verbose = FALSE
+    ),
+    message = "compound"
+  )
+  v <- variants(musica)
+  expect_identical(v$Variant_Type, c("DEL", "DEL", "DEL", "SBS", "DEL"))
+  expect_identical(v$start, c(101L, 102L, 201L, 200L, 301L))
+})

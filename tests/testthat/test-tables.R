@@ -272,3 +272,82 @@ test_that("IND83 says when there are no indels or no variant types", {
     regexp = "No Variant_Type annotation found"
   )
 })
+
+test_that("IND83 counts indels near chromosome ends", {
+  # Issue #233: flanks reach past the start and end of chrM. hg38 chrM
+  # (the rCRS) starts GATCACAGG.
+  g <- select_genome("hg38")
+  chrm_length <- GenomeInfoDb::seqlengths(g)[["chrM"]]
+  last_base <- as.character(BSgenome::getSeq(g, "chrM", chrm_length,
+    chrm_length
+  ))
+  tab <- data.frame(
+    chr = "chrM", start = c(3L, 2L, chrm_length),
+    end = c(4L, 3L, chrm_length), ref = c("-", "-", last_base),
+    alt = c("A", "T", "-"), sample = c("first", "second", "last")
+  )
+  bins <- .ind83_bins(tab, g)
+  # An A after GAT is a T on the other strand, between ATC and ACCTGTG
+  expect_identical(unname(bins[c("first", "second")]),
+    c("INS_T_1_0", "INS_T_1_1")
+  )
+  expect_match(bins[["last"]], "^DEL_[CT]_1_")
+
+  # Chromosome lengths are looked up by name when 'chr' is a factor. Here
+  # chr1 has code 25, the position of chrM in seqnames(g).
+  insertion <- data.frame(
+    chr = "chr1", start = 153056355L, end = 153056356L, ref = "-",
+    alt = "T", sample = "S1"
+  )
+  musica <- create_musica_from_variants(insertion, g, verbose = FALSE)
+  var <- variants(musica)
+  var$chr <- factor(var$chr,
+    levels = c(paste0("chr", 2:22), "chrX", "chrY", "chrM", "chr1")
+  )
+  variants(musica) <- var
+  suppressMessages(build_standard_table(musica, g, "IND83"))
+  counts <- get_count_table(tables(musica)$IND83)
+  expect_identical(counts["INS_T_1_5+", "S1"], 1L)
+
+  # A chromosome missing from 'g' gives a clear error
+  var$chr <- "chrFoo"
+  variants(musica) <- var
+  expect_error(
+    suppressWarnings(
+      build_standard_table(musica, g, "IND83", overwrite = TRUE)
+    ),
+    regexp = "chrFoo"
+  )
+})
+
+test_that("IND83 stops on indels that aren't standardized", {
+  # Issue #234
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = 153056355L, end = 153056355L, ref = "C",
+    alt = "CT", sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g,
+    standardize_indels = FALSE, verbose = FALSE
+  )
+  expect_error(
+    build_standard_table(musica, g, "IND83"),
+    regexp = "standardize_indels = TRUE"
+  )
+})
+
+test_that("IND83 warns about indels whose motif isn't in the schema", {
+  # Issue #236
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = c(153056355L, 153056355L),
+    end = c(153056356L, 153056356L), ref = "-", alt = c("T", "N"),
+    sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g, verbose = FALSE)
+  expect_warning(
+    build_standard_table(musica, g, "IND83"),
+    regexp = "1 of 2 variants have motifs not in the IND83 schema"
+  )
+  expect_equal(sum(get_count_table(tables(musica)$IND83)), 1)
+})

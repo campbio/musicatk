@@ -13,7 +13,9 @@ extract_variants_from_maf_file(maf_file, extra_fields = NULL)
 object. Default \code{NULL}.}
 }
 \value{
-Returns a data.table of variants from a maf
+Returns a data.table of variants from a maf, or \code{NULL}
+with a warning if the file has no variant records. Files whose
+records are all silent or non-coding are read in full.
 }
 \description{
 Add Description - Aaron

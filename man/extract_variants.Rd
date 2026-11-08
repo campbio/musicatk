@@ -57,8 +57,8 @@ See \code{\link{extract_variants_from_vcf_file}} for more details.
 Only used if the input is a vcf file.
 Default \code{c(".vcf",".vcf.gz",".gz")}}
 
-\item{filter}{Exclude variants that do not have a \code{PASS} in the
-\code{FILTER} column of VCF inputs.}
+\item{filter}{Exclude variants of VCF inputs whose \code{FILTER} column
+is not \code{PASS} or \code{.} (no filters applied). Default \code{TRUE}.}
 
 \item{multiallele}{Multialleles are when multiple alternative variants
 are listed in the same row in the vcf.

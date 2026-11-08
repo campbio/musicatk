@@ -59,8 +59,8 @@ select_genome <- function(x) {
 #' sample in the ##SAMPLE portion of header in the VCF.
 #' See \code{\link{extract_variants_from_vcf}} for more details.
 #' Default \code{NULL}.
-#' @param filter Exclude variants that do not have a \code{PASS} in the
-#' \code{FILTER} column of VCF inputs.
+#' @param filter Exclude variants of VCF inputs whose \code{FILTER} column
+#' is not \code{PASS} or \code{.} (no filters applied). Default \code{TRUE}.
 #' @param multiallele Multialleles are when multiple alternative variants
 #' are listed in the same row in the vcf.
 #' See \code{\link{extract_variants_from_vcf}} for more details.
@@ -249,6 +249,12 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 #' field. If the VCF has no GT field, all variants passing the filter are
 #' assigned to the sample. A VCF without sample columns needs \code{rename}.
 #'
+#' Alleles are trimmed to their minimal form, which matters for multiallelic
+#' sites: with \code{REF} \code{ATG} and \code{ALT} \code{A,AT}, the second
+#' allele becomes the deletion \code{TG > T} one base on. Alternate alleles
+#' that are not base sequences, such as \code{*} (a spanning deletion) or
+#' symbolic alleles like \code{<DEL>}, are left out with a message.
+#'
 #' Aaron - Need to describe differnce between ID, and name in the header, and
 #' rename in terms of naming the sample. Need to describe differences in
 #' multiallelic choices. Also need to describe the automatic error fixing
@@ -264,8 +270,8 @@ extract_variants <- function(inputs, id = NULL, rename = NULL,
 #' \code{id} parameter ("TUMOR" in this example), then \code{sample_field} can
 #' be used to specify the name of the tag ("SampleName" in this example).
 #' Default \code{NULL}.
-#' @param filter Exclude variants that do not have a \code{PASS} in the
-#' \code{FILTER} column of the VCF. Default \code{TRUE}.
+#' @param filter Exclude variants whose \code{FILTER} column is not
+#' \code{PASS} or \code{.} (no filters applied). Default \code{TRUE}.
 #' @param multiallele Multialleles are when multiple alternative variants
 #' are listed in the same row in the vcf. One of \code{"expand"} or
 #' \code{"exclude"}. If \code{"expand"} is selected, then each
@@ -349,12 +355,15 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 
   # Perform filtering based on FILTER column
   if (isTRUE(filter)) {
-    # Remove filtered rows
-    pass <- which(SummarizedExperiment::rowRanges(vcf)$FILTER == "PASS")
+    # Remove filtered rows. FILTER "." (read as NA) means no filters were
+    # applied, which is not a failure
+    vcf_filter <- SummarizedExperiment::rowRanges(vcf)$FILTER
+    pass <- which(vcf_filter %in% c("PASS", ".") | is.na(vcf_filter))
     if (length(pass) == 0) {
       warning(
         "No variants passed the filter for VCF with the id/name: ",
-        id, "/", vcf_name
+        id, "/", vcf_name, ". FILTER values: ",
+        paste(sort(unique(vcf_filter)), collapse = ", ")
       )
       return(NULL)
     }
@@ -423,6 +432,18 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
     }
   }
 
+  # ALT '*' (an allele missing because of an overlapping deletion) and
+  # symbolic alleles such as '<DEL>' are not base changes
+  alt <- as.character(SummarizedExperiment::rowRanges(vcf)$ALT)
+  not_sequence <- keep & !grepl("^[ACGTN]+$", toupper(alt))
+  if (any(not_sequence)) {
+    message(
+      "Removing ", sum(not_sequence), " alternate alleles that are not ",
+      "base sequences (such as '*' or '<DEL>') for sample: ", vcf_name
+    )
+    keep <- keep & !not_sequence
+  }
+
   if (sum(keep) == 0) {
     warning(
       "No variants were found for sample: ", vcf_name,
@@ -439,10 +460,11 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
     chr = as.character(GenomicRanges::seqnames(rows)),
     start = IRanges::start(rows),
     end = IRanges::end(rows),
-    ref = as.character(rows$REF),
-    alt = as.character(rows$ALT),
+    ref = toupper(as.character(rows$REF)),
+    alt = toupper(as.character(rows$ALT)),
     sample = vcf_name
   )
+  dt <- .trim_alleles(dt)
 
   # Add extra columns if requested
   if (!is.null(extra_fields)) {
@@ -493,8 +515,8 @@ extract_variants_from_vcf <- function(vcf, id = NULL, rename = NULL,
 #' If a character vector is given, then all the strings
 #' in the vector will removed from the end of the filename before setting the
 #' sample name. Default \code{c(".vcf",".vcf.gz",".gz")}
-#' @param filter Exclude variants that do not have a \code{PASS} in the
-#' \code{FILTER} column of the VCF. Default \code{TRUE}.
+#' @param filter Exclude variants whose \code{FILTER} column is not
+#' \code{PASS} or \code{.} (no filters applied). Default \code{TRUE}.
 #' @param multiallele Multialleles are when multiple alternative variants
 #' are listed in the same row in the vcf. One of \code{"expand"} or
 #' \code{"exclude"}. If \code{"expand"} is selected, then each
@@ -725,7 +747,9 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
 #' @param maf_file Location of maf file
 #' @param extra_fields Optionally extract additional columns from the
 #' object. Default \code{NULL}.
-#' @return Returns a data.table of variants from a maf
+#' @return Returns a data.table of variants from a maf, or \code{NULL}
+#' with a warning if the file has no variant records. Files whose
+#' records are all silent or non-coding are read in full.
 #' @examples
 #' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #'   package = "musicatk"
@@ -733,7 +757,30 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
 #' maf <- extract_variants_from_maf_file(maf_file = maf_file)
 #' @export
 extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
-  maf <- maftools::read.maf(maf_file, verbose = FALSE)
+  # Read the file as maftools::read.maf() does, so a file without records
+  # can be reported before read.maf() stops on it
+  records <- data.table::fread(
+    file = maf_file, sep = "\t", stringsAsFactors = FALSE,
+    data.table = TRUE, showProgress = FALSE, header = TRUE, fill = TRUE,
+    skip = "Hugo_Symbol", quote = ""
+  )
+  if (nrow(records) == 0) {
+    warning("MAF file ", maf_file, " has no variant records.")
+    return(NULL)
+  }
+  maf <- tryCatch(
+    maftools::read.maf(records, verbose = FALSE),
+    error = function(e) {
+      if (!grepl("No non-synonymous", conditionMessage(e))) {
+        stop(e)
+      }
+      # Every record is silent or non-coding: count every class in the
+      # file as non-synonymous, so read.maf() keeps them all
+      maftools::read.maf(records,
+        vc_nonSyn = unique(records$Variant_Classification), verbose = FALSE
+      )
+    }
+  )
   return(extract_variants_from_maf(maf = maf, extra_fields = extra_fields))
 }
 
@@ -783,7 +830,8 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' to start at the first deleted base, as in MAF files; insertions keep
 #' \code{start} at the base before the insertion. Indels whose first base
 #' differs between \code{ref} and \code{alt} (e.g. `A > GGT`) are complex
-#' and are removed. Default \code{TRUE}.
+#' and are removed. IND83 tables need standardized indels.
+#' Default \code{TRUE}.
 #' @param convert_dbs Flag to convert adjacent SBS in the same sample into
 #' DBS (original SBS are removed). A run of three or more adjacent SBS
 #' becomes one variant of type \code{"MNV"}, which is not included in the
@@ -1433,6 +1481,50 @@ add_result <- function(signatures, exposures, musica, result_name,
     }
   }
   return(dt)
+}
+
+# Trim VCF alleles to their minimal form. Splitting a multiallelic site
+# leaves alleles that share more than one anchor base: REF ATG with ALT
+# A,AT gives ATG>AT. The shared suffix is removed first, keeping at least
+# one base of each allele, then the shared prefix: all of it when the
+# alleles have the same length (AT>GT is the SBS A>G), and all but one
+# anchor base when they don't (ATG>AT is TG>T, one base on). 'start' moves
+# past the removed prefix and 'end' is the last reference base.
+.trim_alleles <- function(dt) {
+  ix <- which(nchar(dt$ref) > 1 & nchar(dt$alt) > 1 & dt$ref != dt$alt)
+  if (length(ix) == 0) {
+    return(dt)
+  }
+  # Number of leading bases shared by a and b, up to max_shared, compared
+  # one position at a time across all rows
+  shared <- function(a, b, max_shared) {
+    n <- integer(length(a))
+    open <- max_shared > 0L
+    k <- 1L
+    while (any(open)) {
+      open <- open & substr(a, k, k) == substr(b, k, k)
+      n[open] <- k
+      open <- open & k < max_shared
+      k <- k + 1L
+    }
+    n
+  }
+  ref <- dt$ref[ix]
+  alt <- dt$alt[ix]
+  suffix <- shared(
+    stringi::stri_reverse(ref), stringi::stri_reverse(alt),
+    pmin(nchar(ref), nchar(alt)) - 1L
+  )
+  ref <- substr(ref, 1L, nchar(ref) - suffix)
+  alt <- substr(alt, 1L, nchar(alt) - suffix)
+  prefix <- shared(ref, alt, pmin(nchar(ref), nchar(alt)))
+  indel <- nchar(ref) != nchar(alt)
+  prefix[indel] <- pmax(prefix[indel] - 1L, 0L)
+  dt$ref[ix] <- substr(ref, prefix + 1L, nchar(ref))
+  dt$alt[ix] <- substr(alt, prefix + 1L, nchar(alt))
+  dt$start[ix] <- dt$start[ix] + prefix
+  dt$end[ix] <- dt$start[ix] + nchar(dt$ref[ix]) - 1L
+  dt
 }
 
 .check_variant_ref_in_genome <- function(dt, genome) {

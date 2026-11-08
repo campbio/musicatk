@@ -95,15 +95,20 @@ extract_count_tables <- function(musica) {
 }
 
 # Warn when variants have motifs outside a table's schema, since the count
-# table would otherwise leave them out without saying so
-.warn_unmatched_motifs <- function(motifs, schema, name) {
+# table would otherwise leave them out without saying so. 'hint' gives the
+# likely causes for this table.
+.warn_unmatched_motifs <- function(motifs, schema, name,
+                                   hint = paste0(
+                                     "Their reference base may not match ",
+                                     "'g' (check it is the build the ",
+                                     "variants were called on), or their ",
+                                     "context may include N bases."
+                                   )) {
   unmatched <- sum(!motifs %in% schema)
   if (unmatched > 0) {
     warning(
       unmatched, " of ", length(motifs), " variants have motifs not in the ",
-      name, " schema and were not counted. Their reference base may not ",
-      "match 'g' (check it is the build the variants were called on), or ",
-      "their context may include N bases.",
+      name, " schema and were not counted. ", hint,
       call. = FALSE
     )
   }

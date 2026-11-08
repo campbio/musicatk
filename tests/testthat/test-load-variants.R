@@ -222,3 +222,62 @@ test_that("create_musica_from_counts matches rows to motifs by name", {
   from_dbs_bracket <- create_musica_from_counts(dbs_bracket, "DBS")
   expect_identical(get_count_table(tables(from_dbs_bracket)$DBS78), dbs)
 })
+
+test_that("MAFs without records or with only silent variants are read", {
+  # Issue #241
+  maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+    package = "musicatk"
+  )
+  lines <- readLines(maf_file)
+  header <- startsWith(lines, "#") | startsWith(lines, "Hugo_Symbol")
+  records <- lines[!header]
+  classes <- vapply(strsplit(records, "\t", fixed = TRUE), "[",
+    character(1), 9
+  )
+
+  empty <- tempfile(fileext = ".maf")
+  writeLines(lines[header], empty)
+  expect_warning(
+    expect_null(extract_variants_from_maf_file(empty)),
+    regexp = "no variant records"
+  )
+
+  silent <- tempfile(fileext = ".maf")
+  writeLines(c(lines[header], records[classes == "Silent"][1:3]), silent)
+  dt <- extract_variants_from_maf_file(silent)
+  expect_identical(nrow(dt), 3L)
+
+  # Also when the classes aren't ones read.maf() knows
+  fields <- strsplit(records[classes == "Silent"][1:3], "\t", fixed = TRUE)
+  renamed <- vapply(fields, function(x) {
+    x[9] <- "Splice_Site_SNP"
+    paste(x, collapse = "\t")
+  }, character(1))
+  renamed_maf <- tempfile(fileext = ".maf")
+  writeLines(c(lines[header], renamed), renamed_maf)
+  expect_identical(nrow(extract_variants_from_maf_file(renamed_maf)), 3L)
+
+  # One empty MAF doesn't stop the others from being read
+  lusc <- extract_variants_from_maf_file(maf_file)
+  expect_warning(
+    both <- extract_variants(c(empty, maf_file), verbose = FALSE),
+    regexp = "no variant records"
+  )
+  expect_identical(both, lusc)
+
+  # Gzipped MAFs are checked for records too
+  skip_if_not_installed("R.utils")
+  gz <- tempfile(fileext = ".maf.gz")
+  con <- gzfile(gz, "w")
+  writeLines(c(lines[header], records[1:2]), con)
+  close(con)
+  expect_identical(nrow(extract_variants_from_maf_file(gz)), 2L)
+  gz_empty <- tempfile(fileext = ".maf.gz")
+  con <- gzfile(gz_empty, "w")
+  writeLines(lines[header], con)
+  close(con)
+  expect_warning(
+    expect_null(extract_variants_from_maf_file(gz_empty)),
+    regexp = "no variant records"
+  )
+})

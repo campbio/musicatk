@@ -30,8 +30,8 @@ sample in the ##SAMPLE portion of header in the VCF (e.g.
 be used to specify the name of the tag ("SampleName" in this example).
 Default \code{NULL}.}
 
-\item{filter}{Exclude variants that do not have a \code{PASS} in the
-\code{FILTER} column of the VCF. Default \code{TRUE}.}
+\item{filter}{Exclude variants whose \code{FILTER} column is not
+\code{PASS} or \code{.} (no filters applied). Default \code{TRUE}.}
 
 \item{multiallele}{Multialleles are when multiple alternative variants
 are listed in the same row in the vcf. One of \code{"expand"} or
@@ -59,6 +59,12 @@ field. If the VCF has no GT field, all variants passing the filter are
 assigned to the sample. A VCF without sample columns needs \code{rename}.
 }
 \details{
+Alleles are trimmed to their minimal form, which matters for multiallelic
+sites: with \code{REF} \code{ATG} and \code{ALT} \code{A,AT}, the second
+allele becomes the deletion \code{TG > T} one base on. Alternate alleles
+that are not base sequences, such as \code{*} (a spanning deletion) or
+symbolic alleles like \code{<DEL>}, are left out with a message.
+
 Aaron - Need to describe differnce between ID, and name in the header, and
 rename in terms of naming the sample. Need to describe differences in
 multiallelic choices. Also need to describe the automatic error fixing
