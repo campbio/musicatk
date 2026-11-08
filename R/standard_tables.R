@@ -520,6 +520,12 @@ build_standard_table <- function(musica, g, modality, strand_type = NULL,
 create_ind83_table <- function(musica, g, overwrite = FALSE,
                                verbose = FALSE) {
   var <- variants(musica)
+  if (!"Variant_Type" %in% colnames(var)) {
+    stop(
+      "No Variant_Type annotation found, ",
+      "please run annotate_variant_type first."
+    )
+  }
   indels <- as.data.frame(var[which(var$Variant_Type %in% c("INS", "DEL")), ])
   if (nrow(indels) == 0) {
     stop("No insertions or deletions found.")
@@ -566,8 +572,6 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
   names(color_mapping) <- unique(annotation$mutation)
 
-  # TODO error in counting, we're missing some
-  # incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
   dummy_features <- rep(NA, nrow(indels))
 
   tab <- .create_count_table(
@@ -675,7 +679,7 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     .count_repeat_left(unit[i], lflank[i]) + .count_repeat(unit[i], rflank[i])
   }, numeric(1))
   micro <- vapply(seq_along(unit), function(i) {
-    if (ins[i] || len[i] == 1) {
+    if (ins[i] || len[i] == 1 || repeats[i] > 0) {
       return(0)
     }
     max(.micro_left(unit[i], lflank[i]), .micro_right(unit[i], rflank[i]))

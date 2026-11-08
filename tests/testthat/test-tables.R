@@ -249,3 +249,26 @@ test_that("IND83 counts five or more copies of longer inserted units", {
   )
   expect_equal(unname(.ind83_bins(tab, g)), "INS_repeats_3_5+")
 })
+
+test_that("IND83 says when there are no indels or no variant types", {
+  data(musica)
+  g <- select_genome("hg38")
+  var <- variants(musica)
+  sbs_only <- new("musica",
+    variants = var[var$Variant_Type == "SBS", ],
+    sample_annotations = samp_annot(musica)
+  )
+  expect_error(
+    build_standard_table(sbs_only, g, "IND83"),
+    regexp = "No insertions or deletions found"
+  )
+  var$Variant_Type <- NULL
+  untyped <- new("musica",
+    variants = var,
+    sample_annotations = samp_annot(musica)
+  )
+  expect_error(
+    build_standard_table(untyped, g, "IND83"),
+    regexp = "No Variant_Type annotation found"
+  )
+})
