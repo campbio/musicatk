@@ -780,14 +780,15 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   return(0)
 }
 
+# Longest microhomology on the left: the last k bases of the deleted
+# sequence 'letter' match the last k bases of the left flank 'string'
 .micro_left <- function(letter, string) {
   len <- nchar(letter)
-  elem <- 1
-  while (elem < len) {
-    if (substr(letter, elem, len) == substr(string, elem, len)) {
-      return(elem)
-    } else {
-      elem <- elem + 1
+  flank_len <- nchar(string)
+  for (k in rev(seq_len(len - 1))) {
+    if (substr(letter, len - k + 1, len) ==
+      substr(string, flank_len - k + 1, flank_len)) {
+      return(k)
     }
   }
   return(0)

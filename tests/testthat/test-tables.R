@@ -194,3 +194,19 @@ test_that("IND83 tables build when some indel classes are missing", {
     expect_equal(sum(counts), sum(keep))
   }
 })
+
+test_that("IND83 left microhomology uses the bases next to the deletion", {
+  # Issue #127
+  expect_equal(
+    musicatk:::.micro_left("ACGTT", "TTTTTTTTTTTTTTTTTTTTTTGTT"), 3
+  )
+  # hg38 chr9:128695506-128695521 is TTAC|AATA|AAACTAAAT: AA is repeated
+  # on the right, and nothing on the left
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr9", start = 128695510L, end = 128695513L, ref = "AATA",
+    alt = "-", sample = "S1"
+  )
+  expect_equal(unname(.ind83_bins(tab, g)), "DEL_MH_4_2")
+})
+
