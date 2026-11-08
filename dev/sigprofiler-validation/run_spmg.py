@@ -5,6 +5,12 @@ in this folder for how to set up the environment and rerun.
 
 Usage, from the package root:
     python dev/sigprofiler-validation/run_spmg.py inst/extdata <out_dir>
+    python dev/sigprofiler-validation/run_spmg.py --dir <input_dir> \
+        <project> <genome> <out_dir>
+
+The second form runs SPMG on one folder of VCF or MAF files that is already
+prepared (compare_tcga.R and compare_pcawg.R use it). The first form runs
+the checks on the bundled example files:
 
 The four VCFs are copied with only their PASS records, because SPMG ignores
 the FILTER column while musicatk keeps PASS VCF records by default. The LUSC
@@ -69,6 +75,18 @@ def write_vcf(path, records):
             f.write(f"{chrom}\t{pos}\t.\t{ref}\t{alt}\t.\tPASS\t.\n")
 
 
+def run(project, genome, input_dir, out_dir):
+    matGen.SigProfilerMatrixGeneratorFunc(
+        project,
+        genome,
+        os.path.join(input_dir, ""),
+        exome=False,
+        plot=False,
+        seqInfo=True,
+        output_directory=out_dir,
+    )
+
+
 def main(extdata_dir, out_dir):
     inputs = {}
     for project in ["vcf", "maf", "insfix", "synthetic"]:
@@ -85,18 +103,18 @@ def main(extdata_dir, out_dir):
             write_vcf(os.path.join(inputs[project], sample + ".vcf"), records)
 
     for project, input_dir in inputs.items():
-        matGen.SigProfilerMatrixGeneratorFunc(
-            project,
-            "GRCh38",
-            input_dir + os.sep,
-            exome=False,
-            plot=False,
-            seqInfo=True,
-            output_directory=os.path.join(out_dir, "spmg_" + project),
-        )
+        run(project, "GRCh38", input_dir, os.path.join(out_dir, "spmg_" + project))
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        sys.exit("Usage: python run_spmg.py <extdata_dir> <out_dir>")
-    main(sys.argv[1], sys.argv[2])
+    if len(sys.argv) == 6 and sys.argv[1] == "--dir":
+        input_dir, project, genome, out_dir = sys.argv[2:]
+        run(project, genome, input_dir, out_dir)
+    elif len(sys.argv) == 3:
+        main(sys.argv[1], sys.argv[2])
+    else:
+        sys.exit(
+            "Usage: python run_spmg.py <extdata_dir> <out_dir>\n"
+            "       python run_spmg.py --dir <input_dir> <project> <genome> "
+            "<out_dir>"
+        )
