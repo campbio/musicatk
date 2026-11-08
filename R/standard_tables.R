@@ -692,7 +692,7 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   for (i in seq_len(length(type))) {
     repeats[i] <-
       .count_repeat(letter = final_type[i], string = final_rflank[i]) +
-      .count_repeat(final_type[i], stringi::stri_reverse(final_lflank[i])) +
+      .count_repeat_left(final_type[i], final_lflank[i]) +
       plus
   }
   repeats[repeats >= 5 + plus] <- paste0(5 + plus, "+")
@@ -714,7 +714,7 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   repeats <- rep(NA, length(type))
   for (i in seq_len(length(type))) {
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
-      .count_repeat(type[i], stringi::stri_reverse(lflank[i]))
+      .count_repeat_left(type[i], lflank[i])
   }
   repeats[repeats >= 5] <- paste0(5, "+")
   len <- nchar(type)
@@ -756,7 +756,7 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     # repeats[i] <- .count_repeat(type[i], rflank[i]) +
     #  .count_repeat(type[i], rev(lflank[i]))
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
-      .count_repeat(type[i], stringi::stri_reverse(lflank[i]))
+      .count_repeat_left(type[i], lflank[i])
   }
   repeats[repeats >= 5] <- "5+"
   micro[micro >= 5] <- "5+"
@@ -792,6 +792,11 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     }
   }
   return(0)
+}
+
+# Number of copies of 'letter' at the end of the left flank 'string'
+.count_repeat_left <- function(letter, string) {
+  .count_repeat(stringi::stri_reverse(letter), stringi::stri_reverse(string))
 }
 
 .count_repeat <- function(letter, string) {

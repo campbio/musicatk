@@ -210,3 +210,16 @@ test_that("IND83 left microhomology uses the bases next to the deletion", {
   expect_equal(unname(.ind83_bins(tab, g)), "DEL_MH_4_2")
 })
 
+test_that("IND83 counts repeats of multi-base units on the left", {
+  # Issue #128
+  # hg38 chr1:2253479-2253490 is GG ACACACAC TT. Deleting any of the four
+  # AC copies leaves three.
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = c(2253481L, 2253483L, 2253487L),
+    end = c(2253482L, 2253484L, 2253488L), ref = "AC", alt = "-",
+    sample = c("first", "second", "last")
+  )
+  expect_equal(unname(.ind83_bins(tab, g)), rep("DEL_repeats_2_3", 3))
+})
+
