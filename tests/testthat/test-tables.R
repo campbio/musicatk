@@ -148,3 +148,49 @@ test_that("SBS tables warn about variants whose motif isn't in the schema", {
     regexp = "1 of 3 variants have motifs not in the SBS192_Trans schema"
   )
 })
+
+# IND83 bin of each indel in 'tab' (one sample per row), named by sample
+.ind83_bins <- function(tab, g) {
+  musica <- suppressMessages(
+    create_musica_from_variants(tab, g, verbose = FALSE)
+  )
+  suppressMessages(build_standard_table(musica, g, "IND83"))
+  counts <- get_count_table(tables(musica)$IND83)
+  bins <- apply(counts, 2, function(x) paste(rownames(counts)[x > 0],
+    collapse = ","
+  ))
+  bins[tab$sample]
+}
+
+# IND83 counts of a subset of indel_musica's variants, with all its samples
+.ind83_subset <- function(keep) {
+  data(indel_musica)
+  var <- variants(indel_musica)
+  samples <- as.character(unique(var$sample))
+  musica <- new("musica",
+    variants = var[keep, ],
+    sample_annotations = data.frame(Samples = samples)
+  )
+  g <- select_genome("hg38")
+  expect_no_error(suppressMessages(build_standard_table(musica, g, "IND83")))
+  get_count_table(tables(musica)$IND83)
+}
+
+test_that("IND83 tables build when some indel classes are missing", {
+  # Issue #126
+  data(indel_musica)
+  var <- variants(indel_musica)
+  ins <- var$Variant_Type == "INS"
+  len <- ifelse(ins, nchar(var$alt), nchar(var$ref))
+  subsets <- list(
+    deletions_only = !ins,
+    insertions_only = ins,
+    no_1bp_deletions = ins | len > 1,
+    one_long_deletion = seq_along(ins) == which(!ins & len > 1)[1]
+  )
+  for (keep in subsets) {
+    counts <- .ind83_subset(keep)
+    expect_identical(dim(counts), c(83L, 5L))
+    expect_equal(sum(counts), sum(keep))
+  }
+})

@@ -508,92 +508,26 @@ build_standard_table <- function(musica, g, modality, strand_type = NULL,
 create_ind83_table <- function(musica, g, overwrite = FALSE,
                                verbose = FALSE) {
   var <- variants(musica)
-  all_ins <- as.data.frame(subset_variant_by_type(var, "INS"))
-  all_del <- as.data.frame(subset_variant_by_type(var, "DEL"))
-  # Count every sample in sample_names() order, matched by name
-  all_samples <- sample_names(musica)
-  all_ins$sample <- .as_sample_factor(musica, all_ins$sample)
-  all_del$sample <- .as_sample_factor(musica, all_del$sample)
-
-  ins_len <- nchar(all_ins$alt)
-  del_len <- nchar(all_del$ref)
-  ins1 <- all_ins[which(ins_len == 1), ]
-  ins2 <- all_ins[which(ins_len > 1), ]
-
-  del1 <- all_del[which(del_len == 1), ]
-  del2 <- all_del[which(del_len > 1), ]
-
-  if (nrow(del1) == 0) {
-    m <- .get_indel_motifs("bp1", 0, 0)
-    del1_counts <- matrix(0,
-      nrow = length(m), ncol = length(all_samples),
-      dimnames = list(m, all_samples)
-    )
-  } else {
-    del1_counts <- .count1(mut = del1, type = del1$ref, ins = FALSE, g = g)
-    del1_ta <- table(del1_counts, del1$sample)
+  indels <- as.data.frame(var[which(var$Variant_Type %in% c("INS", "DEL")), ])
+  if (nrow(indels) == 0) {
+    stop("No insertions or deletions found.")
   }
 
-  if (nrow(ins1) == 0) {
-    m <- .get_indel_motifs("bp1", 1, 0)
-    ins1_counts <- matrix(0,
-      nrow = length(m), ncol = length(all_samples),
-      dimnames = list(m, all_samples)
-    )
-  } else {
-    ins1_counts <- .count1(mut = ins1, type = ins1$alt, ins = TRUE, g = g)
-    ins1_ta <- table(ins1_counts, ins1$sample)
-  }
-
-  if (nrow(ins2) == 0) {
-    m <- .get_indel_motifs("ins", NA, NA)
-    ins2_counts <- matrix(0,
-      nrow = length(m), ncol = length(all_samples),
-      dimnames = list(m, all_samples)
-    )
-  } else {
-    ins2_counts <- .count2_ins(mut = ins2, type = ins2$alt, g = g)
-    ins2_ta <- table(ins2_counts, ins2$sample)
-  }
-
-  if (nrow(del2) == 0) {
-    m1 <- .get_indel_motifs("del", NA, NA)
-    m2 <- .get_indel_motifs("micro", NA, NA)
-    del2_counts <- list(
-      del =
-        matrix(0,
-          nrow = length(m1),
-          ncol = length(all_samples),
-          dimnames = list(m1, all_samples)
-        ),
-      micro =
-        matrix(0,
-          nrow = length(m2),
-          ncol = length(all_samples),
-          dimnames = list(m2, all_samples)
-        )
-    )
-  } else {
-    del2_counts <- .count2_del(mut = del2, type = del2$ref, g)
-  }
-
-  dimlist <- list(
-    row_names = c(
-      .get_indel_motifs("bp1", 0, 0),
-      .get_indel_motifs("bp1", 1, 0),
-      .get_indel_motifs("del", NA, NA),
-      .get_indel_motifs("ins", NA, NA),
-      .get_indel_motifs("micro", NA, NA)
-    ),
-    column_names = all_samples
+  motifs <- c(
+    .get_indel_motifs("bp1", 0, 0),
+    .get_indel_motifs("bp1", 1, 0),
+    .get_indel_motifs("del", NA, NA),
+    .get_indel_motifs("ins", NA, NA),
+    .get_indel_motifs("micro", NA, NA)
   )
-  mut_table <- matrix(
-    rbind(
-      del1_ta, ins1_ta, del2_counts$del,
-      ins2_ta, del2_counts$micro
-    ),
-    nrow = 83,
-    ncol = length(all_samples),
+  # Count every sample in sample_names() order, matched by name, and every
+  # motif, whichever indel classes are present
+  labels <- factor(.classify_indels(indels, g), levels = motifs)
+  samples <- .as_sample_factor(musica, indels$sample)
+  dimlist <- list(row_names = motifs, column_names = levels(samples))
+  mut_table <- matrix(table(labels, samples),
+    nrow = length(motifs),
+    ncol = nlevels(samples),
     dimnames = dimlist
   )
   motif <- rownames(mut_table)
@@ -622,19 +556,14 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
 
   # TODO error in counting, we're missing some
   # incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
-  dummy_features <- rep(NA, length(which(var$Variant_Type %in% c(
-    "INS",
-    "DEL"
-  ))))
+  dummy_features <- rep(NA, nrow(indels))
 
   tab <- .create_count_table(
     musica = musica, name = "IND83",
     count_table = mut_table,
     annotation = annotation,
     features = data.frame(mutation = dummy_features),
-    type = Rle(rep("INDEL", length(which(
-      var$Variant_Type %in% c("INS", "DEL")
-    )))),
+    type = Rle(rep("INDEL", nrow(indels))),
     color_variable = "mutation",
     color_mapping = color_mapping,
     description = paste0(
@@ -699,6 +628,36 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   } else {
     stop("Unrecognized indel type")
   }
+}
+
+# The ID83 motif of each indel in 'indels'
+.classify_indels <- function(indels, g) {
+  ins <- indels$Variant_Type == "INS"
+  len <- ifelse(ins, nchar(indels$alt), nchar(indels$ref))
+  labels <- character(nrow(indels))
+  i <- which(!ins & len == 1)
+  if (length(i) > 0) {
+    labels[i] <- as.character(
+      .count1(mut = indels[i, ], type = indels$ref[i], ins = FALSE, g = g)
+    )
+  }
+  i <- which(ins & len == 1)
+  if (length(i) > 0) {
+    labels[i] <- as.character(
+      .count1(mut = indels[i, ], type = indels$alt[i], ins = TRUE, g = g)
+    )
+  }
+  i <- which(ins & len > 1)
+  if (length(i) > 0) {
+    labels[i] <- as.character(
+      .count2_ins(mut = indels[i, ], type = indels$alt[i], g = g)
+    )
+  }
+  i <- which(!ins & len > 1)
+  if (length(i) > 0) {
+    labels[i] <- .count2_del(mut = indels[i, ], type = indels$ref[i], g = g)
+  }
+  labels
 }
 
 .count1 <- function(mut, type, ins, g) {
@@ -799,25 +758,13 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     repeats[i] <- .count_repeat(type[i], rflank[i]) +
       .count_repeat(type[i], stringi::stri_reverse(lflank[i]))
   }
-  # micro_ind <- which(repeats == 0 & micro > 0)
-  micro_ind <- which(repeats == 0 & micro > 0)
-  repeat_ind <- which(repeats > 0 | (repeats == 0 & micro == 0))
-  final_micro <- micro[micro_ind]
-  final_repeats <- repeats[repeat_ind]
-  # final_repeats[final_repeats >= 5] <- paste0(5, "+")
-  final_repeats[final_repeats >= 5] <- paste0(5, "+")
-  final_len <- len
-  final_len[which(final_len >= 5)] <- "5+"
-  final_micro[which(final_micro >= 5)] <- "5+"
-  micro_motif <- .get_indel_motifs("micro", NA, NA)
-  del_motif <- .get_indel_motifs("del", NA, NA)
-  del_temp <- factor(paste("DEL_repeats", final_len[repeat_ind],
-                           final_repeats, sep = "_"), levels = del_motif)
-  del_tab <- table(del_temp, mut$sample[repeat_ind])
-  micro_temp <- factor(paste("DEL_MH", final_len[micro_ind], final_micro,
-                             sep = "_"), levels = micro_motif)
-  micro_tab <- table(micro_temp, mut$sample[micro_ind])
-  return(list(del = del_tab, micro = micro_tab))
+  repeats[repeats >= 5] <- "5+"
+  micro[micro >= 5] <- "5+"
+  len[len >= 5] <- "5+"
+  ifelse(repeats == "0" & micro != "0",
+    paste("DEL_MH", len, micro, sep = "_"),
+    paste("DEL_repeats", len, repeats, sep = "_")
+  )
 }
 
 .micro_right <- function(letter, string) {
