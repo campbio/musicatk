@@ -630,141 +630,59 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   }
 }
 
-# The ID83 motif of each indel in 'indels'
+# The ID83 motif of each indel in 'indels'. Deletions span 'start' to the
+# last deleted base; insertions follow the base at 'start'.
 .classify_indels <- function(indels, g) {
   ins <- indels$Variant_Type == "INS"
-  len <- ifelse(ins, nchar(indels$alt), nchar(indels$ref))
-  labels <- character(nrow(indels))
-  i <- which(!ins & len == 1)
-  if (length(i) > 0) {
-    labels[i] <- as.character(
-      .count1(mut = indels[i, ], type = indels$ref[i], ins = FALSE, g = g)
+  unit <- ifelse(ins, indels$alt, indels$ref)
+  len <- nchar(unit)
+  width <- ifelse(len == 1, 7L, ifelse(ins, 10L, len * 5L))
+  left_end <- ifelse(ins, indels$start, indels$start - 1L)
+  right_start <- ifelse(ins, indels$start + 1L, indels$start + len)
+  lflank <- VariantAnnotation::getSeq(g, indels$chr,
+    left_end - width + 1L, left_end,
+    as.character = TRUE
+  )
+  rflank <- VariantAnnotation::getSeq(g, indels$chr,
+    right_start, right_start + width - 1L,
+    as.character = TRUE
+  )
+
+  # 1 bp indels are named by their pyrimidine base, so A and G indels are
+  # read on the other strand
+  purine <- which(len == 1 & unit %in% c("A", "G"))
+  rev_comp <- function(x) {
+    as.character(Biostrings::reverseComplement(Biostrings::DNAStringSet(x)))
+  }
+  unit[purine] <- rev_comp(unit[purine])
+  purine_lflank <- rev_comp(rflank[purine])
+  rflank[purine] <- rev_comp(lflank[purine])
+  lflank[purine] <- purine_lflank
+
+  repeats <- vapply(seq_along(unit), function(i) {
+    .count_repeat_left(unit[i], lflank[i]) + .count_repeat(unit[i], rflank[i])
+  }, numeric(1))
+  micro <- vapply(seq_along(unit), function(i) {
+    if (ins[i] || len[i] == 1) {
+      return(0)
+    }
+    max(.micro_left(unit[i], lflank[i]), .micro_right(unit[i], rflank[i]))
+  }, numeric(1))
+
+  capped <- function(x) ifelse(x >= 5, "5+", as.character(x))
+  labels <- ifelse(ins,
+    paste("INS_repeats", capped(len), capped(repeats), sep = "_"),
+    ifelse(repeats == 0 & micro > 0,
+      paste("DEL_MH", capped(len), capped(micro), sep = "_"),
+      paste("DEL_repeats", capped(len), capped(repeats), sep = "_")
     )
-  }
-  i <- which(ins & len == 1)
-  if (length(i) > 0) {
-    labels[i] <- as.character(
-      .count1(mut = indels[i, ], type = indels$alt[i], ins = TRUE, g = g)
-    )
-  }
-  i <- which(ins & len > 1)
-  if (length(i) > 0) {
-    labels[i] <- as.character(
-      .count2_ins(mut = indels[i, ], type = indels$alt[i], g = g)
-    )
-  }
-  i <- which(!ins & len > 1)
-  if (length(i) > 0) {
-    labels[i] <- .count2_del(mut = indels[i, ], type = indels$ref[i], g = g)
-  }
+  )
+  bp1 <- len == 1
+  labels[bp1] <- paste(ifelse(ins[bp1], "INS", "DEL"), unit[bp1], 1,
+    capped(repeats[bp1]),
+    sep = "_"
+  )
   labels
-}
-
-.count1 <- function(mut, type, ins, g) {
-  # ifelse(ins, plus <- 0, plus <- 0)
-  ifelse(ins, plus <- 0, plus <- 0)
-  chr <- mut$chr
-  range_start <- mut$start
-  range_end <- mut$end
-  lflank <- VariantAnnotation::getSeq(g, chr, range_start - 7, range_start - 1,
-    as.character = TRUE
-  )
-  rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1, range_end + 7,
-    as.character = TRUE
-  )
-  final_lflank <- lflank
-  final_rflank <- rflank
-  ind <- which(type %in% c("A", "G"))
-  final_lflank[ind] <- rflank[ind] %>%
-    Biostrings::DNAStringSet() %>%
-    Biostrings::reverseComplement() %>%
-    as.character()
-  final_rflank[ind] <- lflank[ind] %>%
-    Biostrings::DNAStringSet() %>%
-    Biostrings::reverseComplement() %>%
-    as.character()
-  final_type <- type
-  final_type[ind] <- final_type[ind] %>%
-    Biostrings::DNAStringSet() %>%
-    Biostrings::reverseComplement() %>%
-    as.character()
-  repeats <- rep(NA, length(final_type))
-  for (i in seq_len(length(type))) {
-    repeats[i] <-
-      .count_repeat(letter = final_type[i], string = final_rflank[i]) +
-      .count_repeat_left(final_type[i], final_lflank[i]) +
-      plus
-  }
-  repeats[repeats >= 5 + plus] <- paste0(5 + plus, "+")
-  bp1_motif <- .get_indel_motifs("bp1", ins, plus)
-  return(factor(paste(ifelse(ins, "INS", "DEL"), final_type, 1,
-                      repeats, sep = "_"), levels = bp1_motif))
-}
-
-.count2_ins <- function(mut, type, g) {
-  chr <- mut$chr
-  range_start <- mut$start
-  range_end <- mut$end
-  lflank <- VariantAnnotation::getSeq(g, chr, range_start - 10, range_start - 1,
-    as.character = TRUE
-  )
-  rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1, range_end + 10,
-    as.character = TRUE
-  )
-  repeats <- rep(NA, length(type))
-  for (i in seq_len(length(type))) {
-    repeats[i] <- .count_repeat(type[i], rflank[i]) +
-      .count_repeat_left(type[i], lflank[i])
-  }
-  repeats[repeats >= 5] <- paste0(5, "+")
-  len <- nchar(type)
-  len[which(len >= 5)] <- "5+"
-  ins_motif <- .get_indel_motifs("ins", NA, NA)
-  return(factor(paste("INS_repeats", len, repeats, sep = "_"),
-    levels = ins_motif
-  ))
-}
-
-.count2_del <- function(mut, type, g) {
-  chr <- mut$chr
-  range_start <- mut$start
-  range_end <- mut$end
-
-  len <- nchar(type)
-  lflank <- VariantAnnotation::getSeq(g, chr, range_start - len * 5,
-    range_start - 1,
-    as.character = TRUE
-  )
-  rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1,
-    range_end + len * 5,
-    as.character = TRUE
-  )
-  # has_repeat <- type == lflank | type == rflank #could be used for a speedup
-  # maybe_micro <- which(!has_repeat) #doesn't get used from some reason #TODO
-
-  micro <- rep(NA, length(type))
-  for (i in seq_len(length(type))) {
-    micro[i] <- max(
-      .micro_left(type[i], lflank[i]),
-      .micro_right(type[i], rflank[i])
-    )
-  }
-
-  repeats <- rep(NA, length(type))
-  for (i in seq_len(length(type))) {
-    # TEST removing the +1 for dels to bring it in line with Alexandrov counting
-    # repeats[i] <- .count_repeat(type[i], rflank[i]) +
-    #  .count_repeat(type[i], rev(lflank[i]))
-    repeats[i] <- .count_repeat(type[i], rflank[i]) +
-      .count_repeat_left(type[i], lflank[i])
-  }
-  repeats[repeats >= 5] <- "5+"
-  micro[micro >= 5] <- "5+"
-  len[len >= 5] <- "5+"
-  ifelse(repeats == "0" & micro != "0",
-    paste("DEL_MH", len, micro, sep = "_"),
-    paste("DEL_repeats", len, repeats, sep = "_")
-  )
 }
 
 .micro_right <- function(letter, string) {

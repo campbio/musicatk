@@ -223,3 +223,18 @@ test_that("IND83 counts repeats of multi-base units on the left", {
   expect_equal(unname(.ind83_bins(tab, g)), rep("DEL_repeats_2_3", 3))
 })
 
+test_that("IND83 insertion flanks include the bases next to the insertion", {
+  # Issue #129
+  # hg38 chr1:153056348-153056363 is AAAGAAAC TTTTTGCT. Inserting a T
+  # anywhere next to the run of five T gives INS_T_1_5+.
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1",
+    start = c(153056355L, 153056355L, 153056356L),
+    end = c(153056356L, 153056355L, 153056356L),
+    ref = c("-", "C", "T"), alt = c("T", "CT", "TT"),
+    sample = c("maf", "vcf", "vcf_shifted")
+  )
+  expect_equal(unname(.ind83_bins(tab, g)), rep("INS_T_1_5+", 3))
+})
+
