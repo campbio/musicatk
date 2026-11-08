@@ -154,10 +154,10 @@ test_that("SBS in overlapping genes on opposite strands have no strand", {
   gene_strands <- function(pos) {
     site <- GenomicRanges::GRanges("chr1", IRanges::IRanges(pos, pos))
     hits <- IRanges::subsetByOverlaps(genes, site)
-    sort(as.character(GenomicRanges::strand(hits)))
+    sort(as.character(GenomicRanges::strand(hits)), method = "radix")
   }
   expect_identical(gene_strands(11020563L), "+")
-  expect_identical(gene_strands(58682403L), c("-", "+"))
+  expect_identical(gene_strands(58682403L), c("+", "-"))
   tab <- data.frame(
     chr = "chr1", start = c(11020563L, 58682403L),
     end = c(11020563L, 58682403L), ref = c("C", "A"), alt = c("A", "G"),
