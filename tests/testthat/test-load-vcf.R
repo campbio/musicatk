@@ -286,3 +286,19 @@ test_that("VCF alleles are trimmed to their minimal form", {
   expect_identical(v$Variant_Type, c("DEL", "DEL", "DEL", "SBS", "DEL"))
   expect_identical(v$start, c(101L, 102L, 201L, 200L, 301L))
 })
+
+test_that("Reference bases of the example files match hg38", {
+  # Issue #238: six insertions in the example VCFs had a REF base that
+  # wasn't the hg38 base at POS
+  extdata <- system.file("extdata", package = "musicatk")
+  files <- c(
+    list.files(extdata, pattern = "vcf$", full.names = TRUE),
+    file.path(extdata, "public_TCGA.LUSC.maf")
+  )
+  variants <- extract_variants(files, verbose = FALSE)
+  g <- select_genome("hg38")
+  expect_no_warning(
+    musica <- create_musica_from_variants(variants, g, verbose = FALSE)
+  )
+  expect_identical(nrow(variants), 911L)
+})
