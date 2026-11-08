@@ -1,3 +1,6 @@
+# musicatk 2.7.8 (2026-11-07)
+* `annotate_transcript_strand()` leaves SBS in overlapping genes on opposite strands as `NA`, like SBS outside genes, so they are left out of SBS192_Trans tables. Before, they took the strand of whichever gene came last in the overlap list, so their `"T"` or `"U"` label was arbitrary. SBS192_Trans counts drop: on `data(musica)`, from 807 to 719 with hg38 and from 584 to 556 with hg19. Re-run `annotate_transcript_strand()` on objects annotated with an earlier version before building SBS192_Trans (#221).
+
 # musicatk 2.7.7 (2026-11-06)
 * `annotate_replication_strand()` gives A>* and G>* SBS the replication strand of their pyrimidine, the strand SBS192 counts them on. `rep_range` labels the plus strand, so these SBS now take the opposite label: a G>T in a lagging range is a C>A on the leading-strand template. Before, they kept the plus-strand label, so they were counted on the wrong strand in SBS192_Rep tables. SBS192_Rep counts and the `Replication_Strand` table change for every SBS with an A or G reference base; SBS with a C or T reference base are unchanged. Re-run `annotate_replication_strand()` on objects annotated with an earlier version before building SBS192_Rep. A GRanges passed as `rep_range` must label the plus strand, as `rep_range` does (#222).
 

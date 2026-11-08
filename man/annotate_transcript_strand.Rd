@@ -20,6 +20,14 @@ None
 \description{
 Add transcript strand annotation to SBS variants (defined in genes only)
 }
+\details{
+Each SBS in a gene gets \code{"T"} (transcribed) or \code{"U"}
+(untranscribed): the strand its pyrimidine (C or T) reference base is
+on, relative to the gene. SBS outside genes, and SBS in overlapping
+genes on opposite strands (where the transcribed strand is unknown), get
+\code{NA}. They are left out of the Transcript_Strand table and of
+SBS192 tables built with \code{"Transcript_Strand"}.
+}
 \examples{
 data(musica)
 annotate_transcript_strand(musica, "hg38")

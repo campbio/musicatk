@@ -143,3 +143,33 @@ test_that("annotate_transcript_strand rejects other objects clearly", {
     regexp = "Please select hg19, hg38, or provide a TxDb object"
   )
 })
+
+test_that("SBS in overlapping genes on opposite strands have no strand", {
+  # Issue #221
+  g <- select_genome("hg38")
+  # On hg38, chr1:11020563 lies in one plus-strand gene, and chr1:58682403
+  # in a plus-strand gene and a minus-strand gene
+  txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCSC.hg38.knownGene
+  genes <- suppressMessages(GenomicFeatures::genes(txdb))
+  gene_strands <- function(pos) {
+    site <- GenomicRanges::GRanges("chr1", IRanges::IRanges(pos, pos))
+    hits <- IRanges::subsetByOverlaps(genes, site)
+    sort(as.character(GenomicRanges::strand(hits)), method = "radix")
+  }
+  expect_identical(gene_strands(11020563L), "+")
+  expect_identical(gene_strands(58682403L), c("+", "-"))
+  tab <- data.frame(
+    chr = "chr1", start = c(11020563L, 58682403L),
+    end = c(11020563L, 58682403L), ref = c("C", "A"), alt = c("A", "G"),
+    sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g,
+    check_ref_bases = FALSE, verbose = FALSE
+  )
+  annotate_transcript_strand(musica, "hg38")
+
+  # A C>A in a plus-strand gene is on the coding (untranscribed) strand
+  expect_identical(variants(musica)$Transcript_Strand, c("U", NA))
+  counts <- get_count_table(tables(musica)$Transcript_Strand)
+  expect_equal(sum(counts), 1)
+})
