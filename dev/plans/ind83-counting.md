@@ -88,7 +88,11 @@ with `standardize_indels = FALSE` keeps the VCF anchor base in
 `ref`/`alt` and is miscounted (unchanged, #234; the docs already say indels are
 standardized); the all-`NA` IND83 `features` stays for #139 (PR K).
 The dead `ifelse(ins, plus <- 0, plus <- 0)` listed in #139 goes with
-`.count1()`, which the classifier replaces.
+`.count1()`, which the classifier replaces. Raised in code review and
+filed: multi-base indels written out of phase with their repeat
+undercount left copies until indels are left-aligned on import (#235);
+indels whose label isn't in the schema are dropped without a warning
+(#236).
 
 ## Tests
 
