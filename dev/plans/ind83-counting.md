@@ -83,9 +83,9 @@ the table with one `table()` call.
   unchanged.
 
 Out of scope, with follow-up issues: indels within `w` bases of a
-chromosome end make `getSeq()` fail (unchanged); IND83 from input built
+chromosome end make `getSeq()` fail (unchanged, #233); IND83 from input built
 with `standardize_indels = FALSE` keeps the VCF anchor base in
-`ref`/`alt` and is miscounted (unchanged; the docs already say indels are
+`ref`/`alt` and is miscounted (unchanged, #234; the docs already say indels are
 standardized); the all-`NA` IND83 `features` and the dead
 `ifelse(ins, plus <- 0, plus <- 0)` stay for #139 (PR K).
 
