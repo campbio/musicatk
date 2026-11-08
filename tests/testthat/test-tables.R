@@ -238,3 +238,13 @@ test_that("IND83 insertion flanks include the bases next to the insertion", {
   expect_equal(unname(.ind83_bins(tab, g)), rep("INS_T_1_5+", 3))
 })
 
+test_that("IND83 counts five or more copies of longer inserted units", {
+  # Issue #130
+  # hg38 chr1:2629380 starts seven copies of CAG after a C
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = 2629379L, end = 2629379L, ref = "C",
+    alt = "CCAG", sample = "S1"
+  )
+  expect_equal(unname(.ind83_bins(tab, g)), "INS_repeats_3_5+")
+})

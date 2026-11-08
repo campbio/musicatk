@@ -636,7 +636,7 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   ins <- indels$Variant_Type == "INS"
   unit <- ifelse(ins, indels$alt, indels$ref)
   len <- nchar(unit)
-  width <- ifelse(len == 1, 7L, ifelse(ins, 10L, len * 5L))
+  width <- ifelse(len == 1, 7L, len * 5L)
   left_end <- ifelse(ins, indels$start, indels$start - 1L)
   right_start <- ifelse(ins, indels$start + 1L, indels$start + len)
   lflank <- VariantAnnotation::getSeq(g, indels$chr,
