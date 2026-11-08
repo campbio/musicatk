@@ -416,6 +416,18 @@ rc <- function(dna) {
 #' used in COSMIC V3. \code{"Indel"} generates a table for insertions and
 #' deletions following the schema used in COSMIC V3.
 #'
+#' @details In the \code{"Indel"} (ID83) table, 1 bp insertions and deletions
+#' are named by their pyrimidine base (an A or G indel is counted as T or
+#' C) and binned by the number of copies of that base next to the indel,
+#' on either side. Longer indels are binned by their length and by the
+#' number of whole copies of the inserted or deleted sequence next to them,
+#' on either side. A deletion of 2 bp or more with no adjacent copy, but
+#' whose first bases match the bases after it or whose last bases match
+#' the bases before it, is binned by the length of that microhomology.
+#' Deletions are read as spanning \code{start} to the last deleted base,
+#' and insertions as following the base at \code{start}, the convention
+#' \code{\link{create_musica_from_variants}} uses.
+#'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
@@ -508,92 +520,32 @@ build_standard_table <- function(musica, g, modality, strand_type = NULL,
 create_ind83_table <- function(musica, g, overwrite = FALSE,
                                verbose = FALSE) {
   var <- variants(musica)
-  all_ins <- as.data.frame(subset_variant_by_type(var, "INS"))
-  all_del <- as.data.frame(subset_variant_by_type(var, "DEL"))
-  # Count every sample in sample_names() order, matched by name
-  all_samples <- sample_names(musica)
-  all_ins$sample <- .as_sample_factor(musica, all_ins$sample)
-  all_del$sample <- .as_sample_factor(musica, all_del$sample)
-
-  ins_len <- nchar(all_ins$alt)
-  del_len <- nchar(all_del$ref)
-  ins1 <- all_ins[which(ins_len == 1), ]
-  ins2 <- all_ins[which(ins_len > 1), ]
-
-  del1 <- all_del[which(del_len == 1), ]
-  del2 <- all_del[which(del_len > 1), ]
-
-  if (nrow(del1) == 0) {
-    m <- .get_indel_motifs("bp1", 0, 0)
-    del1_counts <- matrix(0,
-      nrow = length(m), ncol = length(all_samples),
-      dimnames = list(m, all_samples)
+  if (!"Variant_Type" %in% colnames(var)) {
+    stop(
+      "No Variant_Type annotation found, ",
+      "please run annotate_variant_type first."
     )
-  } else {
-    del1_counts <- .count1(mut = del1, type = del1$ref, ins = FALSE, g = g)
-    del1_ta <- table(del1_counts, del1$sample)
+  }
+  indels <- as.data.frame(var[which(var$Variant_Type %in% c("INS", "DEL")), ])
+  if (nrow(indels) == 0) {
+    stop("No insertions or deletions found.")
   }
 
-  if (nrow(ins1) == 0) {
-    m <- .get_indel_motifs("bp1", 1, 0)
-    ins1_counts <- matrix(0,
-      nrow = length(m), ncol = length(all_samples),
-      dimnames = list(m, all_samples)
-    )
-  } else {
-    ins1_counts <- .count1(mut = ins1, type = ins1$alt, ins = TRUE, g = g)
-    ins1_ta <- table(ins1_counts, ins1$sample)
-  }
-
-  if (nrow(ins2) == 0) {
-    m <- .get_indel_motifs("ins", NA, NA)
-    ins2_counts <- matrix(0,
-      nrow = length(m), ncol = length(all_samples),
-      dimnames = list(m, all_samples)
-    )
-  } else {
-    ins2_counts <- .count2_ins(mut = ins2, type = ins2$alt, g = g)
-    ins2_ta <- table(ins2_counts, ins2$sample)
-  }
-
-  if (nrow(del2) == 0) {
-    m1 <- .get_indel_motifs("del", NA, NA)
-    m2 <- .get_indel_motifs("micro", NA, NA)
-    del2_counts <- list(
-      del =
-        matrix(0,
-          nrow = length(m1),
-          ncol = length(all_samples),
-          dimnames = list(m1, all_samples)
-        ),
-      micro =
-        matrix(0,
-          nrow = length(m2),
-          ncol = length(all_samples),
-          dimnames = list(m2, all_samples)
-        )
-    )
-  } else {
-    del2_counts <- .count2_del(mut = del2, type = del2$ref, g)
-  }
-
-  dimlist <- list(
-    row_names = c(
-      .get_indel_motifs("bp1", 0, 0),
-      .get_indel_motifs("bp1", 1, 0),
-      .get_indel_motifs("del", NA, NA),
-      .get_indel_motifs("ins", NA, NA),
-      .get_indel_motifs("micro", NA, NA)
-    ),
-    column_names = all_samples
+  motifs <- c(
+    .get_indel_motifs("bp1", 0, 0),
+    .get_indel_motifs("bp1", 1, 0),
+    .get_indel_motifs("del", NA, NA),
+    .get_indel_motifs("ins", NA, NA),
+    .get_indel_motifs("micro", NA, NA)
   )
-  mut_table <- matrix(
-    rbind(
-      del1_ta, ins1_ta, del2_counts$del,
-      ins2_ta, del2_counts$micro
-    ),
-    nrow = 83,
-    ncol = length(all_samples),
+  # Count every sample in sample_names() order, matched by name, and every
+  # motif, whichever indel classes are present
+  labels <- factor(.classify_indels(indels, g), levels = motifs)
+  samples <- .as_sample_factor(musica, indels$sample)
+  dimlist <- list(row_names = motifs, column_names = levels(samples))
+  mut_table <- matrix(table(labels, samples),
+    nrow = length(motifs),
+    ncol = nlevels(samples),
     dimnames = dimlist
   )
   motif <- rownames(mut_table)
@@ -620,21 +572,14 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
   names(color_mapping) <- unique(annotation$mutation)
 
-  # TODO error in counting, we're missing some
-  # incorrect_features <- length(rep(rownames(mut_table), rowSums(mut_table)))
-  dummy_features <- rep(NA, length(which(var$Variant_Type %in% c(
-    "INS",
-    "DEL"
-  ))))
+  dummy_features <- rep(NA, nrow(indels))
 
   tab <- .create_count_table(
     musica = musica, name = "IND83",
     count_table = mut_table,
     annotation = annotation,
     features = data.frame(mutation = dummy_features),
-    type = Rle(rep("INDEL", length(which(
-      var$Variant_Type %in% c("INS", "DEL")
-    )))),
+    type = Rle(rep("INDEL", nrow(indels))),
     color_variable = "mutation",
     color_mapping = color_mapping,
     description = paste0(
@@ -701,123 +646,59 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   }
 }
 
-.count1 <- function(mut, type, ins, g) {
-  # ifelse(ins, plus <- 0, plus <- 0)
-  ifelse(ins, plus <- 0, plus <- 0)
-  chr <- mut$chr
-  range_start <- mut$start
-  range_end <- mut$end
-  lflank <- VariantAnnotation::getSeq(g, chr, range_start - 7, range_start - 1,
+# The ID83 motif of each indel in 'indels'. Deletions span 'start' to the
+# last deleted base; insertions follow the base at 'start'.
+.classify_indels <- function(indels, g) {
+  ins <- indels$Variant_Type == "INS"
+  unit <- ifelse(ins, indels$alt, indels$ref)
+  len <- nchar(unit)
+  width <- ifelse(len == 1, 7L, len * 5L)
+  left_end <- ifelse(ins, indels$start, indels$start - 1L)
+  right_start <- ifelse(ins, indels$start + 1L, indels$start + len)
+  lflank <- VariantAnnotation::getSeq(g, indels$chr,
+    left_end - width + 1L, left_end,
     as.character = TRUE
   )
-  rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1, range_end + 7,
+  rflank <- VariantAnnotation::getSeq(g, indels$chr,
+    right_start, right_start + width - 1L,
     as.character = TRUE
   )
-  final_lflank <- lflank
-  final_rflank <- rflank
-  ind <- which(type %in% c("A", "G"))
-  final_lflank[ind] <- rflank[ind] %>%
-    Biostrings::DNAStringSet() %>%
-    Biostrings::reverseComplement() %>%
-    as.character()
-  final_rflank[ind] <- lflank[ind] %>%
-    Biostrings::DNAStringSet() %>%
-    Biostrings::reverseComplement() %>%
-    as.character()
-  final_type <- type
-  final_type[ind] <- final_type[ind] %>%
-    Biostrings::DNAStringSet() %>%
-    Biostrings::reverseComplement() %>%
-    as.character()
-  repeats <- rep(NA, length(final_type))
-  for (i in seq_len(length(type))) {
-    repeats[i] <-
-      .count_repeat(letter = final_type[i], string = final_rflank[i]) +
-      .count_repeat(final_type[i], stringi::stri_reverse(final_lflank[i])) +
-      plus
+
+  # 1 bp indels are named by their pyrimidine base, so A and G indels are
+  # read on the other strand
+  purine <- which(len == 1 & unit %in% c("A", "G"))
+  rev_comp <- function(x) {
+    as.character(Biostrings::reverseComplement(Biostrings::DNAStringSet(x)))
   }
-  repeats[repeats >= 5 + plus] <- paste0(5 + plus, "+")
-  bp1_motif <- .get_indel_motifs("bp1", ins, plus)
-  return(factor(paste(ifelse(ins, "INS", "DEL"), final_type, 1,
-                      repeats, sep = "_"), levels = bp1_motif))
-}
+  unit[purine] <- rev_comp(unit[purine])
+  purine_lflank <- rev_comp(rflank[purine])
+  rflank[purine] <- rev_comp(lflank[purine])
+  lflank[purine] <- purine_lflank
 
-.count2_ins <- function(mut, type, g) {
-  chr <- mut$chr
-  range_start <- mut$start
-  range_end <- mut$end
-  lflank <- VariantAnnotation::getSeq(g, chr, range_start - 10, range_start - 1,
-    as.character = TRUE
-  )
-  rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1, range_end + 10,
-    as.character = TRUE
-  )
-  repeats <- rep(NA, length(type))
-  for (i in seq_len(length(type))) {
-    repeats[i] <- .count_repeat(type[i], rflank[i]) +
-      .count_repeat(type[i], stringi::stri_reverse(lflank[i]))
-  }
-  repeats[repeats >= 5] <- paste0(5, "+")
-  len <- nchar(type)
-  len[which(len >= 5)] <- "5+"
-  ins_motif <- .get_indel_motifs("ins", NA, NA)
-  return(factor(paste("INS_repeats", len, repeats, sep = "_"),
-    levels = ins_motif
-  ))
-}
+  repeats <- vapply(seq_along(unit), function(i) {
+    .count_repeat_left(unit[i], lflank[i]) + .count_repeat(unit[i], rflank[i])
+  }, numeric(1))
+  micro <- vapply(seq_along(unit), function(i) {
+    if (ins[i] || len[i] == 1 || repeats[i] > 0) {
+      return(0)
+    }
+    max(.micro_left(unit[i], lflank[i]), .micro_right(unit[i], rflank[i]))
+  }, numeric(1))
 
-.count2_del <- function(mut, type, g) {
-  chr <- mut$chr
-  range_start <- mut$start
-  range_end <- mut$end
-
-  len <- nchar(type)
-  lflank <- VariantAnnotation::getSeq(g, chr, range_start - len * 5,
-    range_start - 1,
-    as.character = TRUE
-  )
-  rflank <- VariantAnnotation::getSeq(g, chr, range_end + 1,
-    range_end + len * 5,
-    as.character = TRUE
-  )
-  # has_repeat <- type == lflank | type == rflank #could be used for a speedup
-  # maybe_micro <- which(!has_repeat) #doesn't get used from some reason #TODO
-
-  micro <- rep(NA, length(type))
-  for (i in seq_len(length(type))) {
-    micro[i] <- max(
-      .micro_left(type[i], lflank[i]),
-      .micro_right(type[i], rflank[i])
+  capped <- function(x) ifelse(x >= 5, "5+", as.character(x))
+  labels <- ifelse(ins,
+    paste("INS_repeats", capped(len), capped(repeats), sep = "_"),
+    ifelse(repeats == 0 & micro > 0,
+      paste("DEL_MH", capped(len), capped(micro), sep = "_"),
+      paste("DEL_repeats", capped(len), capped(repeats), sep = "_")
     )
-  }
-
-  repeats <- rep(NA, length(type))
-  for (i in seq_len(length(type))) {
-    # TEST removing the +1 for dels to bring it in line with Alexandrov counting
-    # repeats[i] <- .count_repeat(type[i], rflank[i]) +
-    #  .count_repeat(type[i], rev(lflank[i]))
-    repeats[i] <- .count_repeat(type[i], rflank[i]) +
-      .count_repeat(type[i], stringi::stri_reverse(lflank[i]))
-  }
-  # micro_ind <- which(repeats == 0 & micro > 0)
-  micro_ind <- which(repeats == 0 & micro > 0)
-  repeat_ind <- which(repeats > 0 | (repeats == 0 & micro == 0))
-  final_micro <- micro[micro_ind]
-  final_repeats <- repeats[repeat_ind]
-  # final_repeats[final_repeats >= 5] <- paste0(5, "+")
-  final_repeats[final_repeats >= 5] <- paste0(5, "+")
-  final_len <- len
-  final_len[which(final_len >= 5)] <- "5+"
-  final_micro[which(final_micro >= 5)] <- "5+"
-  micro_motif <- .get_indel_motifs("micro", NA, NA)
-  del_motif <- .get_indel_motifs("del", NA, NA)
-  del_temp <- factor(paste("DEL_repeats", final_len[repeat_ind],
-                           final_repeats, sep = "_"), levels = del_motif)
-  del_tab <- table(del_temp, mut$sample[repeat_ind])
-  micro_temp <- factor(paste("DEL_MH", final_len[micro_ind], final_micro,
-                             sep = "_"), levels = micro_motif)
-  micro_tab <- table(micro_temp, mut$sample[micro_ind])
-  return(list(del = del_tab, micro = micro_tab))
+  )
+  bp1 <- len == 1
+  labels[bp1] <- paste(ifelse(ins[bp1], "INS", "DEL"), unit[bp1], 1,
+    capped(repeats[bp1]),
+    sep = "_"
+  )
+  labels
 }
 
 .micro_right <- function(letter, string) {
@@ -833,17 +714,23 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   return(0)
 }
 
+# Longest microhomology on the left: the last k bases of the deleted
+# sequence 'letter' match the last k bases of the left flank 'string'
 .micro_left <- function(letter, string) {
   len <- nchar(letter)
-  elem <- 1
-  while (elem < len) {
-    if (substr(letter, elem, len) == substr(string, elem, len)) {
-      return(elem)
-    } else {
-      elem <- elem + 1
+  flank_len <- nchar(string)
+  for (k in rev(seq_len(len - 1))) {
+    deleted_end <- substr(letter, len - k + 1, len)
+    if (deleted_end == substr(string, flank_len - k + 1, flank_len)) {
+      return(k)
     }
   }
   return(0)
+}
+
+# Number of copies of 'letter' at the end of the left flank 'string'
+.count_repeat_left <- function(letter, string) {
+  .count_repeat(stringi::stri_reverse(letter), stringi::stri_reverse(string))
 }
 
 .count_repeat <- function(letter, string) {

@@ -148,3 +148,127 @@ test_that("SBS tables warn about variants whose motif isn't in the schema", {
     regexp = "1 of 3 variants have motifs not in the SBS192_Trans schema"
   )
 })
+
+# IND83 bin of each indel in 'tab' (one sample per row), named by sample
+.ind83_bins <- function(tab, g) {
+  musica <- suppressMessages(
+    create_musica_from_variants(tab, g, verbose = FALSE)
+  )
+  suppressMessages(build_standard_table(musica, g, "IND83"))
+  counts <- get_count_table(tables(musica)$IND83)
+  bins <- apply(counts, 2, function(x) {
+    paste(rownames(counts)[x > 0], collapse = ",")
+  })
+  bins[tab$sample]
+}
+
+# IND83 counts of a subset of indel_musica's variants, with all its samples
+.ind83_subset <- function(keep) {
+  data(indel_musica)
+  var <- variants(indel_musica)
+  samples <- as.character(unique(var$sample))
+  musica <- new("musica",
+    variants = var[keep, ],
+    sample_annotations = data.frame(Samples = samples)
+  )
+  g <- select_genome("hg38")
+  suppressMessages(build_standard_table(musica, g, "IND83"))
+  get_count_table(tables(musica)$IND83)
+}
+
+test_that("IND83 tables build when some indel classes are missing", {
+  # Issue #126
+  data(indel_musica)
+  var <- variants(indel_musica)
+  ins <- var$Variant_Type == "INS"
+  len <- ifelse(ins, nchar(var$alt), nchar(var$ref))
+  subsets <- list(
+    deletions_only = !ins,
+    insertions_only = ins,
+    no_1bp_deletions = ins | len > 1,
+    one_long_deletion = seq_along(ins) == which(!ins & len > 1)[1]
+  )
+  for (keep in subsets) {
+    expect_no_error(counts <- .ind83_subset(keep))
+    expect_identical(dim(counts), c(83L, 5L))
+    expect_equal(sum(counts), sum(keep))
+  }
+})
+
+test_that("IND83 left microhomology uses the bases next to the deletion", {
+  # Issue #127
+  expect_equal(
+    musicatk:::.micro_left("ACGTT", "TTTTTTTTTTTTTTTTTTTTTTGTT"), 3
+  )
+  # hg38 chr9:128695506-128695521 is TTAC|AATA|AAACTAAAT: 2 bp of
+  # microhomology on the right (AA), none on the left
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr9", start = 128695510L, end = 128695513L, ref = "AATA",
+    alt = "-", sample = "S1"
+  )
+  expect_equal(unname(.ind83_bins(tab, g)), "DEL_MH_4_2")
+})
+
+test_that("IND83 counts repeats of multi-base units on the left", {
+  # Issue #128
+  expect_equal(musicatk:::.count_repeat_left("AC", "TTACACAC"), 3)
+  # hg38 chr1:2253479-2253490 is GG ACACACAC TT. Deleting any of the four
+  # AC copies leaves three.
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = c(2253481L, 2253483L, 2253487L),
+    end = c(2253482L, 2253484L, 2253488L), ref = "AC", alt = "-",
+    sample = c("first", "second", "last")
+  )
+  expect_equal(unname(.ind83_bins(tab, g)), rep("DEL_repeats_2_3", 3))
+})
+
+test_that("IND83 insertion flanks include the bases next to the insertion", {
+  # Issue #129
+  # hg38 chr1:153056348-153056363 is AAAGAAAC TTTTTGCT. Inserting a T
+  # anywhere next to the run of five T gives INS_T_1_5+.
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1",
+    start = c(153056355L, 153056355L, 153056356L),
+    end = c(153056356L, 153056355L, 153056356L),
+    ref = c("-", "C", "T"), alt = c("T", "CT", "TT"),
+    sample = c("maf", "vcf", "vcf_shifted")
+  )
+  expect_equal(unname(.ind83_bins(tab, g)), rep("INS_T_1_5+", 3))
+})
+
+test_that("IND83 counts five or more copies of longer inserted units", {
+  # Issue #130
+  # hg38 chr1:2629380 starts seven copies of CAG after a C
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = 2629379L, end = 2629379L, ref = "C",
+    alt = "CCAG", sample = "S1"
+  )
+  expect_equal(unname(.ind83_bins(tab, g)), "INS_repeats_3_5+")
+})
+
+test_that("IND83 says when there are no indels or no variant types", {
+  data(musica)
+  g <- select_genome("hg38")
+  var <- variants(musica)
+  sbs_only <- new("musica",
+    variants = var[var$Variant_Type == "SBS", ],
+    sample_annotations = samp_annot(musica)
+  )
+  expect_error(
+    build_standard_table(sbs_only, g, "IND83"),
+    regexp = "No insertions or deletions found"
+  )
+  var$Variant_Type <- NULL
+  untyped <- new("musica",
+    variants = var,
+    sample_annotations = samp_annot(musica)
+  )
+  expect_error(
+    build_standard_table(untyped, g, "IND83"),
+    regexp = "No Variant_Type annotation found"
+  )
+})
