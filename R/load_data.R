@@ -725,7 +725,9 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
 #' @param maf_file Location of maf file
 #' @param extra_fields Optionally extract additional columns from the
 #' object. Default \code{NULL}.
-#' @return Returns a data.table of variants from a maf
+#' @return Returns a data.table of variants from a maf, or \code{NULL}
+#' with a warning if the file has no variant records. Files whose
+#' records are all silent or non-coding are read in full.
 #' @examples
 #' maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
 #'   package = "musicatk"
@@ -733,8 +735,54 @@ extract_variants_from_matrix <- function(mat, chromosome_col = "Chromosome",
 #' maf <- extract_variants_from_maf_file(maf_file = maf_file)
 #' @export
 extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
-  maf <- maftools::read.maf(maf_file, verbose = FALSE)
+  if (!.maf_has_records(maf_file)) {
+    warning("MAF file ", maf_file, " has no variant records.")
+    return(NULL)
+  }
+  maf <- tryCatch(
+    maftools::read.maf(maf_file, verbose = FALSE),
+    error = function(e) {
+      # read.maf() stops when no record is non-synonymous. Reading again
+      # with every class as non-synonymous keeps silent and non-coding
+      # records; any other error is raised again by this call.
+      maftools::read.maf(maf_file,
+        vc_nonSyn = .maf_variant_classes(), verbose = FALSE
+      )
+    }
+  )
   return(extract_variants_from_maf(maf = maf, extra_fields = extra_fields))
+}
+
+# Whether a MAF file has at least one record after its comment and column
+# header lines. Reads only as far as the first record.
+.maf_has_records <- function(maf_file) {
+  con <- file(maf_file, open = "r")
+  on.exit(close(con))
+  lines_seen <- 0L
+  repeat {
+    lines <- readLines(con, n = 1000L)
+    if (length(lines) == 0) {
+      return(FALSE)
+    }
+    lines_seen <- lines_seen +
+      sum(!startsWith(lines, "#") & nzchar(trimws(lines)))
+    if (lines_seen >= 2L) {
+      return(TRUE)
+    }
+  }
+}
+
+# The Variant_Classification values of the MAF specification
+.maf_variant_classes <- function() {
+  c(
+    "Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins",
+    "Missense_Mutation", "Nonsense_Mutation", "Nonstop_Mutation",
+    "Silent", "Splice_Site", "Splice_Region", "Translation_Start_Site",
+    "3'UTR", "3'Flank", "5'UTR", "5'Flank", "IGR", "Intron", "RNA",
+    "Targeted_Region", "De_novo_Start_InFrame", "De_novo_Start_OutOfFrame",
+    "Start_Codon_SNP", "Start_Codon_Del", "Start_Codon_Ins",
+    "Stop_Codon_Del", "Stop_Codon_Ins", "lincRNA", "Unknown"
+  )
 }
 
 #' Creates a musica object from a variant table
