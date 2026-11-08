@@ -416,6 +416,18 @@ rc <- function(dna) {
 #' used in COSMIC V3. \code{"Indel"} generates a table for insertions and
 #' deletions following the schema used in COSMIC V3.
 #'
+#' @details In the \code{"Indel"} (ID83) table, 1 bp insertions and deletions
+#' are named by their pyrimidine base (an A or G indel is counted as T or
+#' C) and binned by the number of copies of that base next to the indel,
+#' on either side. Longer indels are binned by their length and by the
+#' number of whole copies of the inserted or deleted sequence next to them,
+#' on either side. A deletion of 2 bp or more with no adjacent copy, but
+#' whose first bases match the bases after it or whose last bases match
+#' the bases before it, is binned by the length of that microhomology.
+#' Deletions are read as spanning \code{start} to the last deleted base,
+#' and insertions as following the base at \code{start}, the convention
+#' \code{\link{create_musica_from_variants}} uses.
+#'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.

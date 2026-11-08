@@ -61,8 +61,10 @@ the table with one `table()` call.
   for longer ones, insertions and deletions alike.
 - **Repeats (#128).** `.count_repeat()` keeps counting copies at the
   start of the right flank. A new `.count_repeat_left(unit, flank)`
-  counts copies at the end of the left flank, comparing whole units, so
-  no reversal is needed. Total repeats = left + right, as now.
+  counts copies at the end of the left flank by reversing both the unit
+  and the flank (`stringi::stri_reverse`, as now, so `stringi` stays in
+  use; dropping it would be a DESCRIPTION change). Total repeats = left +
+  right, as now.
 - **Microhomology (#127).** `.micro_left()` compares the last `k` bases
   of the deletion with the last `k` bases of the left flank, for the
   largest `k < n`. `.micro_right()` is already right.
