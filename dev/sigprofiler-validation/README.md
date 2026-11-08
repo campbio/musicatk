@@ -17,7 +17,7 @@ differences come from:
    SPMG bins them as musicatk does.
 3. **Bad example data.** Six insertions in the bundled LUAD and SKCM VCFs
    have a REF base that doesn't match hg38. SPMG skips them; musicatk warns
-   and counts them.
+   and counts them. Fixing the data is #238.
 
 ## Versions
 
@@ -113,6 +113,9 @@ files match hg38, so where these insertions really are is unknown.
 - **musicatk** warns ("Reference bases for 6 out of 911 variants did not
   match") and then counts them using POS, so its bins for them can't be
   trusted.
+
+The bundled VCFs are to be corrected in #238; musicatk's warn-and-keep
+behaviour stays as it is.
 
 ## Not covered by the example data
 
