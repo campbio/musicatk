@@ -72,21 +72,24 @@ maf_cols <- c(
 
 .write_vcfs <- function(vcf, dir) {
   dir.create(dir, recursive = TRUE, showWarnings = FALSE)
-  for (s in unique(vcf$sample)) {
-    v <- vcf[vcf$sample == s, ]
-    lines <- paste(v$chrom, v$pos, ".", v$ref, v$alt, ".", "PASS", ".",
-      sep = "\t"
-    )
+  lines <- paste(vcf$chrom, vcf$pos, ".", vcf$ref, vcf$alt, ".", "PASS", ".",
+    sep = "\t"
+  )
+  by_sample <- split(lines, vcf$sample)
+  for (s in names(by_sample)) {
     writeLines(
       c("##fileformat=VCFv4.2",
-        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", lines),
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", by_sample[[s]]),
       file.path(dir, paste0(s, ".vcf"))
     )
   }
 }
 
 .run_project <- function(project, pdir) {
+  # Start from an empty working folder: SPMG reuses an existing input copy
   work <- file.path(out_dir, "work", project)
+  .remove_dir(work)
+  on.exit(.remove_dir(work), add = TRUE)
   maf_files <- .project_files(project)
 
   # Raw MAF records, read as text so no record is dropped
@@ -131,9 +134,11 @@ maf_cols <- c(
     DBS78 = rownames(ct(musica, "DBS78")),
     IND83 = rownames(ct(musica, "IND83"))
   )
+  # SPMG writes no DBS matrix for a project without DBS
   spmg <- function(p, ext, name) {
     .read_spmg_matrix(file.path(work, paste0("spmg_", p)), p, ext,
-      motifs[[name]]
+      motifs[[name]],
+      required = ext != "DBS78"
     )
   }
 
@@ -209,21 +214,14 @@ maf_cols <- c(
   )
   indel_counts <- do.call(rbind, lapply(names(joins), function(n) {
     j <- joins[[n]]$joined
-    x <- names(j)[6]
-    y <- names(j)[7]
-    both <- !is.na(j[[x]]) & !is.na(j[[y]])
-    do.call(rbind, lapply(c("INS", "DEL"), function(t) {
-      k <- j$type == t
-      data.frame(
-        comparison = n, type = t,
-        matched = sum(both & k), agree = sum(both & k & j[[x]] == j[[y]]),
-        only_x = sum(k & !is.na(j[[x]]) & is.na(j[[y]])),
-        only_y = sum(k & is.na(j[[x]]) & !is.na(j[[y]])),
-        only_y_complex = sum(k & is.na(j[[x]]) & !is.na(j[[y]]) &
-                               paste(j$sample, j$chrom, j$pos) %in%
-                                 complex_key)
-      )
-    }))
+    y <- names(joins[[n]]$disagree)[2]
+    only_y <- is.na(j[[names(joins[[n]]$disagree)[1]]]) & !is.na(j[[y]])
+    complex_y <- only_y & paste(j$sample, j$chrom, j$pos) %in% complex_key
+    counts <- joins[[n]]$counts
+    counts$only_y_complex <- vapply(counts$type, function(t) {
+      sum(complex_y & j$type == t)
+    }, integer(1))
+    cbind(comparison = n, counts)
   }))
   disagree <- do.call(rbind, lapply(names(joins), function(n) {
     d <- joins[[n]]$disagree
@@ -232,8 +230,8 @@ maf_cols <- c(
   }))
   disagree_variants <- do.call(rbind, lapply(names(joins), function(n) {
     j <- joins[[n]]$joined
-    x <- names(j)[6]
-    y <- names(j)[7]
+    x <- names(joins[[n]]$disagree)[1]
+    y <- names(joins[[n]]$disagree)[2]
     bad <- is.na(j[[x]]) | is.na(j[[y]]) | j[[x]] != j[[y]]
     if (!any(bad)) return(NULL)
     data.frame(comparison = n, j[bad, 1:5], x = j[[x]][bad], y = j[[y]][bad])
@@ -268,7 +266,6 @@ maf_cols <- c(
       )
     }
   }
-  unlink(work, recursive = TRUE)
   file.create(file.path(pdir, "done"))
 }
 
@@ -281,10 +278,12 @@ for (project in projects) {
   message(project, " done in ", minutes, " min")
 }
 
-# Combine the per-project tables
+# Combine the tables of every finished project, not only those run now
+done <- basename(dirname(Sys.glob(file.path(out_dir, "projects", "*",
+                                            "done"))))
 for (n in c("summary", "cells", "indel_counts", "indel_disagree",
             "indel_disagree_variants", "info", "messages")) {
-  paths <- file.path(out_dir, "projects", projects, paste0(n, ".csv"))
+  paths <- file.path(out_dir, "projects", done, paste0(n, ".csv"))
   paths <- paths[file.exists(paths)]
   if (length(paths) == 0) next
   combined <- do.call(rbind, lapply(paths, read.csv))

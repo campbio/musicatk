@@ -41,9 +41,14 @@ work <- file.path(out_dir, "work")
 main <- function() {
   files <- list.files(vcf_dir, pattern = "\\.vcf\\.gz$", full.names = TRUE)
   ids <- sub("\\..*$", "", basename(files))
+  if (anyDuplicated(ids) > 0) {
+    stop("Two files in 'vcf_dir' share the name before their first '.'")
+  }
   g <- select_genome("hg19")
 
-  # Working copies: passing records, without MT
+  # Working copies: passing records, without MT. Start from an empty folder,
+  # as SPMG reuses an existing input copy
+  .remove_dir(work)
   input_dir <- file.path(work, "input_vcf")
   dir.create(input_dir, recursive = TRUE, showWarnings = FALSE)
   records <- 0
@@ -80,6 +85,7 @@ main <- function() {
   spmg <- .read_spmg_matrix(file.path(work, "spmg"), "pcawg", "ID83",
     rownames(mus)
   )
+  if (ncol(spmg) != ncol(mus)) stop("SPMG and musicatk have different samples")
 
   # Counts, with sample names removed
   cmp <- .compare_counts(mus, spmg, "IND83")
@@ -95,17 +101,9 @@ main <- function() {
   spmg_id <- .read_spmg_indels(file.path(work, "spmg"))
   names(spmg_id)[names(spmg_id) == "spmg"] <- "spmg_bin"
   j <- .join_indels(mus_id, spmg_id, "musicatk", "spmg_bin")
-  jj <- j$joined
-  indel_counts <- do.call(rbind, lapply(c("INS", "DEL"), function(t) {
-    k <- jj$type == t
-    both <- k & !is.na(jj$musicatk) & !is.na(jj$spmg_bin)
-    data.frame(
-      type = t, matched = sum(both),
-      agree = sum(both & jj$musicatk == jj$spmg_bin),
-      only_musicatk = sum(k & !is.na(jj$musicatk) & is.na(jj$spmg_bin)),
-      only_spmg = sum(k & is.na(jj$musicatk) & !is.na(jj$spmg_bin))
-    )
-  }))
+  indel_counts <- j$counts
+  names(indel_counts) <- sub("_x$", "_musicatk", names(indel_counts))
+  names(indel_counts) <- sub("_y$", "_spmg", names(indel_counts))
   info <- data.frame(
     files = length(files), musicatk_samples = ncol(mus),
     spmg_samples = ncol(spmg), records = records, passing = passing,
@@ -127,10 +125,13 @@ main <- function() {
     row.names = FALSE
   )
   write.csv(info, file.path(out_dir, "pcawg_info.csv"), row.names = FALSE)
-  # Messages without sample names (the "no GT field" note names each file)
-  messages <- unique(gsub("[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}",
-    "<sample>", messages
-  ))
-  writeLines(messages, file.path(out_dir, "pcawg_messages.txt"))
+  # Messages without sample names or paths (some name a sample or a file),
+  # and none that could hold a position
+  for (x in c(ids, normalizePath(vcf_dir), normalizePath(out_dir), vcf_dir,
+              out_dir)) {
+    messages <- gsub(x, "<redacted>", messages, fixed = TRUE)
+  }
+  messages <- messages[!grepl("chr[0-9XYM]+[:_ \t-]*[0-9]{3,}", messages)]
+  writeLines(unique(messages), file.path(out_dir, "pcawg_messages.txt"))
 }
-tryCatch(main(), finally = unlink(work, recursive = TRUE))
+tryCatch(main(), finally = .remove_dir(work))

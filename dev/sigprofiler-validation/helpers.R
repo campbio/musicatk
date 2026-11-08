@@ -17,13 +17,19 @@
 }
 
 # An SPMG count matrix (SBS96, DBS78 or ID83) with musicatk motif names, in
-# the order of 'motifs'. 'spmg_dir' is SPMG's output_directory. Returns NULL
-# when SPMG wrote no matrix (no variants of that class).
-.read_spmg_matrix <- function(spmg_dir, project, ext, motifs) {
+# the order of 'motifs'. 'spmg_dir' is SPMG's output_directory. A missing
+# matrix is an error unless 'required' is FALSE (SPMG writes no DBS matrix
+# when there are no DBS), when NULL is returned with a message.
+.read_spmg_matrix <- function(spmg_dir, project, ext, motifs,
+                              required = TRUE) {
   path <- file.path(
     spmg_dir, sub("[0-9]+$", "", ext), paste0(project, ".", ext, ".all")
   )
-  if (!file.exists(path)) return(NULL)
+  if (!file.exists(path)) {
+    if (isTRUE(required)) stop("SPMG wrote no ", ext, " matrix: ", path)
+    message("SPMG wrote no ", ext, " matrix for ", project)
+    return(NULL)
+  }
   m <- as.matrix(read.delim(path, row.names = 1, check.names = FALSE))
   if (ext == "ID83") {
     rownames(m) <- .id83_to_musicatk(rownames(m))
@@ -121,17 +127,33 @@
 
 # Join per-variant bins from two sources by sample, chrom, pos, type and
 # sequence, so that two indels at one position (a multiallelic site) don't
-# pair up crosswise.
-# Returns counts only: agreeing indels, indels in only one source, and the
-# disagreeing bins as a cross-table of (bin in x, bin in y, n).
+# pair up crosswise. Records repeated within a source are paired in order
+# (first with first) rather than crosswise, and counted as duplicates.
+# Returns the joined table, counts by type (INS, DEL), and the disagreeing
+# bins as a cross-table of (bin in x, bin in y, n).
 .join_indels <- function(x, y, x_col, y_col) {
-  j <- merge(x, y, by = c("sample", "chrom", "pos", "type", "seq"),
-    all = TRUE
-  )
+  keys <- c("sample", "chrom", "pos", "type", "seq")
+  occurrence <- function(d) {
+    key <- do.call(paste, d[keys])
+    stats::ave(seq_along(key), key, FUN = seq_along)
+  }
+  x$occurrence <- occurrence(x)
+  y$occurrence <- occurrence(y)
+  j <- merge(x, y, by = c(keys, "occurrence"), all = TRUE)
   in_x <- !is.na(j[[x_col]])
   in_y <- !is.na(j[[y_col]])
   both <- in_x & in_y
-  disagree <- j[both & j[[x_col]] != j[[y_col]], ]
+  same <- both & j[[x_col]] == j[[y_col]]
+  counts <- do.call(rbind, lapply(c("INS", "DEL"), function(t) {
+    k <- j$type == t
+    data.frame(
+      type = t, matched = sum(k & both), agree = sum(k & same),
+      only_x = sum(k & in_x & !in_y), only_y = sum(k & in_y & !in_x),
+      duplicates_x = sum(k & in_x & j$occurrence > 1),
+      duplicates_y = sum(k & in_y & j$occurrence > 1)
+    )
+  }))
+  disagree <- j[both & !same, ]
   tab <- data.frame(x = character(0), y = character(0), n = integer(0))
   if (nrow(disagree) > 0) {
     tab <- as.data.frame(table(disagree[[x_col]], disagree[[y_col]]),
@@ -139,14 +161,14 @@
     )
   }
   names(tab) <- c(x_col, y_col, "n")
-  list(
-    counts = c(
-      matched = sum(both), agree = sum(both & j[[x_col]] == j[[y_col]]),
-      only_x = sum(in_x & !in_y), only_y = sum(in_y & !in_x)
-    ),
-    disagree = tab[tab$n > 0, ],
-    joined = j
-  )
+  list(counts = counts, disagree = tab[tab$n > 0, ], joined = j)
+}
+
+# Delete a working folder and fail loudly if anything is left
+.remove_dir <- function(dir) {
+  unlink(dir, recursive = TRUE)
+  if (dir.exists(dir)) stop("Could not delete ", dir, "; delete it by hand")
+  invisible(TRUE)
 }
 
 # Run expr and keep its messages and warnings without printing them

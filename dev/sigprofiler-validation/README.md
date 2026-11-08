@@ -261,7 +261,7 @@ Rscript dev/sigprofiler-validation/compare_pcawg.R <pcawg_vcf_dir> <pcawg_out> <
 ```
 
 `<python>` is the Python with SPMG. The TCGA download is about 1 GB, and the
-comparison takes about 15 minutes. `compare_tcga.R` writes per-project
+comparison takes about 17 minutes. `compare_tcga.R` writes per-project
 tables under `<tcga_out>/projects/` and the combined `tcga_*.csv`, and skips
 projects it has already done.
 
