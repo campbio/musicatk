@@ -1522,8 +1522,10 @@ add_result <- function(signatures, exposures, musica, result_name,
   shared <- function(a, b, max_shared) {
     vapply(seq_along(a), function(i) {
       n <- 0L
-      while (n < max_shared[i] &&
-        substr(a[i], n + 1L, n + 1L) == substr(b[i], n + 1L, n + 1L)) {
+      while (n < max_shared[i]) {
+        if (substr(a[i], n + 1L, n + 1L) != substr(b[i], n + 1L, n + 1L)) {
+          break
+        }
         n <- n + 1L
       }
       n
