@@ -704,8 +704,8 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   len <- nchar(letter)
   flank_len <- nchar(string)
   for (k in rev(seq_len(len - 1))) {
-    if (substr(letter, len - k + 1, len) ==
-      substr(string, flank_len - k + 1, flank_len)) {
+    deleted_end <- substr(letter, len - k + 1, len)
+    if (deleted_end == substr(string, flank_len - k + 1, flank_len)) {
       return(k)
     }
   }

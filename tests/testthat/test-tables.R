@@ -156,9 +156,9 @@ test_that("SBS tables warn about variants whose motif isn't in the schema", {
   )
   suppressMessages(build_standard_table(musica, g, "IND83"))
   counts <- get_count_table(tables(musica)$IND83)
-  bins <- apply(counts, 2, function(x) paste(rownames(counts)[x > 0],
-    collapse = ","
-  ))
+  bins <- apply(counts, 2, function(x) {
+    paste(rownames(counts)[x > 0], collapse = ",")
+  })
   bins[tab$sample]
 }
 
