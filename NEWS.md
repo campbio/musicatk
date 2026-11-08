@@ -1,7 +1,7 @@
 # musicatk 2.7.9 (2026-11-08)
 * IND83 tables put some indels in the wrong bin. On `indel_musica`, 16 of 300 indels move to another bin (12 of the 56 1 bp insertions, 3 longer insertions and 1 microhomology deletion); totals are unchanged. Rebuild IND83 tables made with an earlier version (#9):
   * Insertion flanks start next to the insertion. Before, the left flank skipped the base before the insertion, and for MAF insertions the right flank skipped the base after it, so for example chr1:153056355 +T in `indel_musica` was `INS_T_1_4` instead of `INS_T_1_5+` (#129).
-  * Repeats of multi-base units are counted on the left of the indel too. Before, a unit like `AC` never matched on the left, so deleting any copy but the first in a repeat counted too few copies (#128).
+  * Repeats of multi-base units are counted on the left of the indel too. Before, a unit like `AC` never matched on the left, so indels with copies of their unit on the left (for example, deleting any copy but the first in a repeat) counted too few copies (#128).
   * Microhomology on the left of a deletion is compared with the bases next to it, not the far end of the flank (#127).
   * Insertions of 2 bp or more look five unit lengths to each side, as deletions do. Before, they looked 10 bp, so `INS_repeats_4_5+` and `INS_repeats_5+_5+` were almost never counted (#130).
 * `build_standard_table()` builds IND83 tables when some indel classes are missing, for example with only deletions or only insertions; before, it stopped with an error. With no indels at all, it stops with "No insertions or deletions found." The help page says how indels are binned (#126).

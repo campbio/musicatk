@@ -37,7 +37,7 @@ and puts some indels in the wrong ID83 bin:
 
 IND83 tables change. On `indel_musica` (300 indels, all from MAF), a
 prototype of the fix moves 16 indels to another bin: 12 of the 56 one-bp
-insertions (7 of them `INS_T_1_4` → `INS_T_1_5+`), 3 ≥2 bp insertions
+insertions (6 of them `INS_T_1_4` → `INS_T_1_5+`), 3 ≥2 bp insertions
 (e.g. chr16:71647917 +TC, `INS_repeats_2_0` → `_2_4`) and 1 MH deletion
 (chr9:128695510 del AATA, `DEL_MH_4_3` → `_4_2`). Each was checked
 against the hg38 sequence. Totals are unchanged. VCF input with insertions or
@@ -86,8 +86,9 @@ Out of scope, with follow-up issues: indels within `w` bases of a
 chromosome end make `getSeq()` fail (unchanged, #233); IND83 from input built
 with `standardize_indels = FALSE` keeps the VCF anchor base in
 `ref`/`alt` and is miscounted (unchanged, #234; the docs already say indels are
-standardized); the all-`NA` IND83 `features` and the dead
-`ifelse(ins, plus <- 0, plus <- 0)` stay for #139 (PR K).
+standardized); the all-`NA` IND83 `features` stays for #139 (PR K).
+The dead `ifelse(ins, plus <- 0, plus <- 0)` listed in #139 goes with
+`.count1()`, which the classifier replaces.
 
 ## Tests
 

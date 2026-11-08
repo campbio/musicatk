@@ -172,7 +172,7 @@ test_that("SBS tables warn about variants whose motif isn't in the schema", {
     sample_annotations = data.frame(Samples = samples)
   )
   g <- select_genome("hg38")
-  expect_no_error(suppressMessages(build_standard_table(musica, g, "IND83")))
+  suppressMessages(build_standard_table(musica, g, "IND83"))
   get_count_table(tables(musica)$IND83)
 }
 
@@ -189,7 +189,7 @@ test_that("IND83 tables build when some indel classes are missing", {
     one_long_deletion = seq_along(ins) == which(!ins & len > 1)[1]
   )
   for (keep in subsets) {
-    counts <- .ind83_subset(keep)
+    expect_no_error(counts <- .ind83_subset(keep))
     expect_identical(dim(counts), c(83L, 5L))
     expect_equal(sum(counts), sum(keep))
   }
@@ -200,8 +200,8 @@ test_that("IND83 left microhomology uses the bases next to the deletion", {
   expect_equal(
     musicatk:::.micro_left("ACGTT", "TTTTTTTTTTTTTTTTTTTTTTGTT"), 3
   )
-  # hg38 chr9:128695506-128695521 is TTAC|AATA|AAACTAAAT: AA is repeated
-  # on the right, and nothing on the left
+  # hg38 chr9:128695506-128695521 is TTAC|AATA|AAACTAAAT: 2 bp of
+  # microhomology on the right (AA), none on the left
   g <- select_genome("hg38")
   tab <- data.frame(
     chr = "chr9", start = 128695510L, end = 128695513L, ref = "AATA",
@@ -212,6 +212,7 @@ test_that("IND83 left microhomology uses the bases next to the deletion", {
 
 test_that("IND83 counts repeats of multi-base units on the left", {
   # Issue #128
+  expect_equal(musicatk:::.count_repeat_left("AC", "TTACACAC"), 3)
   # hg38 chr1:2253479-2253490 is GG ACACACAC TT. Deleting any of the four
   # AC copies leaves three.
   g <- select_genome("hg38")
