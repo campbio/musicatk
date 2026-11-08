@@ -530,6 +530,18 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   if (nrow(indels) == 0) {
     stop("No insertions or deletions found.")
   }
+  # The classifier needs the standardized form, with "-" for the empty
+  # allele; a VCF anchor base would be counted as part of the indel
+  unstandardized <- (indels$Variant_Type == "INS" & indels$ref != "-") |
+    (indels$Variant_Type == "DEL" & indels$alt != "-")
+  if (any(unstandardized)) {
+    stop(
+      sum(unstandardized), " insertions or deletions are not standardized ",
+      "(their reference or alternate allele is not '-'). Create the musica ",
+      "object with create_musica_from_variants(standardize_indels = TRUE) ",
+      "to build IND83 tables."
+    )
+  }
 
   motifs <- c(
     .get_indel_motifs("bp1", 0, 0),
@@ -540,7 +552,9 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   )
   # Count every sample in sample_names() order, matched by name, and every
   # motif, whichever indel classes are present
-  labels <- factor(.classify_indels(indels, g), levels = motifs)
+  labels <- .classify_indels(indels, g)
+  .warn_unmatched_motifs(labels, motifs, "IND83")
+  labels <- factor(labels, levels = motifs)
   samples <- .as_sample_factor(musica, indels$sample)
   dimlist <- list(row_names = motifs, column_names = levels(samples))
   mut_table <- matrix(table(labels, samples),
@@ -655,14 +669,25 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   width <- ifelse(len == 1, 7L, len * 5L)
   left_end <- ifelse(ins, indels$start, indels$start - 1L)
   right_start <- ifelse(ins, indels$start + 1L, indels$start + len)
-  lflank <- VariantAnnotation::getSeq(g, indels$chr,
-    left_end - width + 1L, left_end,
-    as.character = TRUE
-  )
-  rflank <- VariantAnnotation::getSeq(g, indels$chr,
-    right_start, right_start + width - 1L,
-    as.character = TRUE
-  )
+  # Flanks stop at the chromosome ends; a flank wholly outside is empty
+  chr_length <- GenomeInfoDb::seqlengths(g)[indels$chr]
+  left_start <- pmax(left_end - width + 1L, 1L)
+  right_end <- pmin(right_start + width - 1L, chr_length)
+  has_left <- left_end >= 1L
+  has_right <- right_start <= chr_length
+  lflank <- rflank <- character(nrow(indels))
+  if (any(has_left)) {
+    lflank[has_left] <- VariantAnnotation::getSeq(g, indels$chr[has_left],
+      left_start[has_left], left_end[has_left],
+      as.character = TRUE
+    )
+  }
+  if (any(has_right)) {
+    rflank[has_right] <- VariantAnnotation::getSeq(g, indels$chr[has_right],
+      right_start[has_right], right_end[has_right],
+      as.character = TRUE
+    )
+  }
 
   # 1 bp indels are named by their pyrimidine base, so A and G indels are
   # read on the other strand

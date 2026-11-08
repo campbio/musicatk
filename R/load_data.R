@@ -783,7 +783,8 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #' to start at the first deleted base, as in MAF files; insertions keep
 #' \code{start} at the base before the insertion. Indels whose first base
 #' differs between \code{ref} and \code{alt} (e.g. `A > GGT`) are complex
-#' and are removed. Default \code{TRUE}.
+#' and are removed. IND83 tables need standardized indels.
+#' Default \code{TRUE}.
 #' @param convert_dbs Flag to convert adjacent SBS in the same sample into
 #' DBS (original SBS are removed). A run of three or more adjacent SBS
 #' becomes one variant of type \code{"MNV"}, which is not included in the

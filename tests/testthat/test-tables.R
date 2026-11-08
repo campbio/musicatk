@@ -272,3 +272,50 @@ test_that("IND83 says when there are no indels or no variant types", {
     regexp = "No Variant_Type annotation found"
   )
 })
+
+test_that("IND83 counts indels near chromosome ends", {
+  # Issue #233: flanks reach past the start and end of chrM
+  g <- select_genome("hg38")
+  chrm_length <- GenomeInfoDb::seqlengths(g)[["chrM"]]
+  tab <- data.frame(
+    chr = "chrM", start = c(3L, chrm_length), end = c(4L, chrm_length),
+    ref = c("-", "N"), alt = c("A", "-"), sample = c("first", "last")
+  )
+  tab$ref[2] <- as.character(BSgenome::getSeq(g, "chrM", chrm_length,
+    chrm_length
+  ))
+  bins <- .ind83_bins(tab, g)
+  expect_true(all(nzchar(bins)))
+})
+
+test_that("IND83 stops on indels that aren't standardized", {
+  # Issue #234
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = 153056355L, end = 153056355L, ref = "C",
+    alt = "CT", sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g,
+    standardize_indels = FALSE, verbose = FALSE
+  )
+  expect_error(
+    build_standard_table(musica, g, "IND83"),
+    regexp = "standardize_indels = TRUE"
+  )
+})
+
+test_that("IND83 warns about indels whose motif isn't in the schema", {
+  # Issue #236
+  g <- select_genome("hg38")
+  tab <- data.frame(
+    chr = "chr1", start = c(153056355L, 153056355L),
+    end = c(153056356L, 153056356L), ref = "-", alt = c("T", "N"),
+    sample = "S1"
+  )
+  musica <- create_musica_from_variants(tab, g, verbose = FALSE)
+  expect_warning(
+    build_standard_table(musica, g, "IND83"),
+    regexp = "1 of 2 variants have motifs not in the IND83 schema"
+  )
+  expect_equal(sum(get_count_table(tables(musica)$IND83)), 1)
+})
