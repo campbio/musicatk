@@ -5,14 +5,19 @@
 \alias{musica_sbs96_tiny}
 \title{musica_sbs96_tiny}
 \format{
-An object of class \code{musica}
-See [build_standard_table()].
+An object of class \code{musica}. See [build_standard_table()].
+}
+\source{
+TCGA, hg38: the example files in \code{inst/extdata}
+(\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+\code{data-raw/example_musica.R}.
 }
 \usage{
 data(musica_sbs96_tiny)
 }
 \description{
-A very small musica created for testing that includes SBS variants and a
-build counts table for them
+A very small musica for testing: the first 40 SBS by position of two
+lung tumors in \code{\link{musica}}, with an SBS96 table.
 }
 \keyword{datasets}

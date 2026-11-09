@@ -5,14 +5,19 @@
 \alias{res_annot}
 \title{res_annot}
 \format{
-An object of class \code{musica}
-See [discover_signatures()].
+An object of class \code{musica}. See [discover_signatures()].
+}
+\source{
+TCGA, hg38: the example files in \code{inst/extdata}
+(\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+\code{data-raw/example_musica.R}.
 }
 \usage{
 data(res_annot)
 }
 \description{
-A musica created for testing that includes SBS variants with annotations and
-discovered exposures and signatures
+\code{\link{musica_annot}} with a three-signature NMF model on SBS96
+(\code{model_id = "res_annot"}), as in \code{\link{res}}.
 }
 \keyword{datasets}

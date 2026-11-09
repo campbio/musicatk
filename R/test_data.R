@@ -1,13 +1,18 @@
 #' musica
 #'
-#' A musica created for testing that includes SBS variants
+#' Variants of seven TCGA tumors (four lung and three melanoma) from the
+#' example files in \code{inst/extdata}, with an SBS96 table.
 #'
 #' @docType data
 #'
 #' @usage data(musica)
 #'
-#' @format An object of class \code{musica}
-#' See [create_musica_from_variants()] and [create_musica_from_counts()].
+#' @format An object of class \code{musica}. See [create_musica_from_variants()].
+#'
+#' @source TCGA, hg38: the example files in \code{inst/extdata}
+#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+#' \code{data-raw/example_musica.R}.
 #'
 #' @keywords datasets
 #'
@@ -15,15 +20,20 @@
 
 #' musica_annot
 #'
-#' A musica created for testing that includes SBS variants and sample
-#' annotations
+#' \code{\link{musica}} with the \code{Tumor_Subtypes} sample annotation
+#' (\code{"Lung"} or \code{"Skin"}) from
+#' \code{inst/extdata/sample_annotations.txt}.
 #'
 #' @docType data
 #'
 #' @usage data(musica_annot)
 #'
-#' @format An object of class \code{musica}
-#' See [create_musica_from_variants()] and [create_musica_from_counts()].
+#' @format An object of class \code{musica}. See [samp_annot()].
+#'
+#' @source TCGA, hg38: the example files in \code{inst/extdata}
+#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+#' \code{data-raw/example_musica.R}.
 #'
 #' @keywords datasets
 #'
@@ -31,15 +41,19 @@
 
 #' musica_sbs96
 #'
-#' A musica created for testing that includes SBS variants and a build counts
-#' table for them
+#' The single base substitutions (SBS) of \code{\link{musica}}, with an
+#' SBS96 table.
 #'
 #' @docType data
 #'
 #' @usage data(musica_sbs96)
 #'
-#' @format An object of class \code{musica}
-#' See [build_standard_table()].
+#' @format An object of class \code{musica}. See [build_standard_table()].
+#'
+#' @source TCGA, hg38: the example files in \code{inst/extdata}
+#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+#' \code{data-raw/example_musica.R}.
 #'
 #' @keywords datasets
 #'
@@ -47,15 +61,19 @@
 
 #' musica_sbs96_tiny
 #'
-#' A very small musica created for testing that includes SBS variants and a
-#' build counts table for them
+#' A very small musica for testing: the first 40 SBS by position of two
+#' lung tumors in \code{\link{musica}}, with an SBS96 table.
 #'
 #' @docType data
 #'
 #' @usage data(musica_sbs96_tiny)
 #'
-#' @format An object of class \code{musica}
-#' See [build_standard_table()].
+#' @format An object of class \code{musica}. See [build_standard_table()].
+#'
+#' @source TCGA, hg38: the example files in \code{inst/extdata}
+#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+#' \code{data-raw/example_musica.R}.
 #'
 #' @keywords datasets
 #'
@@ -63,14 +81,19 @@
 
 #' dbs_musica
 #'
-#' A musica created for testing that includes DBS variants
+#' All variants of five TCGA lung adenocarcinomas, the open-access GDC
+#' TCGA-LUAD MAFs with the most doublet base substitutions (DBS), with
+#' SBS96 and DBS78 tables.
 #'
 #' @docType data
 #'
 #' @usage data(dbs_musica)
 #'
-#' @format An object of class \code{musica}
-#' See [create_musica_from_variants()] and [create_musica_from_counts()].
+#' @format An object of class \code{musica}. See [create_musica_from_variants()] and [build_standard_table()].
+#'
+#' @source GDC open-access "Aliquot Ensemble Somatic Variant Merging and
+#' Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by
+#' \code{data-raw/gdc_example_musica.R}, which lists the GDC file IDs.
 #'
 #' @keywords datasets
 #'
@@ -78,14 +101,18 @@
 
 #' indel_musica
 #'
-#' A musica created for testing that includes INDEL variants
+#' The insertions and deletions of five TCGA uterine corpus endometrial
+#' carcinomas, with no count tables.
 #'
 #' @docType data
 #'
 #' @usage data(indel_musica)
 #'
-#' @format An object of class \code{musica}
-#' See [create_musica_from_variants()] and [create_musica_from_counts()].
+#' @format An object of class \code{musica}. See [create_musica_from_variants()] and [build_standard_table()].
+#'
+#' @source GDC open-access "Aliquot Ensemble Somatic Variant Merging and
+#' Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by
+#' \code{data-raw/gdc_example_musica.R}, which lists the GDC file IDs.
 #'
 #' @keywords datasets
 #'
@@ -93,15 +120,20 @@
 
 #' res
 #'
-#' A musica created for testing that includes SBS variants with discovered
-#' exposures and signatures
+#' \code{\link{musica}} with a three-signature NMF model on SBS96
+#' (\code{model_id = "res"}). Signature1 and Signature2 are found in the
+#' lung tumors and Signature3, a UV signature, in the melanomas.
 #'
 #' @docType data
 #'
 #' @usage data(res)
 #'
-#' @format An object of class \code{musica}
-#' See [discover_signatures()].
+#' @format An object of class \code{musica}. See [discover_signatures()].
+#'
+#' @source TCGA, hg38: the example files in \code{inst/extdata}
+#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+#' \code{data-raw/example_musica.R}.
 #'
 #' @keywords datasets
 #'
@@ -109,15 +141,19 @@
 
 #' res_annot
 #'
-#' A musica created for testing that includes SBS variants with annotations and
-#' discovered exposures and signatures
+#' \code{\link{musica_annot}} with a three-signature NMF model on SBS96
+#' (\code{model_id = "res_annot"}), as in \code{\link{res}}.
 #'
 #' @docType data
 #'
 #' @usage data(res_annot)
 #'
-#' @format An object of class \code{musica}
-#' See [discover_signatures()].
+#' @format An object of class \code{musica}. See [discover_signatures()].
+#'
+#' @source TCGA, hg38: the example files in \code{inst/extdata}
+#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+#' \code{data-raw/example_musica.R}.
 #'
 #' @keywords datasets
 #'

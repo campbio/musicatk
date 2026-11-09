@@ -5,14 +5,20 @@
 \alias{musica_annot}
 \title{musica_annot}
 \format{
-An object of class \code{musica}
-See [create_musica_from_variants()] and [create_musica_from_counts()].
+An object of class \code{musica}. See [samp_annot()].
+}
+\source{
+TCGA, hg38: the example files in \code{inst/extdata}
+(\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
+files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+\code{data-raw/example_musica.R}.
 }
 \usage{
 data(musica_annot)
 }
 \description{
-A musica created for testing that includes SBS variants and sample
-annotations
+\code{\link{musica}} with the \code{Tumor_Subtypes} sample annotation
+(\code{"Lung"} or \code{"Skin"}) from
+\code{inst/extdata/sample_annotations.txt}.
 }
 \keyword{datasets}
