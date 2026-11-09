@@ -351,3 +351,17 @@ test_that("IND83 warns about indels whose motif isn't in the schema", {
   )
   expect_equal(sum(get_count_table(tables(musica)$IND83)), 1)
 })
+
+test_that("DBS78 has a zero column for samples without DBS", {
+  data(musica)
+  g <- select_genome("hg38")
+  var <- variants(musica)
+  with_dbs <- unique(as.character(var$sample[var$Variant_Type == "DBS"]))
+  without_dbs <- setdiff(sample_names(musica), with_dbs)
+  expect_gt(length(without_dbs), 0)
+  build_standard_table(musica, g, "DBS78")
+  counts <- get_count_table(tables(musica)$DBS78)
+  expect_identical(colnames(counts), sample_names(musica))
+  expect_true(all(counts[, without_dbs] == 0))
+  expect_equal(sum(counts), sum(var$Variant_Type == "DBS"))
+})
