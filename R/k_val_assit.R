@@ -28,7 +28,9 @@
 #' compare_k_vals(musica, "SBS96", reps = 3, min_k = 1, max_k = 5)
 compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
                            error_type = "prop", algorithm = "nmf") {
-  
+  # check error_type before running any fit
+  error_type <- .match_error_type(error_type)
+
   # make list of k values to try
   k_list <- c(min_k:max_k)
 
@@ -269,8 +271,11 @@ plot_k_comparison <- function(k_comparison) {
 .resample_count_table <- function(count_table) {
   colsums <- colSums(count_table)
   prob <- t(t(count_table) / colsums)
-  prob[prob == NaN] <- 0
   bootstrapped_count_table <- vapply(seq_len(ncol(count_table)), function(idx) {
+    # a sample with no mutations stays at zero
+    if (colsums[idx] == 0) {
+      return(integer(nrow(count_table)))
+    }
     stats::rmultinom(
       n = 1,
       size = colsums[idx],
@@ -566,11 +571,13 @@ ckmeans <- function(data, k, mustLink, cantLink, maxIter = 100) {
   expos <- exposures(result_discov)
   sigs <- signatures(result_discov)
 
-  # convert count table to probabilities
+  # convert count table to probabilities; samples with no mutations are 0
   count_table_probs <- prop.table(count_table, 2)
+  count_table_probs[is.nan(count_table_probs)] <- 0
 
   # convert exposure matrix to probabilities
   expos_probs <- prop.table(expos, 2)
+  expos_probs[is.nan(expos_probs)] <- 0
 
   # multiply signature and exposure matrices
   predicted_count_probs <- sigs %*% expos_probs
@@ -598,20 +605,34 @@ ckmeans <- function(data, k, mustLink, cantLink, maxIter = 100) {
   return(reconstruction_error)
 }
 
-# calculate recontruction error with a given error type
-.get_reconstruction_error <- function(result_discov, count_table, error_type) {
-  if (error_type %in% c(
+# Return "prop" or "raw" for the accepted spellings of 'error_type'
+.match_error_type <- function(error_type) {
+  prop_types <- c(
     "prop", "Prop", "proportion", "Proportion",
     "proportions", "Proportions", "proportional",
     "Proportional"
-  )) {
-    error <- .get_reconstruction_error_prop(result_discov, count_table)
-  } else if (error_type %in% c("raw", "Raw", "raws", "Raws")) {
-    error <- .get_reconstruction_error_raw(result_discov, count_table)
-  } else {
-    message("Invalid error type. Please enter 'prop' for proprotional RE or
-            'raw' for raw RE.")
+  )
+  raw_types <- c("raw", "Raw", "raws", "Raws")
+  if (length(error_type) == 1 && error_type %in% prop_types) {
+    return("prop")
   }
+  if (length(error_type) == 1 && error_type %in% raw_types) {
+    return("raw")
+  }
+  stop(
+    "'error_type' must be \"prop\" for proportional or \"raw\" for raw ",
+    "reconstruction error, not \"", paste(error_type, collapse = ", "), "\"."
+  )
+}
+
+# calculate recontruction error with a given error type
+.get_reconstruction_error <- function(result_discov, count_table, error_type) {
+  if (.match_error_type(error_type) == "prop") {
+    error <- .get_reconstruction_error_prop(result_discov, count_table)
+  } else {
+    error <- .get_reconstruction_error_raw(result_discov, count_table)
+  }
+  return(error)
 }
 
 # get average reconstruction error for a k value from all bootstrap iterations
