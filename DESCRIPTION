@@ -65,7 +65,8 @@ Imports:
     ggpubr,
     Matrix (>= 1.6.1),
     scales,
-    lsei
+    lsei,
+    withr
 Suggests:
     TCGAbiolinks,
     shinyBS,
@@ -84,8 +85,7 @@ Suggests:
     qpdf,
     covr,
     shinyWidgets,
-    cowplot,
-    withr
+    cowplot
 VignetteBuilder: knitr
 Collate: 
     'annotate_variants.R'
