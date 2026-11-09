@@ -1,46 +1,46 @@
-#' Trimmed lung adenocarcinoma vcf from TCGA
+# The example files in inst/extdata. The 12 TCGA samples (hg38) were
+# chosen by data-raw/choose_example_samples.R from the GDC open-access
+# "Aliquot Ensemble Somatic Variant Merging and Masking" MAFs of TCGA-LUAD,
+# TCGA-LUSC and TCGA-SKCM: four lung tumors each with a strong smoking
+# (COSMIC SBS4) or APOBEC (SBS2 and SBS13) signature, and four melanomas
+# with a strong UV (SBS7a and SBS7b) signature. data-raw/example_files.R
+# downloads their MAFs by GDC file ID and writes the files below.
+
+#' Lung squamous cell carcinoma VCF from TCGA
 #'
-#' @name raw_public_LUAD_TCGA-97-7938
+#' @name raw_public_LUSC_TCGA-22-5472-01A-01D-1632-08
 #'
-#' @section public_LUAD_TCGA-97-7938.vcf
+#' @section public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf
 #'
-#' This data is used in the vignette and in several examples
+#' A lung tumor with a strong smoking signature, written as a VCF by
+#' data-raw/example_files.R. This data is used in the vignette and in
+#' several examples
 NULL
 
-#' Trimmed melanoma vcf from TCGA
+#' Melanoma VCFs from TCGA
 #'
-#' @name raw_public_SKCM_TCGA-EE-A3J5-06A-11D-A20D-08
+#' @name raw_public_SKCM
 #'
-#' @section public_SKCM_TCGA-EE-A3J5-06A-11D-A20D-08.vcf
+#' @section public_SKCM_TCGA-BF-A1PX-01A-12D-A19A-08.vcf,
+#' public_SKCM_TCGA-EB-A3XD-01A-22D-A23B-08.vcf,
+#' public_SKCM_TCGA-EB-A41B-01A-11D-A24R-08.vcf,
+#' public_SKCM_TCGA-ER-A3PL-06A-11D-A23B-08.vcf
 #'
-#' This data is used in the vignette
+#' Four melanomas with a strong UV signature, one VCF each, written by
+#' data-raw/example_files.R. This data is used in the vignette and in
+#' several examples
 NULL
 
-#' Trimmed melanoma vcf from TCGA
+#' Lung tumor MAF from TCGA
 #'
-#' @name raw_public_SKCM_TCGA-ER-A19O-06A-11D-A197-08
+#' @name raw_public_TCGA_lung
 #'
-#' @section public_SKCM_TCGA-ER-A19O-06A-11D-A197-08.vcf
+#' @section public_TCGA_lung.maf
 #'
-#' This data is used in the vignette
-NULL
-
-#' Trimmed melanoma vcf from TCGA
-#'
-#' @name raw_public_SKCM_TCGA-ER-A197-06A-32D-A197-08
-#'
-#' @section public_SKCM_TCGA-ER-A197-06A-32D-A197-08.vcf
-#'
-#' This data is used in the vignette
-NULL
-
-#' Larger lung squamous maf from TCGA
-#'
-#' @name raw_public_TCGA.LUSC
-#'
-#' @section public_TCGA.LUSC.maf
-#'
-#' This data is used in the vignette and in several examples
+#' Seven lung tumors, three with a strong smoking and four with a strong
+#' APOBEC signature, with the standard TCGA MAF columns and read counts,
+#' written by data-raw/example_files.R. This data is used in the vignette
+#' and in several examples
 NULL
 
 #' Example sample annotations that maps sample names to tumor subtypes
@@ -49,7 +49,9 @@ NULL
 #'
 #' @section sample_annotations.txt
 #'
-#' This data is used in the vignette and in several examples
+#' The tumor type (Lung or Skin) of each of the 12 example samples, written
+#' by data-raw/example_files.R. This data is used in the vignette and in
+#' several examples
 NULL
 
 #' Example count table with LUAD data from TCGA

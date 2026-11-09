@@ -116,20 +116,24 @@ checks each holds exactly its aliquot, and writes `inst/extdata`:
   7-sample file several MB.
 - `public_SKCM_<aliquot>.vcf`: one per UV sample (4).
 - `sample_annotations.txt`: `Sample_Names` and `Tumor_Subtypes` (`Lung`
-  or `Skin`) for the 12 samples, in file order.
+  or `Skin`) for the 12 samples, in the order of the groups (smoking,
+  APOBEC, UV), which differs from the order of `sample_names()`; the
+  vignette matches them by name.
 
 The VCFs are VCFv4.2 with `##reference=GRCh38`, contig lines for chr1-22,
 X, Y and M with hg38 lengths from the BSgenome, FILTER `PASS`, INFO `.`,
 FORMAT `GT:AD:DP`, then a tumor column (`0/1:<t_ref_count>,<t_alt_count>:
-<t_depth>`) and a normal column (`0/0:.:<n_depth>`), named by
+<t_depth>`) and a normal column (`0/0:.,.:<n_depth>`), named by
 `Tumor_Sample_Barcode` and `Matched_Norm_Sample_Barcode`. Substitutions
 use the MAF alleles at `Start_Position`. Indels use the VCF convention:
 POS is the base before the event (the MAF `Start_Position` for an
 insertion, `Start_Position - 1` for a deletion), REF and ALT start with
 that hg38 base. Records are sorted by chromosome order and position.
 
-The old files (`public_LUAD_TCGA-97-7938.vcf`, the three
-`public_SKCM_*.vcf`, `public_TCGA.LUSC.maf`) are deleted. The script then
+All `public_*` files in `inst/extdata` are deleted first, so the old
+files (`public_LUAD_TCGA-97-7938.vcf`, the three `public_SKCM_*.vcf`,
+`public_TCGA.LUSC.maf`) go, and a rerun with other picks leaves no stale
+files. The script then
 checks that `extract_variants()` on the new files gives as many variants
 as the MAF records, with no reference-mismatch warning on hg38, and that
 `inst/extdata` is no larger than now (about 0.9 MB).
@@ -149,8 +153,15 @@ as the MAF records, with no reference-mismatch warning on hg38, and that
   Signatures are ordered APOBEC, smoking, UV (as the `name_signatures()`
   example expects). The script stops unless:
   - each signature's closest match in `cosmic_v3_sbs_sigs_exome` is in
-    its group (SBS2 or SBS13; SBS4; SBS7a or SBS7b) with cosine at least
-    0.8;
+    its group (SBS2 or SBS13; SBS4; SBS7a or SBS7b), one signature per
+    group;
+  - the smoking and UV signatures have a cosine of at least 0.8 to that
+    closest match, and the APOBEC signature a cosine of at least 0.9 to
+    the best mix of SBS2 and SBS13 (weights 0 to 1 in steps of 0.05).
+    SBS2 and SBS13 occur together, so a 3-signature model finds one
+    APOBEC signature that combines them: with the chosen samples it has
+    cosine 0.99 to a 45% SBS2 and 55% SBS13 mix but only 0.73 to SBS2
+    alone (decided with the maintainer);
   - each sample's largest exposure is its group's signature (groups are
     listed in the script, from `choose_example_samples.R`).
 
@@ -170,7 +181,7 @@ as the MAF records, with no reference-mismatch warning on hg38, and that
 
   ```r
   matches <- compare_cosmic_v3(musica, "ex_result", "exome",
-                               threshold = 0.5)
+                               threshold = 0.7)
   best <- matches[!duplicated(matches$x_sig_name), ]
   etiology <- c(SBS4 = "Smoking", SBS2 = "APOBEC", SBS13 = "APOBEC",
                 SBS7a = "UV", SBS7b = "UV")
@@ -178,10 +189,12 @@ as the MAF records, with no reference-mismatch warning on hg38, and that
 
   Each signature gets the etiology of its best match, or that match's
   COSMIC name when it isn't in `etiology`, and the result goes to
-  `name_signatures()`.
-- The paragraph after `compare_cosmic_v2()` reports the matches with
-  inline R from that call's result, instead of hard-coded signature
-  numbers.
+  `name_signatures()`. The threshold is 0.7 so that the APOBEC signature
+  (0.73 to SBS2) is matched; one sentence explains that it combines SBS2
+  and SBS13.
+- The paragraph after `compare_cosmic_v2()` (threshold lowered from 0.75
+  to 0.7 for the same reason) reports the matches with inline R from that
+  call's result, instead of hard-coded signature numbers.
 - `plot_sample_counts()` shows one sample of each group, by name.
 - Other text that quotes numbers or sample types from the data is
   checked and updated.
