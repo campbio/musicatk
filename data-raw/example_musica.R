@@ -18,11 +18,11 @@
 #   on SBS96, with model_id "res" and "res_annot"
 #
 # The script stops unless the model shows the expected pattern: one UV
-# signature (closest COSMIC v3 signature SBS7*) carrying most of the
-# melanoma (Skin) exposure, and two other signatures carrying most of the
-# lung exposure. Signatures are put in a fixed order: the lung signature
-# closest to COSMIC SBS13 first, the other lung signature second, the UV
-# signature last.
+# signature (closest COSMIC v3 signature SBS7*) carrying at least 80% of the
+# exposure of each melanoma (Skin) with 50 or more SBS, and at most 20% of
+# each lung tumor's exposure. Signatures are put in a fixed order: the lung
+# signature closest to COSMIC SBS13 first, the other lung signature second,
+# the UV signature last.
 
 pkgload::load_all(".", quiet = TRUE)
 seed <- 1
@@ -93,15 +93,17 @@ order_signatures <- function(musica, model_id) {
 
 check_pattern <- function(musica, model_id, annot) {
   expos <- exposures(musica, "result", "SBS96", model_id)
-  skin <- annot$Sample_Names[annot$Tumor_Subtypes == "Skin"]
-  lung <- annot$Sample_Names[annot$Tumor_Subtypes == "Lung"]
-  uv_share_skin <- sum(expos[3, skin]) / sum(expos[, skin])
-  uv_share_lung <- sum(expos[3, lung]) / sum(expos[, lung])
+  uv_share <- expos[3, ] / colSums(expos)
+  subtype <- annot$Tumor_Subtypes[match(colnames(expos), annot$Sample_Names)]
+  # Melanomas with few SBS (TCGA-ER-A197 has 11) can't show a signature
+  enough <- colSums(expos) >= 50
   message(
-    "UV signature share: ", round(uv_share_skin, 2), " of Skin, ",
-    round(uv_share_lung, 2), " of Lung exposure"
+    "UV signature share by sample: ",
+    toString(paste0(subtype, " ", round(uv_share, 2)))
   )
-  if (uv_share_skin < 0.8 || uv_share_lung > 0.2) {
+  skin_low <- any(uv_share[subtype == "Skin" & enough] < 0.8)
+  lung_high <- any(uv_share[subtype == "Lung"] > 0.2)
+  if (skin_low || lung_high) {
     stop("The UV signature doesn't separate Skin from Lung samples")
   }
 }

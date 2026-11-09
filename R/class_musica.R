@@ -287,7 +287,7 @@ subset_variants_by_samples <- function(musica, sample_name) {
 #' data(res)
 #' res <- name_signatures(res,
 #'   model_id = "res",
-#'   name_vector = c("smoking", "apobec", "unknown")
+#'   name_vector = c("apobec", "smoking", "uv")
 #' )
 #' @export
 name_signatures <- function(musica, model_id, name_vector, modality = "SBS96",

@@ -8,7 +8,7 @@
 #' @usage data(musica)
 #'
 #' @format An object of class \code{musica}. See
-#' [create_musica_from_variants()].
+#' \code{\link{create_musica_from_variants}}.
 #'
 #' @source TCGA, hg38: the example files in \code{inst/extdata}
 #' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
@@ -29,12 +29,9 @@
 #'
 #' @usage data(musica_annot)
 #'
-#' @format An object of class \code{musica}. See [samp_annot()].
+#' @format An object of class \code{musica}. See \code{\link{samp_annot}}.
 #'
-#' @source TCGA, hg38: the example files in \code{inst/extdata}
-#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
-#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
-#' \code{data-raw/example_musica.R}.
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'
@@ -49,12 +46,10 @@
 #'
 #' @usage data(musica_sbs96)
 #'
-#' @format An object of class \code{musica}. See [build_standard_table()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{build_standard_table}}.
 #'
-#' @source TCGA, hg38: the example files in \code{inst/extdata}
-#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
-#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
-#' \code{data-raw/example_musica.R}.
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'
@@ -69,12 +64,10 @@
 #'
 #' @usage data(musica_sbs96_tiny)
 #'
-#' @format An object of class \code{musica}. See [build_standard_table()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{build_standard_table}}.
 #'
-#' @source TCGA, hg38: the example files in \code{inst/extdata}
-#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
-#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
-#' \code{data-raw/example_musica.R}.
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'
@@ -91,7 +84,8 @@
 #' @usage data(dbs_musica)
 #'
 #' @format An object of class \code{musica}. See
-#' [create_musica_from_variants()] and [build_standard_table()].
+#' \code{\link{create_musica_from_variants}} and
+#' \code{\link{build_standard_table}}.
 #'
 #' @source GDC open-access "Aliquot Ensemble Somatic Variant Merging and
 #' Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by
@@ -111,11 +105,10 @@
 #' @usage data(indel_musica)
 #'
 #' @format An object of class \code{musica}. See
-#' [create_musica_from_variants()] and [build_standard_table()].
+#' \code{\link{create_musica_from_variants}} and
+#' \code{\link{build_standard_table}}.
 #'
-#' @source GDC open-access "Aliquot Ensemble Somatic Variant Merging and
-#' Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by
-#' \code{data-raw/gdc_example_musica.R}, which lists the GDC file IDs.
+#' @inherit dbs_musica source
 #'
 #' @keywords datasets
 #'
@@ -131,12 +124,10 @@
 #'
 #' @usage data(res)
 #'
-#' @format An object of class \code{musica}. See [discover_signatures()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{discover_signatures}}.
 #'
-#' @source TCGA, hg38: the example files in \code{inst/extdata}
-#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
-#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
-#' \code{data-raw/example_musica.R}.
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'
@@ -151,12 +142,10 @@
 #'
 #' @usage data(res_annot)
 #'
-#' @format An object of class \code{musica}. See [discover_signatures()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{discover_signatures}}.
 #'
-#' @source TCGA, hg38: the example files in \code{inst/extdata}
-#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
-#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
-#' \code{data-raw/example_musica.R}.
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'

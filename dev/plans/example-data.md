@@ -21,8 +21,9 @@ because the rebuild needs its import fixes; this PR goes in after #243.
     were not merged into DBS, so SBS96 has 884 SBS where the current code
     gives 870 SBS and 7 DBS. `musica_sbs96` and `musica_sbs96_tiny` are
     SBS-only versions. `res` and `res_annot` are a 3-signature NMF model on
-    that SBS96 table: two smoking-like signatures in the lung samples and
-    one UV signature in the melanoma samples.
+    that SBS96 table: two signatures in the lung samples (closest COSMIC
+    v3 matches SBS13 and SBS40/SBS4) and one UV signature in the melanoma
+    samples.
   - `dbs_musica` mixes genome builds: 400 SBS from the 3 LUSC samples of
     the bundled MAF (hg38) and 400 DBS from 236 other LUAD samples (TCGA
     and Broad), which match hg19, from an unknown source.
@@ -40,10 +41,13 @@ tests that use them:
 - `musica`, `musica_annot`: indels standardized, the 6 insertions
   corrected, 7 DBS; SBS96 drops from 884 to 870.
 - `res`, `res_annot`: a new NMF fit on the new SBS96. Signature and
-  exposure values change; the pattern (two smoking-like signatures in the
-  lung samples, one UV signature in the melanoma samples) must hold, and
-  is checked against COSMIC v3 (SBS4/SBS92-like and SBS7-like) before
-  saving.
+  exposure values change; the pattern (two signatures in the lung
+  samples, one UV signature in the melanoma samples) must hold, and is
+  checked before saving: one signature's closest COSMIC v3 match is SBS7*,
+  and it carries at least 80% of each melanoma with 50 or more SBS and at
+  most 20% of each lung tumor. (The lung signatures' closest matches are
+  SBS13 and SBS40, with SBS4 a close second, so a smoking-like check on
+  them would not be reliable.)
 - `dbs_musica`, `indel_musica`: new samples or variants, all hg38.
 - The vignette's "Reference bases for 6 out of 911 variants did not
   match" warning goes away.
@@ -71,25 +75,35 @@ All variants are hg38, from GDC open-access data, built with the current
   - `res`, `res_annot`: `discover_signatures(..., "SBS96",
     num_signatures = 3, algorithm = "nmf", model_id = "res")` with a fixed
     seed and `nstart = 10`, on `musica` and `musica_annot`.
-  - It stops if the signatures don't show the expected pattern (best
-    COSMIC v3 match by cosine for each signature; one UV-like signature
-    carrying most of the melanoma exposure, smoking-like signatures
-    carrying most of the lung exposure).
+  - It stops if the signatures don't show the expected pattern (see
+    above), and orders them SBS13-closest lung signature, other lung
+    signature, UV signature, as in the earlier `res`.
 - **`data-raw/gdc_example_musica.R`** downloads GDC open-access aliquot
   ensemble masked MAFs (hg38) by fixed file ID and builds:
   - `indel_musica`: the insertions and deletions of the same five UCEC
     aliquots as now (about 211 indels), no count tables.
   - `dbs_musica`: all variants of five TCGA-LUAD aliquots, with SBS96 and
     DBS78 tables. The aliquots are the five with the most DBS among the
-    open TCGA-LUAD MAFs, chosen once during development; the script lists
-    the file IDs and says how they were chosen. If the object is much
-    larger than the current one (about 10 KB), use fewer samples, since
-    the tarball is near the Bioconductor size limit.
+    open TCGA-LUAD MAFs, leaving out whole-genome-amplified DNA (analyte
+    W or X), which can carry amplification artifacts.
+    `data-raw/choose_dbs_aliquots.R` makes the choice; the build script
+    lists the chosen file IDs.
+  - Size: `dbs_musica` is about 48 KB (the earlier one was 24 KB; all
+    eight objects together grow by about 8 KB). Five samples give 176 DBS,
+    enough for the DBS78 examples; three would give about 110. The
+    tarball's size is dominated by vignette images, tracked separately,
+    so the larger object is kept.
 - **Docs.** `R/test_data.R` gets a description and `@source` for each
   object, saying which script builds it. `make docs`.
-- Both scripts set a seed (only discovery uses random numbers), run from
-  the package root with `Rscript`, and save with `usethis::use_data()` or
-  `save(..., compress = "xz")`, matching the current files.
+- The scripts set a seed (only discovery uses random numbers), run from
+  the package root with `Rscript`, and save with
+  `save(..., compress = "xz")`.
+- `data-raw/repair_sample_alignment.R` gets a note that the objects it
+  repaired are now rebuilt from their sources.
+- The `name_signatures()` example names the `res` signatures in their
+  order (`"apobec"`, `"smoking"`, `"uv"`), and the vignette drops a step
+  that subset SBS96 to the DBS samples of the old `dbs_musica`, which
+  does nothing now that both tables have the same samples.
 
 ## Tests, examples, vignette
 

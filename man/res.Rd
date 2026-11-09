@@ -5,7 +5,8 @@
 \alias{res}
 \title{res}
 \format{
-An object of class \code{musica}. See [discover_signatures()].
+An object of class \code{musica}. See
+\code{\link{discover_signatures}}.
 }
 \source{
 TCGA, hg38: the example files in \code{inst/extdata}

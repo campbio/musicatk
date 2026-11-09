@@ -6,7 +6,8 @@
 \title{indel_musica}
 \format{
 An object of class \code{musica}. See
-[create_musica_from_variants()] and [build_standard_table()].
+\code{\link{create_musica_from_variants}} and
+\code{\link{build_standard_table}}.
 }
 \source{
 GDC open-access "Aliquot Ensemble Somatic Variant Merging and

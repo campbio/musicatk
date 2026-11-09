@@ -4,23 +4,28 @@
 # Source: the "Aliquot Ensemble Somatic Variant Merging and Masking" MAFs
 # (WXS, hg38) of the NCI Genomic Data Commons, GDC Data Release 46.0
 # (August 10, 2026), downloaded by file ID from the GDC API. No random
-# numbers are used, so no seed is needed.
+# numbers are used; the seed is set only so that later edits stay
+# reproducible.
 #
 # - dbs_musica: all variants of five TCGA-LUAD aliquots, with SBS96 and
 #   DBS78 tables. The five are the open TCGA-LUAD aliquot MAFs with the
-#   most DBS (GDC DNP records plus adjacent SNPs in the same sample),
-#   chosen once from all 618 open TCGA-LUAD MAFs of Data Release 46.0.
+#   most DBS (GDC DNP records plus adjacent SNPs in the same sample) among
+#   the 618 of Data Release 46.0, leaving out whole-genome-amplified DNA.
+#   data-raw/choose_dbs_aliquots.R makes this choice. The object is about
+#   50 KB, larger than the earlier dbs_musica (24 KB); five samples give
+#   176 DBS, enough for DBS78 examples.
 # - indel_musica: the insertions and deletions of five TCGA-UCEC aliquots,
 #   the same aliquots as the earlier indel_musica, with no count tables.
 
 pkgload::load_all(".", quiet = TRUE)
+set.seed(1)
 
 luad_files <- c(
-  "TCGA-17-Z031-01A-01W-0746-08" = "d7718619-286f-47ec-9b8c-430fb1a01383",
   "TCGA-05-4382-01A-01D-1931-08" = "879297cc-5afe-48aa-9a38-e8b1c6fe0a32",
   "TCGA-86-8073-01A-11D-2238-08" = "0a250294-e760-418a-bed3-be259ae161e1",
   "TCGA-69-7979-01A-11D-2184-08" = "c3721df1-653c-408e-b3fa-b7c11c1e3413",
-  "TCGA-L9-A7SV-01A-11D-A397-08" = "44a776b7-0eb2-463c-ab1d-80c654278f56"
+  "TCGA-L9-A7SV-01A-11D-A397-08" = "44a776b7-0eb2-463c-ab1d-80c654278f56",
+  "TCGA-55-7994-01A-11D-2184-08" = "03add666-b87c-414c-8695-5667f3b599c1"
 )
 ucec_files <- c(
   "TCGA-5B-A90C-01A-11D-A37N-09" = "e43a4d87-20f5-486b-92db-a7421a09943f",

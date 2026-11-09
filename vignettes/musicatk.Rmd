@@ -136,14 +136,7 @@ data(dbs_musica)
 build_standard_table(dbs_musica, g, "SBS96", overwrite = TRUE)
 build_standard_table(dbs_musica, g, "DBS78", overwrite = TRUE)
 
-# Subset SBS table to DBS samples so they cam be combined
-count_tables <- tables(dbs_musica)
-overlap_samples <- which(colnames(count_tables$SBS96@count_table) %in%
-                           colnames(count_tables$DBS78@count_table))
-count_tables$SBS96@count_table <-
-  count_tables$SBS96@count_table[, overlap_samples]
-tables(dbs_musica) <- count_tables
-
+# Both tables have the same samples, so they can be combined
 combine_count_tables(
   musica = dbs_musica, to_comb = c("SBS96", "DBS78"),
   name = "sbs_dbs", description = "An example combined

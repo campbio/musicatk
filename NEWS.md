@@ -4,7 +4,7 @@
 * The example datasets are rebuilt with the current import and table code, all from TCGA on hg38, and each has a `data-raw/` script and a `@source` (#217):
   * `musica`, `musica_annot`, `musica_sbs96` and `musica_sbs96_tiny` are built from the example files by `data-raw/example_musica.R`. Their indels are standardized (8 were typed `"unknown"`) and adjacent SBS are merged into DBS, so `musica` has 870 SBS, 7 DBS, 16 deletions and 11 insertions, and its SBS96 table 870 SBS instead of 884.
   * `res` and `res_annot` are a new three-signature NMF fit on that SBS96 table. As before, Signature1 and Signature2 are found in the lung tumors and Signature3, a UV signature, in the melanomas; the values differ.
-  * `dbs_musica` holds all variants of five TCGA-LUAD tumors with the most DBS in GDC open-access MAFs (199 DBS), with SBS96 and DBS78 tables. Before, it mixed 400 SBS on hg38 with 400 DBS from other samples on hg19.
+  * `dbs_musica` holds all variants of the five TCGA-LUAD tumors with the most DBS in GDC open-access MAFs, leaving out whole-genome-amplified DNA (176 DBS), with SBS96 and DBS78 tables. Before, it mixed 400 SBS on hg38 with 400 DBS from other samples on hg19.
   * `indel_musica` holds the 211 insertions and deletions of the same five TCGA-UCEC tumors as before, from their current GDC MAFs. Its earlier 300 indels could not be traced to a source.
 
 # musicatk 2.7.10 (2026-11-08)

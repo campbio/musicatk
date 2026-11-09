@@ -5,7 +5,8 @@
 \alias{musica_sbs96}
 \title{musica_sbs96}
 \format{
-An object of class \code{musica}. See [build_standard_table()].
+An object of class \code{musica}. See
+\code{\link{build_standard_table}}.
 }
 \source{
 TCGA, hg38: the example files in \code{inst/extdata}

@@ -5,7 +5,7 @@
 \alias{musica_annot}
 \title{musica_annot}
 \format{
-An object of class \code{musica}. See [samp_annot()].
+An object of class \code{musica}. See \code{\link{samp_annot}}.
 }
 \source{
 TCGA, hg38: the example files in \code{inst/extdata}
