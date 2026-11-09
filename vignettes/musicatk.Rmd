@@ -459,25 +459,24 @@ plot_umap(musica, "ex_result", plotly = TRUE)
 
 # Note on reproducibility
 
-Several functions make use of stochastic algorithms or procedures which 
-require the use of random number generator (RNG) for simulation or sampling. 
-To maintain reproducibility, all these functions should be called using 
-```set_seed(1)``` or ```withr::with_seed(seed, function())``` to make sure 
-same results are generatedeach time one of these functions is called. Using
-with_seed for reproducibility has the advantage of not interfering with any 
-other user seeds, but using one or the other is important for several functions 
-including *discover_signatures*, *predict_exposure*, and *create_umap*, as 
-these functions use stochastic processes that may produce different results 
-when run multiple times with the same settings.
+Several functions make use of stochastic algorithms or procedures which
+require the use of random number generator (RNG) for simulation or sampling.
+*discover_signatures* and *predict_exposure* take a `seed` argument (default
+`1`), so they give the same results each time they are run with the same
+settings, without changing your own RNG state. Use a different `seed` to get
+a different random start:
 
 ```{r reproducible_prediction}
-seed <- 1
-withr::with_seed(seed, predict_exposure(
+# Predict exposures with a different random start
+predict_exposure(
   musica = musica, modality = "SBS96",
   signature_res = model, algorithm = "lda",
-  model_id = "reproducible_ex"
-))
+  model_id = "reproducible_ex", seed = 2
+)
 ```
+
+Other functions, such as *create_umap*, use the RNG without a `seed`
+argument. Call `set.seed()` before them to get the same results each time.
 
 
 # Session Information

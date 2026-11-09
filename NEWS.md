@@ -1,3 +1,14 @@
+# musicatk 2.7.12 (2026-11-09)
+* `generate_result_grid()` uses its `annotation` argument. Before, it always read a `Tumor_Type` column: with any other column it stored no models, and with `Tumor_Type` every group's model overwrote the previous group's. Models are now named `<algorithm><k>_<group>` (for example `lda3_Lung`), and samples with a missing annotation are left out with a message (#140).
+* `generate_result_grid()` keeps the new fit when a model of the same name already exists, storing it as `lda2.1` and so on. Before, it silently kept the old model and discarded the new fit. `auto_predict_grid()` had the same problem with its per-group models (#141).
+* `predict_exposure()` matches signatures to the count table by motif name. Before, signatures whose rows were in a different order from the table gave wrong exposures without an error, and signatures of another type (for example DBS78 on an SBS96 table) ran with only a recycling warning; these now stop with an error. `algorithm = "decompTumor2Sig"` stops for tables other than SBS96 (#142).
+* Samples with no mutations in the count table are kept, with exposures of 0 and a message naming them, by `discover_signatures()`, `predict_exposure()`, `generate_result_grid()` and `auto_predict_grid()`. Before, they were dropped silently, so exposures had fewer samples than the table, and `generate_result_grid()` and `compare_k_vals()` failed. `discover_signatures()` needs at least two samples with mutations (#143).
+* `auto_predict_grid()` works with a `result_name` other than `"result"` (#145) and with a factor annotation column (#146), and says which thresholds to lower when no signature passes them (#147).
+* Repeated model ids are numbered `.1`, `.2`, … `.10`, `.11`; the 12th copy was `..11` (#148).
+* `compare_k_vals()` stops with an error for an invalid `error_type` before running any fit; before, it ran every fit and returned NA (#149).
+* `predict_exposure(algorithm = "lda")` no longer gives 100 warnings for a single sample. `generate_result_grid()` documents its reconstruction error metric (#152).
+* `compare_cosmic_v2()` and the other comparison functions work for a model with one signature (#162).
+
 # musicatk 2.7.11 (2026-11-09)
 * The example files in `inst/extdata` are replaced by 12 TCGA samples chosen for strong mutational signatures, so the examples and vignette show clean signatures (#217, #238):
   * four lung tumors with a strong smoking signature (COSMIC SBS4) and four with a strong APOBEC signature (SBS2 and SBS13), and four melanomas with a strong UV signature (SBS7a and SBS7b), each with 150 to 500 SBS, from GDC open-access aliquot ensemble masked MAFs (hg38). `data-raw/choose_example_samples.R` chose them and `data-raw/example_files.R` writes the files.
