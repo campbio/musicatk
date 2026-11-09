@@ -20,5 +20,5 @@ Return sample from musica_variant object
 }
 \examples{
 data(musica)
-subset_variants_by_samples(musica, "TCGA-94-7557-01A-11D-2122-08")
+subset_variants_by_samples(musica, "TCGA-92-8065-01A-11D-2244-08")
 }

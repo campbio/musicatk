@@ -6,8 +6,8 @@ test_that("combine_predict_grid() keeps sample order and model fields", {
   samples <- sample_names(res_annot)
   # Per-group models for interleaved groups, so binding by group is not
   # sample order
-  group_a <- samples[c(1, 3, 5, 7)]
-  group_b <- samples[c(2, 4, 6)]
+  group_a <- samples[seq(1, 12, by = 2)]
+  group_b <- samples[seq(2, 12, by = 2)]
   grid <- add_result(signatures(model), exposures(model)[, group_a],
     res_annot, "grid", "SBS96", "a",
     make_copy = TRUE

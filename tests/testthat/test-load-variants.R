@@ -225,7 +225,7 @@ test_that("create_musica_from_counts matches rows to motifs by name", {
 
 test_that("MAFs without records or with only silent variants are read", {
   # Issue #241
-  maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+  maf_file <- system.file("extdata", "public_TCGA_lung.maf",
     package = "musicatk"
   )
   lines <- readLines(maf_file)
@@ -258,12 +258,12 @@ test_that("MAFs without records or with only silent variants are read", {
   expect_identical(nrow(extract_variants_from_maf_file(renamed_maf)), 3L)
 
   # One empty MAF doesn't stop the others from being read
-  lusc <- extract_variants_from_maf_file(maf_file)
+  lung <- extract_variants_from_maf_file(maf_file)
   expect_warning(
     both <- extract_variants(c(empty, maf_file), verbose = FALSE),
     regexp = "no variant records"
   )
-  expect_identical(both, lusc)
+  expect_identical(both, lung)
 
   # Gzipped MAFs are checked for records too
   skip_if_not_installed("R.utils")

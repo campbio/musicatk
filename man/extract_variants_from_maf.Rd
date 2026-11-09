@@ -20,7 +20,7 @@ create a \code{musica} object.
 Add description
 }
 \examples{
-maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+maf_file <- system.file("extdata", "public_TCGA_lung.maf",
   package = "musicatk"
 )
 library(maftools)

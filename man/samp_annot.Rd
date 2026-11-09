@@ -41,10 +41,10 @@ data(res_annot)
 samp_annot(res_annot)
 
 # Add new annotation
-samp_annot(res_annot, "New_Annotation") <- rep(c("A", "B"), c(3, 4))
+samp_annot(res_annot, "New_Annotation") <- rep(c("A", "B"), c(6, 6))
 samp_annot(res_annot)
 data(musica)
-samp_annot(musica, "example") <- rep("ex", 7)
+samp_annot(musica, "example") <- rep("ex", 12)
 }
 \seealso{
 See \code{\link{sample_names}} to get a vector of sample names in

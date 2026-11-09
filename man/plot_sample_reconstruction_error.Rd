@@ -41,6 +41,6 @@ two distributions.
 }
 \examples{
 data(res)
-plot_sample_reconstruction_error(res, "TCGA-ER-A197-06A-32D-A197-08",
+plot_sample_reconstruction_error(res, "TCGA-ER-A3PL-06A-11D-A23B-08",
 model_id = "res")
 }

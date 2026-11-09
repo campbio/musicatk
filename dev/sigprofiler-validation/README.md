@@ -6,6 +6,11 @@ standard count tables match SigProfilerMatrixGenerator (SPMG) on the same
 variants. Nothing here is part of the package (`dev/` is in
 `.Rbuildignore`), and SPMG is not a dependency.
 
+The "bundled example files" below are the 7-sample files that
+`inst/extdata` held before #217 replaced them with 12 new samples, so
+`compare.R` and `run_spmg.py` no longer find them; the results are kept
+as a record.
+
 It was run on three sets of variants:
 
 - the bundled example files in `inst/extdata`;
