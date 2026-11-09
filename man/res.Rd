@@ -10,8 +10,11 @@ An object of class \code{musica}. See
 }
 \source{
 TCGA, hg38: the example files in \code{inst/extdata}
-(\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
-files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+(\code{public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf},
+\code{public_TCGA_lung.maf} and four \code{public_SKCM_*.vcf} files),
+from GDC open-access aliquot ensemble masked MAFs. The samples were chosen
+by \code{data-raw/choose_example_samples.R}, the files written by
+\code{data-raw/example_files.R}, and the objects built by
 \code{data-raw/example_musica.R}.
 }
 \usage{
@@ -19,7 +22,9 @@ data(res)
 }
 \description{
 \code{\link{musica}} with a three-signature NMF model on SBS96
-(\code{model_id = "res"}). Signature1 and Signature2 are found in the
-lung tumors and Signature3, a UV signature, in the melanomas.
+(\code{model_id = "res"}). Signature1 is an APOBEC signature (closest to
+COSMIC SBS2 and SBS13) and Signature2 a smoking signature (SBS4), found in
+the lung tumors; Signature3 is a UV signature (SBS7a), found in the
+melanomas.
 }
 \keyword{datasets}

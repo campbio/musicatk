@@ -1,7 +1,10 @@
 #' musica
 #'
-#' Variants of seven TCGA tumors (four lung and three melanoma) from the
-#' example files in \code{inst/extdata}, with an SBS96 table.
+#' Variants of 12 TCGA tumors from the example files in
+#' \code{inst/extdata}, with an SBS96 table: four lung tumors with a strong
+#' smoking signature (COSMIC SBS4), four lung tumors with a strong APOBEC
+#' signature (SBS2 and SBS13) and four melanomas with a strong UV signature
+#' (SBS7a and SBS7b).
 #'
 #' @docType data
 #'
@@ -11,8 +14,11 @@
 #' \code{\link{create_musica_from_variants}}.
 #'
 #' @source TCGA, hg38: the example files in \code{inst/extdata}
-#' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
-#' files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+#' (\code{public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf},
+#' \code{public_TCGA_lung.maf} and four \code{public_SKCM_*.vcf} files),
+#' from GDC open-access aliquot ensemble masked MAFs. The samples were chosen
+#' by \code{data-raw/choose_example_samples.R}, the files written by
+#' \code{data-raw/example_files.R}, and the objects built by
 #' \code{data-raw/example_musica.R}.
 #'
 #' @keywords datasets
@@ -58,7 +64,8 @@
 #' musica_sbs96_tiny
 #'
 #' A very small musica for testing: the first 40 SBS by position of two
-#' lung tumors in \code{\link{musica}}, with an SBS96 table.
+#' lung tumors in \code{\link{musica}}, one with a smoking and one with an
+#' APOBEC signature, with an SBS96 table.
 #'
 #' @docType data
 #'
@@ -117,8 +124,10 @@
 #' res
 #'
 #' \code{\link{musica}} with a three-signature NMF model on SBS96
-#' (\code{model_id = "res"}). Signature1 and Signature2 are found in the
-#' lung tumors and Signature3, a UV signature, in the melanomas.
+#' (\code{model_id = "res"}). Signature1 is an APOBEC signature (closest to
+#' COSMIC SBS2 and SBS13) and Signature2 a smoking signature (SBS4), found in
+#' the lung tumors; Signature3 is a UV signature (SBS7a), found in the
+#' melanomas.
 #'
 #' @docType data
 #'

@@ -9,8 +9,11 @@ An object of class \code{musica}. See \code{\link{samp_annot}}.
 }
 \source{
 TCGA, hg38: the example files in \code{inst/extdata}
-(\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
-files and \code{public_TCGA.LUSC.maf}), from GDC MuTect2 calls. Built by
+(\code{public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf},
+\code{public_TCGA_lung.maf} and four \code{public_SKCM_*.vcf} files),
+from GDC open-access aliquot ensemble masked MAFs. The samples were chosen
+by \code{data-raw/choose_example_samples.R}, the files written by
+\code{data-raw/example_files.R}, and the objects built by
 \code{data-raw/example_musica.R}.
 }
 \usage{
