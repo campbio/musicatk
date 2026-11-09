@@ -7,7 +7,8 @@
 #'
 #' @usage data(musica)
 #'
-#' @format An object of class \code{musica}. See [create_musica_from_variants()].
+#' @format An object of class \code{musica}. See
+#' [create_musica_from_variants()].
 #'
 #' @source TCGA, hg38: the example files in \code{inst/extdata}
 #' (\code{public_LUAD_TCGA-97-7938.vcf}, three \code{public_SKCM_*.vcf}
@@ -89,7 +90,8 @@
 #'
 #' @usage data(dbs_musica)
 #'
-#' @format An object of class \code{musica}. See [create_musica_from_variants()] and [build_standard_table()].
+#' @format An object of class \code{musica}. See
+#' [create_musica_from_variants()] and [build_standard_table()].
 #'
 #' @source GDC open-access "Aliquot Ensemble Somatic Variant Merging and
 #' Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by
@@ -108,7 +110,8 @@
 #'
 #' @usage data(indel_musica)
 #'
-#' @format An object of class \code{musica}. See [create_musica_from_variants()] and [build_standard_table()].
+#' @format An object of class \code{musica}. See
+#' [create_musica_from_variants()] and [build_standard_table()].
 #'
 #' @source GDC open-access "Aliquot Ensemble Somatic Variant Merging and
 #' Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by

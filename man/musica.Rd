@@ -5,7 +5,8 @@
 \alias{musica}
 \title{musica}
 \format{
-An object of class \code{musica}. See [create_musica_from_variants()].
+An object of class \code{musica}. See
+[create_musica_from_variants()].
 }
 \source{
 TCGA, hg38: the example files in \code{inst/extdata}

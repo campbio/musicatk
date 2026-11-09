@@ -61,9 +61,10 @@ tiny <- sbs[sbs$sample %in% tiny_samples, ]
 tiny <- tiny[order(
   tiny$sample, match(tiny$chr, GenomeInfoDb::seqnames(g)), tiny$start
 ), ]
-tiny <- tiny[stats::ave(seq_len(nrow(tiny)), tiny$sample,
+rank_in_sample <- stats::ave(seq_len(nrow(tiny)), tiny$sample,
   FUN = seq_along
-) <= 40, ]
+)
+tiny <- tiny[rank_in_sample <= 40, ]
 tiny$sample <- as.character(tiny$sample)
 musica_sbs96_tiny <- create_musica_from_variants(tiny, g, verbose = FALSE)
 build_standard_table(musica_sbs96_tiny, g, "SBS96")
