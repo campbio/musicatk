@@ -5,7 +5,7 @@ test_that(desc = "Diff Anal Input validity", {
   # expect_error(exposure_differential_analysis(data.frame(0)), # error here
   #             regexp = "must be a")
   data("res_annot")
-  samp_annot(res_annot, "test") <- c("C", "C", "C", "B", "B", "B", "A")
+  samp_annot(res_annot, "test") <- rep(c("C", "B", "A"), c(6, 5, 1))
   expect_error(
     exposure_differential_analysis(res_annot, "res_annot", "DNE",
       method = "wilcox"
@@ -114,7 +114,7 @@ test_that(desc = "Diff Anal functionality", {
 
 test_that(desc = "Diff Anal pairs annotations with exposures by name", {
   data("res_annot")
-  samp_annot(res_annot, "test") <- c("A", "B", "C", "A", "B", "C", "C")
+  samp_annot(res_annot, "test") <- rep(c("A", "B", "C"), 4)
   # A model holding a subset of the samples, as discovery returns when it
   # drops zero-count samples, so exposure columns and annotation rows differ
   results <- result_list(res_annot)

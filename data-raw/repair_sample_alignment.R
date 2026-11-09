@@ -1,9 +1,12 @@
 # Repair sample alignment in the shipped musica datasets (PR A of #208).
 #
-# The original scripts and sources for these objects are not in the
-# repository, so this script repairs the existing objects instead of
-# rebuilding them. No count or exposure value changes; only the order and
-# labelling of samples do.
+# The original scripts and sources for these objects were not in the
+# repository, so this script repaired the existing objects instead of
+# rebuilding them. The musica objects have since been rebuilt from their
+# sources by data-raw/example_musica.R and data-raw/gdc_example_musica.R
+# (#217); this script is kept as a record and should not be run again.
+# No count or exposure value changed; only the order and labelling of
+# samples did.
 #
 # For each musica object it:
 # - keeps the current sample_names() order as the canonical sample order

@@ -19,8 +19,8 @@ test_that("create_musica_from_counts() sets sample names for annotation", {
   musica <- create_musica_from_counts(counts, "SBS96")
   expect_identical(sample_names(musica), colnames(counts))
 
-  samp_annot(musica, "group") <- rep(c("a", "b"), c(3, 4))
-  expect_identical(samp_annot(musica)$group, rep(c("a", "b"), c(3, 4)))
+  samp_annot(musica, "group") <- rep(c("a", "b"), c(6, 6))
+  expect_identical(samp_annot(musica)$group, rep(c("a", "b"), c(6, 6)))
 
   unnamed <- unname(counts)
   expect_error(
@@ -50,12 +50,12 @@ test_that("Subsetting a musica object also subsets its results", {
   lung <- subset_musica_by_annotation(res_annot, "Tumor_Subtypes", "Lung")
   lung_exposures <- exposures(lung, "result", "SBS96", "res_annot")
   expect_identical(colnames(lung_exposures), sample_names(lung))
-  expect_length(sample_names(lung), 4)
+  expect_length(sample_names(lung), 8)
   expect_identical(levels(variants(lung)$sample), sample_names(lung))
 
   counts <- get_count_table(tables(res_annot)$SBS96)
-  keep <- colnames(counts)[colSums(counts) >= 100]
-  high <- subset_musica_by_counts(res_annot, "SBS96", 100)
+  keep <- colnames(counts)[colSums(counts) >= 300]
+  high <- subset_musica_by_counts(res_annot, "SBS96", 300)
   expect_setequal(sample_names(high), keep)
   expect_identical(
     colnames(exposures(high, "result", "SBS96", "res_annot")),
@@ -185,8 +185,8 @@ test_that("Count-only objects from older versions still have sample names", {
   legacy@count_tables <- list(SBS96 = sbs96)
   expect_identical(sample_names(legacy), colnames(get_count_table(sbs96)))
   expect_true(validObject(legacy))
-  samp_annot(legacy, "group") <- rep(c("a", "b"), c(3, 4))
-  expect_identical(samp_annot(legacy)$group, rep(c("a", "b"), c(3, 4)))
+  samp_annot(legacy, "group") <- rep(c("a", "b"), c(6, 6))
+  expect_identical(samp_annot(legacy)$group, rep(c("a", "b"), c(6, 6)))
 })
 
 test_that("subset_variants_by_samples() keeps every requested sample", {

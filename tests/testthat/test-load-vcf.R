@@ -2,12 +2,13 @@ context("Test Loading VCF File")
 library("musicatk")
 
 test_that(desc = "Testing VCF Input", {
-  vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
+  vcf_file <- system.file("extdata",
+    "public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf",
     package = "musicatk"
   )
   vcf <- musicatk::extract_variants_from_vcf_file(vcf_file)
   expect_s3_class(vcf, "data.table")
-  expect_equal(nrow(vcf), 121)
+  expect_equal(nrow(vcf), 443)
 })
 
 test_that("multiallele = 'expand' keeps only the alleles each sample has", {
@@ -285,4 +286,20 @@ test_that("VCF alleles are trimmed to their minimal form", {
   v <- variants(musica)
   expect_identical(v$Variant_Type, c("DEL", "DEL", "DEL", "SBS", "DEL"))
   expect_identical(v$start, c(101L, 102L, 201L, 200L, 301L))
+})
+
+test_that("Reference bases of the example files match hg38", {
+  # Issue #238: six insertions in the earlier example VCFs had a REF base
+  # that wasn't the hg38 base at POS
+  extdata <- system.file("extdata", package = "musicatk")
+  files <- c(
+    list.files(extdata, pattern = "vcf$", full.names = TRUE),
+    file.path(extdata, "public_TCGA_lung.maf")
+  )
+  variants <- extract_variants(files, verbose = FALSE)
+  g <- select_genome("hg38")
+  expect_no_warning(
+    musica <- create_musica_from_variants(variants, g, verbose = FALSE)
+  )
+  expect_identical(nrow(variants), 4233L)
 })

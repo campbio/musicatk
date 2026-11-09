@@ -5,13 +5,20 @@
 \alias{indel_musica}
 \title{indel_musica}
 \format{
-An object of class \code{musica}
-See [create_musica_from_variants()] and [create_musica_from_counts()].
+An object of class \code{musica}. See
+\code{\link{create_musica_from_variants}} and
+\code{\link{build_standard_table}}.
+}
+\source{
+GDC open-access "Aliquot Ensemble Somatic Variant Merging and
+Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by
+\code{data-raw/gdc_example_musica.R}, which lists the GDC file IDs.
 }
 \usage{
 data(indel_musica)
 }
 \description{
-A musica created for testing that includes INDEL variants
+The insertions and deletions of five TCGA uterine corpus endometrial
+carcinomas, with no count tables.
 }
 \keyword{datasets}

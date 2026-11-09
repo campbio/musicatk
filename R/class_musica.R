@@ -260,7 +260,7 @@ drop_na_variants <- function(variants, annot_col) {
 #' @return Returns the variants of the samples in \code{sample_name}
 #' @examples
 #' data(musica)
-#' subset_variants_by_samples(musica, "TCGA-94-7557-01A-11D-2122-08")
+#' subset_variants_by_samples(musica, "TCGA-92-8065-01A-11D-2244-08")
 #' @export
 subset_variants_by_samples <- function(musica, sample_name) {
   return(variants(musica)[
@@ -287,7 +287,7 @@ subset_variants_by_samples <- function(musica, sample_name) {
 #' data(res)
 #' res <- name_signatures(res,
 #'   model_id = "res",
-#'   name_vector = c("smoking", "apobec", "unknown")
+#'   name_vector = c("apobec", "smoking", "uv")
 #' )
 #' @export
 name_signatures <- function(musica, model_id, name_vector, modality = "SBS96",
@@ -482,7 +482,7 @@ setReplaceMethod(
 #' samp_annot(res_annot)
 #'
 #' # Add new annotation
-#' samp_annot(res_annot, "New_Annotation") <- rep(c("A", "B"), c(3, 4))
+#' samp_annot(res_annot, "New_Annotation") <- rep(c("A", "B"), c(6, 6))
 #' samp_annot(res_annot)
 setGeneric(
   name = "samp_annot",
@@ -503,7 +503,7 @@ setMethod(
 #' @rdname samp_annot
 #' @examples
 #' data(musica)
-#' samp_annot(musica, "example") <- rep("ex", 7)
+#' samp_annot(musica, "example") <- rep("ex", 12)
 #' @export
 setGeneric(
   name = "samp_annot<-",

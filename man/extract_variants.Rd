@@ -114,11 +114,12 @@ objects are in the input list, then the value of \code{id} and \code{rename}
 will be ignored for these items.
 }
 \examples{
-# Get loations of two vcf files and a maf file
-luad_vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
+# Get the locations of the lung VCF, the melanoma VCFs and the lung MAF
+lung_vcf_file <- system.file("extdata",
+  "public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf",
   package = "musicatk"
 )
-lusc_maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+lung_maf_file <- system.file("extdata", "public_TCGA_lung.maf",
   package = "musicatk"
 )
 melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
@@ -126,12 +127,12 @@ melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
 )
 
 # Read all files in at once
-inputs <- c(luad_vcf_file, melanoma_vcfs, lusc_maf_file)
+inputs <- c(lung_vcf_file, melanoma_vcfs, lung_maf_file)
 variants <- extract_variants(inputs = inputs)
 table(variants$sample)
 
-# Run again but renaming samples in first four vcfs
-new_name <- c(paste0("Sample", 1:4), NA)
+# Run again but renaming the samples of the five VCFs
+new_name <- c(paste0("Sample", 1:5), NA)
 variants <- extract_variants(inputs = inputs, rename = new_name)
 table(variants$sample)
 

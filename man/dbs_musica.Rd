@@ -5,13 +5,21 @@
 \alias{dbs_musica}
 \title{dbs_musica}
 \format{
-An object of class \code{musica}
-See [create_musica_from_variants()] and [create_musica_from_counts()].
+An object of class \code{musica}. See
+\code{\link{create_musica_from_variants}} and
+\code{\link{build_standard_table}}.
+}
+\source{
+GDC open-access "Aliquot Ensemble Somatic Variant Merging and
+Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by
+\code{data-raw/gdc_example_musica.R}, which lists the GDC file IDs.
 }
 \usage{
 data(dbs_musica)
 }
 \description{
-A musica created for testing that includes DBS variants
+All variants of five TCGA lung adenocarcinomas, the open-access GDC
+TCGA-LUAD MAFs with the most doublet base substitutions (DBS), with
+SBS96 and DBS78 tables.
 }
 \keyword{datasets}

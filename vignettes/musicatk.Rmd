@@ -73,20 +73,21 @@ Below are some examples of extracting variants from MAF and VCF files:
 
 ```{r extract_variants, message = FALSE}
 # Extract variants from a MAF File
-lusc_maf <- system.file("extdata", "public_TCGA.LUSC.maf", package = "musicatk")
-lusc.variants <- extract_variants_from_maf_file(maf_file = lusc_maf)
+lung_maf <- system.file("extdata", "public_TCGA_lung.maf", package = "musicatk")
+maf_variants <- extract_variants_from_maf_file(maf_file = lung_maf)
 
 # Extract variants from an individual VCF file
-luad_vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
+lung_vcf <- system.file("extdata",
+  "public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf",
   package = "musicatk"
 )
-luad.variants <- extract_variants_from_vcf_file(vcf_file = luad_vcf)
+vcf_variants <- extract_variants_from_vcf_file(vcf_file = lung_vcf)
 
 # Extract variants from multiple files and/or objects
 melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
   pattern = glob2rx("*SKCM*vcf"), full.names = TRUE
 )
-variants <- extract_variants(c(lusc_maf, luad_vcf, melanoma_vcfs))
+variants <- extract_variants(c(lung_maf, lung_vcf, melanoma_vcfs))
 ```
 
 ## Choosing a genome
@@ -136,14 +137,7 @@ data(dbs_musica)
 build_standard_table(dbs_musica, g, "SBS96", overwrite = TRUE)
 build_standard_table(dbs_musica, g, "DBS78", overwrite = TRUE)
 
-# Subset SBS table to DBS samples so they cam be combined
-count_tables <- tables(dbs_musica)
-overlap_samples <- which(colnames(count_tables$SBS96@count_table) %in%
-                           colnames(count_tables$DBS78@count_table))
-count_tables$SBS96@count_table <-
-  count_tables$SBS96@count_table[, overlap_samples]
-tables(dbs_musica) <- count_tables
-
+# Both tables have the same samples, so they can be combined
 combine_count_tables(
   musica = dbs_musica, to_comb = c("SBS96", "DBS78"),
   name = "sbs_dbs", description = "An example combined
@@ -247,11 +241,37 @@ plot_signatures(musica, model_id = "ex_result", modality = "SBS96")
 ```
 
 By default, the scales on the y-axis are forced to be the same across all 
-signatures. This behavior can be turned off by setting `same_scale = FALSE`. 
-Signatures can be re-named based on prior knowledge and displayed in the plots:
+signatures. This behavior can be turned off by setting `same_scale = FALSE`.
+Signatures can be re-named based on prior knowledge and displayed in the plots.
+Here, each signature is named after the known etiology of its most similar
+COSMIC V3 signature (see the comparison to COSMIC below). The exome version of
+the COSMIC signatures is used because these samples were sequenced by whole
+exome sequencing. A signature whose closest COSMIC signature is not in the list
+of etiologies gets the name of that COSMIC signature. APOBEC activity usually
+causes two COSMIC signatures together, SBS2 and SBS13, so a discovered APOBEC
+signature is often a mix of both and less similar to either one alone; a
+threshold of 0.7 keeps it among the matches:
 
 ```{r, name_sigs}
-name_signatures(musica, "ex_result", c("Smoking", "APOBEC", "UV"))
+# Compare each signature to the COSMIC V3 signatures
+matches <- compare_cosmic_v3(musica, "ex_result", "exome", threshold = 0.7)
+
+# Keep the most similar COSMIC signature of each signature
+best <- matches[!duplicated(matches$x_sig_name), ]
+best_match <- best$y_sig_name[match(colnames(sigs), best$x_sig_name)]
+
+# Name each signature after the etiology of its most similar COSMIC signature
+etiology <- c(
+  SBS4 = "Smoking", SBS2 = "APOBEC", SBS13 = "APOBEC",
+  SBS7a = "UV", SBS7b = "UV"
+)
+sig_names <- colnames(sigs)
+sig_names[!is.na(best_match)] <- best_match[!is.na(best_match)]
+known <- sig_names %in% names(etiology)
+sig_names[known] <- etiology[sig_names[known]]
+# Signature names must be unique, e.g. if two signatures look like APOBEC
+sig_names <- make.unique(sig_names, sep = " ")
+name_signatures(musica, "ex_result", sig_names)
 plot_signatures(musica, model_id = "ex_result", modality = "SBS96")
 ```
 
@@ -270,23 +290,30 @@ The proportion of each exposure in each tumor can be shown by setting `proportio
 plot_exposures(musica, "ex_result", plot_type = "bar", proportional = TRUE)
 ```
 
-Counts for individual samples can also be plotted with the `plot_sample_counts` function:
+Counts for individual samples can also be plotted with the `plot_sample_counts` function. Here we plot one sample with each of the three signatures:
 
 ```{r sample_counts}
-samples <- sample_names(musica)
-plot_sample_counts(musica, sample_names = samples[c(3, 4, 5)],
-                   modality = "SBS96")
+samples <- c(
+  "TCGA-22-5472-01A-01D-1632-08", # lung tumor, smoking
+  "TCGA-92-8065-01A-11D-2244-08", # lung tumor, APOBEC
+  "TCGA-ER-A3PL-06A-11D-A23B-08"  # melanoma, UV
+)
+plot_sample_counts(musica, sample_names = samples, modality = "SBS96")
 ```
 
 ## Comparison to external signatures (e.g. COSMIC)
 A common analysis is to compare the signatures estimated in a dataset to those generated in other datasets or to those in the [COSMIC database](https://cancer.sanger.ac.uk/cosmic/signatures). We have a set of functions that can be used to easily perform pairwise correlations between signatures. The `compare_results` functions compares the signatures between two models in the same or different `musica` objects. The `compare_cosmic_v2` will correlate the signatures between a model and the SBS signatures in COSMIC V2. For example:
 
 ```{r compare_cosmic}
-compare_cosmic_v2(musica, "ex_result", threshold = 0.75)
+cosmic_v2_matches <- compare_cosmic_v2(musica, "ex_result", threshold = 0.7)
+cosmic_v2_matches
+
+# The most similar COSMIC V2 signature of each signature
+best_v2 <- cosmic_v2_matches[!duplicated(cosmic_v2_matches$x_sig_name), ]
 ```
 
-In this example, our Signatures 1 and 2 were most highly correlated to COSMIC Signature 7 and 4, respectively, so this may indicate that samples in our dataset were exposed to UV radiation or cigarette smoke. Only pairs of signatures who have a correlation above the `threshold` parameter will be returned. If no pairs of signatures are found, then you may want to consider lowering the threshold. The default correlation metric is the cosine similarity, but this can be changed to using 1 - Jensen-Shannon Divergence by setting 
-`metric = "jsd"`  Signatures can also be correlated to those in the COSMIC V3 database using the `compare_cosmic_v3` function.
+In this example, the most similar COSMIC V2 signatures were `r knitr::combine_words(paste0(best_v2$y_sig_name, " for the ", best_v2$x_sig_name, " signature"))`. COSMIC SBS4 is associated with tobacco smoking, SBS2 and SBS13 with APOBEC activity, and SBS7 with UV light, so this may indicate that samples in our dataset were exposed to cigarette smoke, APOBEC mutagenesis, or UV radiation. Only pairs of signatures who have a correlation above the `threshold` parameter will be returned. If no pairs of signatures are found, then you may want to consider lowering the threshold. The default correlation metric is the cosine similarity, but this can be changed to using 1 - Jensen-Shannon Divergence by setting 
+`metric = "jsd"`. Signatures can also be correlated to those in the COSMIC V3 database using the `compare_cosmic_v3` function, as we did above to name the signatures.
 
 # Predicting exposures using pre-existing signatures
 

@@ -38,20 +38,21 @@ Below are some examples of extracting variants from MAF and VCF files:
 
 ```{r extract_variants, eval = FALSE, message = FALSE}
 # Extract variants from a MAF File
-lusc_maf <- system.file("extdata", "public_TCGA.LUSC.maf", package = "musicatk")
-lusc.variants <- extract_variants_from_maf_file(maf_file = lusc_maf)
+lung_maf <- system.file("extdata", "public_TCGA_lung.maf", package = "musicatk")
+maf_variants <- extract_variants_from_maf_file(maf_file = lung_maf)
 
 # Extract variants from an individual VCF file
-luad_vcf <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
+lung_vcf <- system.file("extdata",
+  "public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf",
   package = "musicatk"
 )
-luad.variants <- extract_variants_from_vcf_file(vcf_file = luad_vcf)
+vcf_variants <- extract_variants_from_vcf_file(vcf_file = lung_vcf)
 
 # Extract variants from multiple files and/or objects
 melanoma_vcfs <- list.files(system.file("extdata", package = "musicatk"),
   pattern = glob2rx("*SKCM*vcf"), full.names = TRUE
 )
-variants <- extract_variants(c(lusc_maf, luad_vcf, melanoma_vcfs))
+variants <- extract_variants(c(lung_maf, lung_vcf, melanoma_vcfs))
 ```
 
 ## Import TCGA datasets

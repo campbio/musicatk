@@ -21,7 +21,7 @@ records are all silent or non-coding are read in full.
 Add Description - Aaron
 }
 \examples{
-maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+maf_file <- system.file("extdata", "public_TCGA_lung.maf",
   package = "musicatk"
 )
 maf <- extract_variants_from_maf_file(maf_file = maf_file)

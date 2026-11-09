@@ -93,7 +93,7 @@ can be mapped using the \code{chromosome_col}, \code{start_col},
 \code{sample_col parameters}.
 }
 \examples{
-maf_file <- system.file("extdata", "public_TCGA.LUSC.maf",
+maf_file <- system.file("extdata", "public_TCGA_lung.maf",
   package = "musicatk"
 )
 variants <- extract_variants_from_maf_file(maf_file)

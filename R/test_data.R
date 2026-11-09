@@ -1,13 +1,25 @@
 #' musica
 #'
-#' A musica created for testing that includes SBS variants
+#' Variants of 12 TCGA tumors from the example files in
+#' \code{inst/extdata}, with an SBS96 table: four lung tumors with a strong
+#' smoking signature (COSMIC SBS4), four lung tumors with a strong APOBEC
+#' signature (SBS2 and SBS13) and four melanomas with a strong UV signature
+#' (SBS7a and SBS7b).
 #'
 #' @docType data
 #'
 #' @usage data(musica)
 #'
-#' @format An object of class \code{musica}
-#' See [create_musica_from_variants()] and [create_musica_from_counts()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{create_musica_from_variants}}.
+#'
+#' @source TCGA, hg38: the example files in \code{inst/extdata}
+#' (\code{public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf},
+#' \code{public_TCGA_lung.maf} and four \code{public_SKCM_*.vcf} files),
+#' from GDC open-access aliquot ensemble masked MAFs. The samples were chosen
+#' by \code{data-raw/choose_example_samples.R}, the files written by
+#' \code{data-raw/example_files.R}, and the objects built by
+#' \code{data-raw/example_musica.R}.
 #'
 #' @keywords datasets
 #'
@@ -15,15 +27,17 @@
 
 #' musica_annot
 #'
-#' A musica created for testing that includes SBS variants and sample
-#' annotations
+#' \code{\link{musica}} with the \code{Tumor_Subtypes} sample annotation
+#' (\code{"Lung"} or \code{"Skin"}) from
+#' \code{inst/extdata/sample_annotations.txt}.
 #'
 #' @docType data
 #'
 #' @usage data(musica_annot)
 #'
-#' @format An object of class \code{musica}
-#' See [create_musica_from_variants()] and [create_musica_from_counts()].
+#' @format An object of class \code{musica}. See \code{\link{samp_annot}}.
+#'
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'
@@ -31,15 +45,17 @@
 
 #' musica_sbs96
 #'
-#' A musica created for testing that includes SBS variants and a build counts
-#' table for them
+#' The single base substitutions (SBS) of \code{\link{musica}}, with an
+#' SBS96 table.
 #'
 #' @docType data
 #'
 #' @usage data(musica_sbs96)
 #'
-#' @format An object of class \code{musica}
-#' See [build_standard_table()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{build_standard_table}}.
+#'
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'
@@ -47,15 +63,18 @@
 
 #' musica_sbs96_tiny
 #'
-#' A very small musica created for testing that includes SBS variants and a
-#' build counts table for them
+#' A very small musica for testing: the first 40 SBS by position of two
+#' lung tumors in \code{\link{musica}}, one with a smoking and one with an
+#' APOBEC signature, with an SBS96 table.
 #'
 #' @docType data
 #'
 #' @usage data(musica_sbs96_tiny)
 #'
-#' @format An object of class \code{musica}
-#' See [build_standard_table()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{build_standard_table}}.
+#'
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'
@@ -63,14 +82,21 @@
 
 #' dbs_musica
 #'
-#' A musica created for testing that includes DBS variants
+#' All variants of five TCGA lung adenocarcinomas, the open-access GDC
+#' TCGA-LUAD MAFs with the most doublet base substitutions (DBS), with
+#' SBS96 and DBS78 tables.
 #'
 #' @docType data
 #'
 #' @usage data(dbs_musica)
 #'
-#' @format An object of class \code{musica}
-#' See [create_musica_from_variants()] and [create_musica_from_counts()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{create_musica_from_variants}} and
+#' \code{\link{build_standard_table}}.
+#'
+#' @source GDC open-access "Aliquot Ensemble Somatic Variant Merging and
+#' Masking" MAFs (TCGA, WXS, hg38), GDC Data Release 46.0. Built by
+#' \code{data-raw/gdc_example_musica.R}, which lists the GDC file IDs.
 #'
 #' @keywords datasets
 #'
@@ -78,14 +104,18 @@
 
 #' indel_musica
 #'
-#' A musica created for testing that includes INDEL variants
+#' The insertions and deletions of five TCGA uterine corpus endometrial
+#' carcinomas, with no count tables.
 #'
 #' @docType data
 #'
 #' @usage data(indel_musica)
 #'
-#' @format An object of class \code{musica}
-#' See [create_musica_from_variants()] and [create_musica_from_counts()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{create_musica_from_variants}} and
+#' \code{\link{build_standard_table}}.
+#'
+#' @inherit dbs_musica source
 #'
 #' @keywords datasets
 #'
@@ -93,15 +123,20 @@
 
 #' res
 #'
-#' A musica created for testing that includes SBS variants with discovered
-#' exposures and signatures
+#' \code{\link{musica}} with a three-signature NMF model on SBS96
+#' (\code{model_id = "res"}). Signature1 is an APOBEC signature (closest to
+#' COSMIC SBS2 and SBS13) and Signature2 a smoking signature (SBS4), found in
+#' the lung tumors; Signature3 is a UV signature (SBS7a), found in the
+#' melanomas.
 #'
 #' @docType data
 #'
 #' @usage data(res)
 #'
-#' @format An object of class \code{musica}
-#' See [discover_signatures()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{discover_signatures}}.
+#'
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'
@@ -109,15 +144,17 @@
 
 #' res_annot
 #'
-#' A musica created for testing that includes SBS variants with annotations and
-#' discovered exposures and signatures
+#' \code{\link{musica_annot}} with a three-signature NMF model on SBS96
+#' (\code{model_id = "res_annot"}), as in \code{\link{res}}.
 #'
 #' @docType data
 #'
 #' @usage data(res_annot)
 #'
-#' @format An object of class \code{musica}
-#' See [discover_signatures()].
+#' @format An object of class \code{musica}. See
+#' \code{\link{discover_signatures}}.
+#'
+#' @inherit musica source
 #'
 #' @keywords datasets
 #'

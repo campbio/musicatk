@@ -70,7 +70,8 @@ rename in terms of naming the sample. Need to describe differences in
 multiallelic choices. Also need to describe the automatic error fixing
 }
 \examples{
-vcf_file <- system.file("extdata", "public_LUAD_TCGA-97-7938.vcf",
+vcf_file <- system.file("extdata",
+  "public_LUSC_TCGA-22-5472-01A-01D-1632-08.vcf",
   package = "musicatk"
 )
 

@@ -22,7 +22,7 @@ test_that(desc = "Test kmeans visualization function", {
                                 dis.method = "cosine"), "For clara clustering")
   clust_out <- cluster_exposure(musica = res_annot, model_name = "res_annot",
                                 nclust = 2, iter.max = 15)
-  expect_equal(nrow(clust_out), 7)
+  expect_equal(nrow(clust_out), 12)
   expect_error(plot_cluster(musica = res_annot, model_name = "res_annot",
                             clusters = clust_out, group = "signature"),
                "UMAP not found")
@@ -57,7 +57,7 @@ test_that(desc = "Test kmeans visualization function", {
 
 test_that(desc = "plot_cluster uses the chosen annotation, matched by name", {
   data(res_annot)
-  samp_annot(res_annot, "test") <- c("A", "B", "C", "A", "B", "C", "C")
+  samp_annot(res_annot, "test") <- rep(c("A", "B", "C"), 4)
   clust_out <- cluster_exposure(musica = res_annot, model_name = "res_annot",
                                 nclust = 2, iter.max = 15)
   create_umap(res_annot, model_name = "res_annot")

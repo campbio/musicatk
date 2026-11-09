@@ -25,7 +25,7 @@ NULL
 #' @return Generates a ggplot or plotly object
 #' @examples
 #' data(res)
-#' plot_sample_reconstruction_error(res, "TCGA-ER-A197-06A-32D-A197-08",
+#' plot_sample_reconstruction_error(res, "TCGA-ER-A3PL-06A-11D-A23B-08",
 #' model_id = "res")
 #' @export
 plot_sample_reconstruction_error <- function(musica, sample, model_id,

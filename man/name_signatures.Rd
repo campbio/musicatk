@@ -38,6 +38,6 @@ Rename signatures for a model
 data(res)
 res <- name_signatures(res,
   model_id = "res",
-  name_vector = c("smoking", "apobec", "unknown")
+  name_vector = c("apobec", "smoking", "uv")
 )
 }
