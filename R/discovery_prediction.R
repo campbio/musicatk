@@ -1,6 +1,132 @@
 #' @importFrom NMF nmf
 NULL
 
+# Return 'model_id', or '<model_id>.<n>' with the smallest n not already
+# used by a model in 'result_name' and 'modality' of 'musica'
+.unique_model_id <- function(musica, result_name, modality, model_id) {
+  existing <- NULL
+  if (!is.null(result_list(musica)[[result_name]])) {
+    existing <- names(get_modality(musica, result_name, modality))
+  }
+  if (!model_id %in% existing) {
+    return(model_id)
+  }
+  tag <- 1
+  while (paste0(model_id, ".", tag) %in% existing) {
+    tag <- tag + 1
+  }
+  new_id <- paste0(model_id, ".", tag)
+  message(
+    "model_id ", model_id, " already exists. model_id updated to ", new_id
+  )
+  return(new_id)
+}
+
+# Names of the samples (columns) of 'counts_table' with at least one
+# mutation; a message names the others, whose exposures will be 0
+.samples_with_mutations <- function(counts_table) {
+  has_mutations <- colSums(counts_table) > 0
+  if (!all(has_mutations)) {
+    message(
+      "These samples have no mutations in the count table, so their ",
+      "exposures are set to 0: ",
+      paste(colnames(counts_table)[!has_mutations], collapse = ", ")
+    )
+  }
+  return(colnames(counts_table)[has_mutations])
+}
+
+# Exposures for every one of 'samples', in that order: columns missing from
+# 'exposures' (samples with no mutations) are all zero
+.pad_zero_exposures <- function(exposures, samples) {
+  padded <- matrix(0,
+    nrow = nrow(exposures), ncol = length(samples),
+    dimnames = list(rownames(exposures), samples)
+  )
+  padded[, colnames(exposures)] <- exposures
+  return(padded)
+}
+
+# Reorder the rows of 'signature' to the motifs (rows) of 'counts_table';
+# stop when the two don't hold the same motifs
+.match_motifs <- function(signature, counts_table, modality) {
+  signature_motifs <- rownames(signature)
+  table_motifs <- rownames(counts_table)
+  if (is.null(signature_motifs) || is.null(table_motifs)) {
+    stop(
+      "The signatures and the '", modality, "' count table both need motif ",
+      "names as row names."
+    )
+  }
+  if (anyDuplicated(signature_motifs) ||
+        !setequal(signature_motifs, table_motifs)) {
+    differ <- union(
+      setdiff(signature_motifs, table_motifs),
+      setdiff(table_motifs, signature_motifs)
+    )
+    stop(
+      "The motifs of 'signature_res' don't match the '", modality,
+      "' count table (", length(signature_motifs), " and ",
+      length(table_motifs), " motifs; differing motifs include ",
+      paste(utils::head(differ, 3), collapse = ", "),
+      "). Use signatures of the same type as the count table."
+    )
+  }
+  return(signature[table_motifs, , drop = FALSE])
+}
+
+# Exposures of the signatures in 'signature' in each sample of
+# 'counts_table', scaled to the sample's mutation count, with the LDA start
+# seeded by 'seed' (NULL uses the caller's RNG). Samples with no
+# mutations get zero exposures. Returns the signatures, with rows in the
+# table's motif order, and the exposures.
+.predict_exposures <- function(counts_table, signature, algorithm, modality,
+                               seed = 1, verbose = FALSE) {
+  algorithm <- match.arg(algorithm, c("lda", "decompTumor2Sig"))
+  signature <- .match_motifs(signature, counts_table, modality)
+  all_samples <- colnames(counts_table)
+  fit_samples <- .samples_with_mutations(counts_table)
+  if (length(fit_samples) == 0) {
+    stop("No sample in the '", modality, "' count table has mutations.")
+  }
+  counts_table <- counts_table[, fit_samples, drop = FALSE]
+
+  if (algorithm == "lda") {
+    run_lda <- function() {
+      lda_posterior(
+        counts_table = counts_table, signature = signature,
+        max.iter = 100, verbose = verbose
+      )
+    }
+    # Seed the random start, leaving the caller's RNG state unchanged
+    if (is.null(seed)) {
+      lda_res <- run_lda()
+    } else {
+      lda_res <- withr::with_seed(seed, run_lda())
+    }
+    exposures <- t(lda_res$samp_sig_prob_mat)
+  } else {
+    if (nrow(counts_table) != 96 ||
+          !all(grepl("^[ACGT]>[ACGT]_[ACGT]{3}$", rownames(counts_table)))) {
+      stop(
+        "algorithm = \"decompTumor2Sig\" only supports SBS96 count tables; ",
+        "use algorithm = \"lda\" for '", modality, "'."
+      )
+    }
+    decomp_res <- predict_decompTumor2Sig(counts_table, signature)
+    exposures <- t(do.call(rbind, decomp_res))
+    colnames(exposures) <- colnames(counts_table)
+    rownames(exposures) <- colnames(signature)
+  }
+
+  # Multiply proportions by sample counts
+  exposures <- sweep(exposures, 2, colSums(counts_table), FUN = "*")
+  return(list(
+    signatures = signature,
+    exposures = .pad_zero_exposures(exposures, all_samples)
+  ))
+}
+
 #' @title Discover mutational signatures
 #' @description Mutational signatures and exposures will be discovered using
 #' methods such as Latent Dirichlet Allocation (lda) or Non-Negative
@@ -13,6 +139,11 @@ NULL
 #' \link{create_musica_from_variants} or \link{create_musica_from_counts}
 #' function and mutation count tables need to be created using functions such as
 #' \link{build_standard_table} if \link{create_musica_from_counts} was not used.
+#'
+#' Samples with no mutations in the count table are left out of the fit and
+#' get exposures of 0, with a message naming them. At least two samples need
+#' mutations. If \code{model_id} is already used, \code{.1}, \code{.2}, and
+#' so on is added to it.
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param modality Modality to use for signature discovery. Needs
 #' to be the same name supplied to the table building functions such as
@@ -68,39 +199,21 @@ discover_signatures <- function(musica, modality, num_signatures,
 
   algorithm <- match.arg(algorithm, c("lda", "nmf"))
   counts_table <- .extract_count_table(musica, modality)
-  if (dim(counts_table)[2] < 2) {
-    stop("The 'musica' object inputted must contain at least two samples.")
+  all_samples <- colnames(counts_table)
+  fit_samples <- .samples_with_mutations(counts_table)
+  if (length(fit_samples) < 2) {
+    stop(
+      "The 'musica' object inputted must contain at least two samples ",
+      "with mutations."
+    )
   }
-  present_samples <- which(colSums(counts_table) > 0)
-  counts_table <- counts_table[, present_samples]
+  counts_table <- counts_table[, fit_samples, drop = FALSE]
 
   # if no model_id provided, generate one
   if (is.null(model_id)) {
     model_id <- paste(algorithm, num_signatures, sep = "")
   }
-
-  # check if model_id is unique and update if not
-  if (!is.null(names(result_list(musica)))) {
-    if (!is.null(get_result_list_entry(musica, result_name))) {
-      if (!is.null(names(get_result_list_entry(musica, result_name)
-                         @modality))) {
-        if (model_id %in% names(get_modality(musica, result_name, modality))) {
-          original_id <- model_id
-          tag <- 1
-          while (model_id %in%
-                 names(get_modality(musica, result_name, modality))) {
-            if (tag > 1) {
-              model_id <- substr(model_id, 1, nchar(model_id) - 2)
-            }
-            model_id <- paste(model_id, ".", tag, sep = "")
-            tag <- tag + 1
-          }
-          message("model_id ", original_id,
-                  " already exists. model_id updated to ", model_id)
-        }
-      }
-    }
-  }
+  model_id <- .unique_model_id(musica, result_name, modality, model_id)
 
   if (algorithm == "lda") {
     lda_counts_table <- t(counts_table)
@@ -168,11 +281,12 @@ discover_signatures <- function(musica, modality, num_signatures,
       "to generate signatures."
     )
   }
-  # Multiply Weights by sample counts
+  # Multiply Weights by sample counts; samples with no mutations get 0
   sample_counts <- colSums(counts_table)
   matched <- match(colnames(counts_table), names(sample_counts))
-  exposures(result) <- sweep(exposures(result), 2, sample_counts[matched],
-    FUN = "*"
+  exposures(result) <- .pad_zero_exposures(
+    sweep(exposures(result), 2, sample_counts[matched], FUN = "*"),
+    all_samples
   )
 
   # if this result name does not exist in result_list
@@ -207,6 +321,12 @@ discover_signatures <- function(musica, modality, num_signatures,
 #' of signatures stored in a \code{\linkS4class{result_model}} object.
 #' Algorithms available for prediction include a modify version of \code{"lda"},
 #' and \code{"decompTumor2Sig"}.
+#'
+#' Signatures are matched to the count table by motif name (row name), so
+#' their rows may be in any order; prediction stops when the signatures and
+#' the count table don't have the same motifs. \code{"decompTumor2Sig"} only
+#' supports SBS96 tables. Samples with no mutations get exposures of 0, with
+#' a message naming them.
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param modality Modality for posterior prediction. Must match the table type
 #' used to generate the prediction signatures
@@ -228,6 +348,10 @@ discover_signatures <- function(musica, modality, num_signatures,
 #' object is updated and nothing is returned. If \code{TRUE}, a new
 #' \code{\linkS4class{musica}} object is created and returned. Default
 #' \code{FALSE}.
+#' @param seed Seed for the random start of \code{algorithm = "lda"}, so
+#' results are reproducible; the caller's random number state is left
+#' unchanged. If \code{NULL}, the current random number state is used.
+#' Default \code{1}.
 #' @param table_name Use modality instead
 #' @return Returns nothing or a new \code{\linkS4class{musica}} object,
 #' depending on the \code{make_copy} parameter.
@@ -241,11 +365,10 @@ discover_signatures <- function(musica, modality, num_signatures,
 #'   signature_res = cosmic_v2_sigs, algorithm = "lda"
 #' )
 #'
-#' # Predict using LDA-like algorithm with seed set to 1
-#' set.seed(1)
+#' # Predict using LDA-like algorithm with seed set to 2
 #' predict_exposure(
 #'   musica = musica, modality = "SBS96",
-#'   signature_res = cosmic_v2_sigs, algorithm = "lda"
+#'   signature_res = cosmic_v2_sigs, algorithm = "lda", seed = 2
 #' )
 #' @export
 predict_exposure <- function(musica, modality, signature_res,
@@ -254,7 +377,7 @@ predict_exposure <- function(musica, modality, signature_res,
                              signatures_to_use = seq_len(ncol(
                                signatures(signature_res)
                              )), verbose = FALSE,
-                             make_copy = FALSE, table_name = NULL) {
+                             make_copy = FALSE, seed = 1, table_name = NULL) {
   if (!is.null(table_name)) {
     warning("table_name argument deprecated. Use modality instead.")
     modality <- table_name
@@ -268,66 +391,23 @@ predict_exposure <- function(musica, modality, signature_res,
   algorithm <- match.arg(algorithm)
   signature <- signatures(signature_res)[, signatures_to_use, drop = FALSE]
   counts_table <- .extract_count_table(musica, modality)
-  present_samples <- which(colSums(counts_table) > 0)
-  counts_table <- counts_table[, present_samples, drop = FALSE]
-
-  if (algorithm %in% c("lda_posterior", "lda", "lda_post")) {
-    lda_res <- lda_posterior(
-      counts_table = counts_table, signature =
-        signature, max.iter = 100, verbose = verbose
-    )
-    exposures <- t(lda_res$samp_sig_prob_mat)
-    algorithm_name <- "posterior_LDA"
-  } else if (algorithm %in% c("decomp", "decompTumor2Sig")) {
-    decomp_res <- predict_decompTumor2Sig(counts_table, signature)
-    exposures <- t(do.call(rbind, decomp_res))
-    colnames(exposures) <- colnames(counts_table)
-    rownames(exposures) <- colnames(signature)
-    algorithm_name <- "decompTumor2Sig"
-  } else {
-    stop("Type must be lda or decomp")
-  }
+  predicted <- .predict_exposures(counts_table, signature, algorithm,
+    modality,
+    seed = seed, verbose = verbose
+  )
 
   # if not model_id provided, fill one in
   if (is.null(model_id)) {
     model_id <-
       paste(algorithm, length(signatures_to_use), "_exp_pred", sep = "")
   }
-
-  # check if model_id is unique and update if not
-  if (!is.null(names(result_list(musica)))) {
-    if (!is.null(get_result_list_entry(musica, result_name))) {
-      if (!is.null(
-        names(get_result_list_entry(musica, result_name)@modality))) {
-        if (model_id %in% names(get_modality(musica, result_name, modality))) {
-          original_id <- model_id
-          tag <- 1
-          while (model_id %in%
-                 names(get_modality(musica, result_name, modality))) {
-            if (tag > 1) {
-              model_id <- substr(model_id, 1, nchar(model_id) - 2)
-            }
-            model_id <- paste(model_id, ".", tag, sep = "")
-            tag <- tag + 1
-          }
-          message("model_id ", original_id,
-                  " already exists. model_id updated to ", model_id)
-        }
-      }
-    }
-  }
+  model_id <- .unique_model_id(musica, result_name, modality, model_id)
 
   result <- methods::new("result_model",
-    signatures = signature,
-    exposures = exposures, num_signatures = length(signatures_to_use),
+    signatures = predicted$signatures,
+    exposures = predicted$exposures,
+    num_signatures = length(signatures_to_use),
     model_id = model_id, modality = modality
-  )
-
-  # Multiply Weights by sample counts
-  sample_counts <- colSums(counts_table)
-  matched <- match(colnames(counts_table), names(sample_counts))
-  exposures(result) <- sweep(exposures(result), 2, sample_counts[matched],
-    FUN = "*"
   )
 
   # if this result name does not exist in result_list
@@ -409,9 +489,11 @@ lda_posterior <- function(counts_table, signature, max.iter = 100,
       # Update p.SbyT[s, ]
       samp_sig_prob_mat[s, ] <- (sig_mut_counts[s, ]) / (sample_count_sums[s])
     }
-    # Update theta
-    theta <- MCMCprecision::fit_dirichlet(x = samp_sig_prob_mat +
-                                            .Machine$double.eps)$alpha
+    # Update theta; a Dirichlet can't be fit to one sample, so keep the prior
+    if (num_samples > 1) {
+      theta <- MCMCprecision::fit_dirichlet(x = samp_sig_prob_mat +
+                                              .Machine$double.eps)$alpha
+    }
 
     if (verbose) {
       message(theta)
@@ -471,10 +553,30 @@ predict_decompTumor2Sig <- function(sample_mat, signature_mat) {
 
 #' Generate result_grid from musica based on annotation and range of k
 #'
+#' Discovers signatures for each number of signatures from \code{k_start} to
+#' \code{k_end}, either in all samples or separately in each group of samples
+#' defined by an annotation column.
+#'
+#' @details
+#' Models are stored in \code{result_name} as \code{<algorithm><k>}, for
+#' example \code{lda3}, or with an annotation as
+#' \code{<algorithm><k>_<group>}, for example \code{lda3_Lung}. If a name is
+#' already used, for example by an earlier run, \code{.1}, \code{.2}, and so
+#' on is added to it, and earlier models are kept.
+#'
+#' Each model's \code{metrics()} holds a \code{reconstruction_error}: for
+#' each sample, the mean over motifs of the squared difference between the
+#' observed and reconstructed counts, then the mean of the squares of those
+#' per-sample values. It is on the scale of squared counts, so it is not
+#' comparable with the reconstruction error of \link{compare_k_vals}.
+#'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param modality Modality used for signature discovery
 #' @param algorithm Algorithm for signature discovery
-#' @param annotation Sample annotation to split results into
+#' @param annotation Name of a sample annotation column. Signatures are
+#' discovered separately in the samples of each of its values; samples with
+#' a missing value are left out. If \code{NA}, all samples are used together.
+#' Default \code{NA}.
 #' @param k_start Lower range of number of signatures for discovery
 #' @param k_end Upper range of number of signatures for discovery
 #' @param result_name Name for result_list entry to save the results to. Default
@@ -530,59 +632,58 @@ generate_result_grid <- function(musica, modality, algorithm = "lda",
     musica@result_list[[result_name]]@modality[[modality]] <- list()
   }
 
-  # Generate and set result_list
+  # One group of samples per value of the annotation, or all samples
   if (!is.na(annotation)) {
-    annot_samples <- samp_annot(musica)$Samples
-    annot <- samp_annot(musica)$Tumor_Type
-    annot_names <- unique(annot)
-    num_annotation <- length(annot_names)
+    available <- setdiff(colnames(samp_annot(musica)), "Samples")
+    if (!annotation %in% available) {
+      stop(
+        "Sample annotation '", annotation, "' not found. Available ",
+        "annotations: ", paste(available, collapse = ", ")
+      )
+    }
+    groups <- as.character(samp_annot(musica)[[annotation]])
+    if (anyNA(groups)) {
+      message(
+        "These samples have no '", annotation, "' value and are left out: ",
+        paste(sample_names(musica)[is.na(groups)], collapse = ", ")
+      )
+    }
+    group_names <- unique(groups[!is.na(groups)])
   } else {
-    annot_names <- NA
-    num_annotation <- 1
+    group_names <- NA
   }
 
-  # Define new musicas
-  for (i in seq_len(num_annotation)) {
-    if (!is.na(annotation)) {
-      if (verbose) {
-        cat(paste("Current Annotation: ", annot_names[i], "\n", sep = ""))
-      }
-      cur_ind <- which(annot == annot_names[i])
-      cur_annot_samples <- annot_samples[cur_ind]
-      cur_annot_variants <- variants(musica)[which(
-        variants(musica)$sample %in% cur_annot_samples
-      ), ]
-
-      cur_musica <- methods::new("musica",
-        variants = cur_annot_variants,
-        sample_annotations =
-          samp_annot(musica)[cur_ind, ],
-        count_tables = .subset_count_tables(
-          musica,
-          cur_annot_samples
-        )
-      )
-    } else {
+  for (group in group_names) {
+    if (is.na(group)) {
       cur_musica <- musica
-      cur_annot_samples <- unique(variants(musica)$sample)
+      id_suffix <- ""
+    } else {
+      if (verbose) {
+        message("Current Annotation: ", group)
+      }
+      cur_musica <- subset_musica_by_annotation(musica, annotation, group)
+      id_suffix <- paste0("_", group)
     }
     # Used for reconstruction error
     cur_counts <- .extract_count_table(cur_musica, modality)
 
     # Define new results
     for (cur_k in k_start:k_end) {
-      discover_signatures(
+      cur_model_name <- .unique_model_id(
+        musica, result_name, modality,
+        paste0(algorithm, cur_k, id_suffix)
+      )
+      cur_musica <- discover_signatures(
         musica = cur_musica, modality = modality,
         num_signatures = cur_k, algorithm = algorithm,
-        result_name = result_name, nstart = n_start,
-        seed = seed, par_cores = par_cores
+        result_name = result_name, model_id = cur_model_name,
+        nstart = n_start, seed = seed, par_cores = par_cores,
+        make_copy = TRUE
       )
-
-      cur_model_name <- paste(algorithm, cur_k, sep = "")
 
       cur_result <- get_model(cur_musica, result_name, modality, cur_model_name)
 
-      recon_error <- mean(vapply(seq_len(ncol(cur_counts)), function(x) {
+      recon_error <- mean(vapply(colnames(cur_counts), function(x) {
         mean((cur_counts[, x, drop = FALSE] -
                 reconstruct_sample(cur_result, x))^2)
       }, FUN.VALUE = 0)^2)
@@ -647,6 +748,8 @@ reconstruct_sample <- function(result, sample_number) {
 #' object is updated and nothing is returned. If \code{TRUE}, a new
 #' \code{\linkS4class{musica}} object is created and returned. Default
 #' \code{FALSE}.
+#' @param seed Seed for the random start of \code{algorithm = "lda"}; see
+#' \link{predict_exposure}. Default \code{1}.
 #' @param table_name Use modality instead
 #' @return Returns nothing or a new \code{\linkS4class{musica}} object,
 #' depending on the \code{make_copy} parameter.
@@ -665,7 +768,8 @@ auto_predict_grid <- function(musica, modality, signature_res, algorithm,
                               sample_annotation = NULL, min_exists = 0.05,
                               proportion_samples = 0.25, rare_exposure = 0.4,
                               verbose = TRUE, combine_res = TRUE,
-                              make_copy = FALSE, table_name = NULL) {
+                              make_copy = FALSE, seed = 1,
+                              table_name = NULL) {
   if (!is.null(table_name)) {
     warning("table_name argument deprecated. Use modality instead.")
     modality <- table_name
@@ -699,7 +803,7 @@ auto_predict_grid <- function(musica, modality, signature_res, algorithm,
       min_exists = min_exists,
       proportion_samples = proportion_samples,
       rare_exposure = rare_exposure, result_name = result_name,
-      model_id = model_id
+      model_id = model_id, seed = seed
     )
   } else {
     available_annotations <- setdiff(
@@ -707,40 +811,56 @@ auto_predict_grid <- function(musica, modality, signature_res, algorithm,
       "Samples"
     )
     if (!sample_annotation %in% available_annotations) {
-      stop(paste0(
+      stop(
         "Sample annotation ", sample_annotation, " not found, ",
-        "available annotations: ", available_annotations
-      ))
+        "available annotations: ",
+        paste(available_annotations, collapse = ", ")
+      )
     }
-    annot <- unique(samp_annot(musica)[[sample_annotation]])
-    for (i in seq_along(annot)) {
+    groups <- as.character(samp_annot(musica)[[sample_annotation]])
+    if (anyNA(groups)) {
+      message(
+        "These samples have no '", sample_annotation, "' value and are ",
+        "left out: ", paste(sample_names(musica)[is.na(groups)],
+          collapse = ", "
+        )
+      )
+    }
+    group_names <- unique(groups[!is.na(groups)])
+    group_ids <- character(0)
+    for (group in group_names) {
       if (verbose) {
-        message(as.character(annot[i]))
+        message(group)
       }
+      cur_model_name <- .unique_model_id(musica, result_name, modality, group)
       current_musica <- subset_musica_by_annotation(
         musica = musica, annot_col =
           sample_annotation,
-        annot_names = annot[i]
+        annot_names = group
       )
-      current_musica <- auto_subset_sigs(
-        musica = current_musica, modality = modality,
-        signature_res = signature_res, min_exists = min_exists,
-        proportion_samples = proportion_samples,
-        rare_exposure = rare_exposure, algorithm = algorithm,
-        result_name = result_name, model_id = annot[i]
+      current_musica <- tryCatch(
+        auto_subset_sigs(
+          musica = current_musica, modality = modality,
+          signature_res = signature_res, min_exists = min_exists,
+          proportion_samples = proportion_samples,
+          rare_exposure = rare_exposure, algorithm = algorithm,
+          result_name = result_name, model_id = cur_model_name, seed = seed
+        ),
+        error = function(e) {
+          stop("In group '", group, "': ", conditionMessage(e), call. = FALSE)
+        }
       )
-
-      cur_model_name <- annot[i]
 
       cur_result <- get_model(current_musica, result_name, modality,
                               cur_model_name)
 
       musica@result_list[[result_name]]@
         modality[[modality]][[cur_model_name]] <- cur_result
+      group_ids <- c(group_ids, cur_model_name)
     }
   }
   if (combine_res) {
-    musica <- combine_predict_grid(musica, modality, signature_res, annot,
+    musica <- combine_predict_grid(musica, modality, signature_res, group_ids,
       result_name = result_name, make_copy = TRUE,
       model_rename = model_id
     )
@@ -772,29 +892,38 @@ auto_predict_grid <- function(musica, modality, signature_res, algorithm,
 #' @param model_id Identifier for the result. If \code{NULL}, will be
 #' automatically set to the algorithm and number of signatures. Default
 #' \code{NULL}.
+#' @param seed Seed for the random start of \code{algorithm = "lda"}.
+#' Default \code{1}.
 #' @return Returns new \code{\linkS4class{musica}} object with the results.
 #' @keywords internal
 auto_subset_sigs <- function(musica, modality, signature_res, algorithm,
                              min_exists = 0.05, proportion_samples = 0.25,
                              rare_exposure = 0.4, result_name = "result",
-                             model_id = NULL) {
-  test_predicted <- predict_exposure(
-    musica = musica, modality = modality,
-    signature_res = signature_res,
-    algorithm = algorithm,
-    model_id = "temp", make_copy = TRUE
-  )
+                             model_id = NULL, seed = 1) {
+  # First pass with every signature; not stored. Messages about samples
+  # with no mutations come from the second pass.
+  first_pass <- suppressMessages(.predict_exposures(
+    .extract_count_table(musica, modality), signatures(signature_res),
+    algorithm, modality,
+    seed = seed
+  ))
 
-  test_predicted_model <-
-    get_model(test_predicted, result_name, modality, "temp")
-
-  exposures <- exposures(test_predicted_model)
+  # Proportions in samples with mutations
+  exposures <- first_pass$exposures
+  exposures <- exposures[, colSums(exposures) > 0, drop = FALSE]
   num_samples <- ncol(exposures)
   exposures <- sweep(exposures, 2, colSums(exposures), "/")
   to_use <- as.numeric(which(apply(exposures, 1, function(x) {
     sum(x > min_exists) / num_samples
   }) > proportion_samples |
     apply(exposures, 1, max) > rare_exposure))
+  if (length(to_use) == 0) {
+    stop(
+      "No signature passed the thresholds (min_exists = ", min_exists,
+      ", proportion_samples = ", proportion_samples, ", rare_exposure = ",
+      rare_exposure, "). Lower them to keep more signatures."
+    )
+  }
 
   final_inferred <- predict_exposure(
     musica = musica, modality = modality,
@@ -803,7 +932,8 @@ auto_subset_sigs <- function(musica, modality, signature_res, algorithm,
     algorithm = algorithm,
     result_name = result_name,
     model_id = model_id,
-    make_copy = TRUE
+    make_copy = TRUE,
+    seed = seed
   )
 
   return(final_inferred)
@@ -927,29 +1057,7 @@ combine_predict_grid <- function(musica, modality, signature_res,
   } else {
     model_id <- model_rename
   }
-
-  # check if model_id is unique and update if not
-  if (!is.null(names(result_list(musica)))) {
-    if (!is.null(get_result_list_entry(musica, result_name))) {
-      if (!is.null(
-        names(get_result_list_entry(musica, result_name)@modality))) {
-        if (model_id %in% names(get_modality(musica, result_name, modality))) {
-          original_id <- model_id
-          tag <- 1
-          while (model_id %in%
-                 names(get_modality(musica, result_name, modality))) {
-            if (tag > 1) {
-              model_id <- substr(model_id, 1, nchar(model_id) - 2)
-            }
-            model_id <- paste(model_id, ".", tag, sep = "")
-            tag <- tag + 1
-          }
-          message("model_id ", original_id,
-                  " already exists. model_id updated to ", model_id)
-        }
-      }
-    }
-  }
+  model_id <- .unique_model_id(musica, result_name, modality, model_id)
 
   grid_res <- new("result_model",
     exposures = comb,
