@@ -1,3 +1,12 @@
+# musicatk 2.7.11 (2026-11-08)
+* Six insertions in the example VCFs `public_LUAD_TCGA-97-7938.vcf` and `public_SKCM_TCGA-ER-A197-06A-32D-A197-08.vcf` had a REF base that wasn't the hg38 base at POS, left over from converting GDC MAFs to VCF. REF and ALT now start with the hg38 base; positions and inserted sequences are unchanged. Building a musica object from the example files no longer warns "Reference bases for 6 out of 911 variants did not match" (#238).
+* `inst/extdata/sample_annotations.txt` labels the three melanoma samples `"Skin"`; they were labelled `"Breast"`.
+* The example datasets are rebuilt with the current import and table code, all from TCGA on hg38, and each has a `data-raw/` script and a `@source` (#217):
+  * `musica`, `musica_annot`, `musica_sbs96` and `musica_sbs96_tiny` are built from the example files by `data-raw/example_musica.R`. Their indels are standardized (8 were typed `"unknown"`) and adjacent SBS are merged into DBS, so `musica` has 870 SBS, 7 DBS, 16 deletions and 11 insertions, and its SBS96 table 870 SBS instead of 884.
+  * `res` and `res_annot` are a new three-signature NMF fit on that SBS96 table. As before, Signature1 and Signature2 are found in the lung tumors and Signature3, a UV signature, in the melanomas; the values differ.
+  * `dbs_musica` holds all variants of five TCGA-LUAD tumors with the most DBS in GDC open-access MAFs (199 DBS), with SBS96 and DBS78 tables. Before, it mixed 400 SBS on hg38 with 400 DBS from other samples on hg19.
+  * `indel_musica` holds the 211 insertions and deletions of the same five TCGA-UCEC tumors as before, from their current GDC MAFs. Its earlier 300 indels could not be traced to a source.
+
 # musicatk 2.7.10 (2026-11-08)
 * `extract_variants()` and the VCF readers keep records whose FILTER is `.` (no filters applied) when `filter = TRUE`, as well as `PASS`. Before, VCFs that mark passing calls with `.`, such as the PCAWG consensus VCFs, returned no variants. When no record passes, the warning lists the FILTER values found (#214).
 * `extract_variants()` and `extract_variants_from_maf_file()` read MAFs whose records are all silent or non-coding; before, `maftools::read.maf()` stopped with "No non-synonymous mutations found". A MAF with no records gives a warning and no variants, as a VCF does, so one such file no longer stops `extract_variants()` from reading the others (#241).
