@@ -58,8 +58,13 @@ NULL
       "names as row names."
     )
   }
-  if (anyDuplicated(signature_motifs) ||
-        !setequal(signature_motifs, table_motifs)) {
+  if (anyDuplicated(signature_motifs)) {
+    stop(
+      "The signatures have duplicated motif names, for example ",
+      signature_motifs[anyDuplicated(signature_motifs)], "."
+    )
+  }
+  if (!setequal(signature_motifs, table_motifs)) {
     differ <- union(
       setdiff(signature_motifs, table_motifs),
       setdiff(table_motifs, signature_motifs)
@@ -649,6 +654,9 @@ generate_result_grid <- function(musica, modality, algorithm = "lda",
       )
     }
     group_names <- unique(groups[!is.na(groups)])
+    if (length(group_names) == 0) {
+      stop("Sample annotation '", annotation, "' has no values.")
+    }
   } else {
     group_names <- NA
   }
@@ -827,6 +835,9 @@ auto_predict_grid <- function(musica, modality, signature_res, algorithm,
       )
     }
     group_names <- unique(groups[!is.na(groups)])
+    if (length(group_names) == 0) {
+      stop("Sample annotation '", sample_annotation, "' has no values.")
+    }
     group_ids <- character(0)
     for (group in group_names) {
       if (verbose) {

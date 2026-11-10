@@ -463,8 +463,8 @@ Several functions make use of stochastic algorithms or procedures which
 require the use of random number generator (RNG) for simulation or sampling.
 *discover_signatures* and *predict_exposure* take a `seed` argument (default
 `1`), so they give the same results each time they are run with the same
-settings, without changing your own RNG state. Use a different `seed` to get
-a different random start:
+settings; *predict_exposure* also leaves your own RNG state unchanged. Use a
+different `seed` to get a different random start:
 
 ```{r reproducible_prediction}
 # Predict exposures with a different random start

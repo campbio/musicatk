@@ -324,15 +324,16 @@ plot_k_comparison <- function(k_comparison) {
     class(boot_table) <- "numeric"
     musica_boot@count_tables[[modality]]@count_table <- boot_table
 
-    # find signatures
-    result_discov_boot <- discover_signatures(musica_boot,
+    # find signatures; messages about samples with no mutations were
+    # already given for the original table
+    result_discov_boot <- suppressMessages(discover_signatures(musica_boot,
       modality = modality,
       num_signatures = k,
       algorithm = alg, nstart = 5,
       model_id = "boot",
       result_name = "k_val_assist",
       make_copy = TRUE
-    )
+    ))
 
     # add result_discov to list
     result_discovs_boot[[iteration]] <- get_model(

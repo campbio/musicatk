@@ -108,13 +108,14 @@ test_that("zero-count samples get zero exposures (#143)", {
   ))
   model <- get_model(grid, "result_grid", "SBS96", "lda2")
   expect_identical(colnames(exposures(model)), samples)
+  expect_true(all(exposures(model)[, 1] == 0))
   expect_true(is.finite(metrics(model)$reconstruction_error))
 
   # compare_k_vals() prints a plot; don't write Rplots.pdf
   withr::local_pdf(NULL)
-  set.seed(1)
+  withr::local_seed(1)
   k_vals <- suppressMessages(compare_k_vals(zero, "SBS96",
-    reps = 1, min_k = 1, max_k = 2
+    reps = 1, min_k = 2, max_k = 3
   ))
   expect_true(all(is.finite(k_vals$error)))
 
@@ -206,22 +207,31 @@ test_that("auto_subset_sigs() explains when no signature passes (#147)", {
 })
 
 test_that("compare_k_vals() checks error_type before fitting (#149)", {
+  messages <- character(0)
   expect_error(
-    compare_k_vals(musicatk::musica_sbs96, "SBS96",
-      reps = 1, min_k = 2, max_k = 2, error_type = "bogus"
+    withCallingHandlers(
+      compare_k_vals(musicatk::musica_sbs96, "SBS96",
+        reps = 1, min_k = 2, max_k = 2, error_type = "bogus"
+      ),
+      message = function(m) {
+        messages <<- c(messages, conditionMessage(m))
+        invokeRestart("muffleMessage")
+      }
     ),
     regexp = "error_type"
   )
+  # no fit was started
+  expect_length(messages, 0)
 })
 
 test_that("LDA prediction is seeded and keeps the caller's RNG (#152)", {
-  set.seed(42)
+  withr::local_seed(42)
   before <- get(".Random.seed", envir = globalenv())
   first <- predict_exposure(musicatk::musica_sbs96, "SBS96",
     musicatk::cosmic_v2_sigs, "lda",
     signatures_to_use = 1:5, model_id = "p", make_copy = TRUE
   )
-  expect_identical(get(".Random.seed", envir = globalenv()), before)
+  expect_true(identical(get(".Random.seed", envir = globalenv()), before))
   second <- predict_exposure(musicatk::musica_sbs96, "SBS96",
     musicatk::cosmic_v2_sigs, "lda",
     signatures_to_use = 1:5, model_id = "p", make_copy = TRUE
