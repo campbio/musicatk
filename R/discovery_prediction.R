@@ -23,11 +23,11 @@ NULL
 }
 
 # Names of the samples (columns) of 'counts_table' with at least one
-# mutation; a message names the others, which are left out of the fit and
-# its exposures
-.samples_with_mutations <- function(counts_table) {
+# mutation; unless 'quiet', a message names the others, which are left out
+# of the fit and its exposures
+.samples_with_mutations <- function(counts_table, quiet = FALSE) {
   has_mutations <- colSums(counts_table) > 0
-  if (!all(has_mutations)) {
+  if (!all(has_mutations) && !quiet) {
     message(
       "These samples have no mutations in the count table and are left ",
       "out: ", paste(colnames(counts_table)[!has_mutations], collapse = ", ")
@@ -112,10 +112,10 @@ NULL
 # mutations are left out. Returns the signatures, with rows in the table's
 # motif order, and the exposures.
 .predict_exposures <- function(counts_table, signature, algorithm, modality,
-                               seed = 1, verbose = FALSE) {
+                               seed = 1, verbose = FALSE, quiet = FALSE) {
   algorithm <- match.arg(algorithm, c("lda", "decompTumor2Sig"))
   signature <- .match_motifs(signature, counts_table, modality)
-  fit_samples <- .samples_with_mutations(counts_table)
+  fit_samples <- .samples_with_mutations(counts_table, quiet = quiet)
   if (length(fit_samples) == 0) {
     stop("No sample in the '", modality, "' count table has mutations.")
   }
@@ -896,11 +896,11 @@ auto_subset_sigs <- function(musica, modality, signature_res, algorithm,
                              model_id = NULL, seed = 1) {
   # First pass with every signature; not stored. Messages about samples
   # with no mutations come from the second pass.
-  first_pass <- suppressMessages(.predict_exposures(
+  first_pass <- .predict_exposures(
     .extract_count_table(musica, modality), signatures(signature_res),
     algorithm, modality,
-    seed = seed
-  ))
+    seed = seed, quiet = TRUE
+  )
 
   # Proportions in each sample
   exposures <- first_pass$exposures

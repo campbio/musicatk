@@ -38,6 +38,14 @@ compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
   count_table <- extract_count_tables(musica)[[modality]]
   count_table <- get_count_table(count_table)
 
+  # leave out samples with no mutations (with a message), once, so the
+  # discovery runs below don't each repeat it
+  fit_samples <- .samples_with_mutations(count_table)
+  if (length(fit_samples) < ncol(count_table)) {
+    musica <- .subset_musica_samples(musica, fit_samples)
+    count_table <- count_table[, fit_samples, drop = FALSE]
+  }
+
   # generate bootstraped count tables
   boot_tables_all <- .gen_all_boots(count_table, reps)
 
@@ -324,16 +332,15 @@ plot_k_comparison <- function(k_comparison) {
     class(boot_table) <- "numeric"
     musica_boot@count_tables[[modality]]@count_table <- boot_table
 
-    # find signatures; messages about samples with no mutations were
-    # already given for the original table
-    result_discov_boot <- suppressMessages(discover_signatures(musica_boot,
+    # find signatures
+    result_discov_boot <- discover_signatures(musica_boot,
       modality = modality,
       num_signatures = k,
       algorithm = alg, nstart = 5,
       model_id = "boot",
       result_name = "k_val_assist",
       make_copy = TRUE
-    ))
+    )
 
     # add result_discov to list
     result_discovs_boot[[iteration]] <- get_model(
