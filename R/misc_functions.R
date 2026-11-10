@@ -45,5 +45,5 @@
   }
   temp <- t(cbind(x, y))
   res <- temp %*% t(temp) / (sqrt(rowSums(temp^2) %*% t(rowSums(temp^2))))
-  return(res[seq(nX), -seq(nX)])
+  return(res[seq(nX), -seq(nX), drop = FALSE])
 }

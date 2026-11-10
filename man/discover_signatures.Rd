@@ -69,6 +69,11 @@ need to be stored in a \code{\linkS4class{musica}} object using the
 \link{create_musica_from_variants} or \link{create_musica_from_counts}
 function and mutation count tables need to be created using functions such as
 \link{build_standard_table} if \link{create_musica_from_counts} was not used.
+
+Samples with no mutations in the count table are left out of the fit and
+of the exposures, with a message naming them. At least two samples need
+mutations. If \code{model_id} is already used, \code{.1}, \code{.2}, and
+so on is added to it.
 }
 \examples{
 data(musica)

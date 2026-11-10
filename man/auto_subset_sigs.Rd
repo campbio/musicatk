@@ -13,7 +13,8 @@ auto_subset_sigs(
   proportion_samples = 0.25,
   rare_exposure = 0.4,
   result_name = "result",
-  model_id = NULL
+  model_id = NULL,
+  seed = 1
 )
 }
 \arguments{
@@ -40,6 +41,9 @@ least one sample has more than this threshold proportion}
 \item{model_id}{Identifier for the result. If \code{NULL}, will be
 automatically set to the algorithm and number of signatures. Default
 \code{NULL}.}
+
+\item{seed}{Seed for the random start of \code{algorithm = "lda"}.
+Default \code{1}.}
 }
 \value{
 Returns new \code{\linkS4class{musica}} object with the results.

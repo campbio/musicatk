@@ -14,6 +14,7 @@ predict_exposure(
   signatures_to_use = seq_len(ncol(signatures(signature_res))),
   verbose = FALSE,
   make_copy = FALSE,
+  seed = 1,
   table_name = NULL
 )
 }
@@ -48,6 +49,11 @@ object is updated and nothing is returned. If \code{TRUE}, a new
 \code{\linkS4class{musica}} object is created and returned. Default
 \code{FALSE}.}
 
+\item{seed}{Seed for the random start of \code{algorithm = "lda"}, so
+results are reproducible; the caller's random number state is left
+unchanged. If \code{NULL}, the current random number state is used.
+Default \code{1}.}
+
 \item{table_name}{Use modality instead}
 }
 \value{
@@ -59,6 +65,12 @@ Exposures for samples will be predicted using an existing set
 of signatures stored in a \code{\linkS4class{result_model}} object.
 Algorithms available for prediction include a modify version of \code{"lda"},
 and \code{"decompTumor2Sig"}.
+
+Signatures are matched to the count table by motif name (row name), so
+their rows may be in any order; prediction stops when the signatures and
+the count table don't have the same motifs. \code{"decompTumor2Sig"} only
+supports SBS96 tables. Samples with no mutations are left out of the
+exposures, with a message naming them.
 }
 \examples{
 data(musica)
@@ -70,10 +82,9 @@ result <- predict_exposure(
   signature_res = cosmic_v2_sigs, algorithm = "lda"
 )
 
-# Predict using LDA-like algorithm with seed set to 1
-set.seed(1)
+# Predict using LDA-like algorithm with seed set to 2
 predict_exposure(
   musica = musica, modality = "SBS96",
-  signature_res = cosmic_v2_sigs, algorithm = "lda"
+  signature_res = cosmic_v2_sigs, algorithm = "lda", seed = 2
 )
 }

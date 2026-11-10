@@ -19,6 +19,7 @@ auto_predict_grid(
   verbose = TRUE,
   combine_res = TRUE,
   make_copy = FALSE,
+  seed = 1,
   table_name = NULL
 )
 }
@@ -58,6 +59,9 @@ found in a given annotation's set of samples}
 object is updated and nothing is returned. If \code{TRUE}, a new
 \code{\linkS4class{musica}} object is created and returned. Default
 \code{FALSE}.}
+
+\item{seed}{Seed for the random start of \code{algorithm = "lda"}; see
+\link{predict_exposure}. Default \code{1}.}
 
 \item{table_name}{Use modality instead}
 }

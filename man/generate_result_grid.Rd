@@ -27,7 +27,10 @@ generate_result_grid(
 
 \item{algorithm}{Algorithm for signature discovery}
 
-\item{annotation}{Sample annotation to split results into}
+\item{annotation}{Name of a sample annotation column. Signatures are
+discovered separately in the samples of each of its values; samples with
+a missing value are left out. If \code{NA}, all samples are used together.
+Default \code{NA}.}
 
 \item{k_start}{Lower range of number of signatures for discovery}
 
@@ -57,7 +60,22 @@ Returns nothing or a new \code{\linkS4class{musica}} object,
 depending on the \code{make_copy} parameter.
 }
 \description{
-Generate result_grid from musica based on annotation and range of k
+Discovers signatures for each number of signatures from \code{k_start} to
+\code{k_end}, either in all samples or separately in each group of samples
+defined by an annotation column.
+}
+\details{
+Models are stored in \code{result_name} as \code{<algorithm><k>}, for
+example \code{lda3}, or with an annotation as
+\code{<algorithm><k>_<group>}, for example \code{lda3_Lung}. If a name is
+already used, for example by an earlier run, \code{.1}, \code{.2}, and so
+on is added to it, and earlier models are kept.
+
+Each model's \code{metrics()} holds a \code{reconstruction_error}: for
+each sample, the mean over motifs of the squared difference between the
+observed and reconstructed counts, then the mean of the squares of those
+per-sample values. It is on the scale of squared counts, so it is not
+comparable with the reconstruction error of \link{compare_k_vals}.
 }
 \examples{
 data(musica_sbs96)
