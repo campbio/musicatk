@@ -4,6 +4,19 @@ Decisions by the maintainer on 2026-11-09: keep zero-count samples with
 zero exposures; `predict_exposure()` gets `seed = 1`; keep the grid's
 reconstruction error and document it; devel only, no release port.
 
+Changed during review (maintainer, 2026-11-09):
+
+- The seed is applied with `withr::with_seed()`, with withr moved to
+  Imports (ADR 0002), because BiocCheck warns on `set.seed()` in package
+  code.
+- Zero-count samples are left out of the exposures with a message, not
+  kept with zero exposures: zero columns made `create_umap()`,
+  `cluster_exposure()` and proportional plots fail (0/0). The grid and
+  `compare_k_vals()` match samples by name instead.
+- From `/code-review`: per-group fits use an object without stored
+  results; a grid error names its group; `combine_predict_grid()` keeps
+  the per-group models' motif order.
+
 Issues: #140, #141, #142, #143, #145, #146, #147, #148, #149, #152, #162.
 All reproduced on `devel` at 80350b9.
 

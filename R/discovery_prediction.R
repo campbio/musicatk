@@ -23,28 +23,54 @@ NULL
 }
 
 # Names of the samples (columns) of 'counts_table' with at least one
-# mutation; a message names the others, whose exposures will be 0
+# mutation; a message names the others, which are left out of the fit and
+# its exposures
 .samples_with_mutations <- function(counts_table) {
   has_mutations <- colSums(counts_table) > 0
   if (!all(has_mutations)) {
     message(
-      "These samples have no mutations in the count table, so their ",
-      "exposures are set to 0: ",
-      paste(colnames(counts_table)[!has_mutations], collapse = ", ")
+      "These samples have no mutations in the count table and are left ",
+      "out: ", paste(colnames(counts_table)[!has_mutations], collapse = ", ")
     )
   }
   return(colnames(counts_table)[has_mutations])
 }
 
-# Exposures for every one of 'samples', in that order: columns missing from
-# 'exposures' (samples with no mutations) are all zero
-.pad_zero_exposures <- function(exposures, samples) {
-  padded <- matrix(0,
-    nrow = nrow(exposures), ncol = length(samples),
-    dimnames = list(rownames(exposures), samples)
-  )
-  padded[, colnames(exposures)] <- exposures
-  return(padded)
+# Distinct values of the sample annotation column 'annotation', as
+# character. Stops when the column doesn't exist or has no values; a
+# message names samples with a missing value, which are left out.
+.annotation_groups <- function(musica, annotation) {
+  available <- setdiff(colnames(samp_annot(musica)), "Samples")
+  if (length(annotation) != 1 || !annotation %in% available) {
+    stop(
+      "Sample annotation '", paste(annotation, collapse = ", "),
+      "' not found. Available annotations: ",
+      paste(available, collapse = ", ")
+    )
+  }
+  groups <- as.character(samp_annot(musica)[[annotation]])
+  if (anyNA(groups)) {
+    message(
+      "These samples have no '", annotation, "' value and are left out: ",
+      paste(sample_names(musica)[is.na(groups)], collapse = ", ")
+    )
+  }
+  group_names <- unique(groups[!is.na(groups)])
+  if (length(group_names) == 0) {
+    stop("Sample annotation '", annotation, "' has no values.")
+  }
+  return(group_names)
+}
+
+# 'musica' without its stored results, limited to the samples whose
+# 'annotation' value is 'group', or all samples when 'group' is NA. Models
+# fit on it are stored under ids chosen against the full object.
+.musica_for_group <- function(musica, annotation, group) {
+  result_list(musica) <- S4Vectors::SimpleList()
+  if (is.na(group)) {
+    return(musica)
+  }
+  return(subset_musica_by_annotation(musica, annotation, group))
 }
 
 # Reorder the rows of 'signature' to the motifs (rows) of 'counts_table';
@@ -83,13 +109,12 @@ NULL
 # Exposures of the signatures in 'signature' in each sample of
 # 'counts_table', scaled to the sample's mutation count, with the LDA start
 # seeded by 'seed' (NULL uses the caller's RNG). Samples with no
-# mutations get zero exposures. Returns the signatures, with rows in the
-# table's motif order, and the exposures.
+# mutations are left out. Returns the signatures, with rows in the table's
+# motif order, and the exposures.
 .predict_exposures <- function(counts_table, signature, algorithm, modality,
                                seed = 1, verbose = FALSE) {
   algorithm <- match.arg(algorithm, c("lda", "decompTumor2Sig"))
   signature <- .match_motifs(signature, counts_table, modality)
-  all_samples <- colnames(counts_table)
   fit_samples <- .samples_with_mutations(counts_table)
   if (length(fit_samples) == 0) {
     stop("No sample in the '", modality, "' count table has mutations.")
@@ -126,10 +151,7 @@ NULL
 
   # Multiply proportions by sample counts
   exposures <- sweep(exposures, 2, colSums(counts_table), FUN = "*")
-  return(list(
-    signatures = signature,
-    exposures = .pad_zero_exposures(exposures, all_samples)
-  ))
+  return(list(signatures = signature, exposures = exposures))
 }
 
 #' @title Discover mutational signatures
@@ -146,7 +168,7 @@ NULL
 #' \link{build_standard_table} if \link{create_musica_from_counts} was not used.
 #'
 #' Samples with no mutations in the count table are left out of the fit and
-#' get exposures of 0, with a message naming them. At least two samples need
+#' of the exposures, with a message naming them. At least two samples need
 #' mutations. If \code{model_id} is already used, \code{.1}, \code{.2}, and
 #' so on is added to it.
 #' @param musica A \code{\linkS4class{musica}} object.
@@ -204,7 +226,6 @@ discover_signatures <- function(musica, modality, num_signatures,
 
   algorithm <- match.arg(algorithm, c("lda", "nmf"))
   counts_table <- .extract_count_table(musica, modality)
-  all_samples <- colnames(counts_table)
   fit_samples <- .samples_with_mutations(counts_table)
   if (length(fit_samples) < 2) {
     stop(
@@ -286,12 +307,9 @@ discover_signatures <- function(musica, modality, num_signatures,
       "to generate signatures."
     )
   }
-  # Multiply Weights by sample counts; samples with no mutations get 0
-  sample_counts <- colSums(counts_table)
-  matched <- match(colnames(counts_table), names(sample_counts))
-  exposures(result) <- .pad_zero_exposures(
-    sweep(exposures(result), 2, sample_counts[matched], FUN = "*"),
-    all_samples
+  # Multiply Weights by sample counts
+  exposures(result) <- sweep(exposures(result), 2, colSums(counts_table),
+    FUN = "*"
   )
 
   # if this result name does not exist in result_list
@@ -330,8 +348,8 @@ discover_signatures <- function(musica, modality, num_signatures,
 #' Signatures are matched to the count table by motif name (row name), so
 #' their rows may be in any order; prediction stops when the signatures and
 #' the count table don't have the same motifs. \code{"decompTumor2Sig"} only
-#' supports SBS96 tables. Samples with no mutations get exposures of 0, with
-#' a message naming them.
+#' supports SBS96 tables. Samples with no mutations are left out of the
+#' exposures, with a message naming them.
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param modality Modality for posterior prediction. Must match the table type
 #' used to generate the prediction signatures
@@ -639,39 +657,21 @@ generate_result_grid <- function(musica, modality, algorithm = "lda",
 
   # One group of samples per value of the annotation, or all samples
   if (!is.na(annotation)) {
-    available <- setdiff(colnames(samp_annot(musica)), "Samples")
-    if (!annotation %in% available) {
-      stop(
-        "Sample annotation '", annotation, "' not found. Available ",
-        "annotations: ", paste(available, collapse = ", ")
-      )
-    }
-    groups <- as.character(samp_annot(musica)[[annotation]])
-    if (anyNA(groups)) {
-      message(
-        "These samples have no '", annotation, "' value and are left out: ",
-        paste(sample_names(musica)[is.na(groups)], collapse = ", ")
-      )
-    }
-    group_names <- unique(groups[!is.na(groups)])
-    if (length(group_names) == 0) {
-      stop("Sample annotation '", annotation, "' has no values.")
-    }
+    group_names <- .annotation_groups(musica, annotation)
   } else {
     group_names <- NA
   }
 
   for (group in group_names) {
     if (is.na(group)) {
-      cur_musica <- musica
       id_suffix <- ""
     } else {
       if (verbose) {
         message("Current Annotation: ", group)
       }
-      cur_musica <- subset_musica_by_annotation(musica, annotation, group)
       id_suffix <- paste0("_", group)
     }
+    cur_musica <- .musica_for_group(musica, annotation, group)
     # Used for reconstruction error
     cur_counts <- .extract_count_table(cur_musica, modality)
 
@@ -681,17 +681,27 @@ generate_result_grid <- function(musica, modality, algorithm = "lda",
         musica, result_name, modality,
         paste0(algorithm, cur_k, id_suffix)
       )
-      cur_musica <- discover_signatures(
-        musica = cur_musica, modality = modality,
-        num_signatures = cur_k, algorithm = algorithm,
-        result_name = result_name, model_id = cur_model_name,
-        nstart = n_start, seed = seed, par_cores = par_cores,
-        make_copy = TRUE
+      cur_musica <- tryCatch(
+        discover_signatures(
+          musica = cur_musica, modality = modality,
+          num_signatures = cur_k, algorithm = algorithm,
+          result_name = result_name, model_id = cur_model_name,
+          nstart = n_start, seed = seed, par_cores = par_cores,
+          make_copy = TRUE
+        ),
+        error = function(e) {
+          if (is.na(group)) {
+            stop(e)
+          }
+          stop("In group '", group, "': ", conditionMessage(e), call. = FALSE)
+        }
       )
 
       cur_result <- get_model(cur_musica, result_name, modality, cur_model_name)
 
-      recon_error <- mean(vapply(colnames(cur_counts), function(x) {
+      # Samples with no mutations are not in the model
+      fit_samples <- colnames(exposures(cur_result))
+      recon_error <- mean(vapply(fit_samples, function(x) {
         mean((cur_counts[, x, drop = FALSE] -
                 reconstruct_sample(cur_result, x))^2)
       }, FUN.VALUE = 0)^2)
@@ -814,41 +824,14 @@ auto_predict_grid <- function(musica, modality, signature_res, algorithm,
       model_id = model_id, seed = seed
     )
   } else {
-    available_annotations <- setdiff(
-      colnames(samp_annot(musica)),
-      "Samples"
-    )
-    if (!sample_annotation %in% available_annotations) {
-      stop(
-        "Sample annotation ", sample_annotation, " not found, ",
-        "available annotations: ",
-        paste(available_annotations, collapse = ", ")
-      )
-    }
-    groups <- as.character(samp_annot(musica)[[sample_annotation]])
-    if (anyNA(groups)) {
-      message(
-        "These samples have no '", sample_annotation, "' value and are ",
-        "left out: ", paste(sample_names(musica)[is.na(groups)],
-          collapse = ", "
-        )
-      )
-    }
-    group_names <- unique(groups[!is.na(groups)])
-    if (length(group_names) == 0) {
-      stop("Sample annotation '", sample_annotation, "' has no values.")
-    }
+    group_names <- .annotation_groups(musica, sample_annotation)
     group_ids <- character(0)
     for (group in group_names) {
       if (verbose) {
         message(group)
       }
       cur_model_name <- .unique_model_id(musica, result_name, modality, group)
-      current_musica <- subset_musica_by_annotation(
-        musica = musica, annot_col =
-          sample_annotation,
-        annot_names = group
-      )
+      current_musica <- .musica_for_group(musica, sample_annotation, group)
       current_musica <- tryCatch(
         auto_subset_sigs(
           musica = current_musica, modality = modality,
@@ -919,9 +902,8 @@ auto_subset_sigs <- function(musica, modality, signature_res, algorithm,
     seed = seed
   ))
 
-  # Proportions in samples with mutations
+  # Proportions in each sample
   exposures <- first_pass$exposures
-  exposures <- exposures[, colSums(exposures) > 0, drop = FALSE]
   num_samples <- ncol(exposures)
   exposures <- sweep(exposures, 2, colSums(exposures), "/")
   to_use <- as.numeric(which(apply(exposures, 1, function(x) {
@@ -1070,9 +1052,18 @@ combine_predict_grid <- function(musica, modality, signature_res,
   }
   model_id <- .unique_model_id(musica, result_name, modality, model_id)
 
+  # Signatures in the same motif order as the models being combined, which
+  # predict_exposure() put in the count table's order
+  comb_signatures <- signatures(signature_res)[, sig_names, drop = FALSE]
+  model_motifs <- rownames(signatures(grid_list[[1]]))
+  if (!is.null(model_motifs) &&
+        setequal(model_motifs, rownames(comb_signatures))) {
+    comb_signatures <- comb_signatures[model_motifs, , drop = FALSE]
+  }
+
   grid_res <- new("result_model",
     exposures = comb,
-    signatures = signatures(signature_res)[, sig_names, drop = FALSE],
+    signatures = comb_signatures,
     num_signatures = length(sig_names),
     model_id = model_id,
     modality = modality

@@ -572,13 +572,14 @@ ckmeans <- function(data, k, mustLink, cantLink, maxIter = 100) {
   expos <- exposures(result_discov)
   sigs <- signatures(result_discov)
 
-  # convert count table to probabilities; samples with no mutations are 0
+  # samples with no mutations are not in the exposures
+  count_table <- .table_for_exposures(count_table, expos)
+
+  # convert count table to probabilities
   count_table_probs <- prop.table(count_table, 2)
-  count_table_probs[is.nan(count_table_probs)] <- 0
 
   # convert exposure matrix to probabilities
   expos_probs <- prop.table(expos, 2)
-  expos_probs[is.nan(expos_probs)] <- 0
 
   # multiply signature and exposure matrices
   predicted_count_probs <- sigs %*% expos_probs
@@ -596,6 +597,9 @@ ckmeans <- function(data, k, mustLink, cantLink, maxIter = 100) {
   expos <- exposures(result_discov)
   sigs <- signatures(result_discov)
 
+  # samples with no mutations are not in the exposures
+  count_table <- .table_for_exposures(count_table, expos)
+
   # multiply signature and exposure matrices
   predicted_counts <- sigs %*% expos
 
@@ -604,6 +608,14 @@ ckmeans <- function(data, k, mustLink, cantLink, maxIter = 100) {
 
   # return reconstruction error
   return(reconstruction_error)
+}
+
+# The columns of 'count_table' for the samples in 'expos', matched by name
+.table_for_exposures <- function(count_table, expos) {
+  if (is.null(colnames(expos))) {
+    return(count_table)
+  }
+  return(count_table[, colnames(expos), drop = FALSE])
 }
 
 # Return "prop" or "raw" for the accepted spellings of 'error_type'

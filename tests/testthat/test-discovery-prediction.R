@@ -71,11 +71,25 @@ test_that("predict_exposure() matches motifs by name (#142)", {
     ),
     regexp = "SBS96"
   )
+
+  # The combined per-group model keeps the table's motif order too
+  grid <- auto_predict_grid(musicatk::musica_annot, "SBS96", permuted,
+    "decompTumor2Sig",
+    sample_annotation = "Tumor_Subtypes", verbose = FALSE, make_copy = TRUE
+  )
+  combined <- get_modality(grid, "result", "SBS96")[[1]]
+  expect_identical(
+    rownames(signatures(combined)),
+    rownames(get_count_table(
+      extract_count_tables(musicatk::musica_annot)$SBS96
+    ))
+  )
 })
 
-test_that("zero-count samples get zero exposures (#143)", {
+test_that("zero-count samples are left out with a message (#143)", {
   zero <- .zero_sample_musica()
-  samples <- sample_names(zero)
+  # every sample but the first, which has no mutations
+  samples <- sample_names(zero)[-1]
 
   for (algorithm in c("lda", "nmf")) {
     expect_message(
@@ -86,8 +100,6 @@ test_that("zero-count samples get zero exposures (#143)", {
     )
     e <- exposures(m, "result", "SBS96", paste0(algorithm, 2))
     expect_identical(colnames(e), samples)
-    expect_true(all(e[, 1] == 0))
-    expect_true(all(colSums(e)[-1] > 0))
   }
 
   for (algorithm in c("lda", "decompTumor2Sig")) {
@@ -100,7 +112,6 @@ test_that("zero-count samples get zero exposures (#143)", {
     )
     e <- exposures(m, "result", "SBS96", "p")
     expect_identical(colnames(e), samples)
-    expect_true(all(e[, 1] == 0))
   }
 
   grid <- suppressMessages(generate_result_grid(zero, "SBS96", "lda",
@@ -108,7 +119,6 @@ test_that("zero-count samples get zero exposures (#143)", {
   ))
   model <- get_model(grid, "result_grid", "SBS96", "lda2")
   expect_identical(colnames(exposures(model)), samples)
-  expect_true(all(exposures(model)[, 1] == 0))
   expect_true(is.finite(metrics(model)$reconstruction_error))
 
   # compare_k_vals() prints a plot; don't write Rplots.pdf
@@ -149,6 +159,19 @@ test_that("generate_result_grid() splits by the annotation argument (#140)", {
       make_copy = TRUE
     ),
     regexp = "Not_A_Column"
+  )
+
+  # A group that can't be fitted is named in the error
+  solo <- musicatk::musica_annot
+  subtypes <- samp_annot(solo)$Tumor_Subtypes
+  subtypes[1] <- "Solo"
+  samp_annot(solo, "Tumor_Subtypes") <- subtypes
+  expect_error(
+    generate_result_grid(solo, "SBS96", "lda",
+      annotation = "Tumor_Subtypes", k_start = 2, k_end = 2,
+      make_copy = TRUE
+    ),
+    regexp = "In group 'Solo'"
   )
 })
 

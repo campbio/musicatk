@@ -69,8 +69,8 @@ and \code{"decompTumor2Sig"}.
 Signatures are matched to the count table by motif name (row name), so
 their rows may be in any order; prediction stops when the signatures and
 the count table don't have the same motifs. \code{"decompTumor2Sig"} only
-supports SBS96 tables. Samples with no mutations get exposures of 0, with
-a message naming them.
+supports SBS96 tables. Samples with no mutations are left out of the
+exposures, with a message naming them.
 }
 \examples{
 data(musica)
