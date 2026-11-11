@@ -225,9 +225,10 @@ compare_results <- function(musica, model_id, other_model_id,
 #' @return Returns the comparisons
 #' @examples
 #' data(res)
+#' # The example data are hg38, so compare against the GRCh38 catalogue
 #' compare_cosmic_v3(res,
 #'   model_id = "res", modality = "SBS96",
-#'   sample_type = "genome", threshold = 0.8
+#'   sample_type = "genome", genome_build = "hg38", threshold = 0.8
 #' )
 #' @export
 compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
@@ -262,16 +263,6 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
     )
   }
 
-  # Normalize the build label the same way select_genome() does
-  build <- tolower(genome_build)
-  if (build %in% c("hg19", "19", "grch37")) {
-    build <- "GRCh37"
-  } else if (build %in% c("hg38", "38", "grch38")) {
-    build <- "GRCh38"
-  } else {
-    stop("genome_build must be one of hg19 (GRCh37) or hg38 (GRCh38)")
-  }
-
   if (sample_type == "exome") {
     if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       # COSMIC stopped publishing exome-normalized matrices after v3.0, so this
@@ -290,6 +281,20 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
       ))
     }
   } else if (sample_type == "genome") {
+    # Normalize the build label the same way select_genome() does. Exome has
+    # one catalogue, so the build is only checked here.
+    build <- if (is.character(genome_build) && length(genome_build) == 1) {
+      tolower(genome_build)
+    } else {
+      ""
+    }
+    if (build %in% c("hg19", "19", "grch37")) {
+      build <- "GRCh37"
+    } else if (build %in% c("hg38", "38", "grch38")) {
+      build <- "GRCh38"
+    } else {
+      stop("genome_build must be one of hg19 (GRCh37) or hg38 (GRCh38)")
+    }
     if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
       cosmic_res <- if (build == "GRCh38") {
         musicatk::cosmic_v3_sbs_sigs_grch38

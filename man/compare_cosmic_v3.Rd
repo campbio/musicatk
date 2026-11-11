@@ -59,8 +59,9 @@ SBS and only genome for DBS or Indel classes
 }
 \examples{
 data(res)
+# The example data are hg38, so compare against the GRCh38 catalogue
 compare_cosmic_v3(res,
   model_id = "res", modality = "SBS96",
-  sample_type = "genome", threshold = 0.8
+  sample_type = "genome", genome_build = "hg38", threshold = 0.8
 )
 }
