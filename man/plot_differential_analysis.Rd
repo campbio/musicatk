@@ -2,23 +2,41 @@
 % Please edit documentation in R/differential_analysis.R
 \name{plot_differential_analysis}
 \alias{plot_differential_analysis}
-\title{Compare exposures of annotated samples}
+\title{Plot a differential analysis of exposures}
 \usage{
-plot_differential_analysis(analysis, analysis_type, samp_num)
+plot_differential_analysis(
+  analysis,
+  analysis_type = NULL,
+  samp_num = NULL,
+  threshold = 0.05
+)
 }
 \arguments{
-\item{analysis}{Analysis created by \code{exposure_differential_analysis}}
+\item{analysis}{A table made by \code{exposure_differential_analysis}.}
 
-\item{analysis_type}{Currently only \code{"glm"} supported}
+\item{analysis_type}{Ignored, with a warning. The method is read from
+\code{analysis}.}
 
-\item{samp_num}{Number of samples that went into the analysis}
+\item{samp_num}{Ignored, with a warning.}
+
+\item{threshold}{The FDR drawn as a dashed line. Default \code{0.05}.}
 }
 \value{
-Generates a ggplot object
+A ggplot object.
 }
 \description{
-\code{plot_differential_analysis} is used to plot
-differential analysis created by \code{exposure_differential_analysis}.
+\code{plot_differential_analysis} plots the false discovery
+rate of each signature from a table made by
+\code{\link{exposure_differential_analysis}}, as \eqn{-log_{10}(FDR)} bars.
+The method is read from the table's columns:
+\describe{
+  \item{\code{"wilcox"}}{one bar per comparison, labelled
+  \code{"<Group1> vs <Group2>"};}
+  \item{\code{"kruskal"}}{one bar per signature;}
+  \item{\code{"glm.nb"}}{one bar per non-reference group, against the
+  reference group, and one for the ANOVA.}
+}
+An FDR of zero is plotted at the smallest positive double.
 }
 \examples{
 data("res_annot")
@@ -26,5 +44,5 @@ analysis <- exposure_differential_analysis(res_annot,
   model_name = "res_annot",
   annotation = "Tumor_Subtypes", method = "wilcox"
 )
-plot_differential_analysis(analysis, "glm", 2)
+plot_differential_analysis(analysis)
 }

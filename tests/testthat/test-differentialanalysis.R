@@ -238,7 +238,7 @@ test_that(desc = "plot_differential_analysis plots -log10(FDR) (#174)", {
     method = "wilcox", group1 = c("A", "A"), group2 = c("B", "C")
   )
   p <- plot_differential_analysis(wil)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
   expect_equal(p$data$value, -log10(wil$fdr))
   expect_equal(p$data$signature, wil$Signature)
   expect_equal(
@@ -250,7 +250,7 @@ test_that(desc = "plot_differential_analysis plots -log10(FDR) (#174)", {
     method = "kruskal"
   )
   p <- plot_differential_analysis(kw)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
   expect_equal(p$data$value, -log10(kw$fdr))
   expect_equal(p$data$signature, sigs)
 
@@ -259,7 +259,7 @@ test_that(desc = "plot_differential_analysis plots -log10(FDR) (#174)", {
     method = "glm.nb"
   ))
   p <- plot_differential_analysis(nb)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
   expect_equal(
     p$data$value,
     -log10(c(nb[["B(fdr)"]], nb[["C(fdr)"]], nb[["ANOVA(fdr)"]]))
