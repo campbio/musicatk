@@ -98,8 +98,9 @@ Issues: #169, #170, #171, #173, #174, #185, #34. All reproduced on
 - `k_select()` lowers `n` to the number of samples minus one, with a
   message, and stops when there are fewer than three samples (#185).
 
-Not changed: the Shiny cluster tab offers the same methods, and doesn't
-add `"fanny"`. Its calls still work.
+Shiny: the cluster tab doesn't add `"fanny"`. It offers only Euclidean
+distance for k-means, since `"kmeans"` now stops for other distances
+(found while implementing). Its other calls still work.
 
 ## Tests
 
