@@ -414,7 +414,7 @@ test_that("SBS192 needs a valid strand_type (#136)", {
   )
   expect_error(
     suppressMessages(build_standard_table(m, g, "SBS192", "Strand")),
-    "Transcript_Strand or Replication_Strand"
+    "'strand_type' must be Transcript_Strand or Replication_Strand"
   )
 })
 
@@ -462,6 +462,6 @@ test_that("combine_count_tables() names the missing tables (#137)", {
   expect_identical(names(tables(musica)), "SBS96")
   expect_error(
     combine_count_tables(musica, c("SBS96", "nope"), "combo"),
-    "These tables don't exist: nope.*Current table names are: SBS96"
+    "tables that don't exist: nope.*Current table names are: SBS96"
   )
 })

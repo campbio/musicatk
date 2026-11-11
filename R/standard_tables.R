@@ -123,10 +123,28 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
 #' @return Returns the created SBS192 count table object built using either
 #' transcript strand or replication strand
 #' @keywords internal
-create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
-  if (!strand_type %in% c("Transcript_Strand", "Replication_Strand")) {
-    stop("Please select either Transcript_Strand or Replication_Strand")
+# Checks strand_type and returns the SBS192 table name built from it
+.sbs192_table_name <- function(strand_type) {
+  table_names <- c(Transcript_Strand = "SBS192_Trans",
+                   Replication_Strand = "SBS192_Rep")
+  if (is.null(strand_type)) {
+    stop(
+      "SBS192 needs a 'strand_type': Transcript_Strand or ",
+      "Replication_Strand."
+    )
   }
+  if (length(strand_type) != 1 || !strand_type %in% names(table_names)) {
+    bad <- paste(strand_type, collapse = ", ")
+    stop(
+      "'strand_type' must be Transcript_Strand or Replication_Strand, ",
+      "not '", bad, "'."
+    )
+  }
+  return(table_names[[strand_type]])
+}
+
+create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
+  table_name <- .sbs192_table_name(strand_type)
   dat <- variants(musica)
   dat <- subset_variant_by_type(dat, "SBS")
   dat <- drop_na_variants(dat, strand_type)
@@ -204,9 +222,6 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
     collapse = "_"
   )
 
-  table_name <- paste0("SBS192_", ifelse(
-    strand_type == "Transcript_Strand", "Trans", "Rep"
-  ))
   .warn_unmatched_motifs(maf_mut_id, mut_id, table_name)
   mutation <- factor(maf_mut_id, levels = mut_id)
 
@@ -286,9 +301,7 @@ create_dbs78_table <- function(musica, overwrite = overwrite, verbose) {
   rc_ref_TA <- which(ref == "TA")
   rc_alt <- c(rc_alt, rc_ref_TA[which(alt[rc_ref_TA] %in% c("AG", "CC", "AC"))])
 
-  if (length(rc_alt) > 0) {
-    alt[rc_alt] <- rc(alt[rc_alt])
-  }
+  alt[rc_alt] <- rc(alt[rc_alt])
 
   full <- paste(ref, ">NN_", alt, sep = "")
   full_motif <- c(
@@ -475,20 +488,8 @@ build_standard_table <- function(musica, g, modality, strand_type = NULL,
     .table_exists_warning(musica, "SBS96", overwrite)
     tab <- create_sbs96_table(musica, g, overwrite)
   } else if (modality %in% c("SBS192", "192")) {
-    strand_types <- c("Transcript_Strand", "Replication_Strand")
-    if (is.null(strand_type)) {
-      stop(
-        "SBS192 needs a strand_type: Transcript_Strand or ",
-        "Replication_Strand."
-      )
-    }
-    if (length(strand_type) != 1 || !strand_type %in% strand_types) {
-      stop("Please select either Transcript_Strand or Replication_Strand")
-    }
     # The table is named after the strand, for example SBS192_Trans
-    name <- paste0("SBS192_", ifelse(
-      strand_type == "Transcript_Strand", "Trans", "Rep"
-    ))
+    name <- .sbs192_table_name(strand_type)
     message(
       "Building count table '", name, "' from SBS and ", strand_type,
       " with the SBS192 schema"
