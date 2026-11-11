@@ -7,10 +7,12 @@
 rc(dna)
 }
 \arguments{
-\item{dna}{Input DNA string}
+\item{dna}{Input DNA string, or a character vector of them. An empty
+vector gives an empty vector.}
 }
 \value{
-Returns the reverse compliment of the input DNA string
+Returns the reverse compliment of each input DNA string, without
+names
 }
 \description{
 Reverse complement of a string using biostrings
