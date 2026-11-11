@@ -69,3 +69,102 @@ test_that(desc = "plot_cluster uses the chosen annotation, matched by name", {
   expected <- annot$test[match(umap_samples, as.character(annot$Samples))]
   expect_equal(as.character(p$data$annotation), expected)
 })
+
+# Proportional exposures of res_annot, samples in rows, as clustering uses
+.clust_fixture <- function() {
+  data(res_annot, envir = environment())
+  e <- exposures(res_annot, "result", "SBS96", "res_annot")
+  list(musica = res_annot, expos = t(sweep(e, 2, colSums(e), FUN = "/")))
+}
+
+.clust_diss <- function(expos, method) {
+  d <- philentropy::distance(expos,
+    method = method, use.row.names = TRUE,
+    as.dist.obj = TRUE, mute.message = TRUE
+  )
+  if (method == "cosine") {
+    d <- 1 - d
+  }
+  d
+}
+
+test_that(desc = "hclust uses the chosen dissimilarity (#173)", {
+  fx <- .clust_fixture()
+  # k where devel's distances-of-distances gave different clusters
+  cases <- list(euclidean = 6, manhattan = 6, cosine = 2)
+  for (m in names(cases)) {
+    expected <- stats::cutree(
+      stats::hclust(.clust_diss(fx$expos, m), method = "ward.D"),
+      k = cases[[m]]
+    )
+    observed <- cluster_exposure(fx$musica, "res_annot",
+      nclust = cases[[m]], method = "hclust", dis.method = m
+    )
+    expect_equal(rownames(observed), names(expected))
+    expect_equal(observed$cluster, unname(expected))
+  }
+})
+
+test_that(desc = "cosine dis.method is 1 - cosine similarity", {
+  fx <- .clust_fixture()
+  expected <- cluster::pam(.clust_diss(fx$expos, "cosine"),
+    k = 2, diss = TRUE, cluster.only = TRUE
+  )
+  observed <- cluster_exposure(fx$musica, "res_annot",
+    nclust = 2, method = "pam", dis.method = "cosine"
+  )
+  expect_equal(observed$cluster, unname(expected))
+})
+
+test_that(desc = "kmeans runs k-means; fanny runs fuzzy clustering (#34)", {
+  fx <- .clust_fixture()
+  expect_warning(
+    observed <- withr::with_seed(1, cluster_exposure(fx$musica, "res_annot",
+      nclust = 2, method = "kmeans"
+    )),
+    NA
+  )
+  expected <- withr::with_seed(1, stats::kmeans(fx$expos, centers = 2))
+  expect_equal(rownames(observed), names(expected$cluster))
+  expect_equal(observed$cluster, unname(expected$cluster))
+
+  expect_error(
+    cluster_exposure(fx$musica, "res_annot",
+      nclust = 2, method = "kmeans", dis.method = "cosine"
+    ),
+    "euclidean"
+  )
+
+  expected <- suppressWarnings(cluster::fanny(
+    .clust_diss(fx$expos, "euclidean"),
+    k = 2, diss = TRUE, maxit = 10, tol = 1e-15
+  ))
+  observed <- suppressWarnings(cluster_exposure(fx$musica, "res_annot",
+    nclust = 2, method = "fanny"
+  ))
+  expect_equal(observed$cluster, unname(expected$clustering))
+})
+
+test_that(desc = "k_select lowers n to the number of samples - 1 (#185)", {
+  fx <- .clust_fixture()
+  .keep_samples <- function(musica, n) {
+    results <- result_list(musica)
+    model <- results[["result"]]@modality[["SBS96"]][["res_annot"]]
+    model@exposures <- model@exposures[, seq_len(n)]
+    results[["result"]]@modality[["SBS96"]][["res_annot"]] <- model
+    result_list(musica) <- results
+    musica
+  }
+  ten <- .keep_samples(fx$musica, 10)
+  for (clust in c("kmeans", "pam")) {
+    expect_message(
+      p <- k_select(ten, "res_annot", method = "wss", clust.method = clust),
+      "9"
+    )
+    expect_true(ggplot2::is.ggplot(p))
+  }
+  expect_error(
+    k_select(.keep_samples(fx$musica, 2), "res_annot"),
+    "at least three samples"
+  )
+})
