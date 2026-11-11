@@ -365,3 +365,108 @@ test_that("DBS78 has a zero column for samples without DBS", {
   expect_true(all(counts[, without_dbs] == 0))
   expect_equal(sum(counts), sum(var$Variant_Type == "DBS"))
 })
+
+test_that("rc() reverse-complements vectors, including empty ones (#132)", {
+  expect_identical(rc(character(0)), character(0))
+  expect_identical(rc("ATGC"), "GCAT")
+  dna <- c("AC", "GGT", "TTAG")
+  expect_identical(
+    rc(dna),
+    as.character(Biostrings::reverseComplement(
+      Biostrings::DNAStringSet(dna)
+    ), use.names = FALSE)
+  )
+  expect_error(rc(1), "Must be character")
+})
+
+test_that("DBS78 builds when no ref needs reverse-complementing (#52)", {
+  g <- select_genome("hg19")
+  # The reporter's DBS from #52: every ref is already canonical
+  dbs <- data.frame(
+    chr = "chr1", start = c(104017, 149875, 232961, 362904),
+    end = c(104018, 149876, 232962, 362905),
+    ref = c("CC", "GC", "TG", "TT"), alt = c("TT", "CG", "CA", "GG"),
+    sample = "S1"
+  )
+  m <- suppressMessages(create_musica_from_variants(dbs, g,
+    check_ref_chromosomes = FALSE, check_ref_bases = FALSE
+  ))
+  build_standard_table(m, g, "DBS78")
+  counts <- get_count_table(tables(m)$DBS78)
+  expected <- c("CC>NN_TT", "GC>NN_CG", "TG>NN_CA", "TT>NN_GG")
+  expect_equal(unname(counts[expected, "S1"]), rep(1, 4))
+  expect_equal(sum(counts), 4)
+})
+
+# musica with a made-up Transcript_Strand annotation on its SBS, so SBS192
+# builds without loading a TxDb
+.musica_with_strand <- function() {
+  data(musica, envir = environment())
+  var <- variants(musica)
+  is_sbs <- var$Variant_Type == "SBS"
+  var$Transcript_Strand <- NA_character_
+  var$Transcript_Strand[is_sbs] <- rep(c("T", "U"), length.out = sum(is_sbs))
+  variants(musica) <- var
+  musica
+}
+
+test_that("SBS192 needs a valid strand_type (#136)", {
+  m <- .musica_with_strand()
+  g <- select_genome("hg38")
+  expect_error(
+    suppressMessages(build_standard_table(m, g, "SBS192")),
+    "strand_type"
+  )
+  expect_error(
+    suppressMessages(build_standard_table(m, g, "SBS192", "Strand")),
+    "Transcript_Strand or Replication_Strand"
+  )
+})
+
+test_that("SBS192 overwrite check and message use the table's name (#17)", {
+  m <- .musica_with_strand()
+  g <- select_genome("hg38")
+  expect_message(
+    build_standard_table(m, g, "SBS192", "Transcript_Strand"),
+    "'SBS192_Trans'"
+  )
+  expect_error(
+    suppressMessages(
+      build_standard_table(m, g, "SBS192", "Transcript_Strand")
+    ),
+    "SBS192_Trans already exists"
+  )
+  expect_warning(
+    suppressMessages(build_standard_table(m, g, "SBS192",
+      "Transcript_Strand",
+      overwrite = TRUE
+    )),
+    "Overwriting counts table: SBS192_Trans"
+  )
+})
+
+test_that("Build messages name the table an alias creates (#17)", {
+  data(musica)
+  g <- select_genome("hg38")
+  expect_message(
+    suppressWarnings(build_standard_table(musica, g, "SNV96",
+      overwrite = TRUE
+    )),
+    "'SBS96'"
+  )
+  expect_message(
+    suppressWarnings(build_standard_table(musica, g, "DBS",
+      overwrite = TRUE
+    )),
+    "'DBS78'"
+  )
+})
+
+test_that("combine_count_tables() names the missing tables (#137)", {
+  data(musica)
+  expect_true("SBS96" %in% names(tables(musica)))
+  expect_error(
+    combine_count_tables(musica, c("SBS96", "nope"), "combo"),
+    "nope"
+  )
+})
