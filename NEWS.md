@@ -1,3 +1,12 @@
+# musicatk 2.7.14 (2026-11-11)
+* Updated the COSMIC genome signatures from v3.0 to v3.6 (May 2026). SBS goes from 67 to 101 signatures, DBS from 11 to 22, and Indel from 17 to 25. Signature matching results will change accordingly, including for signatures present in both releases, whose probabilities were revised.
+* `compare_cosmic_v3()` gains a `genome_build` argument (`"hg19"`/`"GRCh37"` or `"hg38"`/`"GRCh38"`, default `"hg19"`) selecting the reference build the COSMIC signatures are normalized to. This should match the build the variants were called against. Ignored for the Indel modality and for `sample_type = "exome"`, which each have a single catalogue.
+* Added `cosmic_v3_sbs_sigs_grch38` and `cosmic_v3_dbs_sigs_grch38`. The existing `cosmic_v3_sbs_sigs` and `cosmic_v3_dbs_sigs` remain GRCh37, matching COSMIC's own default build.
+* `cosmic_v3_sbs_sigs_exome` remains COSMIC v3.0: COSMIC stopped publishing exome-normalized matrices after v3.0. `compare_cosmic_v3(sample_type = "exome")` now warns that the exome catalogue is older than the genome one.
+* Signature data objects now record their COSMIC version and reference build in the documentation.
+* Fixed COSMIC signatures without a hardcoded aetiology label displaying as "NULL" in the Shiny app.
+* In the Shiny app, the comparison tab has a genome build choice for COSMIC V3, set from the genome the variants were imported with, and the prediction tab offers the GRCh38 COSMIC V3 SBS and DBS signatures.
+
 # musicatk 2.7.13 (2026-11-10)
 * `exposure_differential_analysis(method = "glm.nb")` adjusted the wrong p-values: each `<group>(fdr)` column held the next group's adjusted p-values, and the last held the ANOVA's. Each non-reference group's p-values are now BH-adjusted across signatures. The reference group (the first level of the annotation) has no group effect: its columns, which hold the intercept, are named `Intercept(coef)`, `Intercept(Std. Error)`, `Intercept(z)` and `Intercept(Pr(>|z|))`, and it has no `(fdr)` column. The other groups' `(coef)` is their log fold change against the reference. Coefficients are read by name, so an aliased group gives NA instead of shifting the columns (#169).
 * `exposure_differential_analysis(method = "wilcox")` works with any number of comparisons in `group1` and `group2`; three or more failed with "only 0's may be mixed with negative subscripts" (#170). The p-values and FDRs are numbers instead of character strings, in columns renamed `p-value` and `fdr` (from `Pr(>|z|)` and `(fdr)`), as for `method = "kruskal"`. The FDR is adjusted within each comparison, across signatures. For two groups (one comparison) this gives the same values as before; with two comparisons, the FDR was adjusted across both together (#171).
@@ -106,12 +115,6 @@
 * `add_result()` matches exposure columns to the samples by name and puts them in sample order; unknown or missing sample names give an error.
 * `combine_predict_grid()` returns exposures in sample order and sets `num_signatures` and `model_id`; it stops when the models share samples (#144).
 * `create_benchmark()` stores true exposures as signatures x samples and matches them to the count table by sample name; either orientation is accepted (#194).
-* Updated the COSMIC genome signatures from v3.0 to v3.6 (May 2026). SBS goes from 67 to 101 signatures, DBS from 11 to 22, and Indel from 17 to 25. Signature matching results will change accordingly, including for signatures present in both releases, whose probabilities were revised.
-* `compare_cosmic_v3()` gains a `genome_build` argument (`"hg19"`/`"GRCh37"` or `"hg38"`/`"GRCh38"`, default `"hg19"`) selecting the reference build the COSMIC signatures are normalized to. This should match the build the variants were called against. Ignored for the Indel modality, for which COSMIC publishes a single catalogue.
-* Added `cosmic_v3_sbs_sigs_grch38` and `cosmic_v3_dbs_sigs_grch38`. The existing `cosmic_v3_sbs_sigs` and `cosmic_v3_dbs_sigs` remain GRCh37, matching COSMIC's own default build.
-* `cosmic_v3_sbs_sigs_exome` remains COSMIC v3.0: COSMIC stopped publishing exome-normalized matrices after v3.0. `compare_cosmic_v3(sample_type = "exome")` now warns that the exome catalogue is older than the genome one.
-* Signature data objects now record their COSMIC version and reference build in the documentation.
-* Fixed COSMIC signatures without a hardcoded aetiology label displaying as "NULL" in the Shiny app.
 
 # musicatk 2.2.1 (2025-07-15)
 * Removed conclust dependency
