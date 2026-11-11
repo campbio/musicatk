@@ -38,9 +38,9 @@ if a table with the same name exists within the \code{musica} object.}
 }
 \value{
 No object will be returned. The count tables will be automatically
-added to the \code{musica} object, under the name the message gives:
-\code{"SBS96"}, \code{"SBS192_Trans"}, \code{"SBS192_Rep"},
-\code{"DBS78"} or \code{"IND83"}, whichever alias \code{modality} uses.
+added to the \code{musica} object, named \code{"SBS96"},
+\code{"SBS192_Trans"}, \code{"SBS192_Rep"}, \code{"DBS78"} or
+\code{"IND83"} depending on \code{modality} and \code{strand_type}.
 }
 \description{
 Generates count tables for different mutation type schemas which can be

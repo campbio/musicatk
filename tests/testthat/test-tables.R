@@ -369,13 +369,8 @@ test_that("DBS78 has a zero column for samples without DBS", {
 test_that("rc() reverse-complements vectors, including empty ones (#132)", {
   expect_identical(rc(character(0)), character(0))
   expect_identical(rc("ATGC"), "GCAT")
-  dna <- c("AC", "GGT", "TTAG")
-  expect_identical(
-    rc(dna),
-    as.character(Biostrings::reverseComplement(
-      Biostrings::DNAStringSet(dna)
-    ), use.names = FALSE)
-  )
+  expect_identical(rc(c("AC", "GGT", "TTAG")), c("GT", "ACC", "CTAA"))
+  expect_identical(rc(c(a = "atgc", b = "RYN")), c("GCAT", "NRY"))
   expect_error(rc(1), "Must be character")
 })
 
@@ -446,7 +441,7 @@ test_that("SBS192 overwrite check and message use the table's name (#17)", {
 })
 
 test_that("Build messages name the table an alias creates (#17)", {
-  data(musica)
+  data(musica, envir = environment())
   g <- select_genome("hg38")
   expect_message(
     suppressWarnings(build_standard_table(musica, g, "SNV96",
@@ -463,10 +458,10 @@ test_that("Build messages name the table an alias creates (#17)", {
 })
 
 test_that("combine_count_tables() names the missing tables (#137)", {
-  data(musica)
-  expect_true("SBS96" %in% names(tables(musica)))
+  data(musica, envir = environment())
+  expect_identical(names(tables(musica)), "SBS96")
   expect_error(
     combine_count_tables(musica, c("SBS96", "nope"), "combo"),
-    "nope"
+    "These tables don't exist: nope.*Current table names are: SBS96"
   )
 })

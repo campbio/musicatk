@@ -11,7 +11,7 @@ rc(dna)
 vector gives an empty vector.}
 }
 \value{
-Returns the reverse compliment of each input DNA string, without
+Returns the reverse complement of each input DNA string, without
 names
 }
 \description{

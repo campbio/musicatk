@@ -387,7 +387,7 @@ create_dbs78_table <- function(musica, overwrite = overwrite, verbose) {
 #'
 #' @param dna Input DNA string, or a character vector of them. An empty
 #' vector gives an empty vector.
-#' @return Returns the reverse compliment of each input DNA string, without
+#' @return Returns the reverse complement of each input DNA string, without
 #' names
 #' @examples
 #' rc("ATGC")
@@ -439,9 +439,9 @@ rc <- function(dna) {
 #' @param verbose Show progress bar for processed samples
 #' @param table_name Use modality instead
 #' @return No object will be returned. The count tables will be automatically
-#' added to the \code{musica} object, under the name the message gives:
-#' \code{"SBS96"}, \code{"SBS192_Trans"}, \code{"SBS192_Rep"},
-#' \code{"DBS78"} or \code{"IND83"}, whichever alias \code{modality} uses.
+#' added to the \code{musica} object, named \code{"SBS96"},
+#' \code{"SBS192_Trans"}, \code{"SBS192_Rep"}, \code{"DBS78"} or
+#' \code{"IND83"} depending on \code{modality} and \code{strand_type}.
 #' @examples
 #' g <- select_genome("hg38")
 #'

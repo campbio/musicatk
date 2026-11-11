@@ -384,7 +384,11 @@ combine_count_tables <- function(musica, to_comb, name,
     )
   } else {
     missing <- paste(setdiff(to_comb, names(tab)), collapse = ", ")
-    current <- paste(names(tab), collapse = ", ")
+    current <- if (length(tab) > 0) {
+      paste(names(tab), collapse = ", ")
+    } else {
+      "none"
+    }
     stop(
       "These tables don't exist: ", missing, ". Create them before ",
       "combining. Current table names are: ", current

@@ -1,6 +1,6 @@
 # musicatk 2.7.14 (2026-11-11)
 * `build_standard_table(..., "DBS78")` works when no DBS has a reference that needs reverse-complementing (for example, only CC>TT); before, it stopped with "Must be character or character vector" (#132, #52). `rc()` returns an empty vector for an empty input, and is vectorised, so it is much faster on long vectors.
-* `build_standard_table(..., "SBS192")` without `strand_type` stops with an error saying it is needed; before, it failed with "argument is of length zero" (#136). The check for an existing table uses the table's name, `SBS192_Trans` or `SBS192_Rep`, so building it again stops with "already exists" or, with `overwrite = TRUE`, warns that it is overwritten, as the other tables do.
+* `build_standard_table(..., "SBS192")` without `strand_type` stops with an error saying it is needed; before, it failed with "argument is of length zero" (#136). The check for an existing table uses the table's name, `SBS192_Trans` or `SBS192_Rep`, as for the other tables. Building SBS192 again without `overwrite = TRUE` now stops with "already exists"; before, it replaced the table without a warning. With `overwrite = TRUE` it warns that the table is overwritten.
 * `build_standard_table()` messages name the table they create, for example "Building count table 'SBS96' ..." for `modality = "SNV96"`, so the name to use afterwards is clear (#17).
 * `combine_count_tables()` names the tables that don't exist; before, that error failed with 'argument "y" is missing' (#137).
 
