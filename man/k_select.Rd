@@ -12,7 +12,8 @@ k_select(
   method = "wss",
   clust.method = "kmeans",
   n = 10,
-  proportional = TRUE
+  proportional = TRUE,
+  seed = 1
 )
 }
 \arguments{
@@ -38,10 +39,16 @@ are "kmeans" (default), "hclust" (hierarchical clustering), "hkmeans", "pam",
 and "clara".}
 
 \item{n}{An integer indicating maximum number of clusters to test. Default is
-10.}
+10. It is lowered, with a message, to the number of samples minus one.
+At least three samples are needed.}
 
 \item{proportional}{Logical, indicating if proportional exposure (default)
 will be used for clustering.}
+
+\item{seed}{Seed for the random steps (k-means starts, and the bootstrap of
+"gap_stat"), so the plot is the same each time; the caller's random number
+state is left unchanged. \code{NULL} uses the caller's random number state.
+Default \code{1}.}
 }
 \value{
 A ggplot object.

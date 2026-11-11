@@ -15,8 +15,10 @@ cluster_exposure(
   dis.method = "euclidean",
   hc.method = "ward.D",
   clara.samples = 5,
-  iter.max = 10,
-  tol = 1e-15
+  iter.max = NULL,
+  tol = 1e-15,
+  nstart = 10,
+  seed = 1
 )
 }
 \arguments{
@@ -36,13 +38,16 @@ Default \code{"result"}.}
 \item{proportional}{Logical, indicating if proportional exposure (default)
 will be used for clustering.}
 
-\item{method}{Clustering algorithms. Options are "kmeans" (K-means),
-"hkmeans" (hybrid of hierarchical
-K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara"
-(Clara).}
+\item{method}{Clustering algorithms. Options are "kmeans" (K-means, with
+\link[stats]{kmeans}, seeded by \code{seed}), "fanny" (fuzzy clustering, with
+\link[cluster]{fanny}), "hkmeans" (hybrid of hierarchical K-means),
+"hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).}
 
 \item{dis.method}{Methods to calculate dissimilarity matrix. Options are
-"euclidean" (default), "manhattan", "jaccard", "cosine", and "canberra".}
+"euclidean" (default), "manhattan", "jaccard", "cosine" (1 - cosine
+similarity), and "canberra". "kmeans" accepts only "euclidean",
+"hkmeans" accepts "euclidean", "manhattan" and "canberra", and "clara"
+accepts "euclidean", "manhattan" and "jaccard".}
 
 \item{hc.method}{Methods to perform hierarchical clustering. Options are
 "ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty",
@@ -51,9 +56,18 @@ K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara"
 \item{clara.samples}{Number of samples to be drawn from dataset. Only used
 when "clara" is selected. Default is 5.}
 
-\item{iter.max}{Maximum number of iterations for k-means clustering.}
+\item{iter.max}{Maximum number of iterations, for "kmeans", "hkmeans" and
+"fanny". Default \code{NULL} uses 10 for "kmeans" and "hkmeans" and 500
+for "fanny".}
 
-\item{tol}{Tolerance level for kmeans clustering level iterations}
+\item{tol}{Tolerance for convergence, for "fanny" only.}
+
+\item{nstart}{Number of random starts, for "kmeans" only. Default
+\code{10}.}
+
+\item{seed}{Seed for the random starts of "kmeans", so the clusters are the
+same each time; the caller's random number state is left unchanged.
+\code{NULL} uses the caller's random number state. Default \code{1}.}
 }
 \value{
 A one-column data frame with sample IDs as row names and cluster

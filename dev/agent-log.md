@@ -669,3 +669,35 @@ build name, as `annotate_transcript_strand()` does. The app would then pass
 **Resolved in the same branch:** the maintainer approved having
 `annotate_replication_strand()` take `"hg19"`/`"hg38"`, and the app now
 passes the selected genome straight through.
+
+## 2026-11-10: differential analysis and clustering (PR G of #208)
+
+Found by the spec review of `fix/diff-analysis-clustering`; pre-existing,
+left out of that PR.
+
+### 1. `exposure_differential_analysis()` rejects factor `group1`/`group2`
+
+`group1` and `group2` must be character, although the annotation itself
+may be a factor. Passing `levels(f)[1:2]` works; `f[1:2]` errors with
+"must be character vectors". The Shiny app passes character vectors.
+
+### 2. Misleading message for kruskal and glm.nb with group1/group2
+
+With three or more groups and `method = "kruskal"` or `"glm.nb"`, giving
+`group1`/`group2` prints "'annotations' is of length 2. 'group1' and
+'group2' were ignored.", though the annotation has more than two values.
+
+### 3. Duplicate wilcox pairs are accepted
+
+The error says pairs "must be unique", but the check only rejects
+`group1[i] == group2[i]`, so `group1 = c("A", "A")`,
+`group2 = c("B", "B")` runs the same comparison twice.
+
+### 4. `k_select()` doesn't match `cluster_exposure()`'s distances
+
+`k_select()` has no `"fanny"` option, and its `"hclust"` and `"pam"` paths
+call `fviz_nbclust()` on the exposure matrix with Euclidean distance,
+ignoring any `dis.method`. Now that `cluster_exposure()` uses `dis.method`
+for hclust (#173), k picked with `k_select()` may not suit a cosine or
+Manhattan clustering. Found by `/code-review` of PR G.
+

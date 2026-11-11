@@ -11,19 +11,29 @@
 #' @param nclust Pre-defined number of clusters.
 #' @param proportional Logical, indicating if proportional exposure (default)
 #' will be used for clustering.
-#' @param method Clustering algorithms. Options are "kmeans" (K-means),
-#' "hkmeans" (hybrid of hierarchical
-#' K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara"
-#' (Clara).
+#' @param method Clustering algorithms. Options are "kmeans" (K-means, with
+#' \link[stats]{kmeans}, seeded by \code{seed}), "fanny" (fuzzy clustering, with
+#' \link[cluster]{fanny}), "hkmeans" (hybrid of hierarchical K-means),
+#' "hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).
 #' @param dis.method Methods to calculate dissimilarity matrix. Options are
-#' "euclidean" (default), "manhattan", "jaccard", "cosine", and "canberra".
+#' "euclidean" (default), "manhattan", "jaccard", "cosine" (1 - cosine
+#' similarity), and "canberra". "kmeans" accepts only "euclidean",
+#' "hkmeans" accepts "euclidean", "manhattan" and "canberra", and "clara"
+#' accepts "euclidean", "manhattan" and "jaccard".
 #' @param hc.method Methods to perform hierarchical clustering. Options are
 #' "ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty",
 #' "median", and "centroid".
 #' @param clara.samples Number of samples to be drawn from dataset. Only used
 #' when "clara" is selected. Default is 5.
-#' @param iter.max Maximum number of iterations for k-means clustering.
-#' @param tol Tolerance level for kmeans clustering level iterations
+#' @param iter.max Maximum number of iterations, for "kmeans", "hkmeans" and
+#' "fanny". Default \code{NULL} uses 10 for "kmeans" and "hkmeans" and 500
+#' for "fanny".
+#' @param tol Tolerance for convergence, for "fanny" only.
+#' @param nstart Number of random starts, for "kmeans" only. Default
+#' \code{10}.
+#' @param seed Seed for the random starts of "kmeans", so the clusters are the
+#' same each time; the caller's random number state is left unchanged.
+#' \code{NULL} uses the caller's random number state. Default \code{1}.
 #' @return A one-column data frame with sample IDs as row names and cluster
 #' number for each sample.
 #' @seealso \link[stats]{kmeans}
@@ -37,7 +47,8 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
                              result_name = "result", nclust,
                              proportional = TRUE, method = "kmeans",
                              dis.method = "euclidean", hc.method = "ward.D",
-                             clara.samples = 5, iter.max = 10, tol = 1e-15) {
+                             clara.samples = 5, iter.max = NULL, tol = 1e-15,
+                             nstart = 10, seed = 1) {
   # check if valid result_name
   if (!(result_name %in% names(result_list(musica)))) {
     stop(
@@ -72,7 +83,7 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
   )
 
   method <- match.arg(method, c(
-    "kmeans", "hkmeans", "hclust",
+    "kmeans", "fanny", "hkmeans", "hclust",
     "pam", "clara"
   ))
   dis.method <- match.arg(dis.method, c(
@@ -90,13 +101,38 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
   } else {
     expos <- t(expos)
   }
-  # Calculate dissimilarity matrix
-  diss <- philentropy::distance(x = expos, method = dis.method,
-                                use.row.names = TRUE, as.dist.obj = TRUE)
+  # Calculate dissimilarity matrix for the methods that use one
+  if (method %in% c("fanny", "hclust", "pam")) {
+    diss <- philentropy::distance(x = expos, method = dis.method,
+                                  use.row.names = TRUE, as.dist.obj = TRUE)
+    # philentropy's "cosine" is a similarity
+    if (dis.method == "cosine") {
+      diss <- 1 - diss
+      # Rounding can leave identical directions slightly below zero
+      diss[diss < 0] <- 0
+    }
+  }
   # Perform clustering
   if (method == "kmeans") {
+    if (dis.method != "euclidean") {
+      stop("For kmeans clustering, dis.method must be \"euclidean\"; ",
+           "use \"pam\", \"fanny\" or \"hclust\" for other distances.")
+    }
+    run_kmeans <- function() {
+      stats::kmeans(x = expos, centers = nclust,
+                    iter.max = if (is.null(iter.max)) 10 else iter.max,
+                    nstart = nstart)
+    }
+    res <- if (is.null(seed)) {
+      run_kmeans()
+    } else {
+      withr::with_seed(seed, run_kmeans())
+    }
+    clust_out <- data.frame(cluster = res$cluster)
+  } else if (method == "fanny") {
     res <- cluster::fanny(
-      x = diss, k = nclust, diss = TRUE, maxit = iter.max,
+      x = diss, k = nclust, diss = TRUE,
+      maxit = if (is.null(iter.max)) 500 else iter.max,
       tol = tol
     )
     clust_out <- data.frame(cluster = res$clustering)
@@ -107,11 +143,12 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
     }
     res <- factoextra::hkmeans(
       x = expos, k = nclust, hc.metric = dis.method,
-      hc.method = hc.method, iter.max = iter.max
+      hc.method = hc.method,
+      iter.max = if (is.null(iter.max)) 10 else iter.max
     )
     clust_out <- data.frame(cluster = res$cluster)
   } else if (method == "hclust") {
-    res <- factoextra::hcut(x = diss, k = nclust, isdiss = FALSE,
+    res <- factoextra::hcut(x = diss, k = nclust, isdiss = TRUE,
                             hc_method = hc.method)
     clust_out <- data.frame(cluster = res$cluster)
   } else if (method == "pam") {
@@ -309,9 +346,14 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' are "kmeans" (default), "hclust" (hierarchical clustering), "hkmeans", "pam",
 #' and "clara".
 #' @param n An integer indicating maximum number of clusters to test. Default is
-#' 10.
+#' 10. It is lowered, with a message, to the number of samples minus one.
+#' At least three samples are needed.
 #' @param proportional Logical, indicating if proportional exposure (default)
 #' will be used for clustering.
+#' @param seed Seed for the random steps (k-means starts, and the bootstrap of
+#' "gap_stat"), so the plot is the same each time; the caller's random number
+#' state is left unchanged. \code{NULL} uses the caller's random number state.
+#' Default \code{1}.
 #' @return A ggplot object.
 #' @seealso \link[factoextra]{fviz_nbclust}
 #' @examples
@@ -326,7 +368,8 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' @export
 k_select <- function(musica, model_name, modality = "SBS96",
                      result_name = "result", method = "wss",
-                     clust.method = "kmeans", n = 10, proportional = TRUE) {
+                     clust.method = "kmeans", n = 10, proportional = TRUE,
+                     seed = 1) {
   # check if valid result_name
   if (!(result_name %in% names(result_list(musica)))) {
     stop(
@@ -369,17 +412,40 @@ k_select <- function(musica, model_name, modality = "SBS96",
   } else {
     expos <- t(expos)
   }
-  if (clust.method == "kmeans") {
-    factoextra::fviz_nbclust(expos, stats::kmeans, method = method, k.max = n)
-  } else if (clust.method == "hclust") {
-    factoextra::fviz_nbclust(expos, factoextra::hcut, method = method,
-                             k.max = n)
-  } else if (clust.method == "hkmeans") {
-    factoextra::fviz_nbclust(expos, factoextra::hkmeans, method = method,
-                             k.max = n)
-  } else if (clust.method == "pam") {
-    factoextra::fviz_nbclust(expos, cluster::pam, method = method, k.max = n)
+  if (!is.numeric(n) || length(n) != 1 || is.na(n) || n < 2) {
+    stop("'n' must be a single number of at least 2.")
+  }
+  n_samples <- nrow(expos)
+  if (n_samples < 3) {
+    stop("k_select() needs at least three samples; the model has ",
+         n_samples, ".")
+  }
+  if (n > n_samples - 1) {
+    message("Testing up to ", n_samples - 1, " clusters, one fewer than the ",
+            n_samples, " samples, instead of n = ", n, ".")
+    n <- n_samples - 1
+  }
+  run_nbclust <- function() {
+    if (clust.method == "kmeans") {
+      factoextra::fviz_nbclust(expos, stats::kmeans, method = method,
+                               k.max = n, nstart = 10)
+    } else if (clust.method == "hclust") {
+      factoextra::fviz_nbclust(expos, factoextra::hcut, method = method,
+                               k.max = n)
+    } else if (clust.method == "hkmeans") {
+      factoextra::fviz_nbclust(expos, factoextra::hkmeans, method = method,
+                               k.max = n)
+    } else if (clust.method == "pam") {
+      factoextra::fviz_nbclust(expos, cluster::pam, method = method,
+                               k.max = n)
+    } else {
+      factoextra::fviz_nbclust(expos, cluster::clara, method = method,
+                               k.max = n)
+    }
+  }
+  if (is.null(seed)) {
+    run_nbclust()
   } else {
-    factoextra::fviz_nbclust(expos, cluster::clara, method = method, k.max = n)
+    withr::with_seed(seed, run_nbclust())
   }
 }

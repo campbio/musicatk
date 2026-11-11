@@ -135,3 +135,168 @@ test_that(desc = "Diff Anal pairs annotations with exposures by name", {
   )
   expect_equal(observed[["p-value"]], expected)
 })
+
+# Exposures of res_annot with one annotation value per exposure column
+.diff_fixture <- function() {
+  data("res_annot", envir = environment())
+  samp_annot(res_annot, "test") <- rep(c("A", "B", "C"), 4)
+  e <- exposures(res_annot, "result", "SBS96", "res_annot")
+  annot <- samp_annot(res_annot)
+  index <- match(colnames(e), as.character(annot$Samples))
+  list(
+    musica = res_annot, exposures = e, test = annot$test[index],
+    subtype = annot$Tumor_Subtypes[index]
+  )
+}
+
+test_that(desc = "glm.nb labels the intercept and adjusts each group (#169)", {
+  fx <- .diff_fixture()
+  res <- suppressWarnings(exposure_differential_analysis(
+    fx$musica, "res_annot", "test",
+    method = "glm.nb"
+  ))
+  expect_equal(colnames(res), c(
+    "Intercept(coef)", "B(coef)", "C(coef)",
+    "Intercept(Std. Error)", "B(Std. Error)", "C(Std. Error)",
+    "Intercept(z)", "B(z)", "C(z)",
+    "Intercept(Pr(>|z|))", "B(Pr(>|z|))", "C(Pr(>|z|))",
+    "B(fdr)", "C(fdr)", "ANOVA(Pr(>Chi))", "ANOVA(fdr)"
+  ))
+  groups <- factor(fx$test)
+  for (g in c("B", "C")) {
+    expected <- vapply(seq_len(nrow(fx$exposures)), function(i) {
+      fit <- suppressWarnings(MASS::glm.nb(round(fx$exposures[i, ]) ~ groups))
+      summary(fit)$coefficients[paste0("groups", g), "Pr(>|z|)"]
+    }, numeric(1))
+    expect_equal(res[[paste0(g, "(Pr(>|z|))")]], expected)
+    expect_equal(res[[paste0(g, "(fdr)")]], p.adjust(expected, "BH"))
+  }
+})
+
+test_that(desc = "glm.nb uses the first factor level as the reference", {
+  fx <- .diff_fixture()
+  samp_annot(fx$musica, "test") <- factor(
+    rep(c("A", "B", "C"), 4),
+    levels = c("C", "A", "B")
+  )
+  res <- suppressWarnings(exposure_differential_analysis(
+    fx$musica, "res_annot", "test",
+    method = "glm.nb"
+  ))
+  expect_equal(
+    grep("\\(fdr\\)$", colnames(res), value = TRUE),
+    c("A(fdr)", "B(fdr)", "ANOVA(fdr)")
+  )
+})
+
+test_that(desc = "wilcox returns numeric p-values and FDRs (#171)", {
+  fx <- .diff_fixture()
+  res <- exposure_differential_analysis(fx$musica, "res_annot",
+    "Tumor_Subtypes",
+    method = "wilcox"
+  )
+  expect_equal(
+    colnames(res),
+    c("Signature", "Group1", "Group2", "p-value", "fdr")
+  )
+  expect_type(res[["p-value"]], "double")
+  expect_type(res$fdr, "double")
+  expected <- matrixTests::row_wilcoxon_twosample(
+    fx$exposures[, fx$subtype == "Lung"],
+    fx$exposures[, fx$subtype == "Skin"]
+  )$pvalue
+  expect_equal(res[["p-value"]], expected)
+  expect_equal(res$fdr, p.adjust(expected, "BH"))
+})
+
+test_that(desc = "wilcox runs three comparisons, BH within each (#170)", {
+  fx <- .diff_fixture()
+  res <- exposure_differential_analysis(fx$musica, "res_annot", "test",
+    method = "wilcox",
+    group1 = c("A", "A", "B"), group2 = c("B", "C", "C")
+  )
+  n_sigs <- nrow(fx$exposures)
+  expect_equal(nrow(res), 3 * n_sigs)
+  expect_equal(res$Signature, rep(rownames(fx$exposures), 3))
+  expect_equal(res$Group1, rep(c("A", "A", "B"), each = n_sigs))
+  expect_equal(res$Group2, rep(c("B", "C", "C"), each = n_sigs))
+  for (i in seq_len(3)) {
+    rows <- seq_len(n_sigs) + (i - 1) * n_sigs
+    x <- fx$exposures[, fx$test == res$Group1[rows[1]]]
+    y <- fx$exposures[, fx$test == res$Group2[rows[1]]]
+    expected <- matrixTests::row_wilcoxon_twosample(x, y)$pvalue
+    expect_equal(res[["p-value"]][rows], expected)
+    expect_equal(res$fdr[rows], p.adjust(expected, "BH"))
+  }
+})
+
+test_that(desc = "plot_differential_analysis plots -log10(FDR) (#174)", {
+  fx <- .diff_fixture()
+  sigs <- rownames(fx$exposures)
+
+  wil <- exposure_differential_analysis(fx$musica, "res_annot", "test",
+    method = "wilcox", group1 = c("A", "A"), group2 = c("B", "C")
+  )
+  p <- plot_differential_analysis(wil)
+  expect_s3_class(p, "ggplot")
+  expect_equal(p$data$value, -log10(wil$fdr))
+  expect_equal(p$data$signature, wil$Signature)
+  expect_equal(
+    as.character(p$data$comparison),
+    paste(wil$Group1, "vs", wil$Group2)
+  )
+
+  kw <- exposure_differential_analysis(fx$musica, "res_annot", "test",
+    method = "kruskal"
+  )
+  p <- plot_differential_analysis(kw)
+  expect_s3_class(p, "ggplot")
+  expect_equal(p$data$value, -log10(kw$fdr))
+  expect_equal(p$data$signature, sigs)
+
+  nb <- suppressWarnings(exposure_differential_analysis(
+    fx$musica, "res_annot", "test",
+    method = "glm.nb"
+  ))
+  p <- plot_differential_analysis(nb)
+  expect_s3_class(p, "ggplot")
+  expect_equal(
+    p$data$value,
+    -log10(c(nb[["B(fdr)"]], nb[["C(fdr)"]], nb[["ANOVA(fdr)"]]))
+  )
+  expect_equal(p$data$signature, rep(sigs, 3))
+  expect_equal(
+    as.character(p$data$comparison),
+    rep(c("B vs A", "C vs A", "ANOVA"), each = length(sigs))
+  )
+
+  nb[["B(fdr)"]][1] <- NA
+  expect_message(p <- plot_differential_analysis(nb), "B vs A Signature1")
+  expect_equal(nrow(p$data), 3 * length(sigs) - 1)
+})
+
+test_that(desc = "plot_differential_analysis checks its input (#174)", {
+  fx <- .diff_fixture()
+  kw <- exposure_differential_analysis(fx$musica, "res_annot", "test",
+    method = "kruskal"
+  )
+  expect_error(
+    plot_differential_analysis(data.frame(a = 1)),
+    "exposure_differential_analysis"
+  )
+  expect_warning(
+    plot_differential_analysis(kw, "glm", 2),
+    "ignored"
+  )
+})
+
+test_that(desc = "glm.nb rejects groups named like its other columns", {
+  fx <- .diff_fixture()
+  samp_annot(fx$musica, "test") <- rep(c("A", "ANOVA", "C"), 4)
+  expect_error(
+    exposure_differential_analysis(fx$musica, "res_annot", "test",
+      method = "glm.nb"
+    ),
+    "can't be named 'ANOVA'"
+  )
+})

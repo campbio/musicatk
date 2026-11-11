@@ -30,7 +30,9 @@ exposure_differential_analysis(
 \item{result_name}{Name of the result list entry. Default \code{"result"}.}
 
 \item{method}{Any method in \code{c("wilcox", "kruskal", "glm.nb")}
-used to perform differential analysis on signature exposures}
+used to perform differential analysis on signature exposures. For
+\code{"glm.nb"}, the first level of \code{annotation} (the first in sorted
+order for a character column) is the reference group.}
 
 \item{group1}{character vector used in the Wilcox test. Elements in
 \code{group1} are compared to elements in \code{group2}. This is
@@ -43,8 +45,25 @@ required for \code{annotation} with more than 2 levels.}
 \item{...}{Additional arguments to be passed to the chosen method}
 }
 \value{
-A matrix containing statistics summarizing the analysis dependent
-on the chosen method
+A data frame whose columns depend on the method. P-values are
+adjusted with the Benjamini-Hochberg method (\code{fdr} columns).
+\describe{
+  \item{\code{"wilcox"}}{One row per signature and comparison, with columns
+  \code{Signature}, \code{Group1}, \code{Group2}, \code{p-value} and
+  \code{fdr}. The FDR is adjusted within each comparison, across
+  signatures.}
+  \item{\code{"kruskal"}}{One row per signature, with columns
+  \code{K-W chi-squared}, \code{df}, \code{p-value} and \code{fdr}.}
+  \item{\code{"glm.nb"}}{One row per signature. \code{Intercept(coef)},
+  \code{Intercept(Std. Error)}, \code{Intercept(z)} and
+  \code{Intercept(Pr(>|z|))} describe the reference group. For each other
+  group, \code{<group>(coef)} is its log fold change against the reference,
+  with \code{<group>(Std. Error)}, \code{<group>(z)},
+  \code{<group>(Pr(>|z|))} and \code{<group>(fdr)}, adjusted across
+  signatures. \code{ANOVA(Pr(>Chi))} and \code{ANOVA(fdr)} test the
+  annotation as a whole. The reference group's name is stored in the
+  \code{"reference"} attribute.}
+}
 }
 \description{
 \code{exposure_differential_analysis} is used to run

@@ -15,7 +15,9 @@
 #' \code{"SBS96"}.
 #' @param result_name Name of the result list entry. Default \code{"result"}.
 #' @param method Any method in \code{c("wilcox", "kruskal", "glm.nb")}
-#' used to perform differential analysis on signature exposures
+#' used to perform differential analysis on signature exposures. For
+#' \code{"glm.nb"}, the first level of \code{annotation} (the first in sorted
+#' order for a character column) is the reference group.
 #' @param group1 character vector used in the Wilcox test. Elements in
 #' \code{group1} are compared to elements in \code{group2}. This is
 #' required for \code{annotation} with more than 2 levels.
@@ -23,8 +25,25 @@
 #' \code{group2} are compared to elements in \code{group1}. This is
 #' required for \code{annotation} with more than 2 levels.
 #' @param ... Additional arguments to be passed to the chosen method
-#' @return A matrix containing statistics summarizing the analysis dependent
-#' on the chosen method
+#' @return A data frame whose columns depend on the method. P-values are
+#' adjusted with the Benjamini-Hochberg method (\code{fdr} columns).
+#' \describe{
+#'   \item{\code{"wilcox"}}{One row per signature and comparison, with columns
+#'   \code{Signature}, \code{Group1}, \code{Group2}, \code{p-value} and
+#'   \code{fdr}. The FDR is adjusted within each comparison, across
+#'   signatures.}
+#'   \item{\code{"kruskal"}}{One row per signature, with columns
+#'   \code{K-W chi-squared}, \code{df}, \code{p-value} and \code{fdr}.}
+#'   \item{\code{"glm.nb"}}{One row per signature. \code{Intercept(coef)},
+#'   \code{Intercept(Std. Error)}, \code{Intercept(z)} and
+#'   \code{Intercept(Pr(>|z|))} describe the reference group. For each other
+#'   group, \code{<group>(coef)} is its log fold change against the reference,
+#'   with \code{<group>(Std. Error)}, \code{<group>(z)},
+#'   \code{<group>(Pr(>|z|))} and \code{<group>(fdr)}, adjusted across
+#'   signatures. \code{ANOVA(Pr(>Chi))} and \code{ANOVA(fdr)} test the
+#'   annotation as a whole. The reference group's name is stored in the
+#'   \code{"reference"} attribute.}
+#' }
 #' @examples
 #' data("res_annot")
 #' exposure_differential_analysis(res_annot,
@@ -74,8 +93,9 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
 
   exposures <- exposures(model)
   annotations <- .annot_for_samples(musica, annotation, colnames(exposures))
-  groups <- unique(annotations) %>% sort()
+  # The groups follow the factor levels the models use
   annotations <- factor(annotations)
+  groups <- levels(annotations)
   if (length(groups) < 2) {
     stop("annotation must have at least 2 unique values")
   }
@@ -111,45 +131,21 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
       group1 <- groups[1]
       group2 <- groups[2]
     }
-    n_sigs <- dim(signatures(model))[2]
-    header <- data.frame(x = group1, y = group2) %>%
-      dplyr::mutate(
-        p = paste0(.data$x, "-", .data$y, "(Pr(>|z|))"),
-        adj = paste0(.data$x, "-", .data$y, "(fdr)")
+    diff.out <- lapply(seq_along(group1), FUN = function(i) {
+      x <- exposures[, annotations == group1[i], drop = FALSE]
+      y <- exposures[, annotations == group2[i], drop = FALSE]
+      p <- matrixTests::row_wilcoxon_twosample(x, y, ...)$pvalue
+      # BH within each comparison, across signatures
+      data.frame(
+        Signature = rownames(exposures),
+        Group1 = as.character(group1[i]),
+        Group2 = as.character(group2[i]),
+        `p-value` = p,
+        fdr = p.adjust(p, method = "BH"),
+        check.names = FALSE
       )
-    group_cols <- c(
-      lapply(group1, function(x) {
-        rep(x, n_sigs)
-      }),
-      lapply(group2, function(x) {
-        rep(x, n_sigs)
-      })
-    ) %>%
-      unlist() %>%
-      cbind() %>%
-      matrix(ncol = 2)
-    group_cols <- cbind(rep(rownames(exposures), length(group1)), group_cols)
-    diff.out <- lapply(seq_len(length(group1)), FUN = function(i) {
-      x <- exposures[, annotations == group1[i]] %>%
-        as.matrix()
-      y <- exposures[, annotations == group2[i]] %>%
-        as.matrix()
-      out <- matrixTests::row_wilcoxon_twosample(x, y, ...)$pvalue
-      return(out)
-    }) %>%
-      unlist() %>%
-      matrix(ncol = 1)
-    p <- p.adjust(
-      diff.out[, (ncol(diff.out) - length(group1) + 1):ncol(diff.out)],
-      method = "BH"
-    ) %>%
-      matrix(ncol = 1, byrow = FALSE)
-    diff.out <- cbind(group_cols, matrix(diff.out, ncol = 1), p) %>%
-      as.data.frame()
-    colnames(diff.out) <- c(
-      "Signature", "Group1", "Group2", "Pr(>|z|)",
-      "(fdr)"
-    )
+    })
+    diff.out <- do.call(rbind, diff.out)
   } else if (method == "kruskal") {
     header <- c("K-W chi-squared", "df", "p-value", "fdr")
     diff.out <- matrixTests::row_kruskalwallis(exposures, annotations, ...) %>%
@@ -158,72 +154,149 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
     colnames(diff.out) <- header
     rownames(diff.out) <- rownames(exposures)
   } else if (method == "glm.nb") {
-    header <- data.frame(y = groups) %>%
-      dplyr::mutate(
-        coef = paste0(.data$y, "(coef)"),
-        sd = paste0(.data$y, "(Std. Error)"),
-        z = paste0(.data$y, "(z)"),
-        p = paste0(.data$y, "(Pr(>|z|))"),
-        adj = paste0(.data$y, "(fdr)")
+    reserved <- intersect(groups, c("Intercept", "ANOVA"))
+    if (length(reserved) > 0) {
+      reserved <- paste0("'", reserved, "'", collapse = " or ")
+      stop(
+        "For glm.nb, annotation values can't be named ", reserved,
+        ", which label the intercept and ANOVA columns."
       )
-    diff.out <- apply(exposures, 1, FUN = function(y) {
+    }
+    # Coefficients are read by name, so an aliased term gives NA
+    terms <- c("(Intercept)", paste0("annotations", groups[-1]))
+    labels <- c("Intercept", groups[-1])
+    coef_cols <- c("Estimate", "Std. Error", "z value", "Pr(>|z|)")
+    fits <- apply(exposures, 1, FUN = function(y) {
       fit <- MASS::glm.nb(round(y) ~ annotations, ...)
-      out <- c(
-        summary(fit)$coefficients,
-        anova(fit)["annotations", "Pr(>Chi)"]
-      )
-      return(out)
-    }) %>% t()
-    anova.out <- data.frame(anova = diff.out[, ncol(diff.out)])
-    anova.out$fdr <- p.adjust(diff.out[, ncol(diff.out)], method = "BH")
-    p <- p.adjust(
-      diff.out[, (ncol(diff.out) - length(groups) + 1):ncol(diff.out)],
-      method = "BH"
-    ) %>% matrix(
-      ncol = length(groups),
-      byrow = FALSE
+      coefs <- summary(fit)$coefficients
+      coefs <- coefs[match(terms, rownames(coefs)), coef_cols, drop = FALSE]
+      # Column-major: every term's estimate, then standard error, z and p
+      c(as.vector(coefs), anova(fit)["annotations", "Pr(>Chi)"])
+    })
+    fits <- matrix(fits, nrow = nrow(exposures), byrow = TRUE)
+    n_terms <- length(terms)
+    group_p <- fits[, 3 * n_terms + seq_len(n_terms)[-1], drop = FALSE]
+    group_fdr <- apply(group_p, 2, p.adjust, method = "BH")
+    group_fdr <- matrix(group_fdr, nrow = nrow(group_p))
+    anova_p <- fits[, ncol(fits)]
+    diff.out <- data.frame(
+      fits[, -ncol(fits), drop = FALSE], group_fdr, anova_p,
+      p.adjust(anova_p, method = "BH")
     )
-    diff.out <- cbind(diff.out[, -ncol(diff.out)], p)
-    diff.out <- cbind(diff.out, anova.out)
     colnames(diff.out) <- c(
-      header$coef, header$sd, header$z, header$p,
-      header$adj, "ANOVA(Pr(>Chi))", "ANOVA(fdr)"
+      paste0(labels, "(coef)"), paste0(labels, "(Std. Error)"),
+      paste0(labels, "(z)"), paste0(labels, "(Pr(>|z|))"),
+      paste0(groups[-1], "(fdr)"), "ANOVA(Pr(>Chi))", "ANOVA(fdr)"
     )
     rownames(diff.out) <- rownames(exposures)
+    # Lets plot_differential_analysis() name the reference group
+    attr(diff.out, "reference") <- groups[1]
   }
   return(diff.out)
 }
 
 
-#' @title Compare exposures of annotated samples
-#' @description \code{plot_differential_analysis} is used to plot
-#' differential analysis created by \code{exposure_differential_analysis}.
-#' @param analysis Analysis created by \code{exposure_differential_analysis}
-#' @param analysis_type Currently only \code{"glm"} supported
-#' @param samp_num Number of samples that went into the analysis
-#' @return Generates a ggplot object
+#' @title Plot a differential analysis of exposures
+#' @description \code{plot_differential_analysis} plots the false discovery
+#' rate of each signature from a table made by
+#' \code{\link{exposure_differential_analysis}}, as \eqn{-log_{10}(FDR)} bars.
+#' The method is read from the table's columns:
+#' \describe{
+#'   \item{\code{"wilcox"}}{one bar per comparison, labelled
+#'   \code{"<Group1> vs <Group2>"};}
+#'   \item{\code{"kruskal"}}{one bar per signature;}
+#'   \item{\code{"glm.nb"}}{one bar per non-reference group, labelled
+#'   \code{"<group> vs <reference>"}, and one for the ANOVA.}
+#' }
+#' An FDR of zero is plotted at the smallest positive double. NA FDRs (terms
+#' that could not be estimated) are left out with a message.
+#' @param analysis A table made by \code{exposure_differential_analysis}.
+#' @param analysis_type Ignored, with a warning. The method is read from
+#' \code{analysis}.
+#' @param samp_num Ignored, with a warning.
+#' @param threshold The FDR drawn as a dashed line. Default \code{0.05}.
+#' @return A ggplot object.
 #' @examples
 #' data("res_annot")
 #' analysis <- exposure_differential_analysis(res_annot,
 #'   model_name = "res_annot",
 #'   annotation = "Tumor_Subtypes", method = "wilcox"
 #' )
-#' plot_differential_analysis(analysis, "glm", 2)
+#' plot_differential_analysis(analysis)
 #' @export
-plot_differential_analysis <- function(analysis, analysis_type, samp_num) {
-  # dummy variables
-  rn <- NULL
-  value <- NULL
-  variable <- NULL
-
-  if (analysis_type == "glm") {
-    dt <- data.table::melt(data.table::setDT(analysis[, seq_len(samp_num)],
-                                             keep.rownames = TRUE), "rn")
-    dt$signif <- ifelse(dt$value < 0.01, 1, 0)
-    p <- ggplot2::ggplot(dt, aes(fill = rn, y = value, x = variable)) +
-      geom_bar(position = "dodge", stat = "identity")
-    p <- .gg_default_theme(p)
-    p <- p + theme(legend.title = element_blank())
-    return(p)
+plot_differential_analysis <- function(analysis, analysis_type = NULL,
+                                       samp_num = NULL, threshold = 0.05) {
+  if (!is.null(analysis_type) || !is.null(samp_num)) {
+    warning(
+      "'analysis_type' and 'samp_num' are ignored; the method is read ",
+      "from the columns of 'analysis'."
+    )
   }
+  valid_threshold <- is.numeric(threshold) && length(threshold) == 1 &&
+    !is.na(threshold) && threshold > 0 && threshold <= 1
+  if (!valid_threshold) {
+    stop("'threshold' must be a single number in (0, 1].")
+  }
+  dt <- .diff_plot_data(analysis)
+  if (anyNA(dt$fdr)) {
+    missing <- unique(paste(dt$comparison, dt$signature)[is.na(dt$fdr)])
+    missing <- paste(missing, collapse = ", ")
+    message(
+      "Leaving out FDRs that are NA (a term that could not be estimated): ",
+      missing
+    )
+    dt <- dt[!is.na(dt$fdr), , drop = FALSE]
+  }
+  dt$value <- -log10(pmax(dt$fdr, .Machine$double.xmin))
+  p <- ggplot2::ggplot(dt, aes(
+    x = .data$signature, y = .data$value,
+    fill = .data$comparison
+  )) +
+    geom_col(position = position_dodge()) +
+    geom_hline(yintercept = -log10(threshold), linetype = "dashed") +
+    scale_x_discrete(limits = unique(dt$signature)) +
+    labs(x = NULL, y = expression(-log[10](FDR)))
+  p <- .gg_default_theme(p)
+  p <- p + theme(legend.title = element_blank())
+  return(p)
+}
+
+# One row per signature and comparison: signature, comparison, fdr
+.diff_plot_data <- function(analysis) {
+  cols <- colnames(analysis)
+  if (!is.data.frame(analysis)) {
+    cols <- NULL
+  }
+  if (all(c("Signature", "Group1", "Group2", "fdr") %in% cols)) {
+    out <- data.frame(
+      signature = as.character(analysis$Signature),
+      comparison = paste(analysis$Group1, "vs", analysis$Group2),
+      fdr = analysis$fdr
+    )
+  } else if (all(c("K-W chi-squared", "fdr") %in% cols)) {
+    out <- data.frame(
+      signature = rownames(analysis), comparison = "Kruskal-Wallis",
+      fdr = analysis$fdr
+    )
+  } else if ("ANOVA(fdr)" %in% cols) {
+    fdr_cols <- grep("\\(fdr\\)$", cols, value = TRUE)
+    labels <- sub("\\(fdr\\)$", "", fdr_cols)
+    reference <- attr(analysis, "reference")
+    if (!is.null(reference)) {
+      groups <- labels != "ANOVA"
+      labels[groups] <- paste(labels[groups], "vs", reference)
+    }
+    out <- data.frame(
+      signature = rep(rownames(analysis), length(fdr_cols)),
+      comparison = rep(labels, each = nrow(analysis)),
+      fdr = unlist(analysis[fdr_cols], use.names = FALSE)
+    )
+  } else {
+    stop(
+      "'analysis' must be a table returned by ",
+      "exposure_differential_analysis()."
+    )
+  }
+  out$comparison <- factor(out$comparison, levels = unique(out$comparison))
+  out
 }
