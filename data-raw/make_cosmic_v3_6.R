@@ -8,7 +8,8 @@
 #
 # Run from the package root:  Rscript data-raw/make_cosmic_v3_6.R
 
-library(musicatk)
+# Use the package source, not an installed musicatk, for the class definitions
+pkgload::load_all(".", export_all = FALSE)
 
 raw_dir <- "data-raw/cosmic_v3.6"
 
@@ -75,35 +76,41 @@ make_result <- function(mat, model_id, modality) {
   methods::new(
     "result_model",
     signatures = mat,
-    exposures = matrix(),
+    # Signature-only objects carry an empty exposure matrix
+    exposures = matrix(numeric(0), 0, 0),
     num_signatures = ncol(mat),
     modality = modality,
     model_id = model_id
   )
 }
 
-# Templates supply the canonical motif ordering for each modality.
-data(cosmic_v3_sbs_sigs, cosmic_v3_dbs_sigs, cosmic_v3_indel_sigs,
-     package = "musicatk")
+# Templates supply the canonical motif ordering for each modality. Read them
+# from data/ in this source tree, before the loop below overwrites those files.
+tmpl <- new.env()
+for (f in c("cosmic_v3_sbs_sigs", "cosmic_v3_dbs_sigs",
+            "cosmic_v3_indel_sigs")) {
+  load(file.path("data", paste0(f, ".rda")), envir = tmpl)
+}
 
 specs <- list(
   list(obj = "cosmic_v3_sbs_sigs_grch38", file = "COSMIC_v3.6_SBS_GRCh38.txt",
-       fn = sbs_cosmic_to_musicatk, tmpl = cosmic_v3_sbs_sigs,
+       fn = sbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_sbs_sigs,
        modality = "SBS96", model_id = "Cosmic_v3.6_SBS_Genome_GRCh38"),
   list(obj = "cosmic_v3_dbs_sigs_grch38", file = "COSMIC_v3.6_DBS_GRCh38.txt",
-       fn = dbs_cosmic_to_musicatk, tmpl = cosmic_v3_dbs_sigs,
+       fn = dbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_dbs_sigs,
        modality = "DBS78", model_id = "Cosmic_v3.6_DBS_Genome_GRCh38"),
   # GRCh37 objects keep the unsuffixed historical names: COSMIC itself defaults
-  # to GRCh37, as do the objects these replace.
+  # to GRCh37, as do the objects these replace. COSMIC publishes one Indel
+  # catalogue for both builds, so its model id names no build.
   list(obj = "cosmic_v3_sbs_sigs", file = "COSMIC_v3.6_SBS_GRCh37.txt",
-       fn = sbs_cosmic_to_musicatk, tmpl = cosmic_v3_sbs_sigs,
+       fn = sbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_sbs_sigs,
        modality = "SBS96", model_id = "Cosmic_v3.6_SBS_Genome_GRCh37"),
   list(obj = "cosmic_v3_dbs_sigs", file = "COSMIC_v3.6_DBS_GRCh37.txt",
-       fn = dbs_cosmic_to_musicatk, tmpl = cosmic_v3_dbs_sigs,
+       fn = dbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_dbs_sigs,
        modality = "DBS78", model_id = "Cosmic_v3.6_DBS_Genome_GRCh37"),
   list(obj = "cosmic_v3_indel_sigs", file = "COSMIC_v3.6_ID_GRCh37.txt",
-       fn = id_cosmic_to_musicatk, tmpl = cosmic_v3_indel_sigs,
-       modality = "IND83", model_id = "Cosmic_v3.6_Indel_Genome_GRCh37")
+       fn = id_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_indel_sigs,
+       modality = "IND83", model_id = "Cosmic_v3.6_Indel_Genome")
 )
 
 for (s in specs) {
