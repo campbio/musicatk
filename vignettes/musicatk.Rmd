@@ -246,7 +246,11 @@ Signatures can be re-named based on prior knowledge and displayed in the plots.
 Here, each signature is named after the known etiology of its most similar
 COSMIC V3 signature (see the comparison to COSMIC below). The exome version of
 the COSMIC signatures is used because these samples were sequenced by whole
-exome sequencing. A signature whose closest COSMIC signature is not in the list
+exome sequencing. COSMIC stopped publishing exome signatures after version 3.0,
+so this compares against the 65 COSMIC v3.0 signatures rather than the 101 in
+v3.6, and `compare_cosmic_v3` gives a warning saying so. For whole genome data,
+use `sample_type = "genome"` and set `genome_build` to the build the variants
+were called on (`"hg19"` or `"hg38"`). A signature whose closest COSMIC signature is not in the list
 of etiologies gets the name of that COSMIC signature. APOBEC activity usually
 causes two COSMIC signatures together, SBS2 and SBS13, so a discovered APOBEC
 signature is often a mix of both and less similar to either one alone; a
