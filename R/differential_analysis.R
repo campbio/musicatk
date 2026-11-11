@@ -220,8 +220,9 @@ plot_differential_analysis <- function(analysis, analysis_type = NULL,
       "from the columns of 'analysis'."
     )
   }
-  if (!is.numeric(threshold) || length(threshold) != 1 ||
-      is.na(threshold) || threshold <= 0 || threshold > 1) {
+  valid_threshold <- is.numeric(threshold) && length(threshold) == 1 &&
+    !is.na(threshold) && threshold > 0 && threshold <= 1
+  if (!valid_threshold) {
     stop("'threshold' must be a single number in (0, 1].")
   }
   dt <- .diff_plot_data(analysis)
