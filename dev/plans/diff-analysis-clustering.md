@@ -9,6 +9,8 @@ Decisions by the maintainer on 2026-11-10:
 - Devel only, no release port.
 - wilcox: BH within each comparison; the p-value and FDR columns are
   renamed `p-value` and `fdr`, matching kruskal.
+- `dis.method = "cosine"` uses 1 − cosine similarity (found while
+  testing #173).
 
 Issues: #169, #170, #171, #173, #174, #185, #34. All reproduced on
 `devel` at e07c07a.
@@ -34,6 +36,11 @@ Issues: #169, #170, #171, #173, #174, #185, #34. All reproduced on
 - `cluster_exposure(method = "kmeans")` runs `cluster::fanny` with
   `maxit = 10`, which warns that it hasn't converged. `k_select()` uses
   `stats::kmeans` (#34).
+- `cluster_exposure(dis.method = "cosine")` uses
+  `philentropy::distance(method = "cosine")`, which returns cosine
+  similarity, as a dissimilarity. pam and fanny treat the most similar
+  samples as the farthest apart; hclust would too once it uses the matrix.
+  The other `dis.method` options are distances.
 - `k_select()` with the default `n = 10` fails for every method on ten or
   fewer samples (#185).
 
@@ -85,6 +92,8 @@ Issues: #169, #170, #171, #173, #174, #185, #34. All reproduced on
     with `iter.max` and `tol`.
   - `method = "hclust"` uses `hcut(isdiss = TRUE)`, so `dis.method` is
     used (#173).
+  - `dis.method = "cosine"` is 1 − cosine similarity, for every method
+    that uses the dissimilarity matrix (pam, fanny, hclust).
   - Docs for `method`, `iter.max` and `tol` say which methods use them.
 - `k_select()` lowers `n` to the number of samples minus one, with a
   message, and stops when there are fewer than three samples (#185).
@@ -115,6 +124,8 @@ three-group annotation where needed.
 - **#173:** `hclust` clusters equal
   `cutree(hclust(<dis.method distance>, hc.method), k)` for `"cosine"`
   and `"euclidean"`, which differ.
+- **cosine:** `pam` with `dis.method = "cosine"` equals `cluster::pam()`
+  on 1 − cosine similarity.
 - **#34:**
   - `"kmeans"` gives the same clusters as `stats::kmeans()` with the
     same seed, and doesn't warn;
@@ -142,6 +153,8 @@ Yes:
 - `cluster_exposure()` assignments for `"kmeans"`, now real k-means;
 - `cluster_exposure()` assignments for `"hclust"` whenever `dis.method`
   isn't Euclidean;
+- `cluster_exposure()` assignments for `"pam"` with
+  `dis.method = "cosine"`;
 - `plot_differential_analysis()` output.
 
 Shipped data are unaffected. The PR's Scientific correctness section
