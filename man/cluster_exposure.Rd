@@ -36,13 +36,15 @@ Default \code{"result"}.}
 \item{proportional}{Logical, indicating if proportional exposure (default)
 will be used for clustering.}
 
-\item{method}{Clustering algorithms. Options are "kmeans" (K-means),
-"hkmeans" (hybrid of hierarchical
-K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara"
-(Clara).}
+\item{method}{Clustering algorithms. Options are "kmeans" (K-means, with
+\link[stats]{kmeans}), "fanny" (fuzzy clustering, with
+\link[cluster]{fanny}), "hkmeans" (hybrid of hierarchical K-means),
+"hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).}
 
 \item{dis.method}{Methods to calculate dissimilarity matrix. Options are
-"euclidean" (default), "manhattan", "jaccard", "cosine", and "canberra".}
+"euclidean" (default), "manhattan", "jaccard", "cosine" (1 - cosine
+similarity), and "canberra". "kmeans" accepts only "euclidean";
+"hkmeans" and "clara" accept the subsets their errors name.}
 
 \item{hc.method}{Methods to perform hierarchical clustering. Options are
 "ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty",
@@ -51,9 +53,10 @@ K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara"
 \item{clara.samples}{Number of samples to be drawn from dataset. Only used
 when "clara" is selected. Default is 5.}
 
-\item{iter.max}{Maximum number of iterations for k-means clustering.}
+\item{iter.max}{Maximum number of iterations, for "kmeans", "hkmeans" and
+"fanny".}
 
-\item{tol}{Tolerance level for kmeans clustering level iterations}
+\item{tol}{Tolerance for convergence, for "fanny" only.}
 }
 \value{
 A one-column data frame with sample IDs as row names and cluster

@@ -161,7 +161,7 @@ test_that(desc = "k_select lowers n to the number of samples - 1 (#185)", {
       p <- k_select(ten, "res_annot", method = "wss", clust.method = clust),
       "9"
     )
-    expect_true(ggplot2::is.ggplot(p))
+    expect_s3_class(p, "ggplot")
   }
   expect_error(
     k_select(.keep_samples(fx$musica, 2), "res_annot"),

@@ -11,19 +11,22 @@
 #' @param nclust Pre-defined number of clusters.
 #' @param proportional Logical, indicating if proportional exposure (default)
 #' will be used for clustering.
-#' @param method Clustering algorithms. Options are "kmeans" (K-means),
-#' "hkmeans" (hybrid of hierarchical
-#' K-means), "hclust" (hierarchical clustering), "pam" (PAM), and "clara"
-#' (Clara).
+#' @param method Clustering algorithms. Options are "kmeans" (K-means, with
+#' \link[stats]{kmeans}), "fanny" (fuzzy clustering, with
+#' \link[cluster]{fanny}), "hkmeans" (hybrid of hierarchical K-means),
+#' "hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).
 #' @param dis.method Methods to calculate dissimilarity matrix. Options are
-#' "euclidean" (default), "manhattan", "jaccard", "cosine", and "canberra".
+#' "euclidean" (default), "manhattan", "jaccard", "cosine" (1 - cosine
+#' similarity), and "canberra". "kmeans" accepts only "euclidean";
+#' "hkmeans" and "clara" accept the subsets their errors name.
 #' @param hc.method Methods to perform hierarchical clustering. Options are
 #' "ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty",
 #' "median", and "centroid".
 #' @param clara.samples Number of samples to be drawn from dataset. Only used
 #' when "clara" is selected. Default is 5.
-#' @param iter.max Maximum number of iterations for k-means clustering.
-#' @param tol Tolerance level for kmeans clustering level iterations
+#' @param iter.max Maximum number of iterations, for "kmeans", "hkmeans" and
+#' "fanny".
+#' @param tol Tolerance for convergence, for "fanny" only.
 #' @return A one-column data frame with sample IDs as row names and cluster
 #' number for each sample.
 #' @seealso \link[stats]{kmeans}
@@ -72,7 +75,7 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
   )
 
   method <- match.arg(method, c(
-    "kmeans", "hkmeans", "hclust",
+    "kmeans", "fanny", "hkmeans", "hclust",
     "pam", "clara"
   ))
   dis.method <- match.arg(dis.method, c(
@@ -90,11 +93,24 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
   } else {
     expos <- t(expos)
   }
-  # Calculate dissimilarity matrix
-  diss <- philentropy::distance(x = expos, method = dis.method,
-                                use.row.names = TRUE, as.dist.obj = TRUE)
+  # Calculate dissimilarity matrix for the methods that use one
+  if (method %in% c("fanny", "hclust", "pam")) {
+    diss <- philentropy::distance(x = expos, method = dis.method,
+                                  use.row.names = TRUE, as.dist.obj = TRUE)
+    # philentropy's "cosine" is a similarity
+    if (dis.method == "cosine") {
+      diss <- 1 - diss
+    }
+  }
   # Perform clustering
   if (method == "kmeans") {
+    if (dis.method != "euclidean") {
+      stop("For kmeans clustering, dis.method must be \"euclidean\"; ",
+           "use \"pam\", \"fanny\" or \"hclust\" for other distances.")
+    }
+    res <- stats::kmeans(x = expos, centers = nclust, iter.max = iter.max)
+    clust_out <- data.frame(cluster = res$cluster)
+  } else if (method == "fanny") {
     res <- cluster::fanny(
       x = diss, k = nclust, diss = TRUE, maxit = iter.max,
       tol = tol
@@ -111,7 +127,7 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
     )
     clust_out <- data.frame(cluster = res$cluster)
   } else if (method == "hclust") {
-    res <- factoextra::hcut(x = diss, k = nclust, isdiss = FALSE,
+    res <- factoextra::hcut(x = diss, k = nclust, isdiss = TRUE,
                             hc_method = hc.method)
     clust_out <- data.frame(cluster = res$cluster)
   } else if (method == "pam") {
@@ -309,7 +325,7 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' are "kmeans" (default), "hclust" (hierarchical clustering), "hkmeans", "pam",
 #' and "clara".
 #' @param n An integer indicating maximum number of clusters to test. Default is
-#' 10.
+#' 10. It is lowered, with a message, to the number of samples minus one.
 #' @param proportional Logical, indicating if proportional exposure (default)
 #' will be used for clustering.
 #' @return A ggplot object.
@@ -368,6 +384,16 @@ k_select <- function(musica, model_name, modality = "SBS96",
     expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
   } else {
     expos <- t(expos)
+  }
+  n_samples <- nrow(expos)
+  if (n_samples < 3) {
+    stop("k_select() needs at least three samples; the model has ",
+         n_samples, ".")
+  }
+  if (n > n_samples - 1) {
+    message("Testing up to ", n_samples - 1, " clusters, one fewer than the ",
+            n_samples, " samples, instead of n = ", n, ".")
+    n <- n_samples - 1
   }
   if (clust.method == "kmeans") {
     factoextra::fviz_nbclust(expos, stats::kmeans, method = method, k.max = n)
