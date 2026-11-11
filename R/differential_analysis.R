@@ -41,7 +41,8 @@
 #'   with \code{<group>(Std. Error)}, \code{<group>(z)},
 #'   \code{<group>(Pr(>|z|))} and \code{<group>(fdr)}, adjusted across
 #'   signatures. \code{ANOVA(Pr(>Chi))} and \code{ANOVA(fdr)} test the
-#'   annotation as a whole.}
+#'   annotation as a whole. The reference group's name is stored in the
+#'   \code{"reference"} attribute.}
 #' }
 #' @examples
 #' data("res_annot")
@@ -188,6 +189,8 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
       paste0(groups[-1], "(fdr)"), "ANOVA(Pr(>Chi))", "ANOVA(fdr)"
     )
     rownames(diff.out) <- rownames(exposures)
+    # Lets plot_differential_analysis() name the reference group
+    attr(diff.out, "reference") <- groups[1]
   }
   return(diff.out)
 }
@@ -202,10 +205,11 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
 #'   \item{\code{"wilcox"}}{one bar per comparison, labelled
 #'   \code{"<Group1> vs <Group2>"};}
 #'   \item{\code{"kruskal"}}{one bar per signature;}
-#'   \item{\code{"glm.nb"}}{one bar per non-reference group, against the
-#'   reference group, and one for the ANOVA.}
+#'   \item{\code{"glm.nb"}}{one bar per non-reference group, labelled
+#'   \code{"<group> vs <reference>"}, and one for the ANOVA.}
 #' }
-#' An FDR of zero is plotted at the smallest positive double.
+#' An FDR of zero is plotted at the smallest positive double. NA FDRs (terms
+#' that could not be estimated) are left out with a message.
 #' @param analysis A table made by \code{exposure_differential_analysis}.
 #' @param analysis_type Ignored, with a warning. The method is read from
 #' \code{analysis}.
@@ -234,6 +238,14 @@ plot_differential_analysis <- function(analysis, analysis_type = NULL,
     stop("'threshold' must be a single number in (0, 1].")
   }
   dt <- .diff_plot_data(analysis)
+  if (anyNA(dt$fdr)) {
+    message(
+      "Leaving out FDRs that are NA (a term that could not be estimated): ",
+      paste(unique(paste(dt$comparison, dt$signature)[is.na(dt$fdr)]),
+            collapse = ", ")
+    )
+    dt <- dt[!is.na(dt$fdr), , drop = FALSE]
+  }
   dt$value <- -log10(pmax(dt$fdr, .Machine$double.xmin))
   p <- ggplot2::ggplot(dt, aes(
     x = .data$signature, y = .data$value,
@@ -267,10 +279,15 @@ plot_differential_analysis <- function(analysis, analysis_type = NULL,
     )
   } else if ("ANOVA(fdr)" %in% cols) {
     fdr_cols <- grep("\\(fdr\\)$", cols, value = TRUE)
+    labels <- sub("\\(fdr\\)$", "", fdr_cols)
+    reference <- attr(analysis, "reference")
+    if (!is.null(reference)) {
+      groups <- labels != "ANOVA"
+      labels[groups] <- paste(labels[groups], "vs", reference)
+    }
     out <- data.frame(
       signature = rep(rownames(analysis), length(fdr_cols)),
-      comparison = rep(sub("\\(fdr\\)$", "", fdr_cols),
-                       each = nrow(analysis)),
+      comparison = rep(labels, each = nrow(analysis)),
       fdr = unlist(analysis[fdr_cols], use.names = FALSE)
     )
   } else {

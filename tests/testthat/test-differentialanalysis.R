@@ -267,8 +267,12 @@ test_that(desc = "plot_differential_analysis plots -log10(FDR) (#174)", {
   expect_equal(p$data$signature, rep(sigs, 3))
   expect_equal(
     as.character(p$data$comparison),
-    rep(c("B", "C", "ANOVA"), each = length(sigs))
+    rep(c("B vs A", "C vs A", "ANOVA"), each = length(sigs))
   )
+
+  nb[["B(fdr)"]][1] <- NA
+  expect_message(p <- plot_differential_analysis(nb), "B vs A Signature1")
+  expect_equal(nrow(p$data), 3 * length(sigs) - 1)
 })
 
 test_that(desc = "plot_differential_analysis checks its input (#174)", {

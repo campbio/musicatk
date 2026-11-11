@@ -61,7 +61,8 @@ adjusted with the Benjamini-Hochberg method (\code{fdr} columns).
   with \code{<group>(Std. Error)}, \code{<group>(z)},
   \code{<group>(Pr(>|z|))} and \code{<group>(fdr)}, adjusted across
   signatures. \code{ANOVA(Pr(>Chi))} and \code{ANOVA(fdr)} test the
-  annotation as a whole.}
+  annotation as a whole. The reference group's name is stored in the
+  \code{"reference"} attribute.}
 }
 }
 \description{

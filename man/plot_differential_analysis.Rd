@@ -33,10 +33,11 @@ The method is read from the table's columns:
   \item{\code{"wilcox"}}{one bar per comparison, labelled
   \code{"<Group1> vs <Group2>"};}
   \item{\code{"kruskal"}}{one bar per signature;}
-  \item{\code{"glm.nb"}}{one bar per non-reference group, against the
-  reference group, and one for the ANOVA.}
+  \item{\code{"glm.nb"}}{one bar per non-reference group, labelled
+  \code{"<group> vs <reference>"}, and one for the ANOVA.}
 }
-An FDR of zero is plotted at the smallest positive double.
+An FDR of zero is plotted at the smallest positive double. NA FDRs (terms
+that could not be estimated) are left out with a message.
 }
 \examples{
 data("res_annot")

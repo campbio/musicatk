@@ -11,6 +11,10 @@ Decisions by the maintainer on 2026-11-10:
   renamed `p-value` and `fdr`, matching kruskal.
 - `dis.method = "cosine"` uses 1 − cosine similarity (found while
   testing #173).
+- After `/code-review`: k-means takes `seed = 1` (via
+  `withr::with_seed()`, `NULL` uses the caller's RNG) and `nstart = 10`;
+  `k_select()` takes `seed = 1` too. `iter.max` defaults to `NULL`: 10
+  for kmeans and hkmeans, 500 for fanny, which doesn't converge in 10.
 
 Issues: #169, #170, #171, #173, #174, #185, #34. All reproduced on
 `devel` at e07c07a.

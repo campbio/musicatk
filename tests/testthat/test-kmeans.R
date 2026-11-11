@@ -119,14 +119,25 @@ test_that(desc = "cosine dis.method is 1 - cosine similarity", {
 test_that(desc = "kmeans runs k-means; fanny runs fuzzy clustering (#34)", {
   fx <- .clust_fixture()
   expect_warning(
-    observed <- withr::with_seed(1, cluster_exposure(fx$musica, "res_annot",
-      nclust = 2, method = "kmeans"
-    )),
+    observed <- cluster_exposure(fx$musica, "res_annot",
+      nclust = 4, method = "kmeans"
+    ),
     NA
   )
-  expected <- withr::with_seed(1, stats::kmeans(fx$expos, centers = 2))
+  expected <- withr::with_seed(1, stats::kmeans(fx$expos,
+    centers = 4,
+    iter.max = 10, nstart = 10
+  ))
   expect_equal(rownames(observed), names(expected$cluster))
   expect_equal(observed$cluster, unname(expected$cluster))
+  # Seeded: the same clusters each call, and the caller's RNG is untouched
+  set.seed(42)
+  before <- .Random.seed
+  again <- cluster_exposure(fx$musica, "res_annot",
+    nclust = 4, method = "kmeans"
+  )
+  expect_true(identical(before, .Random.seed))
+  expect_equal(again, observed)
 
   expect_error(
     cluster_exposure(fx$musica, "res_annot",
@@ -135,13 +146,15 @@ test_that(desc = "kmeans runs k-means; fanny runs fuzzy clustering (#34)", {
     "euclidean"
   )
 
-  expected <- suppressWarnings(cluster::fanny(
-    .clust_diss(fx$expos, "euclidean"),
-    k = 2, diss = TRUE, maxit = 10, tol = 1e-15
-  ))
-  observed <- suppressWarnings(cluster_exposure(fx$musica, "res_annot",
-    nclust = 2, method = "fanny"
-  ))
+  expected <- cluster::fanny(.clust_diss(fx$expos, "euclidean"),
+    k = 2, diss = TRUE, maxit = 500, tol = 1e-15
+  )
+  expect_warning(
+    observed <- cluster_exposure(fx$musica, "res_annot",
+      nclust = 2, method = "fanny"
+    ),
+    NA
+  )
   expect_equal(observed$cluster, unname(expected$clustering))
 })
 
@@ -165,4 +178,5 @@ test_that(desc = "k_select lowers n to the number of samples - 1 (#185)", {
     k_select(.keep_samples(fx$musica, 2), "res_annot"),
     "at least three samples"
   )
+  expect_error(k_select(fx$musica, "res_annot", n = NA), "'n' must be")
 })

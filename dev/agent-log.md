@@ -693,3 +693,11 @@ The error says pairs "must be unique", but the check only rejects
 `group1[i] == group2[i]`, so `group1 = c("A", "A")`,
 `group2 = c("B", "B")` runs the same comparison twice.
 
+### 4. `k_select()` doesn't match `cluster_exposure()`'s distances
+
+`k_select()` has no `"fanny"` option, and its `"hclust"` and `"pam"` paths
+call `fviz_nbclust()` on the exposure matrix with Euclidean distance,
+ignoring any `dis.method`. Now that `cluster_exposure()` uses `dis.method`
+for hclust (#173), k picked with `k_select()` may not suit a cosine or
+Manhattan clustering. Found by `/code-review` of PR G.
+
