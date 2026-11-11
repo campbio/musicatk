@@ -779,6 +779,8 @@ parse_delete_event <- function(idstr) {
   data("cosmic_v2_sigs")
   data("cosmic_v3_sbs_sigs")
   data("cosmic_v3_dbs_sigs")
+  data("cosmic_v3_sbs_sigs_grch38")
+  data("cosmic_v3_dbs_sigs_grch38")
   data("cosmic_v3_indel_sigs")
 
   # Renaming COSMIC signatures.
@@ -817,6 +819,9 @@ parse_delete_event <- function(idstr) {
                   "SBS20" = "SBS20 - MMR deficiency + POLD1 mutation",
                   "SBS21" = "SBS21 - MMR deficiency",
                   "SBS22" = "SBS22 - Aristolochic acid exposure",
+                  # COSMIC v3.4 split SBS22 and SBS40 into a/b/c variants
+                  "SBS22a" = "SBS22a - Aristolochic acid exposure",
+                  "SBS22b" = "SBS22b - Aristolochic acid exposure",
                   "SBS23" = "SBS23 - Unknown",
                   "SBS24" = "SBS24 - Aflatoxin exposure",
                   "SBS25" = "SBS25 - Unknown (Unknown chemotherapy)",
@@ -837,6 +842,9 @@ parse_delete_event <- function(idstr) {
                     "SBS38 - Unknown (UV light exposure (indirect effect))",
                   "SBS39" = "SBS39 - Unknown",
                   "SBS40" = "SBS40 - Unknown",
+                  "SBS40a" = "SBS40a - Unknown",
+                  "SBS40b" = "SBS40b - Unknown",
+                  "SBS40c" = "SBS40c - Unknown",
                   "SBS41" = "SBS41 - Unknown",
                   "SBS42" = "SBS42 - Haloalkanes exposure",
                   "SBS43" = "SBS43 - Unknown (Possible sequencing artifact)",
@@ -931,11 +939,20 @@ parse_delete_event <- function(idstr) {
     fill_aet(colnames(signatures(cosmic_v3_dbs_sigs)), dbs_aet)
   colnames(signatures(cosmic_v3_indel_sigs)) <-
     fill_aet(colnames(signatures(cosmic_v3_indel_sigs)), indel_aet)
+  colnames(signatures(cosmic_v3_sbs_sigs_grch38)) <-
+    fill_aet(colnames(signatures(cosmic_v3_sbs_sigs_grch38)), sbs_aet)
+  colnames(signatures(cosmic_v3_dbs_sigs_grch38)) <-
+    fill_aet(colnames(signatures(cosmic_v3_dbs_sigs_grch38)), dbs_aet)
 
   cosmic_objects <- list("cosmic_v3_sbs_sigs" = cosmic_v3_sbs_sigs,
                       "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
                       "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs,
-                      "cosmic_v2_sigs" = cosmic_v2_sigs)
+                      "cosmic_v2_sigs" = cosmic_v2_sigs,
+                      "cosmic_v3_sbs_sigs_grch38" = cosmic_v3_sbs_sigs_grch38,
+                      "cosmic_v3_dbs_sigs_grch38" = cosmic_v3_dbs_sigs_grch38)
+  # The compare tab picks the build with its own genome build input
+  compare_cosmic_choices <- c("cosmic_v3_sbs_sigs", "cosmic_v3_dbs_sigs",
+                              "cosmic_v3_indel_sigs", "cosmic_v2_sigs")
 
   # Update musica object list whenever a result or musica object is altered
   output$annotation_musica_list <- renderUI({
@@ -1356,7 +1373,11 @@ parse_delete_event <- function(idstr) {
         selectInput("predicted_result", "Result to Predict",
                     choices = list("Cosmic" = list(
                       "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
+                      "Cosmic V3 SBS Signatures (GRCh38)" =
+                        "cosmic_v3_sbs_sigs_grch38",
                       "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
+                      "Cosmic V3 DBS Signatures (GRCh38)" =
+                        "cosmic_v3_dbs_sigs_grch38",
                       "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
                       "Cosmic V2 Signatures" = "cosmic_v2_sigs"
                       )),
@@ -1372,7 +1393,11 @@ parse_delete_event <- function(idstr) {
       selectInput("predicted_result", "Result to Predict",
                   choices = list("Cosmic" = list(
                     "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
+                    "Cosmic V3 SBS Signatures (GRCh38)" =
+                      "cosmic_v3_sbs_sigs_grch38",
                     "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
+                    "Cosmic V3 DBS Signatures (GRCh38)" =
+                      "cosmic_v3_dbs_sigs_grch38",
                     "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
                     "Cosmic V2 Signatures" = "cosmic_v2_sigs"),
                                  "your signatures" = as.list(other)),
@@ -1578,11 +1603,23 @@ parse_delete_event <- function(idstr) {
     }
     else{
       output$compare_result_b_cosmic <- renderUI({
+        # Start from the build the variants were imported with, when known
+        build <- if (isTRUE(vals$genome %in% c("hg19", "hg38"))) {
+          vals$genome
+        } else {
+          "hg19"
+        }
         tagList(
           selectInput("select_result_b_cosmic", "Select Cosmic",
-                      choices = as.list(names(cosmic_objects))),
+                      choices = as.list(compare_cosmic_choices)),
           bsTooltip("select_result_b_cosmic",
                     "Cosmic database to compare to",
+                    placement = "right", trigger = "hover", options = NULL),
+          selectInput("compare_genome_build", "Genome build",
+                      choices = c("hg19", "hg38"), selected = build),
+          bsTooltip("compare_genome_build",
+                    paste("Build the variants were called on. Picks the",
+                          "matching COSMIC V3 signatures; not used for V2."),
                     placement = "right", trigger = "hover", options = NULL)
         )
       })
@@ -1629,6 +1666,7 @@ parse_delete_event <- function(idstr) {
           isolate(vals$comparison <-
                     compare_cosmic_v3(vals$musica, model_id = input$select_model_a, 
                                       sample_type = "genome",
+                                      genome_build = input$compare_genome_build,
                                       modality = input$select_modality_a,
                                       result_name = input$select_result_a,
                                       threshold = as.numeric(input$Threshold),
