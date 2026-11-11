@@ -207,6 +207,11 @@ compare_results <- function(musica, model_id, other_model_id,
 #' @param model_id The name of the model containing the signatures to compare.
 #' @param sample_type exome (SBS only) or genome
 #' @param modality Compare to SBS, DBS, or Indel. Default \code{"SBS96"}
+#' @param genome_build Reference build the COSMIC signatures are normalized to,
+#' either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
+#' should match the build the variants were called against. Ignored for the
+#' Indel modality, for which COSMIC publishes a single catalogue, and for
+#' \code{sample_type = "exome"}. Default \code{"hg19"}.
 #' @param result_name Name of the result list entry. Default \code{"result"}.
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"}
@@ -226,6 +231,7 @@ compare_results <- function(musica, model_id, other_model_id,
 #' )
 #' @export
 compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
+                              genome_build = "hg19",
                               result_name = "result", metric = "cosine",
                               threshold = 0.9,
                               result_rename = deparse(substitute(model_id)),
@@ -256,8 +262,26 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
     )
   }
 
+  # Normalize the build label the same way select_genome() does
+  build <- tolower(genome_build)
+  if (build %in% c("hg19", "19", "grch37")) {
+    build <- "GRCh37"
+  } else if (build %in% c("hg38", "38", "grch38")) {
+    build <- "GRCh38"
+  } else {
+    stop("genome_build must be one of hg19 (GRCh37) or hg38 (GRCh38)")
+  }
+
   if (sample_type == "exome") {
     if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
+      # COSMIC stopped publishing exome-normalized matrices after v3.0, so this
+      # object is still the v3.0 catalogue while the genome objects are v3.6.
+      warning(
+        "Exome signatures are COSMIC v3.0 (65 signatures), whereas the genome ",
+        "signatures are COSMIC v3.6 (101 signatures). COSMIC no longer ",
+        "publishes an exome-normalized matrix. Signatures added after v3.0 ",
+        "cannot be matched with sample_type = \"exome\"."
+      )
       cosmic_res <- musicatk::cosmic_v3_sbs_sigs_exome
     } else {
       stop(paste("Only SBS class is available for whole-exome, please choose",
@@ -267,13 +291,28 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
     }
   } else if (sample_type == "genome") {
     if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      cosmic_res <- musicatk::cosmic_v3_sbs_sigs
+      cosmic_res <- if (build == "GRCh38") {
+        musicatk::cosmic_v3_sbs_sigs_grch38
+      } else {
+        musicatk::cosmic_v3_sbs_sigs
+      }
     } else if (modality %in% c("DBS", "DBS78", "dbs", "doublet")) {
-      cosmic_res <- musicatk::cosmic_v3_dbs_sigs
+      cosmic_res <- if (build == "GRCh38") {
+        musicatk::cosmic_v3_dbs_sigs_grch38
+      } else {
+        musicatk::cosmic_v3_dbs_sigs
+      }
     } else if (modality %in% c(
       "INDEL", "Indel", "indel", "ind", "IND",
       "ID", "IND83"
     )) {
+      # COSMIC publishes a single Indel catalogue, not one per reference build
+      if (build == "GRCh38") {
+        message(
+          "COSMIC publishes one Indel signature set, so genome_build is ",
+          "ignored for the Indel modality."
+        )
+      }
       cosmic_res <- musicatk::cosmic_v3_indel_sigs
     } else {
       stop("Only SBS, DBS, and Indel classes are supported")

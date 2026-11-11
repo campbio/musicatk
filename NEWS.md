@@ -106,6 +106,12 @@
 * `add_result()` matches exposure columns to the samples by name and puts them in sample order; unknown or missing sample names give an error.
 * `combine_predict_grid()` returns exposures in sample order and sets `num_signatures` and `model_id`; it stops when the models share samples (#144).
 * `create_benchmark()` stores true exposures as signatures x samples and matches them to the count table by sample name; either orientation is accepted (#194).
+* Updated the COSMIC genome signatures from v3.0 to v3.6 (May 2026). SBS goes from 67 to 101 signatures, DBS from 11 to 22, and Indel from 17 to 25. Signature matching results will change accordingly, including for signatures present in both releases, whose probabilities were revised.
+* `compare_cosmic_v3()` gains a `genome_build` argument (`"hg19"`/`"GRCh37"` or `"hg38"`/`"GRCh38"`, default `"hg19"`) selecting the reference build the COSMIC signatures are normalized to. This should match the build the variants were called against. Ignored for the Indel modality, for which COSMIC publishes a single catalogue.
+* Added `cosmic_v3_sbs_sigs_grch38` and `cosmic_v3_dbs_sigs_grch38`. The existing `cosmic_v3_sbs_sigs` and `cosmic_v3_dbs_sigs` remain GRCh37, matching COSMIC's own default build.
+* `cosmic_v3_sbs_sigs_exome` remains COSMIC v3.0: COSMIC stopped publishing exome-normalized matrices after v3.0. `compare_cosmic_v3(sample_type = "exome")` now warns that the exome catalogue is older than the genome one.
+* Signature data objects now record their COSMIC version and reference build in the documentation.
+* Fixed COSMIC signatures without a hardcoded aetiology label displaying as "NULL" in the Shiny app.
 
 # musicatk 2.2.1 (2025-07-15)
 * Removed conclust dependency

@@ -3,13 +3,13 @@
 \docType{data}
 \name{cosmic_v3_sbs_sigs}
 \alias{cosmic_v3_sbs_sigs}
-\title{COSMIC v3 SBS96 Genome Signatures Result Object}
+\title{COSMIC v3.6 SBS96 Genome Signatures Result Object (GRCh37)}
 \format{
 An object of class \code{result_model}.
 See [predict_exposure()].
 }
 \source{
-COSMIC v3, <https://cancer.sanger.ac.uk/cosmic/signatures>
+COSMIC v3.6 (May 2026), <https://cancer.sanger.ac.uk/signatures/>
 }
 \usage{
 data(cosmic_v3_sbs_sigs)

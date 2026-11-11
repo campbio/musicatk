@@ -138,8 +138,10 @@ reference:
   contents:
   - '`cosmic_v2_sigs`'
   - '`cosmic_v3_dbs_sigs`'
+  - '`cosmic_v3_dbs_sigs_grch38`'
   - '`cosmic_v3_indel_sigs`'
   - '`cosmic_v3_sbs_sigs`'
+  - '`cosmic_v3_sbs_sigs_grch38`'
   - '`cosmic_v3_sbs_sigs_exome`'
 - title: Miscellaneous functions
   contents:

@@ -10,6 +10,7 @@ compare_cosmic_v3(
   model_id,
   sample_type,
   modality = "SBS96",
+  genome_build = "hg19",
   result_name = "result",
   metric = "cosine",
   threshold = 0.9,
@@ -26,6 +27,12 @@ compare_cosmic_v3(
 \item{sample_type}{exome (SBS only) or genome}
 
 \item{modality}{Compare to SBS, DBS, or Indel. Default \code{"SBS96"}}
+
+\item{genome_build}{Reference build the COSMIC signatures are normalized to,
+either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
+should match the build the variants were called against. Ignored for the
+Indel modality, for which COSMIC publishes a single catalogue, and for
+\code{sample_type = "exome"}. Default \code{"hg19"}.}
 
 \item{result_name}{Name of the result list entry. Default \code{"result"}.}
 

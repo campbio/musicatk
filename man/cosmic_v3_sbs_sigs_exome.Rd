@@ -3,21 +3,31 @@
 \docType{data}
 \name{cosmic_v3_sbs_sigs_exome}
 \alias{cosmic_v3_sbs_sigs_exome}
-\title{COSMIC v3 SBS96 Exome Signatures Result Object}
+\title{COSMIC v3.0 SBS96 Exome Signatures Result Object}
 \format{
 An object of class \code{result_model}.
 See [predict_exposure()].
 }
 \source{
-COSMIC v3, <https://cancer.sanger.ac.uk/cosmic/signatures>
+COSMIC v3.0 (May 2019), <https://cancer.sanger.ac.uk/signatures/>
 }
 \usage{
 data(cosmic_v3_sbs_sigs_exome)
 }
 \description{
 Data from COSMIC formatted to be used for prediction with individual tumors
-and cohorts.
+and cohorts. Contains 65 signatures normalized to the GRCh37 exome.
 }
+\section{Version}{
+
+This object is **COSMIC v3.0**, unlike the genome signature objects, which
+are COSMIC v3.6. COSMIC stopped publishing exome-normalized signature
+matrices after v3.0, so no newer release exists to update this object from.
+Signatures introduced after v3.0 (SBS86 onward) therefore cannot be matched
+against exome samples. For current signatures, compare against the genome
+objects using \code{sample_type = "genome"}.
+}
+
 \references{
 Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
 The repertoire of mutational signatures in human cancer. Nature 578, 94–101

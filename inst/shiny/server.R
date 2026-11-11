@@ -919,12 +919,18 @@ parse_delete_event <- function(idstr) {
                     "ID17" = "ID17 - TOP2A mutation",
                     "ID18" = "ID18 - Colibactin exposure"
   )
+  # COSMIC adds signatures faster than the aetiology tables above are updated,
+  # so fall back to the bare signature name rather than labelling it "NULL".
+  fill_aet <- function(nms, aet) {
+    vapply(nms, function(n) if (n %in% names(aet)) aet[[n]] else n,
+           character(1), USE.NAMES = FALSE)
+  }
   colnames(signatures(cosmic_v3_sbs_sigs)) <-
-    sbs_aet[colnames(signatures(cosmic_v3_sbs_sigs))]
+    fill_aet(colnames(signatures(cosmic_v3_sbs_sigs)), sbs_aet)
   colnames(signatures(cosmic_v3_dbs_sigs)) <-
-    dbs_aet[colnames(signatures(cosmic_v3_dbs_sigs))]
+    fill_aet(colnames(signatures(cosmic_v3_dbs_sigs)), dbs_aet)
   colnames(signatures(cosmic_v3_indel_sigs)) <-
-    indel_aet[colnames(signatures(cosmic_v3_indel_sigs))]
+    fill_aet(colnames(signatures(cosmic_v3_indel_sigs)), indel_aet)
 
   cosmic_objects <- list("cosmic_v3_sbs_sigs" = cosmic_v3_sbs_sigs,
                       "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
