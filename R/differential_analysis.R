@@ -156,9 +156,9 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
   } else if (method == "glm.nb") {
     reserved <- intersect(groups, c("Intercept", "ANOVA"))
     if (length(reserved) > 0) {
+      reserved <- paste0("'", reserved, "'", collapse = " or ")
       stop(
-        "For glm.nb, annotation values can't be named ",
-        paste0("'", reserved, "'", collapse = " or "),
+        "For glm.nb, annotation values can't be named ", reserved,
         ", which label the intercept and ANOVA columns."
       )
     }
@@ -239,10 +239,11 @@ plot_differential_analysis <- function(analysis, analysis_type = NULL,
   }
   dt <- .diff_plot_data(analysis)
   if (anyNA(dt$fdr)) {
+    missing <- unique(paste(dt$comparison, dt$signature)[is.na(dt$fdr)])
+    missing <- paste(missing, collapse = ", ")
     message(
       "Leaving out FDRs that are NA (a term that could not be estimated): ",
-      paste(unique(paste(dt$comparison, dt$signature)[is.na(dt$fdr)]),
-            collapse = ", ")
+      missing
     )
     dt <- dt[!is.na(dt$fdr), , drop = FALSE]
   }
