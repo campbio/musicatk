@@ -12,13 +12,15 @@
 #' @param proportional Logical, indicating if proportional exposure (default)
 #' will be used for clustering.
 #' @param method Clustering algorithms. Options are "kmeans" (K-means, with
-#' \link[stats]{kmeans}), "fanny" (fuzzy clustering, with
+#' \link[stats]{kmeans} and one random start, so set a seed for reproducible
+#' clusters), "fanny" (fuzzy clustering, with
 #' \link[cluster]{fanny}), "hkmeans" (hybrid of hierarchical K-means),
 #' "hclust" (hierarchical clustering), "pam" (PAM), and "clara" (Clara).
 #' @param dis.method Methods to calculate dissimilarity matrix. Options are
 #' "euclidean" (default), "manhattan", "jaccard", "cosine" (1 - cosine
-#' similarity), and "canberra". "kmeans" accepts only "euclidean";
-#' "hkmeans" and "clara" accept the subsets their errors name.
+#' similarity), and "canberra". "kmeans" accepts only "euclidean",
+#' "hkmeans" accepts "euclidean", "manhattan" and "canberra", and "clara"
+#' accepts "euclidean", "manhattan" and "jaccard".
 #' @param hc.method Methods to perform hierarchical clustering. Options are
 #' "ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty",
 #' "median", and "centroid".
@@ -326,6 +328,7 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' and "clara".
 #' @param n An integer indicating maximum number of clusters to test. Default is
 #' 10. It is lowered, with a message, to the number of samples minus one.
+#' At least three samples are needed.
 #' @param proportional Logical, indicating if proportional exposure (default)
 #' will be used for clustering.
 #' @return A ggplot object.

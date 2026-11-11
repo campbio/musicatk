@@ -38,7 +38,8 @@ are "kmeans" (default), "hclust" (hierarchical clustering), "hkmeans", "pam",
 and "clara".}
 
 \item{n}{An integer indicating maximum number of clusters to test. Default is
-10. It is lowered, with a message, to the number of samples minus one.}
+10. It is lowered, with a message, to the number of samples minus one.
+At least three samples are needed.}
 
 \item{proportional}{Logical, indicating if proportional exposure (default)
 will be used for clustering.}

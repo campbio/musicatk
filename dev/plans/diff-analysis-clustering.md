@@ -32,7 +32,7 @@ Issues: #169, #170, #171, #173, #174, #185, #34. All reproduced on
   - for anything else, it returns NULL.
 - `cluster_exposure(method = "hclust")` passes a distance matrix to
   `hcut(isdiss = FALSE)`, which computes Euclidean distances between its
-  rows, so `dis.method` has no effect (#173).
+  rows, so `dis.method` acts only indirectly (#173).
 - `cluster_exposure(method = "kmeans")` runs `cluster::fanny` with
   `maxit = 10`, which warns that it hasn't converged. `k_select()` uses
   `stats::kmeans` (#34).

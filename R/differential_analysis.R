@@ -153,6 +153,14 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
     colnames(diff.out) <- header
     rownames(diff.out) <- rownames(exposures)
   } else if (method == "glm.nb") {
+    reserved <- intersect(groups, c("Intercept", "ANOVA"))
+    if (length(reserved) > 0) {
+      stop(
+        "For glm.nb, annotation values can't be named ",
+        paste0("'", reserved, "'", collapse = " or "),
+        ", which label the intercept and ANOVA columns."
+      )
+    }
     # Coefficients are read by name, so an aliased term gives NA
     terms <- c("(Intercept)", paste0("annotations", groups[-1]))
     labels <- c("Intercept", groups[-1])

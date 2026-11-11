@@ -285,3 +285,14 @@ test_that(desc = "plot_differential_analysis checks its input (#174)", {
     "ignored"
   )
 })
+
+test_that(desc = "glm.nb rejects groups named like its other columns", {
+  fx <- .diff_fixture()
+  samp_annot(fx$musica, "test") <- rep(c("A", "ANOVA", "C"), 4)
+  expect_error(
+    exposure_differential_analysis(fx$musica, "res_annot", "test",
+      method = "glm.nb"
+    ),
+    "can't be named 'ANOVA'"
+  )
+})

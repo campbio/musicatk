@@ -148,11 +148,9 @@ test_that(desc = "kmeans runs k-means; fanny runs fuzzy clustering (#34)", {
 test_that(desc = "k_select lowers n to the number of samples - 1 (#185)", {
   fx <- .clust_fixture()
   .keep_samples <- function(musica, n) {
-    results <- result_list(musica)
-    model <- results[["result"]]@modality[["SBS96"]][["res_annot"]]
-    model@exposures <- model@exposures[, seq_len(n)]
-    results[["result"]]@modality[["SBS96"]][["res_annot"]] <- model
-    result_list(musica) <- results
+    e <- exposures(musica, "result", "SBS96", "res_annot")
+    exposures(musica, "result", "SBS96", "res_annot") <-
+      e[, seq_len(n), drop = FALSE]
     musica
   }
   ten <- .keep_samples(fx$musica, 10)
