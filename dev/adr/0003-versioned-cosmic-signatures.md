@@ -31,8 +31,11 @@ Three more facts shape the design:
   only, COSMIC's default.
   Indel signatures are not normalized to genome sequence content, so
   COSMIC publishes one Indel catalogue per version (labelled GRCh37).
-- **Exome.** COSMIC stopped publishing exome-normalized catalogues after
-  v3.0, so the latest exome catalogue is older than the latest genome one.
+- **Exome.** musicatk's genome catalogues come from COSMIC's downloads
+  page. Exome-normalized SBS and DBS catalogues for each v3 version and
+  build are published in SigProfilerAssignment, maintained by the COSMIC
+  signature authors. Its v3.6 genome files are identical to COSMIC's
+  downloads.
 - **Size.** One full version (SBS and DBS for two builds, plus Indel) is
   about 180 KB of `.rda` files. The source tarball is 8.2 MB against
   Bioconductor's 10 MB limit, so several versions fit.
@@ -56,6 +59,8 @@ choose a version with an argument that defaults to the latest.
    cosmic_v3_6_indel_sigs
    ```
 
+   Exome catalogues add `_exome` (`cosmic_v3_6_sbs_sigs_grch37_exome`).
+
    A later version follows the same pattern (`cosmic_v3_7_...`), as would
    other genomes (`..._mm10`). v3.0 stays exactly the four frozen objects:
    it is kept to reproduce earlier musicatk results, which only ever used
@@ -63,10 +68,10 @@ choose a version with an argument that defaults to the latest.
 3. **`compare_cosmic_v3()` gains `cosmic_version`.** The default is the
    latest version that has the requested catalogue (sample type, modality
    and build), and the function reports which version and build it used.
-   Today that is v3.6 for genome data and v3.0 for exome. An explicit
+   Today that is v3.6 for genome and exome data. An explicit
    `cosmic_version` for which musicatk ships no catalogue matching the
-   request, such as `cosmic_version = "3.0", genome_build = "hg38"` or
-   `cosmic_version = "3.6", sample_type = "exome"`, is an error that lists
+   request, such as `cosmic_version = "3.0", genome_build = "hg38"`, is an
+   error that lists
    what is available; there is no silent fallback to another build or
    version. Which of COSMIC's catalogues musicatk ships
    for each version is decided per release, not by this ADR.
@@ -139,3 +144,14 @@ choose a version with an argument that defaults to the latest.
   could no longer pass a specific version to `predict_exposure()` by name,
   and it would be a different pattern from every other dataset in the
   package.
+
+## Corrections
+
+- **2026-11-12, before this ADR was merged (#253).** The accepted text said
+  COSMIC stopped publishing exome-normalized catalogues after v3.0, and gave
+  `cosmic_version = "3.6", sample_type = "exome"` as an example error. Both
+  were wrong: SigProfilerAssignment publishes v3.6 exome catalogues for
+  GRCh37 and GRCh38. The maintainer decided to ship the v3.6 SBS exome
+  catalogues in #253 (DBS exome is #256). The Context bullet, the naming
+  example and decision point 3 were corrected in place. The decision itself
+  is unchanged.
