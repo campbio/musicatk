@@ -1,12 +1,19 @@
 # Regenerate the COSMIC v3.6 signature objects shipped in data/.
 #
-# Source matrices were downloaded from https://cancer.sanger.ac.uk/signatures/
-# (Human Cancer v3.6, May 2026) and live in data-raw/cosmic_v3.6/. Following
-# ADR 0003 (dev/adr/0003-versioned-cosmic-signatures.md), each version gets its
-# own objects named cosmic_v<major>_<minor>_<modality>_sigs[_<build>]. The
-# unversioned cosmic_v3_* objects stay COSMIC v3.0 and are only read here, for
-# their motif order. COSMIC no longer publishes exome-normalized matrices, so
-# there is no v3.6 exome object.
+# Source matrices live in data-raw/cosmic_v3.6/:
+# - The genome SBS, DBS and ID files were downloaded from
+#   https://cancer.sanger.ac.uk/signatures/ (Human Cancer v3.6, May 2026).
+# - The exome SBS files (COSMIC_v3.6_SBS_GRCh3[78]_exome.txt) come from
+#   SigProfilerAssignment, which the COSMIC signature authors maintain:
+#   https://github.com/SigProfilerSuite/SigProfilerAssignment, commit
+#   ff61b0f56d43c916582b7c505ce72364c883dfbd, under
+#   SigProfilerAssignment/data/Reference_Signatures/GRCh3[78]/. That commit's
+#   v3.6 genome SBS files are identical to the COSMIC downloads above.
+# Following ADR 0003 (dev/adr/0003-versioned-cosmic-signatures.md), each
+# version gets its own objects named
+# cosmic_v<major>_<minor>_<modality>_sigs[_<build>][_exome]. The unversioned
+# cosmic_v3_* objects stay COSMIC v3.0 and are only read here, for their motif
+# order.
 #
 # Run from the package root:  Rscript data-raw/make_cosmic_v3_6.R
 
@@ -101,6 +108,14 @@ specs <- list(
   list(obj = "cosmic_v3_6_sbs_sigs_grch38", file = "COSMIC_v3.6_SBS_GRCh38.txt",
        fn = sbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_sbs_sigs,
        modality = "SBS96", model_id = "Cosmic_v3.6_SBS_Genome_GRCh38"),
+  list(obj = "cosmic_v3_6_sbs_sigs_grch37_exome",
+       file = "COSMIC_v3.6_SBS_GRCh37_exome.txt",
+       fn = sbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_sbs_sigs,
+       modality = "SBS96", model_id = "Cosmic_v3.6_SBS_Exome_GRCh37"),
+  list(obj = "cosmic_v3_6_sbs_sigs_grch38_exome",
+       file = "COSMIC_v3.6_SBS_GRCh38_exome.txt",
+       fn = sbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_sbs_sigs,
+       modality = "SBS96", model_id = "Cosmic_v3.6_SBS_Exome_GRCh38"),
   list(obj = "cosmic_v3_6_dbs_sigs_grch37", file = "COSMIC_v3.6_DBS_GRCh37.txt",
        fn = dbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_dbs_sigs,
        modality = "DBS78", model_id = "Cosmic_v3.6_DBS_Genome_GRCh37"),
@@ -119,6 +134,6 @@ for (s in specs) {
   assign(s$obj, make_result(mat, s$model_id, s$modality))
   save(list = s$obj, file = file.path("data", paste0(s$obj, ".rda")),
        compress = "xz")
-  message(sprintf("%-30s %d motifs x %d signatures", s$obj, nrow(mat),
+  message(sprintf("%-34s %d motifs x %d signatures", s$obj, nrow(mat),
                   ncol(mat)))
 }
