@@ -77,7 +77,8 @@ to improve readability. Only used if \code{color_by = "annotation"} and
 using \code{\link[plotly]{plotly}}. Not used if \code{color_by = "signature"}
 and \code{same_scale = FALSE}. Default \code{FALSE}.}
 
-\item{clust}{Add cluster labels as annotation}
+\item{clust}{The output of \code{\link{cluster_exposure}}. Needed, and
+only used, when \code{color_by = "cluster"}. Default \code{NULL}.}
 
 \item{legend}{Plot legend}
 

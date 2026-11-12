@@ -138,7 +138,7 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
   y_label <- "counts"
   if (isTRUE(proportional)) {
     y_label <- "fractions"
-    exposures <- sweep(exposures, 2, colSums(exposures), FUN = "/")
+    exposures <- .proportional_exposures(exposures)
   }
 
   # Convert to long format
@@ -154,11 +154,11 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
 
   # Apply threshold to signatures if supplied
   if (!is.null(threshold)) {
-    if (!is.numeric(threshold) || !length(threshold) == 1 ||
-        threshold < 0) {
-      stop("The 'threshold' parameter must be a number greater than 0.")
+    if (!is.numeric(threshold) || length(threshold) != 1 ||
+          is.na(threshold) || threshold < 0) {
+      stop("The 'threshold' parameter must be a single non-negative number.")
     }
-    plot_dat <- dplyr::filter(plot_dat, .data$exposure > threshold)
+    plot_dat$exposure[plot_dat$exposure < threshold] <- 0
   } else {
     threshold <- 0
   }
@@ -216,8 +216,10 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
     plot_dat$color <- plot_dat$signature
   }
 
-  # Create base ggplot object
-  if (plot_type == "box" && group_by == "annotation") {
+  # Create base ggplot object. Without groups, box and violin plots show
+  # one box or violin per signature, as with group_by = "annotation".
+  by_signature <- group_by %in% c("annotation", "none")
+  if (plot_type == "box" && by_signature) {
     p <- ggplot(
       plot_dat,
       aes(x = signature, y = exposure, fill = color)
@@ -229,7 +231,7 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
       aes(x = annotation, y = exposure, fill = color)
     )
     p <- p + ggplot2::geom_boxplot() + ggplot2::xlab("")
-  } else if (plot_type == "violin" && group_by == "annotation") {
+  } else if (plot_type == "violin" && by_signature) {
     p <- ggplot(
       plot_dat,
       aes(x = signature, y = exposure, fill = color)

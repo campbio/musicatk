@@ -36,15 +36,18 @@ to plot. Default \code{"result"}.}
 \item{color_variable}{Name of the column in the variant annotation data.frame
 to use for coloring the mutation type bars. The variant annotation data.frame
 can be found within the count table of the \code{\linkS4class{musica}}
-object. If \code{NULL}, then the default column specified in the count
-table will be used. Default \code{NULL}.}
+object. It can also be a vector with one value for each motif, in the
+order of the rows of the signatures. If \code{NULL}, then the default
+column specified in the count table will be used. Default \code{NULL}.}
 
 \item{color_mapping}{A character vector used to map items in the
 \code{color_variable} to a color. The items in \code{color_mapping}
 correspond to the colors. The names of the items in \code{color_mapping}
-should correspond to the unique items in \code{color_variable}. If
-\code{NULL}, then the default \code{color_mapping} specified in the count
-table will be used. Default \code{NULL}.}
+should correspond to the unique items in \code{color_variable}; an
+unnamed vector is used in the order the items first appear along the
+motifs. If \code{NULL}, then the default \code{color_mapping} specified in
+the count table will be used, or generated colors if it doesn't cover
+the items in \code{color_variable}. Default \code{NULL}.}
 
 \item{text_size}{Size of axis text. Default \code{10}.}
 

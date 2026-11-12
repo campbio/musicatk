@@ -43,9 +43,11 @@ NULL
   # Set up color variable if supplied as vector or the name of a column in
   # the table annotation
   if (length(color_variable) == 1 && color_variable %in% colnames(annot)) {
-    final_color_variable <- annot[df$motif, tab@color_variable]
+    final_color_variable <- annot[df$motif, color_variable]
   } else if (length(color_variable) == nrow(signatures)) {
-    final_color_variable <- color_variable
+    # One value per motif (row of signatures): match each row of df to it
+    final_color_variable <-
+      color_variable[match(df$motif, rownames(signatures))]
   } else {
     warning(
       "'color_variable' must be a column in the table annotation: ",
@@ -100,6 +102,61 @@ NULL
     ))
   }
   return(p)
+}
+
+# Colours for the values of the signature colour variable, named by value.
+# 'values' are the values per motif; NULL color_mapping uses the table's
+# default, or generated colours if that doesn't cover the values. An
+# unnamed color_mapping is named in the order the values first appear.
+.signature_color_mapping <- function(color_mapping, tab, values) {
+  values <- unique(as.character(values))
+  if (is.null(color_mapping)) {
+    color_mapping <- get_color_mapping(tab)
+    if (!all(values %in% names(color_mapping))) {
+      color_mapping <- .discrete_colors(length(values))
+      names(color_mapping) <- values
+    }
+    return(color_mapping)
+  }
+  if (is.null(names(color_mapping))) {
+    if (length(color_mapping) != length(values)) {
+      stop(
+        "An unnamed 'color_mapping' needs one colour for each of the ",
+        length(values), " values of 'color_variable'; it has ",
+        length(color_mapping), "."
+      )
+    }
+    names(color_mapping) <- values
+  }
+  missing <- setdiff(values, names(color_mapping))
+  if (length(missing) > 0) {
+    stop(
+      "'color_mapping' has no colour for these values of ",
+      "'color_variable': ", paste(missing, collapse = ", ")
+    )
+  }
+  return(color_mapping)
+}
+
+# Black text on light fills, white text on dark fills
+.label_text_colors <- function(fill) {
+  rgb <- grDevices::col2rgb(fill) / 255
+  brightness <- 0.299 * rgb[1, ] + 0.587 * rgb[2, ] + 0.114 * rgb[3, ]
+  unname(ifelse(brightness < 0.25, "white", "black"))
+}
+
+# Divide each sample's (column's) exposures by its total. A sample with a
+# total of 0 has no proportions, so stop and name it.
+.proportional_exposures <- function(exposures) {
+  total <- colSums(exposures)
+  if (any(total == 0)) {
+    stop(
+      "Some samples have a total exposure of 0, so their proportions are ",
+      "undefined. Remove these samples or use proportional = FALSE: ",
+      paste(colnames(exposures)[total == 0], collapse = ", ")
+    )
+  }
+  sweep(exposures, 2, total, FUN = "/")
 }
 
 .discrete_colors <- function(n) {

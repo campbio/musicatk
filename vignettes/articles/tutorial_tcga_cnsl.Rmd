@@ -474,14 +474,22 @@ By default, signatures are scaled to have a mean of zero and a standard deviatio
 plot_heatmap(musica_filter, "result_cosmic_final", annotation = "Tumor_Type")
 ```
 
-The heatmap shows that Signature 4 and Signature 7 are largely mutually exclusive from one another and can be used to separate lung and skin cancers. Additionally, subsets of signatures or samples can be displayed. For example, if we only want to examine signatures involved in mismatch repair, we can select signatures 6, 15, and 26:
+The heatmap shows that SBS4 (smoking) and SBS7 (UV light) are largely mutually exclusive from one another and can be used to separate lung and skin cancers. Additionally, subsets of signatures or samples can be displayed. For example, if we only want to examine signatures involved in mismatch repair, we can select signatures 6, 15, and 26:
 
 ```{r exposure_heatmap_sigs}
 plot_heatmap(musica_filter, "result_cosmic_final", annotation = "Tumor_Type",
              subset_signatures = c("SBS6", "SBS15", "SBS26"))
 ```
 
-In this heatmap, we can see that only a small subset of distinct samples have relatively higher levels of these signatures. 
+In this heatmap, we can see that only a small subset of distinct samples have relatively higher levels of these signatures.
+
+Samples can be selected with the `subset_tumor` parameter, which keeps the samples whose value in a sample annotation matches one of the given values. For example, we can show only the skin cancers:
+
+```{r exposure_heatmap_tumor}
+plot_heatmap(musica_filter, "result_cosmic_final", subset_tumor = "SKCM")
+```
+
+The z-scores are still computed across all samples, so signatures that are mostly found in lung cancers, such as SBS4, are low in every skin cancer, while SBS7 is high in many of them.
 
 ## Clustering samples based on exposures
 

@@ -70,8 +70,7 @@ create_umap <- function(musica, model_name, modality = "SBS96",
   # dummy call to Matrix
   Matrix::Matrix()
 
-  samples <- exposures(result)
-  samples <- sweep(samples, 2, colSums(samples), FUN = "/")
+  samples <- .proportional_exposures(exposures(result))
 
   # n_neighbors cannot be bigger than the total number of samples
   if (n_neighbors > ncol(samples)) {
@@ -138,7 +137,8 @@ create_umap <- function(musica, model_name, modality = "SBS96",
 #' @param plotly If \code{TRUE}, the the plot will be made interactive
 #' using \code{\link[plotly]{plotly}}. Not used if \code{color_by = "signature"}
 #' and \code{same_scale = FALSE}. Default \code{FALSE}.
-#' @param clust Add cluster labels as annotation
+#' @param clust The output of \code{\link{cluster_exposure}}. Needed, and
+#' only used, when \code{color_by = "cluster"}. Default \code{NULL}.
 #' @param legend Plot legend
 #' @param strip_axes Remove axes labels for cleaner looking plots
 #' @return Generates a ggplot or plotly object
@@ -201,22 +201,30 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
   )
 
   umap <- umap(result)
+  if (length(umap) == 0) {
+    stop(
+      "No UMAP for model '", model_name, "'. Run create_umap() first."
+    )
+  }
   color_by <- match.arg(color_by)
 
   if (color_by %in% c("annotation", "cluster")) {
-    if (is.null(annotation)) {
+    if (color_by == "annotation" && is.null(annotation)) {
       stop(
-        "If the parameter or 'color_by' are is to 'annotation', ",
+        "If the parameter 'color_by' is set to 'annotation', ",
         "then the 'annotation' parameter must be supplied."
       )
     }
 
-    # Add annotation to data.frame
-    annot <- samp_annot(musica)
-
-    # Manually override annotations with cluster labels
+    # Color by cluster labels, stored as an annotation named "cluster"
     if (color_by == "cluster") {
-      annot <- clust
+      if (is.null(clust)) {
+        stop(
+          "If the parameter 'color_by' is set to 'cluster', then the ",
+          "'clust' parameter must be supplied (the output of ",
+          "cluster_exposure())."
+        )
+      }
       annotation <- "cluster"
     }
 
@@ -260,7 +268,7 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
       )
       p <- p + ggplot2::geom_point(
         data = centroid, mapping =
-          ggplot2::aes(x = UMAP_1, y = UMAP_1),
+          ggplot2::aes(x = UMAP_1, y = UMAP_2),
         size = 0, alpha = 0
       )
 
@@ -291,7 +299,7 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
     exposures <- exposures(result)
     if (isTRUE(proportional)) {
       color_lab <- "Fraction"
-      exposures <- sweep(exposures, 2, colSums(exposures), FUN = "/")
+      exposures <- .proportional_exposures(exposures)
     } else {
       color_lab <- "Counts"
     }
@@ -315,7 +323,8 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
     if (isTRUE(same_scale)) {
       # Uses facet_grid to plot all signatures
       breaks <- signif(seq(0, max(df$exposure), length.out = 5), 2)
-      limits <- c(0, max(breaks))
+      # signif() can round the top break below the largest exposure
+      limits <- c(0, max(breaks, df$exposure))
       p <- ggplot(df, aes(
         x = UMAP_1, y = UMAP_2,
         colour = exposure
@@ -332,7 +341,7 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
       out <- by(data = df, INDICES = df$signature, FUN = function(m) {
         m <- droplevels(m)
         breaks <- signif(seq(0, max(m$exposure), length.out = 5), 2)
-        limits <- c(0, max(breaks))
+        limits <- c(0, max(breaks, m$exposure))
         m <- ggplot(m, aes(
           x = UMAP_1,
           y = UMAP_2,

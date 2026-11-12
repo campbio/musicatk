@@ -43,13 +43,17 @@ Default \code{FALSE}}
 Otherwise, they aren't.
 Default \code{FALSE}}
 
-\item{scale}{Boolean check. If \code{True}, values are scaled by z-score.
-Otherwise, they aren't.
+\item{scale}{Boolean check. If \code{True}, each signature (row) is
+scaled to a z-score across samples; a signature with the same value in
+every sample gets 0. Proportions and z-scores use all samples, before
+\code{subset_tumor} is applied. Otherwise, values aren't scaled.
 Default \code{TRUE}}
 
-\item{subset_tumor}{Users can specify certain tumor types on which
-they want to subset the exposure matrix for
-plotting the heatmap.}
+\item{subset_tumor}{One or more annotation values, such as tumor types.
+Only samples whose value in any sample annotation column exactly matches
+one of them are plotted. Unless \code{annotation} is given, the columns
+where the values were found are shown as the heatmap annotation. Error
+given if a value is not in any sample annotation. Default \code{NULL}.}
 
 \item{subset_signatures}{Users can specify certain signatures on
  which they want to subset the exposure matrix
