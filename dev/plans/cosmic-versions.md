@@ -214,9 +214,8 @@ Spec review:
   the label doesn't go stale when a version is added.
 
 Declined in `/code-review`, for the maintainer:
-- **Exome with `hg38` is an error.** The maintainer approved this as
-  specified (ADR: no silent fallback). The reviewer noted that users with
-  hg38 exome data must pass `hg19` or omit the argument.
+- **Exome with `hg38` is an error.** Superseded: see "v3.6 exome
+  catalogues" below.
 - **`genome_build` defaults to `"hg19"`, so hg38 data compared without it
   uses GRCh37 v3.6.** This is #253's and the ADR's default. The message
   names the build.
@@ -232,3 +231,29 @@ Declined in `/code-review`, for the maintainer:
   files (group K).
 - **Lazy loading of the 8 COSMIC objects in the app**, about 200 KB per
   session.
+
+## v3.6 exome catalogues (maintainer decision, 2026-11-12)
+
+#253 assumed COSMIC stopped publishing exome catalogues after v3.0. That
+is wrong: SigProfilerAssignment, maintained by the COSMIC signature
+authors, has exome-normalized SBS and DBS catalogues for every v3 release
+and for GRCh37, GRCh38 and mm10. Its v3.6 genome SBS files are identical
+to the COSMIC downloads in `data-raw/cosmic_v3.6/`.
+
+The maintainer decided to add them to #253, from the SigProfiler files,
+SBS only. A future issue covers DBS exome. So:
+- New objects `cosmic_v3_6_sbs_sigs_grch37_exome` and
+  `cosmic_v3_6_sbs_sigs_grch38_exome` (model ids
+  `Cosmic_v3.6_SBS_Exome_GRCh3[78]`), from SigProfilerAssignment commit
+  ff61b0f.
+- `"latest"` is now v3.6 for exome too, and exome with `hg38` works.
+  `cosmic_version = "3.0"` gives the v3.0 GRCh37 exome result; `"3.0"`
+  with `hg38` is an error.
+- `genome_build` still defaults to `"hg19"` for genome and exome.
+- The "COSMIC stopped publishing" text is removed from the message, docs,
+  vignette and NEWS.
+- The Shiny prediction tab offers the v3.6 and v3.0 exome sets.
+- The vignette's exome comparison passes `genome_build = "hg38"`, the
+  build of its variants, so its signature names now come from v3.6.
+- ADR 0003's Context section repeats the wrong exome claim. That is left
+  to the maintainer, since accepted ADRs are append-only.
