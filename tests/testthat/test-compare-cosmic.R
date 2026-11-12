@@ -56,6 +56,10 @@ test_that("the v3.6 objects have the published signature counts", {
     signatures(cosmic_v3_6_sbs_sigs_grch38),
     signatures(cosmic_v3_6_sbs_sigs_grch37)
   )))
+  expect_false(isTRUE(all.equal(
+    signatures(cosmic_v3_6_dbs_sigs_grch38),
+    signatures(cosmic_v3_6_dbs_sigs_grch37)
+  )))
   # Motifs in the same order as the v3.0 objects
   expect_identical(
     rownames(signatures(cosmic_v3_6_sbs_sigs_grch37)),
@@ -103,6 +107,12 @@ test_that("compare_cosmic_v3 defaults to the latest SBS catalogue per build", {
   ))
   expect_equal(
     .silent_compare(res, "res", "genome", genome_build = "GRCh38",
+      threshold = 0.5
+    ),
+    hg38
+  )
+  expect_equal(
+    .silent_compare(res, "res", "genome", genome_build = "grch38",
       cosmic_version = "3.6", threshold = 0.5
     ),
     hg38
@@ -209,7 +219,11 @@ test_that("compare_cosmic_v3 errors on a catalogue musicatk doesn't ship", {
     .quiet_compare(res, "res", "genome", genome_build = "hg38",
       cosmic_version = "3.0"
     ),
-    "no COSMIC v3.0 SBS96 genome catalogue for GRCh38.*v3.6 GRCh38"
+    paste0(
+      "no COSMIC v3.0 SBS96 genome catalogue for GRCh38. Available for SBS96 ",
+      "genome: v3.0 GRCh37, v3.6 GRCh37, v3.6 GRCh38"
+    ),
+    fixed = TRUE
   )
 })
 

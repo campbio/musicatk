@@ -817,6 +817,7 @@ parse_delete_event <- function(idstr) {
                   # COSMIC v3.4 split SBS22 and SBS40 into a/b/c variants
                   "SBS22a" = "SBS22a - Aristolochic acid exposure",
                   "SBS22b" = "SBS22b - Aristolochic acid exposure",
+                  "SBS22c" = "SBS22c - Aristolochic acid exposure",
                   "SBS23" = "SBS23 - Unknown",
                   "SBS24" = "SBS24 - Aflatoxin exposure",
                   "SBS25" = "SBS25 - Unknown (Unknown chemotherapy)",
@@ -962,8 +963,10 @@ parse_delete_event <- function(idstr) {
     }
   }
   # The compare tab picks the build with its own genome build input
-  compare_cosmic_choices <- c("cosmic_v3_sbs_sigs", "cosmic_v3_dbs_sigs",
-                              "cosmic_v3_indel_sigs", "cosmic_v2_sigs")
+  # compare_cosmic_v3() picks the catalogue from the modality, build and
+  # version, so V3 is one choice here
+  compare_cosmic_choices <- c("COSMIC V3" = "cosmic_v3",
+                              "COSMIC V2" = "cosmic_v2_sigs")
 
   # Update musica object list whenever a result or musica object is altered
   output$annotation_musica_list <- renderUI({
@@ -1615,7 +1618,7 @@ parse_delete_event <- function(idstr) {
                     paste("Build the variants were called on. Picks the",
                           "matching COSMIC V3 signatures; not used for V2."),
                     placement = "right", trigger = "hover", options = NULL),
-          selectInput("compare_cosmic_version", "COSMIC V3 version",
+          selectInput("compare_cosmic_version", "COSMIC version",
                       choices = c("Latest (3.6)" = "latest", "3.0" = "3.0"),
                       selected = "latest"),
           bsTooltip("compare_cosmic_version",
@@ -1652,7 +1655,7 @@ parse_delete_event <- function(idstr) {
     #  other <- isolate(get_result(input$select_result_b))
     #}
     # Attempt to compare signatures
-    tryCatch({
+    compared <- tryCatch({
       if (input$cosmic_button == "cosmic"){
         if(input$select_result_b_cosmic == "cosmic_v2_sigs"){
           isolate(vals$comparison <-
@@ -1676,7 +1679,7 @@ parse_delete_event <- function(idstr) {
                                       threshold = as.numeric(input$Threshold),
                                       metric = input$compare_metric,
                                       result_rename = paste0(input$select_model_a)))
-          b_name <- input$select_result_b_cosmic
+          b_name <- paste0("COSMIC_v3_", cosmic_version)
         }
       }
       else{
@@ -1697,9 +1700,15 @@ parse_delete_event <- function(idstr) {
       #          compare_results(isolate(get_result(input$select_result_a)),
       #                other, threshold = as.numeric(input$Threshold),
       #                metric = input$compare_metric))
+      TRUE
     }, error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
+      FALSE
     })
+    # A failed comparison has no table to label
+    if (!compared) {
+      return()
+    }
     colnames(vals$comparison) <- c(input$compare_metric,
                                    paste0(input$select_model_a, "-Index"),
                                    paste0(b_name, "-Index"),

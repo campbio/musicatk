@@ -30,7 +30,9 @@
 #' exome-normalized catalogues after v3.0, so it is also the catalogue
 #' \code{compare_cosmic_v3(sample_type = "exome")} uses by default. Signatures
 #' added after v3.0 can only be matched against the genome catalogues, such as
-#' \code{\link{cosmic_v3_6_sbs_sigs_grch37}}.
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch37}}. For exome data,
+#' \code{cosmic_version = "latest"} and \code{"3.0"} both use this object;
+#' \code{"3.6"} is an error.
 #'
 #' @docType data
 #'

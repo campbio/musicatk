@@ -209,11 +209,14 @@ compare_results <- function(musica, model_id, other_model_id,
 #' @param modality Compare to SBS, DBS, or Indel. Default \code{"SBS96"}
 #' @param genome_build Reference build the COSMIC signatures are normalized to,
 #' either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
-#' should match the build the variants were called against. COSMIC publishes
-#' one Indel catalogue per version, used for either build. The only exome
-#' catalogue is COSMIC v3.0 for GRCh37. Default \code{"hg19"}.
+#' should match the build the variants were called against. Case is ignored,
+#' and \code{"19"} and \code{"38"} also work. COSMIC publishes one Indel
+#' catalogue per version, used for either build. The only exome catalogue is
+#' COSMIC v3.0 for GRCh37, so exome data with \code{"hg38"} is an error.
+#' Default \code{"hg19"}.
 #' @param cosmic_version COSMIC version to compare against: \code{"latest"},
-#' \code{"3.0"} or \code{"3.6"}. \code{"latest"} uses the newest version that
+#' \code{"3.0"} or \code{"3.6"} (also given as the number \code{3.6} or as
+#' \code{"v3.6"}). \code{"latest"} uses the newest version that
 #' has a catalogue for the sample type, modality and build: v3.6 for genome
 #' data and v3.0 for exome data, since COSMIC stopped publishing exome
 #' catalogues after v3.0. Use \code{"3.0"} to reproduce results from musicatk
@@ -293,6 +296,7 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
     .cosmic_version(cosmic_version)
   )
   message(catalogue$message)
+  cosmic_title <- paste0("COSMIC Signatures (v", catalogue$version, ")")
   cosmic_res <- getExportedValue("musicatk", catalogue$object)
 
   signatures <- signatures(get_model(musica, result_name, modality, model_id))
@@ -336,7 +340,7 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
 
   .plot_compare_result_signatures(result_subset, other_subset, comparison,
                                   musica, res1_name = result_rename,
-                                  res2_name = "COSMIC Signatures (V3)",
+                                  res2_name = cosmic_title,
                                   decimals = decimals, maxes = maxes,
                                   same_scale = same_scale
   )
@@ -457,7 +461,7 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
       text, "COSMIC stopped publishing exome catalogues after v3.0."
     )
   }
-  list(object = chosen$object, message = text)
+  list(object = chosen$object, version = chosen$version, message = text)
 }
 
 #' Compare a result object to COSMIC V2 SBS Signatures (combination whole-exome
