@@ -1,9 +1,9 @@
 # 0003. Ship each COSMIC signature version as its own data objects
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-12
-- **Deciders:** pending (proposed by Natasha Gurevich on #253, following a
-  suggestion from the maintainer)
+- **Deciders:** Joshua Campbell (maintainer), 2026-11-12. Proposed by
+  Natasha Gurevich on #253, following a suggestion from the maintainer.
 
 ## Context
 

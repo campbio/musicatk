@@ -35,4 +35,4 @@ both kept in place. The record of what we used to think is the point.
 |---|---|---|---|
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted | 2026-09-18 |
 | [0002](0002-withr-for-seeded-prediction.md) | Import withr to seed exposure prediction | Accepted | 2026-11-09 |
-| [0003](0003-versioned-cosmic-signatures.md) | Ship each COSMIC signature version as its own data objects | Proposed | 2026-11-12 |
+| [0003](0003-versioned-cosmic-signatures.md) | Ship each COSMIC signature version as its own data objects | Accepted | 2026-11-12 |
