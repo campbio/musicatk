@@ -123,10 +123,28 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
 #' @return Returns the created SBS192 count table object built using either
 #' transcript strand or replication strand
 #' @keywords internal
-create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
-  if (!strand_type %in% c("Transcript_Strand", "Replication_Strand")) {
-    stop("Please select either Transcript_Strand or Replication_Strand")
+# Checks strand_type and returns the SBS192 table name built from it
+.sbs192_table_name <- function(strand_type) {
+  table_names <- c(Transcript_Strand = "SBS192_Trans",
+                   Replication_Strand = "SBS192_Rep")
+  if (is.null(strand_type)) {
+    stop(
+      "SBS192 needs a 'strand_type': Transcript_Strand or ",
+      "Replication_Strand."
+    )
   }
+  if (length(strand_type) != 1 || !strand_type %in% names(table_names)) {
+    bad <- paste(strand_type, collapse = ", ")
+    stop(
+      "'strand_type' must be Transcript_Strand or Replication_Strand, ",
+      "not '", bad, "'."
+    )
+  }
+  return(table_names[[strand_type]])
+}
+
+create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
+  table_name <- .sbs192_table_name(strand_type)
   dat <- variants(musica)
   dat <- subset_variant_by_type(dat, "SBS")
   dat <- drop_na_variants(dat, strand_type)
@@ -204,9 +222,6 @@ create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
     collapse = "_"
   )
 
-  table_name <- paste0("SBS192_", ifelse(
-    strand_type == "Transcript_Strand", "Trans", "Rep"
-  ))
   .warn_unmatched_motifs(maf_mut_id, mut_id, table_name)
   mutation <- factor(maf_mut_id, levels = mut_id)
 
@@ -286,9 +301,7 @@ create_dbs78_table <- function(musica, overwrite = overwrite, verbose) {
   rc_ref_TA <- which(ref == "TA")
   rc_alt <- c(rc_alt, rc_ref_TA[which(alt[rc_ref_TA] %in% c("AG", "CC", "AC"))])
 
-  if (length(rc_alt) > 0) {
-    alt[rc_alt] <- rc(alt[rc_alt])
-  }
+  alt[rc_alt] <- rc(alt[rc_alt])
 
   full <- paste(ref, ">NN_", alt, sep = "")
   full_motif <- c(
@@ -385,23 +398,19 @@ create_dbs78_table <- function(musica, overwrite = overwrite, verbose) {
 
 #' Reverse complement of a string using biostrings
 #'
-#' @param dna Input DNA string
-#' @return Returns the reverse compliment of the input DNA string
+#' @param dna Input DNA string, or a character vector of them. An empty
+#' vector gives an empty vector.
+#' @return Returns the reverse complement of each input DNA string, without
+#' names
 #' @examples
 #' rc("ATGC")
 #' @export
 rc <- function(dna) {
-  if (is(dna, "character") && length(dna) == 1) {
-    rev_com <- as.character(Biostrings::reverseComplement(
-      Biostrings::DNAString(dna)
-    ))
-  } else if (is(dna, "character") && length(dna) > 1) {
-    rev_com <- vapply(dna, rc, FUN.VALUE = character(1))
-    names(rev_com) <- NULL
-  } else {
+  if (!is.character(dna)) {
     stop("Must be character or character vector")
   }
-  return(rev_com)
+  rev_com <- Biostrings::reverseComplement(Biostrings::DNAStringSet(dna))
+  return(as.character(rev_com, use.names = FALSE))
 }
 
 #' Builds count tables using various mutation type schemas
@@ -434,15 +443,18 @@ rc <- function(dna) {
 #' @param modality Modality of table to build. One of \code{"SBS96"},
 #' \code{"SBS192"}, \code{"DBS"}, or \code{"Indel"}.
 #' @param strand_type Strand type to use in SBS192 schema. One of
-#' \code{"Transcript_Strand"} or \code{"Replication_Strand"}.
-#' Only used if \code{modality = SBS192}.
+#' \code{"Transcript_Strand"} or \code{"Replication_Strand"}. Required for,
+#' and only used by, \code{modality = "SBS192"}. The table is named
+#' \code{"SBS192_Trans"} or \code{"SBS192_Rep"}.
 #' @param overwrite If \code{TRUE}, any existing count table with the same
 #' name will be overwritten. If \code{FALSE}, then an error will be thrown
 #' if a table with the same name exists within the \code{musica} object.
 #' @param verbose Show progress bar for processed samples
 #' @param table_name Use modality instead
 #' @return No object will be returned. The count tables will be automatically
-#' added to the \code{musica} object.
+#' added to the \code{musica} object, named \code{"SBS96"},
+#' \code{"SBS192_Trans"}, \code{"SBS192_Rep"}, \code{"DBS78"} or
+#' \code{"IND83"} depending on \code{modality} and \code{strand_type}.
 #' @examples
 #' g <- select_genome("hg38")
 #'
@@ -472,25 +484,27 @@ build_standard_table <- function(musica, g, modality, strand_type = NULL,
   }
 
   if (modality %in% c("SNV96", "SNV", "96", "SBS", "SBS96")) {
-    message("Building count table from SBS with SBS96 schema")
+    message("Building count table 'SBS96' from SBS with the SBS96 schema")
     .table_exists_warning(musica, "SBS96", overwrite)
     tab <- create_sbs96_table(musica, g, overwrite)
   } else if (modality %in% c("SBS192", "192")) {
+    # The table is named after the strand, for example SBS192_Trans
+    name <- .sbs192_table_name(strand_type)
     message(
-      "Building count table from SBS and ", strand_type,
-      " with SBS192 schema"
+      "Building count table '", name, "' from SBS and ", strand_type,
+      " with the SBS192 schema"
     )
-    .table_exists_warning(musica, "SBS192", overwrite)
+    .table_exists_warning(musica, name, overwrite)
     tab <- create_sbs192_table(musica, g, strand_type, overwrite)
   } else if (modality %in% c("DBS78", "DBS", "doublet")) {
-    message("Building count table from DBS with DBS78 schema")
+    message("Building count table 'DBS78' from DBS with the DBS78 schema")
     .table_exists_warning(musica, "DBS78", overwrite)
     tab <- create_dbs78_table(musica, overwrite, verbose)
   } else if (modality %in% c(
     "IND83", "INDEL83", "INDEL", "IND", "indel",
     "Indel"
   )) {
-    message("Building count table from INDELs with IND83 schema")
+    message("Building count table 'IND83' from INDELs with the IND83 schema")
     .table_exists_warning(musica, "IND83", overwrite)
     tab <- create_ind83_table(musica, g, overwrite, verbose)
   } else {

@@ -24,8 +24,9 @@ reference the variants and their coordinates were derived from.}
 \code{"SBS192"}, \code{"DBS"}, or \code{"Indel"}.}
 
 \item{strand_type}{Strand type to use in SBS192 schema. One of
-\code{"Transcript_Strand"} or \code{"Replication_Strand"}.
-Only used if \code{modality = SBS192}.}
+\code{"Transcript_Strand"} or \code{"Replication_Strand"}. Required for,
+and only used by, \code{modality = "SBS192"}. The table is named
+\code{"SBS192_Trans"} or \code{"SBS192_Rep"}.}
 
 \item{overwrite}{If \code{TRUE}, any existing count table with the same
 name will be overwritten. If \code{FALSE}, then an error will be thrown
@@ -37,7 +38,9 @@ if a table with the same name exists within the \code{musica} object.}
 }
 \value{
 No object will be returned. The count tables will be automatically
-added to the \code{musica} object.
+added to the \code{musica} object, named \code{"SBS96"},
+\code{"SBS192_Trans"}, \code{"SBS192_Rep"}, \code{"DBS78"} or
+\code{"IND83"} depending on \code{modality} and \code{strand_type}.
 }
 \description{
 Generates count tables for different mutation type schemas which can be

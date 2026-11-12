@@ -383,14 +383,16 @@ combine_count_tables <- function(musica, to_comb, name,
       overwrite = overwrite
     )
   } else {
-    stop(paste("User specified table: ",
-      setdiff(to_comb[which(!to_comb %in% names(tab))]),
-      " does not exist, please create prior to creating compound ",
-      "table. Current table names are: ", paste(names(tab),
-        collapse = ", "
-      ),
-      sep = ""
-    ))
+    absent <- paste(setdiff(to_comb, names(tab)), collapse = ", ")
+    current <- if (length(tab) > 0) {
+      paste(names(tab), collapse = ", ")
+    } else {
+      "none"
+    }
+    stop(
+      "'to_comb' names tables that don't exist: ", absent, ". Create them ",
+      "before combining. Current table names are: ", current
+    )
   }
   eval.parent(substitute(tables(musica) <- tab))
 }
