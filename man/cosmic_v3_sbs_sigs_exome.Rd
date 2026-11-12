@@ -21,13 +21,12 @@ GRCh37 exome.
 }
 \section{Version}{
 
-This object is COSMIC v3.0 and will stay v3.0. COSMIC stopped publishing
-exome-normalized catalogues after v3.0, so it is also the catalogue
-\code{compare_cosmic_v3(sample_type = "exome")} uses by default. Signatures
-added after v3.0 can only be matched against the genome catalogues, such as
-\code{\link{cosmic_v3_6_sbs_sigs_grch37}}. For exome data,
-\code{cosmic_version = "latest"} and \code{"3.0"} both use this object;
-\code{"3.6"} is an error.
+This object is COSMIC v3.0 and will stay v3.0, so code that uses it gives
+the same results across musicatk releases. The v3.6 exome catalogues are
+\code{\link{cosmic_v3_6_sbs_sigs_grch37_exome}} and
+\code{\link{cosmic_v3_6_sbs_sigs_grch38_exome}}.
+\code{compare_cosmic_v3(sample_type = "exome")} uses the newest version by
+default; set \code{cosmic_version = "3.0"} to compare against this object.
 }
 
 \references{

@@ -221,17 +221,15 @@ compare_results <- function(musica, model_id, other_model_id,
 #' either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
 #' should match the build the variants were called against. Case is ignored,
 #' and \code{"19"}, \code{"38"}, \code{19} and \code{38} also work. COSMIC
-#' publishes one Indel catalogue per version, used for either build. The only
-#' exome catalogue is COSMIC v3.0 for GRCh37, so exome data with \code{"hg38"}
-#' is an error.
-#' Default \code{"hg19"}.
+#' publishes one Indel catalogue per version, used for either build. The v3.0
+#' exome catalogue is GRCh37 only. Default \code{"hg19"}.
 #' @param cosmic_version COSMIC version to compare against: \code{"latest"},
 #' \code{"3.0"} or \code{"3.6"} (also given as the number \code{3.6} or as
 #' \code{"v3.6"}). \code{"latest"} uses the newest version that
-#' has a catalogue for the sample type, modality and build: v3.6 for genome
-#' data and v3.0 for exome data, since COSMIC stopped publishing exome
-#' catalogues after v3.0. Use \code{"3.0"} to reproduce results from musicatk
-#' 2.7.15 and earlier, which compared against v3.0 only. A version without a
+#' has a catalogue for the sample type, modality and build, which is v3.6
+#' for every catalogue musicatk ships. Use \code{"3.0"} to reproduce results
+#' from musicatk 2.7.15 and earlier, which compared against v3.0 (GRCh37)
+#' only. A version without a
 #' matching catalogue is an error listing the catalogues musicatk ships;
 #' there is no fallback to another version or build. Default \code{"latest"}.
 #' @return Returns the comparisons. Its \code{"cosmic_catalogue"} attribute is
@@ -356,19 +354,23 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
 # release adds rows here.
 .cosmic_catalogues <- function() {
   data.frame(
-    version = c(rep("3.0", 4), rep("3.6", 5)),
+    version = c(rep("3.0", 4), rep("3.6", 7)),
     modality = c(
       "SBS96", "SBS96", "DBS78", "IND83",
-      "SBS96", "SBS96", "DBS78", "DBS78", "IND83"
+      "SBS96", "SBS96", "SBS96", "SBS96", "DBS78", "DBS78", "IND83"
     ),
-    sample_type = c("exome", rep("genome", 8)),
+    sample_type = c(
+      "exome", rep("genome", 3),
+      "exome", "exome", rep("genome", 5)
+    ),
     build = c(
       "GRCh37", "GRCh37", "GRCh37", NA,
-      "GRCh37", "GRCh38", "GRCh37", "GRCh38", NA
+      "GRCh37", "GRCh38", "GRCh37", "GRCh38", "GRCh37", "GRCh38", NA
     ),
     object = c(
       "cosmic_v3_sbs_sigs_exome", "cosmic_v3_sbs_sigs", "cosmic_v3_dbs_sigs",
-      "cosmic_v3_indel_sigs", "cosmic_v3_6_sbs_sigs_grch37",
+      "cosmic_v3_indel_sigs", "cosmic_v3_6_sbs_sigs_grch37_exome",
+      "cosmic_v3_6_sbs_sigs_grch38_exome", "cosmic_v3_6_sbs_sigs_grch37",
       "cosmic_v3_6_sbs_sigs_grch38", "cosmic_v3_6_dbs_sigs_grch37",
       "cosmic_v3_6_dbs_sigs_grch38", "cosmic_v3_6_indel_sigs"
     ),
@@ -463,11 +465,6 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
     "Comparing to COSMIC v", chosen$version, " ", modality, " ",
     sample_type, " signatures (", detail, ")."
   )
-  if (sample_type == "exome") {
-    text <- paste(
-      text, "COSMIC stopped publishing exome catalogues after v3.0."
-    )
-  }
   list(object = chosen$object, version = chosen$version, message = text)
 }
 

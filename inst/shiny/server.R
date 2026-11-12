@@ -934,10 +934,13 @@ parse_delete_event <- function(idstr) {
   cosmic_predict_choices <- list(
     "COSMIC v3.6 SBS (GRCh37)" = "cosmic_v3_6_sbs_sigs_grch37",
     "COSMIC v3.6 SBS (GRCh38)" = "cosmic_v3_6_sbs_sigs_grch38",
+    "COSMIC v3.6 SBS exome (GRCh37)" = "cosmic_v3_6_sbs_sigs_grch37_exome",
+    "COSMIC v3.6 SBS exome (GRCh38)" = "cosmic_v3_6_sbs_sigs_grch38_exome",
     "COSMIC v3.6 DBS (GRCh37)" = "cosmic_v3_6_dbs_sigs_grch37",
     "COSMIC v3.6 DBS (GRCh38)" = "cosmic_v3_6_dbs_sigs_grch38",
     "COSMIC v3.6 Indel" = "cosmic_v3_6_indel_sigs",
     "COSMIC v3.0 SBS (GRCh37)" = "cosmic_v3_sbs_sigs",
+    "COSMIC v3.0 SBS exome (GRCh37)" = "cosmic_v3_sbs_sigs_exome",
     "COSMIC v3.0 DBS (GRCh37)" = "cosmic_v3_dbs_sigs",
     "COSMIC v3.0 Indel" = "cosmic_v3_indel_sigs",
     "COSMIC v2 Signatures" = "cosmic_v2_sigs"

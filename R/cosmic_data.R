@@ -26,13 +26,12 @@
 #' GRCh37 exome.
 #'
 #' @section Version:
-#' This object is COSMIC v3.0 and will stay v3.0. COSMIC stopped publishing
-#' exome-normalized catalogues after v3.0, so it is also the catalogue
-#' \code{compare_cosmic_v3(sample_type = "exome")} uses by default. Signatures
-#' added after v3.0 can only be matched against the genome catalogues, such as
-#' \code{\link{cosmic_v3_6_sbs_sigs_grch37}}. For exome data,
-#' \code{cosmic_version = "latest"} and \code{"3.0"} both use this object;
-#' \code{"3.6"} is an error.
+#' This object is COSMIC v3.0 and will stay v3.0, so code that uses it gives
+#' the same results across musicatk releases. The v3.6 exome catalogues are
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch37_exome}} and
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch38_exome}}.
+#' \code{compare_cosmic_v3(sample_type = "exome")} uses the newest version by
+#' default; set \code{cosmic_version = "3.0"} to compare against this object.
 #'
 #' @docType data
 #'
@@ -189,6 +188,66 @@
 #'
 #' @source COSMIC v3.6 (May 2026), <https://cancer.sanger.ac.uk/signatures/>
 "cosmic_v3_6_sbs_sigs_grch38"
+
+#' COSMIC v3.6 SBS96 Exome Signatures Result Object (GRCh37)
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 101 COSMIC v3.6 SBS signatures normalized to the
+#' GRCh37 exome trinucleotide frequencies, for whole-exome data.
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch38_exome}} has the same signatures
+#' normalized to the GRCh38 exome, and
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch37}} to the GRCh37 genome.
+#' \code{compare_cosmic_v3(sample_type = "exome")} picks it from
+#' \code{genome_build}.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_sbs_sigs_grch37_exome)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), exome-normalized matrices from
+#' SigProfilerAssignment
+#' (<https://github.com/SigProfilerSuite/SigProfilerAssignment>), whose genome
+#' matrices match <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_sbs_sigs_grch37_exome"
+
+#' COSMIC v3.6 SBS96 Exome Signatures Result Object (GRCh38)
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 101 COSMIC v3.6 SBS signatures normalized to the
+#' GRCh38 exome trinucleotide frequencies, for whole-exome data.
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch37_exome}} has the same signatures
+#' normalized to the GRCh37 exome, and
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch38}} to the GRCh38 genome.
+#' \code{compare_cosmic_v3(sample_type = "exome")} picks it from
+#' \code{genome_build}.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_sbs_sigs_grch38_exome)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), exome-normalized matrices from
+#' SigProfilerAssignment
+#' (<https://github.com/SigProfilerSuite/SigProfilerAssignment>), whose genome
+#' matrices match <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_sbs_sigs_grch38_exome"
 
 #' COSMIC v3.6 DBS Genome Signatures Result Object (GRCh37)
 #'
