@@ -63,6 +63,23 @@ test_that("the v3.6 objects have the published signature counts", {
     signatures(cosmic_v3_6_dbs_sigs_grch38),
     signatures(cosmic_v3_6_dbs_sigs_grch37)
   )))
+  # The exome catalogues have the genome signatures, normalized to the exome
+  for (exome in list(
+    cosmic_v3_6_sbs_sigs_grch37_exome, cosmic_v3_6_sbs_sigs_grch38_exome
+  )) {
+    expect_identical(
+      dimnames(signatures(exome)),
+      dimnames(signatures(cosmic_v3_6_sbs_sigs_grch37))
+    )
+  }
+  expect_false(isTRUE(all.equal(
+    signatures(cosmic_v3_6_sbs_sigs_grch37_exome),
+    signatures(cosmic_v3_6_sbs_sigs_grch37)
+  )))
+  expect_false(isTRUE(all.equal(
+    signatures(cosmic_v3_6_sbs_sigs_grch38_exome),
+    signatures(cosmic_v3_6_sbs_sigs_grch37_exome)
+  )))
   # Motifs in the same order as the v3.0 objects
   expect_identical(
     rownames(signatures(cosmic_v3_6_sbs_sigs_grch37)),
@@ -78,6 +95,8 @@ test_that("the v3.6 objects carry no exposures and name version and build", {
   objects <- list(
     cosmic_v3_6_sbs_sigs_grch37 = "Cosmic_v3.6_SBS_Genome_GRCh37",
     cosmic_v3_6_sbs_sigs_grch38 = "Cosmic_v3.6_SBS_Genome_GRCh38",
+    cosmic_v3_6_sbs_sigs_grch37_exome = "Cosmic_v3.6_SBS_Exome_GRCh37",
+    cosmic_v3_6_sbs_sigs_grch38_exome = "Cosmic_v3.6_SBS_Exome_GRCh38",
     cosmic_v3_6_dbs_sigs_grch37 = "Cosmic_v3.6_DBS_Genome_GRCh37",
     cosmic_v3_6_dbs_sigs_grch38 = "Cosmic_v3.6_DBS_Genome_GRCh38",
     cosmic_v3_6_indel_sigs = "Cosmic_v3.6_Indel_Genome"
@@ -198,11 +217,30 @@ test_that("compare_cosmic_v3 has one Indel catalogue per version", {
   )
 })
 
-test_that("compare_cosmic_v3 uses the v3.0 exome catalogue and says why", {
+test_that("compare_cosmic_v3 picks the exome catalogue by version and build", {
   data(res)
   expect_message(
     got <- .quiet_compare(res, "res", "exome", threshold = 0.5),
-    "COSMIC v3.0 SBS96 exome signatures \\(GRCh37\\).*after v3.0"
+    "COSMIC v3.6 SBS96 exome signatures \\(GRCh37\\)"
+  )
+  expect_equal(got, .expected(res, "SBS96", "res",
+    cosmic_v3_6_sbs_sigs_grch37_exome, 0.5
+  ))
+  expect_message(
+    got <- .quiet_compare(res, "res", "exome", genome_build = "hg38",
+      threshold = 0.5
+    ),
+    "COSMIC v3.6 SBS96 exome signatures \\(GRCh38\\)"
+  )
+  expect_equal(got, .expected(res, "SBS96", "res",
+    cosmic_v3_6_sbs_sigs_grch38_exome, 0.5
+  ))
+  # v3.0 exome is the catalogue earlier musicatk versions used
+  expect_message(
+    got <- .quiet_compare(res, "res", "exome", cosmic_version = "3.0",
+      threshold = 0.5
+    ),
+    "COSMIC v3.0 SBS96 exome signatures \\(GRCh37\\)"
   )
   expect_equal(got, .expected(res, "SBS96", "res",
     cosmic_v3_sbs_sigs_exome, 0.5
@@ -215,12 +253,14 @@ test_that("compare_cosmic_v3 uses the v3.0 exome catalogue and says why", {
 test_that("compare_cosmic_v3 errors on a catalogue musicatk doesn't ship", {
   data(res)
   expect_error(
-    .quiet_compare(res, "res", "exome", cosmic_version = "3.6"),
-    "no COSMIC v3.6 SBS96 exome catalogue.*v3.0 GRCh37"
-  )
-  expect_error(
-    .quiet_compare(res, "res", "exome", genome_build = "hg38"),
-    "no COSMIC SBS96 exome catalogue for GRCh38.*v3.0 GRCh37"
+    .quiet_compare(res, "res", "exome", genome_build = "hg38",
+      cosmic_version = "3.0"
+    ),
+    paste0(
+      "no COSMIC v3.0 SBS96 exome catalogue for GRCh38. Available for SBS96 ",
+      "exome: v3.0 GRCh37, v3.6 GRCh37, v3.6 GRCh38"
+    ),
+    fixed = TRUE
   )
   expect_error(
     .quiet_compare(res, "res", "genome", genome_build = "hg38",
@@ -231,6 +271,11 @@ test_that("compare_cosmic_v3 errors on a catalogue musicatk doesn't ship", {
       "genome: v3.0 GRCh37, v3.6 GRCh37, v3.6 GRCh38"
     ),
     fixed = TRUE
+  )
+  # Exome catalogues are SBS only
+  expect_error(
+    .quiet_compare(.dbs_model(), "dbs", "exome", modality = "DBS78"),
+    "Only SBS class is available for whole-exome"
   )
 })
 
