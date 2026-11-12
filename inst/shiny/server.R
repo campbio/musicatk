@@ -777,11 +777,6 @@ parse_delete_event <- function(idstr) {
 ###################### Nathan's Code ##########################################
   # needed to predict cosmic sigs
   data("cosmic_v2_sigs")
-  data("cosmic_v3_sbs_sigs")
-  data("cosmic_v3_dbs_sigs")
-  data("cosmic_v3_sbs_sigs_grch38")
-  data("cosmic_v3_dbs_sigs_grch38")
-  data("cosmic_v3_indel_sigs")
 
   # Renaming COSMIC signatures.
   sbs_aet <- list("SBS1" =
@@ -933,23 +928,36 @@ parse_delete_event <- function(idstr) {
     vapply(nms, function(n) if (n %in% names(aet)) aet[[n]] else n,
            character(1), USE.NAMES = FALSE)
   }
-  colnames(signatures(cosmic_v3_sbs_sigs)) <-
-    fill_aet(colnames(signatures(cosmic_v3_sbs_sigs)), sbs_aet)
-  colnames(signatures(cosmic_v3_dbs_sigs)) <-
-    fill_aet(colnames(signatures(cosmic_v3_dbs_sigs)), dbs_aet)
-  colnames(signatures(cosmic_v3_indel_sigs)) <-
-    fill_aet(colnames(signatures(cosmic_v3_indel_sigs)), indel_aet)
-  colnames(signatures(cosmic_v3_sbs_sigs_grch38)) <-
-    fill_aet(colnames(signatures(cosmic_v3_sbs_sigs_grch38)), sbs_aet)
-  colnames(signatures(cosmic_v3_dbs_sigs_grch38)) <-
-    fill_aet(colnames(signatures(cosmic_v3_dbs_sigs_grch38)), dbs_aet)
-
-  cosmic_objects <- list("cosmic_v3_sbs_sigs" = cosmic_v3_sbs_sigs,
-                      "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
-                      "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs,
-                      "cosmic_v2_sigs" = cosmic_v2_sigs,
-                      "cosmic_v3_sbs_sigs_grch38" = cosmic_v3_sbs_sigs_grch38,
-                      "cosmic_v3_dbs_sigs_grch38" = cosmic_v3_dbs_sigs_grch38)
+  # COSMIC signature sets offered for prediction, newest version first
+  # (ADR 0003). Names are the labels shown; values are the data objects.
+  cosmic_predict_choices <- list(
+    "COSMIC v3.6 SBS (GRCh37)" = "cosmic_v3_6_sbs_sigs_grch37",
+    "COSMIC v3.6 SBS (GRCh38)" = "cosmic_v3_6_sbs_sigs_grch38",
+    "COSMIC v3.6 DBS (GRCh37)" = "cosmic_v3_6_dbs_sigs_grch37",
+    "COSMIC v3.6 DBS (GRCh38)" = "cosmic_v3_6_dbs_sigs_grch38",
+    "COSMIC v3.6 Indel" = "cosmic_v3_6_indel_sigs",
+    "COSMIC v3.0 SBS (GRCh37)" = "cosmic_v3_sbs_sigs",
+    "COSMIC v3.0 DBS (GRCh37)" = "cosmic_v3_dbs_sigs",
+    "COSMIC v3.0 Indel" = "cosmic_v3_indel_sigs",
+    "COSMIC v2 Signatures" = "cosmic_v2_sigs"
+  )
+  cosmic_aet <- list(SBS96 = sbs_aet, DBS78 = dbs_aet, IND83 = indel_aet)
+  cosmic_v3_objects <- setdiff(unlist(cosmic_predict_choices), "cosmic_v2_sigs")
+  cosmic_objects <- lapply(stats::setNames(nm = cosmic_v3_objects), function(x) {
+    obj <- getExportedValue("musicatk", x)
+    colnames(signatures(obj)) <-
+      fill_aet(colnames(signatures(obj)), cosmic_aet[[modality(obj)]])
+    obj
+  })
+  cosmic_objects$cosmic_v2_sigs <- cosmic_v2_sigs
+  # The default prediction set: v3.6 SBS for the import genome's build
+  default_predict_cosmic <- function() {
+    if (identical(vals$genome, "hg38")) {
+      "cosmic_v3_6_sbs_sigs_grch38"
+    } else {
+      "cosmic_v3_6_sbs_sigs_grch37"
+    }
+  }
   # The compare tab picks the build with its own genome build input
   compare_cosmic_choices <- c("cosmic_v3_sbs_sigs", "cosmic_v3_dbs_sigs",
                               "cosmic_v3_indel_sigs", "cosmic_v2_sigs")
@@ -1371,17 +1379,8 @@ parse_delete_event <- function(idstr) {
     if (is.null(other)) {
       tagList(
         selectInput("predicted_result", "Result to Predict",
-                    choices = list("Cosmic" = list(
-                      "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
-                      "Cosmic V3 SBS Signatures (GRCh38)" =
-                        "cosmic_v3_sbs_sigs_grch38",
-                      "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
-                      "Cosmic V3 DBS Signatures (GRCh38)" =
-                        "cosmic_v3_dbs_sigs_grch38",
-                      "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
-                      "Cosmic V2 Signatures" = "cosmic_v2_sigs"
-                      )),
-                    selected = "cosmic_v3_sbs_sigs"),
+                    choices = list("Cosmic" = cosmic_predict_choices),
+                    selected = default_predict_cosmic()),
         bsTooltip("predicted_result",
                   "Result model object containing the signatures to predict. 
                   Can use existing COSMIC signatures or signatures from a 
@@ -1391,17 +1390,9 @@ parse_delete_event <- function(idstr) {
     else {
     tagList(
       selectInput("predicted_result", "Result to Predict",
-                  choices = list("Cosmic" = list(
-                    "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
-                    "Cosmic V3 SBS Signatures (GRCh38)" =
-                      "cosmic_v3_sbs_sigs_grch38",
-                    "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
-                    "Cosmic V3 DBS Signatures (GRCh38)" =
-                      "cosmic_v3_dbs_sigs_grch38",
-                    "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
-                    "Cosmic V2 Signatures" = "cosmic_v2_sigs"),
+                  choices = list("Cosmic" = cosmic_predict_choices,
                                  "your signatures" = as.list(other)),
-                  selected = "cosmic_v3_sbs_sigs"),
+                  selected = default_predict_cosmic()),
       #bsTooltip("predicted_result",
       #          "Result model object containing the signatures to predict. 
       #          Can use existing COSMIC signatures or signatures from a 
@@ -1620,6 +1611,14 @@ parse_delete_event <- function(idstr) {
           bsTooltip("compare_genome_build",
                     paste("Build the variants were called on. Picks the",
                           "matching COSMIC V3 signatures; not used for V2."),
+                    placement = "right", trigger = "hover", options = NULL),
+          selectInput("compare_cosmic_version", "COSMIC V3 version",
+                      choices = c("Latest (3.6)" = "latest", "3.0" = "3.0"),
+                      selected = "latest"),
+          bsTooltip("compare_cosmic_version",
+                    paste("COSMIC V3 release to compare to. Use 3.0 to",
+                          "reproduce results from earlier musicatk versions;",
+                          "not used for V2."),
                     placement = "right", trigger = "hover", options = NULL)
         )
       })
@@ -1667,6 +1666,8 @@ parse_delete_event <- function(idstr) {
                     compare_cosmic_v3(vals$musica, model_id = input$select_model_a, 
                                       sample_type = "genome",
                                       genome_build = input$compare_genome_build,
+                                      cosmic_version =
+                                        input$compare_cosmic_version,
                                       modality = input$select_modality_a,
                                       result_name = input$select_result_a,
                                       threshold = as.numeric(input$Threshold),
