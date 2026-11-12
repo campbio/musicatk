@@ -55,7 +55,7 @@ test_that(desc = "plot_umap centroid layer maps y to UMAP_2", {
   expect_identical(rlang::as_label(centroid$mapping$y), "UMAP_2")
 })
 
-test_that(desc = "plot_umap(color_by = 'cluster') needs clust, not annotation", {
+test_that(desc = "plot_umap(color_by = 'cluster') needs clust", {
   data(res_annot)
   suppressMessages(create_umap(res_annot, "res_annot"))
   clust <- cluster_exposure(res_annot, "res_annot", nclust = 2)

@@ -69,8 +69,9 @@ on it).
   by name. Label text is white on dark fills (brightness below 0.25 by
   `col2rgb`), black otherwise: same look for the defaults (only SBS96 C>G
   is dark). An unnamed `color_mapping` is named in the order the values
-  first appear along the motifs, which is what the header did before; a
-  `color_mapping` missing a value stops, naming the values. When
+  first appear along the motifs (before, an unnamed mapping stopped with
+  an error, found in spec review); a `color_mapping` missing a value
+  stops, naming the values. When
   `color_mapping` is NULL and the table's default doesn't cover the
   chosen `color_variable`, colours are generated with `.discrete_colors()`.
 - **#178.** A column name uses that column; a vector is matched to the
@@ -88,7 +89,9 @@ on it).
   in `R/plotting.R` divides by sample totals and stops, naming the
   samples, when a total is 0. It replaces the five `sweep(..., "/")`
   calls: `create_umap()`, `plot_umap()`, `cluster_exposure()`,
-  `plot_heatmap()`, `plot_exposures()`. (`plot_cluster()` has a sixth;
+  `plot_heatmap()`, `plot_exposures()`, and `k_select()` (added after
+  spec review: it failed with "NA/NaN/Inf in foreign function call").
+  (`plot_cluster()` has a seventh;
   it only runs after `create_umap()`, which now stops first, so it is
   left alone.)
 - **#184.** `exposure[exposure < threshold] <- 0` instead of `filter()`;

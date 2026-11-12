@@ -208,3 +208,12 @@ test_that(desc = "cluster_exposure names samples with zero exposure", {
   expect_error(cluster_exposure(res_annot, "res_annot", nclust = 2),
                regexp = colnames(exposure_matrix)[4])
 })
+
+test_that(desc = "k_select names samples with zero exposure", {
+  data(res_annot)
+  exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")
+  exposure_matrix[, 5] <- 0
+  exposures(res_annot, "result", "SBS96", "res_annot") <- exposure_matrix
+  expect_error(k_select(res_annot, "res_annot", method = "wss", n = 6),
+               regexp = colnames(exposure_matrix)[5])
+})

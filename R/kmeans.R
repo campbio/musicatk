@@ -408,7 +408,7 @@ k_select <- function(musica, model_name, modality = "SBS96",
                             c("kmeans", "hclust", "hkmeans", "pam", "clara"))
   expos <- exposures(result)
   if (isTRUE(proportional)) {
-    expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
+    expos <- t(.proportional_exposures(expos))
   } else {
     expos <- t(expos)
   }
