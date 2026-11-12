@@ -33,6 +33,12 @@ test_that(desc = "threshold sets exposures below it to 0", {
   expect_equal(observed$exposure, expected)
 })
 
+test_that(desc = "threshold = NA gives the threshold error", {
+  data(res)
+  expect_error(plot_exposures(res, model_name = "res", threshold = NA_real_),
+               regexp = "non-negative number")
+})
+
 test_that(desc = "Proportional exposures name samples with zero exposure", {
   data(res)
   exposure_matrix <- exposures(res, "result", "SBS96", "res")
@@ -113,8 +119,13 @@ test_that(desc = "Signature header and bars agree with a custom variable", {
   header <- panels[[1]]
   rect <- .layers_of(header, "GeomRect")[[1]]
   expect_false(anyNA(rect$aes_params$fill))
-  contexts <- unique(get_annot_tab(tables(res)[["SBS96"]])$context)
-  expect_equal(nrow(rect$data), length(contexts))
+  # One box per run of equal values along the motifs, without overlaps
+  sigs <- signatures(res, "result", "SBS96", "res")
+  annot <- get_annot_tab(tables(res)[["SBS96"]])
+  contexts <- annot$context[match(rownames(sigs), annot$motif)]
+  boxes <- rect$data
+  expect_equal(nrow(boxes), length(rle(contexts)$values))
+  expect_true(all(boxes$xend[-nrow(boxes)] < boxes$x[-1]))
 })
 
 test_that(desc = "Unnamed or incomplete color_mapping", {
@@ -133,11 +144,19 @@ test_that(desc = "Unnamed or incomplete color_mapping", {
 
 test_that(desc = "plot_signatures ignores a global 'annotation_text'", {
   data(res)
+  # Keep any annotation_text the session already has
+  had_global <- exists("annotation_text", envir = globalenv(),
+                       inherits = FALSE)
+  if (had_global) {
+    saved <- get("annotation_text", envir = globalenv())
+    withr::defer(assign("annotation_text", saved, envir = globalenv()))
+  } else {
+    withr::defer(rm("annotation_text", envir = globalenv()))
+  }
   assign("annotation_text",
          data.frame(label = "global", signature = "x",
                     mutation_color = "C>A"),
          envir = globalenv())
-  withr::defer(rm("annotation_text", envir = globalenv()))
   panels <- .capture_signature_panels(res, model_id = "res")
   expect_length(.layers_of(panels[[2]], "GeomText"), 1)
 })

@@ -154,8 +154,8 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
 
   # Apply threshold to signatures if supplied
   if (!is.null(threshold)) {
-    if (!is.numeric(threshold) || !length(threshold) == 1 ||
-        threshold < 0) {
+    if (!is.numeric(threshold) || length(threshold) != 1 ||
+        is.na(threshold) || threshold < 0) {
       stop("The 'threshold' parameter must be a single non-negative number.")
     }
     plot_dat$exposure[plot_dat$exposure < threshold] <- 0

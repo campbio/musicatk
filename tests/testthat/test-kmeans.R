@@ -209,6 +209,18 @@ test_that(desc = "cluster_exposure names samples with zero exposure", {
                regexp = colnames(exposure_matrix)[4])
 })
 
+test_that(desc = "plot_cluster(group = 'signature') names zero samples", {
+  data(res_annot)
+  suppressMessages(create_umap(res_annot, "res_annot"))
+  clust_out <- cluster_exposure(res_annot, "res_annot", nclust = 2)
+  exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")
+  exposure_matrix[, 6] <- 0
+  exposures(res_annot, "result", "SBS96", "res_annot") <- exposure_matrix
+  expect_error(plot_cluster(res_annot, "res_annot", clusters = clust_out,
+                            group = "signature"),
+               regexp = colnames(exposure_matrix)[6])
+})
+
 test_that(desc = "k_select names samples with zero exposure", {
   data(res_annot)
   exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")

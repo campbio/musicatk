@@ -268,8 +268,7 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
   k_toplot <- cbind(result@umap, clusters)
   k_toplot$cluster <- factor(k_toplot$cluster)
   if (group == "signature") {
-    expos <- exposures(result)
-    expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
+    expos <- t(.proportional_exposures(exposures(result)))
     clust_by_sigs <- cbind(k_toplot, expos) %>%
       tibble::rownames_to_column(var = "sample") %>%
       tidyr::pivot_longer(

@@ -82,6 +82,17 @@ test_that(desc = "subset_tumor names values not found in the annotations", {
                regexp = "Brain")
 })
 
+test_that(desc = "subset_tumor stops if no matching sample is in the model", {
+  data(res_annot)
+  annot <- samp_annot(res_annot)
+  skin <- as.character(annot$Samples[annot$Tumor_Subtypes == "Skin"])
+  exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")
+  exposure_matrix <- exposure_matrix[, !colnames(exposure_matrix) %in% skin]
+  exposures(res_annot, "result", "SBS96", "res_annot") <- exposure_matrix
+  expect_error(plot_heatmap(res_annot, "res_annot", subset_tumor = "Skin"),
+               regexp = "No samples in model 'res_annot'")
+})
+
 test_that(desc = "scale = TRUE z-scores each signature across samples", {
   data(res_annot)
   p <- plot_heatmap(res_annot, "res_annot", scale = TRUE)

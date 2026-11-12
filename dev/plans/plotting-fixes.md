@@ -144,3 +144,20 @@ One regression test per issue, each failing on its assertion first:
   `make site` (people-only).
 - Checks: `make test`, `make coverage`, `make lint` on changed files;
   `check-full` and `bioccheck` before the PR.
+
+## Added in code review
+
+- Header boxes are one per run of equal colour values along the motifs,
+  not one per value spanning its first to last motif, so a column like
+  `"context"` (now used, #178) doesn't stack overlapping boxes.
+- `plot_heatmap(subset_tumor =)` stops with a clear error when the
+  matching samples aren't in the model (for example, left out as
+  zero-count samples by #143).
+- `plot_cluster(group = "signature")` uses `.proportional_exposures()`
+  too, so every proportional path names zero-total samples.
+- `plot_exposures(threshold = NA)` gets the threshold error.
+- Declined: computing proportions only on the samples a subset keeps
+  (z-scores use all samples, and zero-total samples only come from
+  hand-edited results since #143); a `testthat (>= 3.1.7)` floor for
+  `local_mocked_bindings()` (a DESCRIPTION change, left to the
+  maintainer).

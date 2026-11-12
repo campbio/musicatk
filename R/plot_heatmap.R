@@ -124,6 +124,12 @@ plot_heatmap <- function(musica, model_name,
   if (!is.null(subset_tumor)) {
     matched <- .samples_with_annotation(annot, subset_tumor)
     exp <- exp[, colnames(exp) %in% matched$samples, drop = FALSE]
+    if (ncol(exp) == 0) {
+      stop(
+        "No samples in model '", model_name, "' match 'subset_tumor': ",
+        paste(subset_tumor, collapse = ", ")
+      )
+    }
     # Without 'annotation', show the columns the values were found in
     if (is.null(annotation)) {
       annotation <- matched$columns
@@ -174,13 +180,11 @@ plot_heatmap <- function(musica, model_name,
 .samples_with_annotation <- function(annot, values) {
   values <- as.character(values)
   columns <- setdiff(colnames(annot), "Samples")
-  matches <- lapply(columns, function(column) {
-    as.character(annot[[column]]) %in% values
+  column_values <- lapply(columns, function(column) {
+    as.character(annot[[column]])
   })
-  found <- unlist(lapply(columns, function(column) {
-    intersect(values, as.character(annot[[column]]))
-  }))
-  missing <- setdiff(values, found)
+  matches <- lapply(column_values, function(x) x %in% values)
+  missing <- setdiff(values, unlist(column_values))
   if (length(missing) > 0) {
     stop(
       "These 'subset_tumor' values are not in any sample annotation: ",

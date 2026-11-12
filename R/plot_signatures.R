@@ -163,18 +163,17 @@ plot_signatures <- function(musica,
   color_mapping <- .signature_color_mapping(color_mapping, tab,
                                             plot_dat$df$mutation_color)
 
+  # One header box per run of equal colour values along the motifs, so
+  # values that recur in separate places get separate boxes
   width <- 0.45
-  motif_label_locations <-
-    plot_dat$df[plot_dat$df$signature == plot_dat$df[1, 2], ] %>%
-    ungroup() %>%
-    mutate(loc_num =
-             c(seq_len(dim(plot_dat$df[plot_dat$df$signature ==
-                                         plot_dat$df[1, 2], ])[1]))) %>%
-    group_by(mutation_color) %>%
-    summarise(
-      x = min(loc_num) - width, xend = max(loc_num) + width,
-      y = 0, yend = 0.01
-    )
+  first_sig <- plot_dat$df$signature == plot_dat$df$signature[1]
+  runs <- rle(as.character(plot_dat$df$mutation_color[first_sig]))
+  run_end <- cumsum(runs$lengths)
+  header_boxes <- data.frame(
+    mutation_color = runs$values,
+    x = run_end - runs$lengths + 1 - width, xend = run_end + width,
+    y = 0, yend = 0.01
+  )
 
   # Whether to re-scale y axis
   scales <- ifelse(isTRUE(same_scale), "fixed", "free_y")
@@ -268,9 +267,8 @@ plot_signatures <- function(musica,
     theme(strip.background = element_blank(), strip.text.y = element_blank())
   
 
-  # Header boxes, left to right, filled by name from color_mapping, with
-  # white label text on dark fills
-  header_boxes <- arrange(motif_label_locations, x)
+  # Header boxes are filled by name from color_mapping, with white label
+  # text on dark fills
   header_colors <- as.character(header_boxes$mutation_color)
   header_fill <- unname(color_mapping[header_colors])
   label_colors <- .label_text_colors(header_fill)
@@ -336,12 +334,7 @@ plot_signatures <- function(musica,
   }
   
   # adjust height of motif lables if indel signature
-  if (table_name %in% c("IND83", "INDEL83", "INDEL", "IND", "indel", 
-                        "Indel")){
-    height <- 5
-  }else{
-    height <- 1
-  }
+  height <- ifelse(is_indel, 5, 1)
 
   # combine signatures and motif labels
   figure <- ggpubr::ggarrange(p2, p, ncol = 1, nrow = 2, heights = c(height,15))
