@@ -1,10 +1,12 @@
 # Regenerate the COSMIC v3.6 signature objects shipped in data/.
 #
 # Source matrices were downloaded from https://cancer.sanger.ac.uk/signatures/
-# (Human Cancer v3.6, May 2026) and live in data-raw/cosmic_v3.6/. COSMIC no
-# longer publishes a separate exome-normalized SBS matrix, so
-# cosmic_v3_sbs_sigs_exome is NOT regenerated here; it remains the COSMIC v3.0
-# exome catalogue and is documented as such in R/cosmic_data.R.
+# (Human Cancer v3.6, May 2026) and live in data-raw/cosmic_v3.6/. Following
+# ADR 0003 (dev/adr/0003-versioned-cosmic-signatures.md), each version gets its
+# own objects named cosmic_v<major>_<minor>_<modality>_sigs[_<build>]. The
+# unversioned cosmic_v3_* objects stay COSMIC v3.0 and are only read here, for
+# their motif order. COSMIC no longer publishes exome-normalized matrices, so
+# there is no v3.6 exome object.
 #
 # Run from the package root:  Rscript data-raw/make_cosmic_v3_6.R
 
@@ -84,8 +86,8 @@ make_result <- function(mat, model_id, modality) {
   )
 }
 
-# Templates supply the canonical motif ordering for each modality. Read them
-# from data/ in this source tree, before the loop below overwrites those files.
+# Templates supply the canonical motif ordering for each modality: the frozen
+# v3.0 objects in data/ of this source tree, which this script never writes.
 tmpl <- new.env()
 for (f in c("cosmic_v3_sbs_sigs", "cosmic_v3_dbs_sigs",
             "cosmic_v3_indel_sigs")) {
@@ -93,22 +95,21 @@ for (f in c("cosmic_v3_sbs_sigs", "cosmic_v3_dbs_sigs",
 }
 
 specs <- list(
-  list(obj = "cosmic_v3_sbs_sigs_grch38", file = "COSMIC_v3.6_SBS_GRCh38.txt",
-       fn = sbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_sbs_sigs,
-       modality = "SBS96", model_id = "Cosmic_v3.6_SBS_Genome_GRCh38"),
-  list(obj = "cosmic_v3_dbs_sigs_grch38", file = "COSMIC_v3.6_DBS_GRCh38.txt",
-       fn = dbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_dbs_sigs,
-       modality = "DBS78", model_id = "Cosmic_v3.6_DBS_Genome_GRCh38"),
-  # GRCh37 objects keep the unsuffixed historical names: COSMIC itself defaults
-  # to GRCh37, as do the objects these replace. COSMIC publishes one Indel
-  # catalogue for both builds, so its model id names no build.
-  list(obj = "cosmic_v3_sbs_sigs", file = "COSMIC_v3.6_SBS_GRCh37.txt",
+  list(obj = "cosmic_v3_6_sbs_sigs_grch37", file = "COSMIC_v3.6_SBS_GRCh37.txt",
        fn = sbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_sbs_sigs,
        modality = "SBS96", model_id = "Cosmic_v3.6_SBS_Genome_GRCh37"),
-  list(obj = "cosmic_v3_dbs_sigs", file = "COSMIC_v3.6_DBS_GRCh37.txt",
+  list(obj = "cosmic_v3_6_sbs_sigs_grch38", file = "COSMIC_v3.6_SBS_GRCh38.txt",
+       fn = sbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_sbs_sigs,
+       modality = "SBS96", model_id = "Cosmic_v3.6_SBS_Genome_GRCh38"),
+  list(obj = "cosmic_v3_6_dbs_sigs_grch37", file = "COSMIC_v3.6_DBS_GRCh37.txt",
        fn = dbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_dbs_sigs,
        modality = "DBS78", model_id = "Cosmic_v3.6_DBS_Genome_GRCh37"),
-  list(obj = "cosmic_v3_indel_sigs", file = "COSMIC_v3.6_ID_GRCh37.txt",
+  list(obj = "cosmic_v3_6_dbs_sigs_grch38", file = "COSMIC_v3.6_DBS_GRCh38.txt",
+       fn = dbs_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_dbs_sigs,
+       modality = "DBS78", model_id = "Cosmic_v3.6_DBS_Genome_GRCh38"),
+  # COSMIC publishes one Indel catalogue (labelled GRCh37) for all builds, so
+  # neither its object name nor its model id names a build.
+  list(obj = "cosmic_v3_6_indel_sigs", file = "COSMIC_v3.6_ID_GRCh37.txt",
        fn = id_cosmic_to_musicatk, tmpl = tmpl$cosmic_v3_indel_sigs,
        modality = "IND83", model_id = "Cosmic_v3.6_Indel_Genome")
 )
@@ -118,6 +119,6 @@ for (s in specs) {
   assign(s$obj, make_result(mat, s$model_id, s$modality))
   save(list = s$obj, file = file.path("data", paste0(s$obj, ".rda")),
        compress = "xz")
-  message(sprintf("%-28s %d motifs x %d signatures", s$obj, nrow(mat),
+  message(sprintf("%-30s %d motifs x %d signatures", s$obj, nrow(mat),
                   ncol(mat)))
 }
