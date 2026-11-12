@@ -4,11 +4,11 @@ library(musicatk)
 test_that(desc = "Test plotting function for selecting k", {
   data(res_annot)
   p <- k_select(res_annot, "res_annot", method = "wss", n = 6)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
   p <- k_select(res_annot, "res_annot", method = "silhouette", n = 6)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
   p <- k_select(res_annot, "res_annot", method = "gap_stat", n = 6)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
 })
 
 test_that(desc = "Test kmeans visualization function", {
@@ -45,14 +45,14 @@ test_that(desc = "Test kmeans visualization function", {
                "invalid annotation column name")
   p <- plot_cluster(musica = res_annot, model_name = "res_annot",
                     clusters = clust_out, group = "signature", plotly = FALSE)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
   p <- plot_cluster(musica = res_annot, model_name = "res_annot",
                     clusters = clust_out, group = "annotation",
                     annotation = "Tumor_Subtypes", plotly = FALSE)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
   p <- plot_cluster(musica = res_annot, model_name = "res_annot",
                     clusters = clust_out, group = "none", plotly = FALSE)
-  expect_true(ggplot2::is.ggplot(p))
+  expect_s3_class(p, "ggplot")
 })
 
 test_that(desc = "plot_cluster uses the chosen annotation, matched by name", {
@@ -179,4 +179,32 @@ test_that(desc = "k_select lowers n to the number of samples - 1 (#185)", {
     "at least three samples"
   )
   expect_error(k_select(fx$musica, "res_annot", n = NA), "'n' must be")
+})
+
+test_that(desc = "plot_cluster gives no ggplot2 deprecation warnings", {
+  data(res_annot)
+  withr::local_options(lifecycle_verbosity = "warning")
+  suppressMessages(create_umap(res_annot, "res_annot"))
+  clust_out <- cluster_exposure(res_annot, "res_annot", nclust = 2)
+  # expect_no_warning() lets lifecycle deprecation warnings through
+  warnings <- character()
+  withCallingHandlers({
+    plot_cluster(res_annot, "res_annot", clusters = clust_out,
+                 group = "none")
+    plot_cluster(res_annot, "res_annot", clusters = clust_out,
+                 group = "annotation", annotation = "Tumor_Subtypes")
+  }, warning = function(w) {
+    warnings <<- c(warnings, conditionMessage(w))
+    invokeRestart("muffleWarning")
+  })
+  expect_false(any(grepl("deprecated", warnings)))
+})
+
+test_that(desc = "cluster_exposure names samples with zero exposure", {
+  data(res_annot)
+  exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")
+  exposure_matrix[, 4] <- 0
+  exposures(res_annot, "result", "SBS96", "res_annot") <- exposure_matrix
+  expect_error(cluster_exposure(res_annot, "res_annot", nclust = 2),
+               regexp = colnames(exposure_matrix)[4])
 })

@@ -46,3 +46,64 @@ test_that(desc = "Heatmap keeps annotation names that are not syntactic", {
   p <- plot_heatmap(res_annot, "res_annot", annotation = "Tumor subtype")
   expect_identical(names(p@top_annotation@anno_list), "Tumor subtype")
 })
+
+test_that(desc = "subset_tumor keeps samples with an exact annotation match", {
+  data(res_annot)
+  annot <- samp_annot(res_annot)
+  lung <- as.character(annot$Samples[annot$Tumor_Subtypes == "Lung"])
+
+  p <- plot_heatmap(res_annot, "res_annot", subset_tumor = "Lung")
+  expect_setequal(colnames(p@matrix), lung)
+  expect_identical(names(p@top_annotation@anno_list), "Tumor_Subtypes")
+  observed <- p@top_annotation@anno_list$Tumor_Subtypes@fun@var_env$value
+  expect_equal(unname(observed), rep("Lung", length(lung)))
+})
+
+test_that(desc = "subset_tumor takes several values and shows 'annotation'", {
+  data(res_annot)
+  samp_annot(res_annot, "test") <- rep(c("A", "B", "C"), 4)
+  annot <- samp_annot(res_annot)
+  keep <- annot$Tumor_Subtypes == "Skin" | annot$test == "A"
+  samples <- as.character(annot$Samples[keep])
+
+  p <- plot_heatmap(res_annot, "res_annot", subset_tumor = c("Skin", "A"),
+                    annotation = "test")
+  expect_setequal(colnames(p@matrix), samples)
+  expect_identical(names(p@top_annotation@anno_list), "test")
+  observed <- p@top_annotation@anno_list$test@fun@var_env$value
+  expected <- annot$test[match(colnames(p@matrix), annot$Samples)]
+  expect_equal(unname(observed), expected)
+})
+
+test_that(desc = "subset_tumor names values not found in the annotations", {
+  data(res_annot)
+  expect_error(plot_heatmap(res_annot, "res_annot",
+                            subset_tumor = c("Lung", "Brain")),
+               regexp = "Brain")
+})
+
+test_that(desc = "scale = TRUE z-scores each signature across samples", {
+  data(res_annot)
+  p <- plot_heatmap(res_annot, "res_annot", scale = TRUE)
+  observed <- p@matrix
+  expect_equal(unname(rowMeans(observed)), rep(0, nrow(observed)))
+  expect_equal(unname(apply(observed, 1, stats::sd)), rep(1, nrow(observed)))
+})
+
+test_that(desc = "scale = TRUE gives 0 for a constant signature", {
+  data(res_annot)
+  exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")
+  exposure_matrix[1, ] <- 5
+  exposures(res_annot, "result", "SBS96", "res_annot") <- exposure_matrix
+  p <- plot_heatmap(res_annot, "res_annot", scale = TRUE)
+  expect_equal(unname(p@matrix[1, ]), rep(0, ncol(exposure_matrix)))
+})
+
+test_that(desc = "Proportional heatmap names samples with zero exposure", {
+  data(res_annot)
+  exposure_matrix <- exposures(res_annot, "result", "SBS96", "res_annot")
+  exposure_matrix[, 1] <- 0
+  exposures(res_annot, "result", "SBS96", "res_annot") <- exposure_matrix
+  expect_error(plot_heatmap(res_annot, "res_annot", proportional = TRUE),
+               regexp = colnames(exposure_matrix)[1])
+})
