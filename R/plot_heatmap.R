@@ -1,8 +1,5 @@
 #' @importFrom ComplexHeatmap Heatmap
 #' @importFrom ComplexHeatmap HeatmapAnnotation
-#' @importFrom dplyr select
-#' @importFrom dplyr filter_all
-#' @importFrom dplyr any_vars
 #' @title Plot heatmaps using the exposures matrix
 #' @description The exposures for different signatures can be
 #' visualized using a heatmap with this function.
@@ -30,16 +27,20 @@
 #' @param show_row_names Boolean check. If \code{True}, row names are shown.
 #' Otherwise, they aren't.
 #' Default \code{FALSE}
-#' @param scale Boolean check. If \code{True}, values are scaled by z-score.
-#' Otherwise, they aren't.
+#' @param scale Boolean check. If \code{True}, each signature (row) is
+#' scaled to a z-score across samples; a signature with the same value in
+#' every sample gets 0. Proportions and z-scores use all samples, before
+#' \code{subset_tumor} is applied. Otherwise, values aren't scaled.
 #' Default \code{TRUE}
 #' @param annotation Users have the option of plotting the exposure matrix
 #' based on their given annotation like
 #' Tumor_Subtypes or age. Error given if the user given annotation
 #' doesn't exist in the res_annot annotation object.
-#' @param subset_tumor Users can specify certain tumor types on which
-#' they want to subset the exposure matrix for
-#' plotting the heatmap.
+#' @param subset_tumor One or more annotation values, such as tumor types.
+#' Only samples whose value in any sample annotation column exactly matches
+#' one of them are plotted. Unless \code{annotation} is given, the columns
+#' where the values were found are shown as the heatmap annotation. Error
+#' given if a value is not in any sample annotation. Default \code{NULL}.
 #' @param subset_signatures Users can specify certain signatures on
 #'  which they want to subset the exposure matrix
 #' plotting the heatmap.
@@ -99,47 +100,43 @@ plot_heatmap <- function(musica, model_name,
 
   exp <- exposures(result) # extracting the exposures matrix
   if (isTRUE(proportional)) {
-    exp <- sweep(exp, 2, colSums(exp), FUN = "/") # normalizing
+    exp <- .proportional_exposures(exp) # normalizing
   }
   if (isTRUE(scale)) {
-    exp <- scale(exp)
+    # z-score each signature (row) across samples; a constant signature
+    # has no spread, so it gets 0
+    exp <- t(scale(t(exp)))
+    exp[is.nan(exp)] <- 0
   }
   annot <- samp_annot(musica) # Extracting annotations from musicatk object
-  heatmap <- NULL # initializing an empty heatmap annotation variable
   # checking if annotation argument correct
   if (!is.null(annotation)) {
     if (any(!annotation %in% colnames(annot))) {
       stop("The given annotations are not present in the data")
     }
+  }
+  if (!is.null(subset_signatures)) {
+    if (any(!subset_signatures %in% rownames(exp))) {
+      stop("The given signatures are not present in the data")
+    }
+    exp <- exp[rownames(exp) %in% subset_signatures, , drop = FALSE]
+  }
+  if (!is.null(subset_tumor)) {
+    matched <- .samples_with_annotation(annot, subset_tumor)
+    exp <- exp[, colnames(exp) %in% matched$samples, drop = FALSE]
+    # Without 'annotation', show the columns the values were found in
+    if (is.null(annotation)) {
+      annotation <- matched$columns
+    }
+  }
+  heatmap <- NULL # initializing an empty heatmap annotation variable
+  if (!is.null(annotation)) {
     # Match each annotation to the exposure columns by sample name
     annot <- lapply(annotation, function(column) {
       .annot_for_samples(musica, column, colnames(exp))
     })
     names(annot) <- annotation
     annot <- data.frame(annot, check.names = FALSE)
-    heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
-  }
-  if (!is.null(subset_signatures)) {
-    if (any(!subset_signatures %in% rownames(exp))) {
-      stop("The given signatures are not present in the data")
-    }
-    exp <- as.data.frame(exp)
-    exp <- subset(exp, rownames(exp) %in% subset_signatures)
-    exp <- as.matrix(exp)
-  }
-  if (!is.null(subset_tumor)) {
-    . <- NULL # Gets rid of NOTE: no visible binding for global variable ‘.’
-    annot <- samp_annot(musica)
-    samps <- annot %>%
-      dplyr::filter_all(dplyr::any_vars(grepl(subset_tumor, .)))
-    samps <- as.character(samps$Samples)
-    exp <- as.data.frame(exp)
-    exp <- dplyr::select(exp, samps) #Selecting columns that match tumor subtype
-    exp <- as.matrix(exp)
-
-    names <- names(annot)[which(annot == subset_tumor, arr.ind = TRUE)[, "col"]]
-    annot <- annot[[names[1]]]
-    annot <- annot[annot == subset_tumor]
     heatmap <- ComplexHeatmap::HeatmapAnnotation(df = annot)
   }
   # If/else conditions to check if annotation object available
@@ -169,4 +166,30 @@ plot_heatmap <- function(musica, model_name,
                               show_row_names = show_row_names, ...)
     }
   }
+}
+
+# Samples whose value in any sample annotation column (other than Samples)
+# is exactly one of 'values', and the columns where the values were found.
+# Stops, naming them, if some values are in no column.
+.samples_with_annotation <- function(annot, values) {
+  values <- as.character(values)
+  columns <- setdiff(colnames(annot), "Samples")
+  matches <- lapply(columns, function(column) {
+    as.character(annot[[column]]) %in% values
+  })
+  found <- unlist(lapply(columns, function(column) {
+    intersect(values, as.character(annot[[column]]))
+  }))
+  missing <- setdiff(values, found)
+  if (length(missing) > 0) {
+    stop(
+      "These 'subset_tumor' values are not in any sample annotation: ",
+      paste(missing, collapse = ", ")
+    )
+  }
+  keep <- Reduce(`|`, matches)
+  list(
+    samples = as.character(annot$Samples[keep]),
+    columns = columns[vapply(matches, any, logical(1))]
+  )
 }

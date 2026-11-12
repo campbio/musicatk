@@ -97,7 +97,7 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
   # read exposure data
   expos <- exposures(result)
   if (isTRUE(proportional)) {
-    expos <- t(sweep(expos, 2, colSums(expos), FUN = "/"))
+    expos <- t(.proportional_exposures(expos))
   } else {
     expos <- t(expos)
   }
@@ -299,8 +299,8 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
       clust_by_annot <- cbind(k_toplot,
                               annotation = factor(annot_values))
       p <- ggplot2::ggplot(clust_by_annot,
-                           aes_string(x = "UMAP_1", y = "UMAP_2",
-                                      colour = "cluster")) +
+                           aes(x = .data$UMAP_1, y = .data$UMAP_2,
+                               colour = .data$cluster)) +
         geom_point() +
         facet_grid(cluster ~ annotation) +
         ggplot2::theme(
@@ -310,8 +310,8 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
         )
     }
   } else {
-    p <- ggplot2::ggplot(k_toplot, aes_string(x = "UMAP_1", y = "UMAP_2",
-                                              colour = "cluster")) +
+    p <- ggplot2::ggplot(k_toplot, aes(x = .data$UMAP_1, y = .data$UMAP_2,
+                                       colour = .data$cluster)) +
       geom_point() +
       ggplot2::theme(
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),

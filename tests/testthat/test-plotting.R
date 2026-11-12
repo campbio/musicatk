@@ -113,7 +113,8 @@ test_that(desc = "Signature header and bars agree with a custom variable", {
   header <- panels[[1]]
   rect <- .layers_of(header, "GeomRect")[[1]]
   expect_false(anyNA(rect$aes_params$fill))
-  expect_equal(nrow(rect$data), 16)
+  contexts <- unique(get_annot_tab(tables(res)[["SBS96"]])$context)
+  expect_equal(nrow(rect$data), length(contexts))
 })
 
 test_that(desc = "Unnamed or incomplete color_mapping", {

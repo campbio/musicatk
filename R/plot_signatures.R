@@ -23,14 +23,17 @@ NULL
 #' @param color_variable Name of the column in the variant annotation data.frame
 #' to use for coloring the mutation type bars. The variant annotation data.frame
 #' can be found within the count table of the \code{\linkS4class{musica}}
-#' object. If \code{NULL}, then the default column specified in the count
-#' table will be used. Default \code{NULL}.
+#' object. It can also be a vector with one value for each motif, in the
+#' order of the rows of the signatures. If \code{NULL}, then the default
+#' column specified in the count table will be used. Default \code{NULL}.
 #' @param color_mapping A character vector used to map items in the
 #' \code{color_variable} to a color. The items in \code{color_mapping}
 #' correspond to the colors. The names of the items in \code{color_mapping}
-#' should correspond to the unique items in \code{color_variable}. If
-#' \code{NULL}, then the default \code{color_mapping} specified in the count
-#' table will be used. Default \code{NULL}.
+#' should correspond to the unique items in \code{color_variable}; an
+#' unnamed vector is used in the order the items first appear along the
+#' motifs. If \code{NULL}, then the default \code{color_mapping} specified in
+#' the count table will be used, or generated colors if it doesn't cover
+#' the items in \code{color_variable}. Default \code{NULL}.
 #' @param text_size Size of axis text. Default \code{10}.
 #' @param show_x_labels If \code{TRUE}, the labels for the mutation types
 #' on the x-axis will be shown. Default \code{TRUE}.
@@ -154,12 +157,11 @@ plot_signatures <- function(musica,
   annot <- get_annot_tab(tab)
   num_sigs <- length(sig_names)
 
-  if (is.null(color_mapping)) {
-    color_mapping <- get_color_mapping(tab)
-  }
   plot_dat <- .pivot_signatures(signatures, tab,
     color_variable = color_variable
   )
+  color_mapping <- .signature_color_mapping(color_mapping, tab,
+                                            plot_dat$df$mutation_color)
 
   width <- 0.45
   motif_label_locations <-
@@ -244,7 +246,7 @@ plot_signatures <- function(musica,
     ) -> p
 
   # Add annotations, if necessary
-  if (exists("annotation_text") == TRUE) {
+  if (!is.null(annotation)) {
     p <- p + ggplot2::geom_text(
       data = annotation_text,
       mapping = aes(x = Inf, y = Inf, label = label),
@@ -266,17 +268,16 @@ plot_signatures <- function(musica,
     theme(strip.background = element_blank(), strip.text.y = element_blank())
   
 
-  # If SBS, need to change color of labels so one is white
-  if (table_name == "SBS96") {
-    label_colors <- c("black", "white", rep("black", 4))
-  } else {
-    label_colors <- c(rep("black", length(color_mapping)))
-  }
+  # Header boxes, left to right, filled by name from color_mapping, with
+  # white label text on dark fills
+  header_boxes <- arrange(motif_label_locations, x)
+  header_colors <- as.character(header_boxes$mutation_color)
+  header_fill <- unname(color_mapping[header_colors])
+  label_colors <- .label_text_colors(header_fill)
 
   # Plot motif labels
   plot_dat$df$exposure_null <- rep(0, dim(plot_dat$df)[1])
-  plot_dat$df %>%
-    ggplot(aes(y = exposure_null, x = motif)) +
+  p2 <- ggplot(plot_dat$df, aes(y = exposure_null, x = motif)) +
     geom_bar(stat = "identity") +
     ggplot2::scale_y_continuous(
       expand = expansion(mult = c(0, 0)),
@@ -285,40 +286,22 @@ plot_signatures <- function(musica,
     ) +
     ggplot2::ylab("") +
     ggplot2::geom_rect(
-      #data = motif_label_locations,
-      data = motif_label_locations %>% arrange(x),
+      data = header_boxes,
       aes(xmin = x, xmax = xend, ymin = max(y), ymax = max(yend)),
-      #fill = color_mapping, color = "black",
-      #linewidth = 0.25, inherit.aes = FALSE
-    #) +
-    #ggplot2::geom_text(
-      #data = motif_label_locations,
-      #aes(
-        #x = x + (xend - x) / 2, y = y + (yend - y) / 2,
-        #label = stringr::str_to_title(mutation_color)
-      #),
-      #fontface = "bold", size = 4,
-      #color = label_colors
-    #) -> p2
-    
-    fill = factor(color_mapping, levels = color_mapping), color = "black", 
-    linewidth = 0.25, inherit.aes = FALSE) -> p2 
+      fill = header_fill, color = "black",
+      linewidth = 0.25, inherit.aes = FALSE
+    )
 
   # adjust motif label direction if indel signature
-  if (table_name %in% c("IND83", "INDEL83", "INDEL", "IND", "indel", 
-                        "Indel")){
-    p2 <- p2 + ggplot2::geom_text(data=motif_label_locations, 
-                                  aes(x=x+(xend-x)/2, y=y+(yend-y)/2, 
-                                      label = stringr::str_to_title(mutation_color)), 
-                                  fontface = "bold", size = 4, 
-                                  color = label_colors, angle = 90)
-  }else{
-    p2 <- p2 + ggplot2::geom_text(data=motif_label_locations, 
-                                  aes(x=x+(xend-x)/2, y=y+(yend-y)/2, 
-                                      label = stringr::str_to_title(mutation_color)), 
-                                  fontface = "bold", size = 4, 
-                                  color = label_colors)
-  }
+  is_indel <- table_name %in% c("IND83", "INDEL83", "INDEL", "IND", "indel",
+                                "Indel")
+  p2 <- p2 + ggplot2::geom_text(
+    data = header_boxes,
+    aes(x = x + (xend - x) / 2, y = y + (yend - y) / 2,
+        label = stringr::str_to_title(mutation_color)),
+    fontface = "bold", size = 4,
+    color = label_colors, angle = ifelse(is_indel, 90, 0)
+  )
   
   # Adjust theme
   p2 <- .gg_default_theme(p2, text_size = text_size) +
