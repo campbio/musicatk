@@ -943,12 +943,15 @@ parse_delete_event <- function(idstr) {
   )
   cosmic_aet <- list(SBS96 = sbs_aet, DBS78 = dbs_aet, IND83 = indel_aet)
   cosmic_v3_objects <- setdiff(unlist(cosmic_predict_choices), "cosmic_v2_sigs")
-  cosmic_objects <- lapply(stats::setNames(nm = cosmic_v3_objects), function(x) {
+  label_cosmic <- function(x) {
     obj <- getExportedValue("musicatk", x)
     colnames(signatures(obj)) <-
       fill_aet(colnames(signatures(obj)), cosmic_aet[[modality(obj)]])
     obj
-  })
+  }
+  cosmic_objects <- lapply(
+    stats::setNames(nm = cosmic_v3_objects), label_cosmic
+  )
   cosmic_objects$cosmic_v2_sigs <- cosmic_v2_sigs
   # The default prediction set: v3.6 SBS for the import genome's build
   default_predict_cosmic <- function() {
@@ -1662,12 +1665,12 @@ parse_delete_event <- function(idstr) {
           b_name <- input$select_result_b_cosmic
         }
         else{
+          cosmic_version <- input$compare_cosmic_version
           isolate(vals$comparison <-
                     compare_cosmic_v3(vals$musica, model_id = input$select_model_a, 
                                       sample_type = "genome",
                                       genome_build = input$compare_genome_build,
-                                      cosmic_version =
-                                        input$compare_cosmic_version,
+                                      cosmic_version = cosmic_version,
                                       modality = input$select_modality_a,
                                       result_name = input$select_result_a,
                                       threshold = as.numeric(input$Threshold),
