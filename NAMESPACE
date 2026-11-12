@@ -166,8 +166,6 @@ importFrom(cluster,
 )
 importFrom(data.table,data.table)
 importFrom(dplyr,
-  any_vars,
-  filter_all,
   mutate,
   rename,
   select
