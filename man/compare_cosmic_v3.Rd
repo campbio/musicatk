@@ -11,6 +11,7 @@ compare_cosmic_v3(
   sample_type,
   modality = "SBS96",
   genome_build = "hg19",
+  cosmic_version = "latest",
   result_name = "result",
   metric = "cosine",
   threshold = 0.9,
@@ -30,9 +31,18 @@ compare_cosmic_v3(
 
 \item{genome_build}{Reference build the COSMIC signatures are normalized to,
 either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
-should match the build the variants were called against. Ignored for the
-Indel modality, for which COSMIC publishes a single catalogue, and for
-\code{sample_type = "exome"}. Default \code{"hg19"}.}
+should match the build the variants were called against. COSMIC publishes
+one Indel catalogue per version, used for either build. The only exome
+catalogue is COSMIC v3.0 for GRCh37. Default \code{"hg19"}.}
+
+\item{cosmic_version}{COSMIC version to compare against: \code{"latest"},
+\code{"3.0"} or \code{"3.6"}. \code{"latest"} uses the newest version that
+has a catalogue for the sample type, modality and build: v3.6 for genome
+data and v3.0 for exome data, since COSMIC stopped publishing exome
+catalogues after v3.0. Use \code{"3.0"} to reproduce results from musicatk
+2.7.15 and earlier, which compared against v3.0 only. A version without a
+matching catalogue is an error listing the catalogues musicatk ships;
+there is no fallback to another version or build. Default \code{"latest"}.}
 
 \item{result_name}{Name of the result list entry. Default \code{"result"}.}
 
@@ -51,7 +61,8 @@ signature will be the same. If \code{FALSE}, then the scale of the y-axis
 will be adjusted for each signature. Default \code{TRUE}.}
 }
 \value{
-Returns the comparisons
+Returns the comparisons. A message names the COSMIC version,
+modality, sample type and build compared against.
 }
 \description{
 Compare a result object to COSMIC V3 Signatures; Select exome or genome for
@@ -64,4 +75,8 @@ compare_cosmic_v3(res,
   model_id = "res", modality = "SBS96",
   sample_type = "genome", genome_build = "hg38", threshold = 0.8
 )
+}
+\seealso{
+\code{\link{cosmic_v3_6_sbs_sigs_grch37}} and the other COSMIC
+signature objects.
 }

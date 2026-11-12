@@ -3,24 +3,35 @@
 \docType{data}
 \name{cosmic_v3_sbs_sigs}
 \alias{cosmic_v3_sbs_sigs}
-\title{COSMIC v3.6 SBS96 Genome Signatures Result Object (GRCh37)}
+\title{COSMIC v3.0 SBS96 Genome Signatures Result Object (GRCh37)}
 \format{
 An object of class \code{result_model}.
 See [predict_exposure()].
 }
 \source{
-COSMIC v3.6 (May 2026), <https://cancer.sanger.ac.uk/signatures/>
+COSMIC v3.0 (May 2019), <https://cancer.sanger.ac.uk/signatures/>
 }
 \usage{
 data(cosmic_v3_sbs_sigs)
 }
 \description{
 Data from COSMIC formatted to be used for prediction with individual tumors
-and cohorts.
+and cohorts. Contains the 67 COSMIC v3.0 SBS signatures normalized to the
+GRCh37 genome.
 }
+\section{Version}{
+
+This object is COSMIC v3.0 and will stay v3.0, so code that uses it gives the
+same results across musicatk releases. Newer COSMIC versions ship as separate
+objects with the version in their names, such as
+\code{\link{cosmic_v3_6_sbs_sigs_grch37}}. \code{compare_cosmic_v3()} uses
+the newest version by default; set \code{cosmic_version = "3.0"} to compare
+against this object.
+}
+
 \references{
 Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
-The repertoire of mutational signatures in human cancer. Nature 578, 94–101
+The repertoire of mutational signatures in human cancer. Nature 578, 94-101
 ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
 }
 \keyword{datasets}

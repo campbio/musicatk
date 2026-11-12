@@ -209,9 +209,17 @@ compare_results <- function(musica, model_id, other_model_id,
 #' @param modality Compare to SBS, DBS, or Indel. Default \code{"SBS96"}
 #' @param genome_build Reference build the COSMIC signatures are normalized to,
 #' either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
-#' should match the build the variants were called against. Ignored for the
-#' Indel modality, for which COSMIC publishes a single catalogue, and for
-#' \code{sample_type = "exome"}. Default \code{"hg19"}.
+#' should match the build the variants were called against. COSMIC publishes
+#' one Indel catalogue per version, used for either build. The only exome
+#' catalogue is COSMIC v3.0 for GRCh37. Default \code{"hg19"}.
+#' @param cosmic_version COSMIC version to compare against: \code{"latest"},
+#' \code{"3.0"} or \code{"3.6"}. \code{"latest"} uses the newest version that
+#' has a catalogue for the sample type, modality and build: v3.6 for genome
+#' data and v3.0 for exome data, since COSMIC stopped publishing exome
+#' catalogues after v3.0. Use \code{"3.0"} to reproduce results from musicatk
+#' 2.7.15 and earlier, which compared against v3.0 only. A version without a
+#' matching catalogue is an error listing the catalogues musicatk ships;
+#' there is no fallback to another version or build. Default \code{"latest"}.
 #' @param result_name Name of the result list entry. Default \code{"result"}.
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"}
@@ -222,7 +230,10 @@ compare_results <- function(musica, model_id, other_model_id,
 #' @param same_scale If \code{TRUE}, the scale of the probability for each
 #' signature will be the same. If \code{FALSE}, then the scale of the y-axis
 #' will be adjusted for each signature. Default \code{TRUE}.
-#' @return Returns the comparisons
+#' @return Returns the comparisons. A message names the COSMIC version,
+#' modality, sample type and build compared against.
+#' @seealso \code{\link{cosmic_v3_6_sbs_sigs_grch37}} and the other COSMIC
+#' signature objects.
 #' @examples
 #' data(res)
 #' # The example data are hg38, so compare against the GRCh38 catalogue
@@ -233,6 +244,7 @@ compare_results <- function(musica, model_id, other_model_id,
 #' @export
 compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
                               genome_build = "hg19",
+                              cosmic_version = "latest",
                               result_name = "result", metric = "cosine",
                               threshold = 0.9,
                               result_rename = deparse(substitute(model_id)),
@@ -263,68 +275,25 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
     )
   }
 
-  if (sample_type == "exome") {
-    if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      # COSMIC stopped publishing exome-normalized matrices after v3.0, so this
-      # object is still the v3.0 catalogue while the genome objects are v3.6.
-      warning(
-        "Exome signatures are COSMIC v3.0 (65 signatures), whereas the genome ",
-        "signatures are COSMIC v3.6 (101 signatures). COSMIC no longer ",
-        "publishes an exome-normalized matrix. Signatures added after v3.0 ",
-        "cannot be matched with sample_type = \"exome\"."
-      )
-      cosmic_res <- musicatk::cosmic_v3_sbs_sigs_exome
-    } else {
-      stop(paste("Only SBS class is available for whole-exome, please choose",
-        " `genome` for DBS or Indel",
-        sep = ""
-      ))
-    }
-  } else if (sample_type == "genome") {
-    # Normalize the build label the same way select_genome() does. Exome has
-    # one catalogue, so the build is only checked here.
-    build <- if (is.character(genome_build) && length(genome_build) == 1) {
-      tolower(genome_build)
-    } else {
-      ""
-    }
-    if (build %in% c("hg19", "19", "grch37")) {
-      build <- "GRCh37"
-    } else if (build %in% c("hg38", "38", "grch38")) {
-      build <- "GRCh38"
-    } else {
-      stop("genome_build must be one of hg19 (GRCh37) or hg38 (GRCh38)")
-    }
-    if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
-      cosmic_res <- if (build == "GRCh38") {
-        musicatk::cosmic_v3_sbs_sigs_grch38
-      } else {
-        musicatk::cosmic_v3_sbs_sigs
-      }
-    } else if (modality %in% c("DBS", "DBS78", "dbs", "doublet")) {
-      cosmic_res <- if (build == "GRCh38") {
-        musicatk::cosmic_v3_dbs_sigs_grch38
-      } else {
-        musicatk::cosmic_v3_dbs_sigs
-      }
-    } else if (modality %in% c(
-      "INDEL", "Indel", "indel", "ind", "IND",
-      "ID", "IND83"
-    )) {
-      # COSMIC publishes a single Indel catalogue, not one per reference build
-      if (build == "GRCh38") {
-        message(
-          "COSMIC publishes one Indel signature set, so genome_build is ",
-          "ignored for the Indel modality."
-        )
-      }
-      cosmic_res <- musicatk::cosmic_v3_indel_sigs
-    } else {
-      stop("Only SBS, DBS, and Indel classes are supported")
-    }
-  } else {
+  if (!(length(sample_type) == 1 && sample_type %in% c("exome", "genome"))) {
     stop("Sample type must be exome or genome")
   }
+  cosmic_modality <- .cosmic_modality(modality)
+  if (sample_type == "exome" && !identical(cosmic_modality, "SBS96")) {
+    stop(paste("Only SBS class is available for whole-exome, please choose",
+      " `genome` for DBS or Indel",
+      sep = ""
+    ))
+  }
+  if (is.na(cosmic_modality)) {
+    stop("Only SBS, DBS, and Indel classes are supported")
+  }
+  catalogue <- .select_cosmic_catalogue(
+    sample_type, cosmic_modality, .cosmic_build(genome_build),
+    .cosmic_version(cosmic_version)
+  )
+  message(catalogue$message)
+  cosmic_res <- getExportedValue("musicatk", catalogue$object)
 
   signatures <- signatures(get_model(musica, result_name, modality, model_id))
   comparison <- sig_compare(
@@ -372,6 +341,123 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
                                   same_scale = same_scale
   )
   return(comparison)
+}
+
+# The COSMIC catalogues musicatk ships (ADR 0003). An NA build means one
+# catalogue for all builds, as COSMIC publishes for Indel. A new COSMIC
+# release adds rows here.
+.cosmic_catalogues <- function() {
+  data.frame(
+    version = c(rep("3.0", 4), rep("3.6", 5)),
+    modality = c(
+      "SBS96", "SBS96", "DBS78", "IND83",
+      "SBS96", "SBS96", "DBS78", "DBS78", "IND83"
+    ),
+    sample_type = c("exome", rep("genome", 8)),
+    build = c(
+      "GRCh37", "GRCh37", "GRCh37", NA,
+      "GRCh37", "GRCh38", "GRCh37", "GRCh38", NA
+    ),
+    object = c(
+      "cosmic_v3_sbs_sigs_exome", "cosmic_v3_sbs_sigs", "cosmic_v3_dbs_sigs",
+      "cosmic_v3_indel_sigs", "cosmic_v3_6_sbs_sigs_grch37",
+      "cosmic_v3_6_sbs_sigs_grch38", "cosmic_v3_6_dbs_sigs_grch37",
+      "cosmic_v3_6_dbs_sigs_grch38", "cosmic_v3_6_indel_sigs"
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+# The catalogue modality for a modality name, or NA if COSMIC has none
+.cosmic_modality <- function(modality) {
+  if (modality %in% c("snv", "SNV", "SNV96", "SBS", "SBS96")) {
+    return("SBS96")
+  }
+  if (modality %in% c("DBS", "DBS78", "dbs", "doublet")) {
+    return("DBS78")
+  }
+  if (modality %in% c("INDEL", "Indel", "indel", "ind", "IND", "ID", "IND83")) {
+    return("IND83")
+  }
+  NA_character_
+}
+
+# Normalize a build label the same way select_genome() does
+.cosmic_build <- function(genome_build) {
+  build <- if (is.character(genome_build) && length(genome_build) == 1) {
+    tolower(genome_build)
+  } else {
+    ""
+  }
+  if (build %in% c("hg19", "19", "grch37")) {
+    return("GRCh37")
+  }
+  if (build %in% c("hg38", "38", "grch38")) {
+    return("GRCh38")
+  }
+  stop("genome_build must be one of hg19 (GRCh37) or hg38 (GRCh38)")
+}
+
+# "latest" or a shipped version such as "3.6"; also takes 3.6 and "v3.6"
+.cosmic_version <- function(cosmic_version) {
+  versions <- unique(.cosmic_catalogues()$version)
+  if (is.numeric(cosmic_version) && length(cosmic_version) == 1 &&
+        !is.na(cosmic_version)) {
+    cosmic_version <- sprintf("%.1f", cosmic_version)
+  }
+  if (is.character(cosmic_version) && length(cosmic_version) == 1 &&
+        !is.na(cosmic_version)) {
+    version <- sub("^v", "", tolower(cosmic_version))
+    if (version == "latest" || version %in% versions) {
+      return(version)
+    }
+  }
+  stop(
+    "cosmic_version must be \"latest\" or one of: ",
+    paste(versions, collapse = ", ")
+  )
+}
+
+# Pick the catalogue for a sample type, modality, build and version. "latest"
+# is the newest version with a matching catalogue; there is no fallback to
+# another build or version.
+.select_cosmic_catalogue <- function(sample_type, modality, build, version) {
+  catalogues <- .cosmic_catalogues()
+  offered <- catalogues[catalogues$sample_type == sample_type &
+                          catalogues$modality == modality, ]
+  matches <- offered[is.na(offered$build) | offered$build == build, ]
+  if (version != "latest") {
+    matches <- matches[matches$version == version, ]
+  }
+  if (nrow(matches) == 0) {
+    available <- paste0(
+      "v", offered$version, " ",
+      ifelse(is.na(offered$build), "any build", offered$build)
+    )
+    requested <- if (version == "latest") "" else paste0("v", version, " ")
+    stop(
+      "musicatk has no COSMIC ", requested, modality, " ", sample_type,
+      " catalogue for ", build, ". Available for ", modality, " ",
+      sample_type, ": ", paste(available, collapse = ", ")
+    )
+  }
+  newest <- order(numeric_version(matches$version), decreasing = TRUE)[1]
+  chosen <- matches[newest, ]
+  detail <- if (is.na(chosen$build)) {
+    "one catalogue for all builds"
+  } else {
+    chosen$build
+  }
+  text <- paste0(
+    "Comparing to COSMIC v", chosen$version, " ", modality, " ",
+    sample_type, " signatures (", detail, ")."
+  )
+  if (sample_type == "exome") {
+    text <- paste(
+      text, "COSMIC stopped publishing exome catalogues after v3.0."
+    )
+  }
+  list(object = chosen$object, message = text)
 }
 
 #' Compare a result object to COSMIC V2 SBS Signatures (combination whole-exome
