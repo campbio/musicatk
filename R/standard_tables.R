@@ -112,17 +112,6 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
   return(tab)
 }
 
-#' Uses a genome object to find context and generate standard SBS192 table
-#' using transcript strand
-#'
-#' @param musica Input samples
-#' @param g A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from.
-#' @param strand_type Transcript_Strand or Replication_Strand
-#' @param overwrite Overwrite existing count table
-#' @return Returns the created SBS192 count table object built using either
-#' transcript strand or replication strand
-#' @keywords internal
 # Checks strand_type and returns the SBS192 table name built from it
 .sbs192_table_name <- function(strand_type) {
   table_names <- c(Transcript_Strand = "SBS192_Trans",
@@ -143,6 +132,17 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
   return(table_names[[strand_type]])
 }
 
+#' Uses a genome object to find context and generate standard SBS192 table
+#' using transcript strand
+#'
+#' @param musica Input samples
+#' @param g A \linkS4class{BSgenome} object indicating which genome
+#' reference the variants and their coordinates were derived from.
+#' @param strand_type Transcript_Strand or Replication_Strand
+#' @param overwrite Overwrite existing count table
+#' @return Returns the created SBS192 count table object built using either
+#' transcript strand or replication strand
+#' @keywords internal
 create_sbs192_table <- function(musica, g, strand_type, overwrite = FALSE) {
   table_name <- .sbs192_table_name(strand_type)
   dat <- variants(musica)
