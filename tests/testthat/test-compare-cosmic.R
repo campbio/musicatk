@@ -11,12 +11,15 @@ library(musicatk)
 # The same, without the message that names the catalogue used
 .silent_compare <- function(...) suppressMessages(.quiet_compare(...))
 
-# The comparison compare_cosmic_v3() should return against a given catalogue
+# The comparison compare_cosmic_v3() should return against a given catalogue,
+# which it names in the "cosmic_catalogue" attribute
 .expected <- function(musica, modality, model_id, cosmic, threshold) {
-  sig_compare(
+  expected <- sig_compare(
     sig1 = signatures(musica, "result", modality, model_id),
     sig2 = signatures(cosmic), threshold = threshold
   )
+  attr(expected, "cosmic_catalogue") <- deparse(substitute(cosmic))
+  expected
 }
 
 # A small DBS78 model to compare, predicted from the v3.0 DBS signatures
@@ -115,6 +118,10 @@ test_that("compare_cosmic_v3 defaults to the latest SBS catalogue per build", {
     .silent_compare(res, "res", "genome", genome_build = "grch38",
       cosmic_version = "3.6", threshold = 0.5
     ),
+    hg38
+  )
+  expect_equal(
+    .silent_compare(res, "res", "genome", genome_build = 38, threshold = 0.5),
     hg38
   )
 })

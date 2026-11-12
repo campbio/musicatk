@@ -1619,7 +1619,7 @@ parse_delete_event <- function(idstr) {
                           "matching COSMIC V3 signatures; not used for V2."),
                     placement = "right", trigger = "hover", options = NULL),
           selectInput("compare_cosmic_version", "COSMIC version",
-                      choices = c("Latest (3.6)" = "latest", "3.0" = "3.0"),
+                      choices = c("Latest" = "latest", "3.0" = "3.0"),
                       selected = "latest"),
           bsTooltip("compare_cosmic_version",
                     paste("COSMIC V3 release to compare to. Use 3.0 to",
@@ -1679,7 +1679,8 @@ parse_delete_event <- function(idstr) {
                                       threshold = as.numeric(input$Threshold),
                                       metric = input$compare_metric,
                                       result_rename = paste0(input$select_model_a)))
-          b_name <- paste0("COSMIC_v3_", cosmic_version)
+          # Name the catalogue compare_cosmic_v3() chose, e.g. for "latest"
+          b_name <- attr(isolate(vals$comparison), "cosmic_catalogue")
         }
       }
       else{

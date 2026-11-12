@@ -193,3 +193,42 @@ Out of scope:
 - `data-raw/` scripts for the frozen v3.0 objects;
 - marking the unversioned names superseded (the ADR leaves this for
   later).
+
+## Added in review
+
+Spec review:
+- Shiny: a failed comparison no longer ends the session.
+- The comparison tab has one "COSMIC V3" choice.
+- The plot title names the COSMIC version.
+- SBS22c has a label.
+- Stronger tests and fuller argument docs.
+
+`/code-review`:
+- `genome_build` and `cosmic_version` are the last arguments, not after
+  `modality`, so existing positional calls keep working.
+- The result's `"cosmic_catalogue"` attribute names the object used. The
+  app labels the comparison table with it, instead of with "latest".
+- `genome_build` also takes the numbers 19 and 38, as `select_genome()`
+  does.
+- The app's version choice reads "Latest" rather than "Latest (3.6)", so
+  the label doesn't go stale when a version is added.
+
+Declined in `/code-review`, for the maintainer:
+- **Exome with `hg38` is an error.** The maintainer approved this as
+  specified (ADR: no silent fallback). The reviewer noted that users with
+  hg38 exome data must pass `hg19` or omit the argument.
+- **`genome_build` defaults to `"hg19"`, so hg38 data compared without it
+  uses GRCh37 v3.6.** This is #253's and the ADR's default. The message
+  names the build.
+- **The app's build default falls back to hg19 when `vals$genome` is
+  unset** (for example after an `.rds` upload). The input is visible and
+  editable. `vals$genome` is set before the import succeeds, which is
+  existing app behaviour.
+- **The app's catalogue list and default are hard-coded rather than read
+  from `.cosmic_catalogues()`.** That would mean the app calling an
+  internal function. A new release needs app edits, as today.
+- **A shared build-alias helper for `select_genome()`,
+  `.select_rep_range()` and `.cosmic_build()`.** This is cleanup across
+  files (group K).
+- **Lazy loading of the 8 COSMIC objects in the app**, about 200 KB per
+  session.

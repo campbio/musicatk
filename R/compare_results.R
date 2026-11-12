@@ -207,22 +207,6 @@ compare_results <- function(musica, model_id, other_model_id,
 #' @param model_id The name of the model containing the signatures to compare.
 #' @param sample_type exome (SBS only) or genome
 #' @param modality Compare to SBS, DBS, or Indel. Default \code{"SBS96"}
-#' @param genome_build Reference build the COSMIC signatures are normalized to,
-#' either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
-#' should match the build the variants were called against. Case is ignored,
-#' and \code{"19"} and \code{"38"} also work. COSMIC publishes one Indel
-#' catalogue per version, used for either build. The only exome catalogue is
-#' COSMIC v3.0 for GRCh37, so exome data with \code{"hg38"} is an error.
-#' Default \code{"hg19"}.
-#' @param cosmic_version COSMIC version to compare against: \code{"latest"},
-#' \code{"3.0"} or \code{"3.6"} (also given as the number \code{3.6} or as
-#' \code{"v3.6"}). \code{"latest"} uses the newest version that
-#' has a catalogue for the sample type, modality and build: v3.6 for genome
-#' data and v3.0 for exome data, since COSMIC stopped publishing exome
-#' catalogues after v3.0. Use \code{"3.0"} to reproduce results from musicatk
-#' 2.7.15 and earlier, which compared against v3.0 only. A version without a
-#' matching catalogue is an error listing the catalogues musicatk ships;
-#' there is no fallback to another version or build. Default \code{"latest"}.
 #' @param result_name Name of the result list entry. Default \code{"result"}.
 #' @param threshold threshold for similarity
 #' @param metric One of \code{"cosine"} for cosine similarity or \code{"jsd"}
@@ -233,8 +217,27 @@ compare_results <- function(musica, model_id, other_model_id,
 #' @param same_scale If \code{TRUE}, the scale of the probability for each
 #' signature will be the same. If \code{FALSE}, then the scale of the y-axis
 #' will be adjusted for each signature. Default \code{TRUE}.
-#' @return Returns the comparisons. A message names the COSMIC version,
-#' modality, sample type and build compared against.
+#' @param genome_build Reference build the COSMIC signatures are normalized to,
+#' either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
+#' should match the build the variants were called against. Case is ignored,
+#' and \code{"19"}, \code{"38"}, \code{19} and \code{38} also work. COSMIC
+#' publishes one Indel catalogue per version, used for either build. The only
+#' exome catalogue is COSMIC v3.0 for GRCh37, so exome data with \code{"hg38"}
+#' is an error.
+#' Default \code{"hg19"}.
+#' @param cosmic_version COSMIC version to compare against: \code{"latest"},
+#' \code{"3.0"} or \code{"3.6"} (also given as the number \code{3.6} or as
+#' \code{"v3.6"}). \code{"latest"} uses the newest version that
+#' has a catalogue for the sample type, modality and build: v3.6 for genome
+#' data and v3.0 for exome data, since COSMIC stopped publishing exome
+#' catalogues after v3.0. Use \code{"3.0"} to reproduce results from musicatk
+#' 2.7.15 and earlier, which compared against v3.0 only. A version without a
+#' matching catalogue is an error listing the catalogues musicatk ships;
+#' there is no fallback to another version or build. Default \code{"latest"}.
+#' @return Returns the comparisons. Its \code{"cosmic_catalogue"} attribute is
+#' the name of the COSMIC data object compared against, such as
+#' \code{"cosmic_v3_6_sbs_sigs_grch37"}, and a message names its version,
+#' modality, sample type and build.
 #' @seealso \code{\link{cosmic_v3_6_sbs_sigs_grch37}} and the other COSMIC
 #' signature objects.
 #' @examples
@@ -246,12 +249,12 @@ compare_results <- function(musica, model_id, other_model_id,
 #' )
 #' @export
 compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
-                              genome_build = "hg19",
-                              cosmic_version = "latest",
                               result_name = "result", metric = "cosine",
                               threshold = 0.9,
                               result_rename = deparse(substitute(model_id)),
-                              decimals = 2, same_scale = FALSE) {
+                              decimals = 2, same_scale = FALSE,
+                              genome_build = "hg19",
+                              cosmic_version = "latest") {
   # check if valid result_name
   if (!(result_name %in% names(result_list(musica)))) {
     stop(
@@ -344,6 +347,7 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
                                   decimals = decimals, maxes = maxes,
                                   same_scale = same_scale
   )
+  attr(comparison, "cosmic_catalogue") <- catalogue$object
   return(comparison)
 }
 
@@ -388,6 +392,9 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
 
 # Normalize a build label the same way select_genome() does
 .cosmic_build <- function(genome_build) {
+  if (is.numeric(genome_build)) {
+    genome_build <- as.character(genome_build)
+  }
   build <- if (is.character(genome_build) && length(genome_build) == 1) {
     tolower(genome_build)
   } else {
