@@ -127,3 +127,21 @@ test_that("Benchmarks saved with older versions give a clear error", {
     regexp = "older version of musicatk"
   )
 })
+
+test_that("Benchmark functions accept subclasses of full_benchmark (#94)", {
+  data(full_benchmark_example)
+  setClass("full_benchmark_sub", contains = "full_benchmark",
+    where = globalenv()
+  )
+  withr::defer(removeClass("full_benchmark_sub", where = globalenv()))
+  sub <- new("full_benchmark_sub", full_benchmark_example)
+  entry <- benchmark_get_entry(sub, "example_k8")
+  expect_s4_class(entry, "single_benchmark")
+  expect_s3_class(
+    benchmark_get_comparison(sub, "example_k8", "Final"), "data.frame"
+  )
+  expect_error(
+    benchmark_get_entry(list(), "example_k8"),
+    regexp = "is not a 'full_benchmark' object"
+  )
+})

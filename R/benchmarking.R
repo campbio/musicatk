@@ -160,13 +160,13 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
   }
   
   # check that full_benchmark is a full_benchmark class object
-  if (class(full_benchmark)[1] != "full_benchmark"){
+  if (!methods::is(full_benchmark, "full_benchmark")) {
     stop(deparse(substitute(full_benchmark)), " is not a 'full_benchmark' object. ", 
          "Use function 'create_benchmark' to initialize a 'full_benchmark' object")
   }
   
   # check that prediction is a result model object
-  if (class(prediction_musica)[1] != "musica"){
+  if (!methods::is(prediction_musica, "musica")) {
     stop("'prediction' must be a 'musica' object.")
   }
   
@@ -481,7 +481,7 @@ predict_and_benchmark <- function(musica, modality,
 benchmark_get_entry <- function(full_benchmark, method_id){
   
   # check that full_benchmark is a full_benchmark class object
-  if (class(full_benchmark)[1] != "full_benchmark"){
+  if (!methods::is(full_benchmark, "full_benchmark")) {
     stop(deparse(substitute(full_benchmark)), " is not a 'full_benchmark' object.")
   }
   
@@ -597,7 +597,7 @@ benchmark_plot_signatures <- function(full_benchmark, method_id, prediction,
                                       annotation = NULL, percent = TRUE){
   
   # check that full_benchmark is a full_benchmark class object
-  if (class(full_benchmark)[1] != "full_benchmark"){
+  if (!methods::is(full_benchmark, "full_benchmark")) {
     stop(deparse(substitute(full_benchmark)), " is not a 'full_benchmark' object.")
   }
   
@@ -664,7 +664,7 @@ benchmark_plot_signatures <- function(full_benchmark, method_id, prediction,
 benchmark_get_comparison <- function(full_benchmark, method_id, prediction){
   
   # check that full_benchmark is a full_benchmark class object
-  if (class(full_benchmark)[1] != "full_benchmark"){
+  if (!methods::is(full_benchmark, "full_benchmark")) {
     stop(deparse(substitute(full_benchmark)), " is not a 'full_benchmark' object.")
   }
   
@@ -727,7 +727,7 @@ benchmark_plot_comparison <- function(full_benchmark, method_id, prediction,
                                       decimals = 2, same_scale = FALSE){
   
   # check that full_benchmark is a full_benchmark class object
-  if (class(full_benchmark)[1] != "full_benchmark"){
+  if (!methods::is(full_benchmark, "full_benchmark")) {
     stop(deparse(substitute(full_benchmark)), " is not a 'full_benchmark' object.")
   }
   
@@ -817,7 +817,7 @@ benchmark_plot_exposures <- function(full_benchmark, method_id, prediction){
   True <- NULL
   
   # check that full_benchmark is a full_benchmark class object
-  if (class(full_benchmark)[1] != "full_benchmark"){
+  if (!methods::is(full_benchmark, "full_benchmark")) {
     stop(deparse(substitute(full_benchmark)), " is not a 'full_benchmark' object.")
   }
   
@@ -906,7 +906,7 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
   True <- NULL
   
   # check that full_benchmark is a full_benchmark class object
-  if (class(full_benchmark)[1] != "full_benchmark"){
+  if (!methods::is(full_benchmark, "full_benchmark")) {
     stop(deparse(substitute(full_benchmark)), " is not a 'full_benchmark' object.")
   }
   
@@ -1051,7 +1051,7 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   True <- NULL
   
   # check that full_benchmark is a full_benchmark class object
-  if (class(full_benchmark)[1] != "full_benchmark"){
+  if (!methods::is(full_benchmark, "full_benchmark")) {
     stop(deparse(substitute(full_benchmark)), " is not a 'full_benchmark' object.")
   }
   
