@@ -30,7 +30,7 @@
 
 
 # Calculates distance based off of cosine similarity
-.cosineDist <- function(x) {
+.cosine_dist <- function(x) {
   y <- (1 - .cosine(x, x)) / 2
   return(stats::as.dist(y))
 }
@@ -38,12 +38,12 @@
 # Calculates cosine similarities between 2 matrices where columns are sigs
 # and rows are mutation motifs.
 .cosine <- function(x, y) {
-  nX <- ncol(x)
-  nY <- ncol(y)
+  n_x <- ncol(x)
+  n_y <- ncol(y)
   if (nrow(x) != nrow(y)) {
     stop("The number of rows in 'x' and 'y' must be the same.")
   }
   temp <- t(cbind(x, y))
   res <- temp %*% t(temp) / (sqrt(rowSums(temp^2) %*% t(rowSums(temp^2))))
-  return(res[seq(nX), -seq(nX), drop = FALSE])
+  return(res[seq(n_x), -seq(n_x), drop = FALSE])
 }

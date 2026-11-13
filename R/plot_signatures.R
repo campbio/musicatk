@@ -93,7 +93,7 @@ plot_signatures <- function(musica,
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -222,7 +222,7 @@ plot_signatures <- function(musica,
   }
 
   # Plot signatures
-  plot_dat$df %>%
+  p <- plot_dat$df |>
     ggplot(aes(y = exposure, x = motif, fill = mutation_color)) +
     geom_bar(stat = "identity") +
     facet_grid(factor(signature) ~ ., scales = scales) +
@@ -231,7 +231,9 @@ plot_signatures <- function(musica,
     ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1)) +
     ggplot2::scale_fill_manual(values = color_mapping) +
     #ggplot2::scale_x_discrete(labels = annot$context) +
-    ggplot2::scale_x_discrete(limits = plot_dat$df$motif, labels = plot_dat$df$context) +
+    ggplot2::scale_x_discrete(
+      limits = plot_dat$df$motif, labels = plot_dat$df$context
+    ) +
     ggplot2::scale_y_continuous(
       expand = expansion(mult = c(0, 0.2)),
       limits = c(0, NA), n.breaks = 5,
@@ -242,7 +244,7 @@ plot_signatures <- function(musica,
       mapping = aes(x = -Inf, y = Inf, label = label),
       hjust = -0.075, vjust = 1.5,
       fontface = "bold"
-    ) -> p
+    )
 
   # Add annotations, if necessary
   if (!is.null(annotation)) {
@@ -258,14 +260,14 @@ plot_signatures <- function(musica,
   if (!is.null(y_max)) {
     p <- p + geom_blank(aes(y = ymax))
   }
-  
+
   # Adjust theme
   p <- .gg_default_theme(p, text_size = text_size) +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
     theme(legend.position = "none") +
     theme(plot.margin = margin(0, 1, 0, 1)) +
     theme(strip.background = element_blank(), strip.text.y = element_blank())
-  
+
 
   # Header boxes are filled by name from color_mapping, with white label
   # text on dark fills
@@ -300,7 +302,7 @@ plot_signatures <- function(musica,
     fontface = "bold", size = 4,
     color = label_colors, angle = ifelse(is_indel, 90, 0)
   )
-  
+
   # Adjust theme
   p2 <- .gg_default_theme(p2, text_size = text_size) +
     theme(plot.margin = margin(0, 1, 0, 1)) + # see function below
@@ -332,12 +334,15 @@ plot_signatures <- function(musica,
       axis.title.y = element_blank()
     )
   }
-  
+
   # adjust height of motif lables if indel signature
   height <- ifelse(is_indel, 5, 1)
 
   # combine signatures and motif labels
-  figure <- ggpubr::ggarrange(p2, p, ncol = 1, nrow = 2, heights = c(height,15))
+  figure <- ggpubr::ggarrange(p2, p,
+    ncol = 1, nrow = 2,
+    heights = c(height, 15)
+  )
 
   if (isTRUE(plotly)) {
     figure <- plotly::ggplotly(p)

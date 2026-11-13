@@ -67,7 +67,7 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -148,7 +148,7 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
     diff.out <- do.call(rbind, diff.out)
   } else if (method == "kruskal") {
     header <- c("K-W chi-squared", "df", "p-value", "fdr")
-    diff.out <- matrixTests::row_kruskalwallis(exposures, annotations, ...) %>%
+    diff.out <- matrixTests::row_kruskalwallis(exposures, annotations, ...) |>
       dplyr::select(statistic, df, pvalue)
     diff.out$fdr <- p.adjust(diff.out$pvalue, method = "BH")
     colnames(diff.out) <- header

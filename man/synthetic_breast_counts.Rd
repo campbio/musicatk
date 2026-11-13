@@ -11,7 +11,7 @@ An object of class \code{data.frame}
 data(synthetic_breast_counts)
 }
 \description{
-A data.frame containing the SBS96 mutation counts for a synthetic breast 
+A data.frame containing the SBS96 mutation counts for a synthetic breast
 cancer dataset with 214 samples.
 }
 \keyword{datasets}

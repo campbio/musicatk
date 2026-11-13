@@ -96,7 +96,7 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -124,7 +124,7 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
   plot_type <- match.arg(plot_type)
 
   if (is.null(annotation) && (color_by == "annotation" ||
-                              group_by == "annotation")) {
+                                group_by == "annotation")) {
     stop(
       "If parameters 'group_by' or 'color_by' are set to 'annotation', ",
       "then the 'annotation' parameter must be supplied."
@@ -196,7 +196,7 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
   # Get top N samples from ordering
   if (!is.null(num_samples)) {
     if (!is.numeric(num_samples) || length(num_samples) != 1 ||
-        num_samples < 1 || num_samples > ncol(exposures)) {
+          num_samples < 1 || num_samples > ncol(exposures)) {
       stop(
         "The parameter 'num_samples', needs to be an integer between 1 ",
         "and the total number of samples in the result: ", ncol(exposures)
@@ -311,15 +311,15 @@ plot_exposures <- function(musica, model_name, modality = "SBS96",
 
 .pivot_exposures <- function(exposures) {
   # Convert to long data frame
-  t(exposures) %>%
-    as.data.frame() %>%
-    tibble::rownames_to_column(var = "sample") %>%
+  temp <- t(exposures) |>
+    as.data.frame() |>
+    tibble::rownames_to_column(var = "sample") |>
     tidyr::pivot_longer(
       cols = rownames(exposures),
       names_to = "signature",
       values_to = "exposure",
       names_repair = "minimal"
-    ) -> temp
+    )
   return(temp)
 }
 

@@ -43,12 +43,15 @@
 #' clust_out <- cluster_exposure(res_annot, model_name = "res_annot",
 #' nclust = 2)
 #' @export
+# Exported argument names predate snake_case; renaming them would break calls.
+# nolint start: object_name_linter.
 cluster_exposure <- function(musica, model_name, modality = "SBS96",
                              result_name = "result", nclust,
                              proportional = TRUE, method = "kmeans",
                              dis.method = "euclidean", hc.method = "ward.D",
                              clara.samples = 5, iter.max = NULL, tol = 1e-15,
                              nstart = 10, seed = 1) {
+  # nolint end
   # check if valid result_name
   if (!(result_name %in% names(result_list(musica)))) {
     stop(
@@ -59,7 +62,7 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -86,11 +89,11 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
     "kmeans", "fanny", "hkmeans", "hclust",
     "pam", "clara"
   ))
-  dis.method <- match.arg(dis.method, c(
+  dis.method <- match.arg(dis.method, c( # nolint: object_name_linter.
     "euclidean", "manhattan",
     "jaccard", "cosine", "canberra"
   ))
-  hc.method <- match.arg(hc.method, c(
+  hc.method <- match.arg(hc.method, c( # nolint: object_name_linter.
     "ward.D", "ward.D2", "single", "complete",
     "average", "mcquitty", "median", "centroid"
   ))
@@ -223,8 +226,8 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
                          result_name = "result", clusters, group = "signature",
                          annotation = NULL, plotly = TRUE) {
   # dummy variables
-  UMAP_1 <- NULL
-  UMAP_2 <- NULL
+  UMAP_1 <- NULL # nolint: object_name_linter.
+  UMAP_2 <- NULL # nolint: object_name_linter.
   exposure <- NULL
 
   # check if valid result_name
@@ -237,7 +240,7 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -269,8 +272,8 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
   k_toplot$cluster <- factor(k_toplot$cluster)
   if (group == "signature") {
     expos <- t(.proportional_exposures(exposures(result)))
-    clust_by_sigs <- cbind(k_toplot, expos) %>%
-      tibble::rownames_to_column(var = "sample") %>%
+    clust_by_sigs <- cbind(k_toplot, expos) |>
+      tibble::rownames_to_column(var = "sample") |>
       tidyr::pivot_longer(
         cols = colnames(expos),
         names_to = "signature",
@@ -365,10 +368,12 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' # Plot gap statistics against number of clusters
 #' k_select(res_annot, model_name = "res_annot", method = "gap_stat", n = 6)
 #' @export
+# nolint start: object_name_linter.
 k_select <- function(musica, model_name, modality = "SBS96",
                      result_name = "result", method = "wss",
                      clust.method = "kmeans", n = 10, proportional = TRUE,
                      seed = 1) {
+  # nolint end
   # check if valid result_name
   if (!(result_name %in% names(result_list(musica)))) {
     stop(
@@ -379,7 +384,7 @@ k_select <- function(musica, model_name, modality = "SBS96",
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -403,7 +408,7 @@ k_select <- function(musica, model_name, modality = "SBS96",
   )
 
   method <- match.arg(method, c("wss", "silhouette", "gap_stat"))
-  clust.method <- match.arg(clust.method,
+  clust.method <- match.arg(clust.method, # nolint: object_name_linter.
                             c("kmeans", "hclust", "hkmeans", "pam", "clara"))
   expos <- exposures(result)
   if (isTRUE(proportional)) {

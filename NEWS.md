@@ -1,3 +1,6 @@
+# musicatk 2.7.17 (2026-11-12)
+* Code in `R/` (except `R/benchmarking.R`) now passes lintr. This changes only formatting and internal names, not results or the exported functions and their arguments (#257).
+
 # musicatk 2.7.16 (2026-11-12)
 * Added the COSMIC v3.6 (May 2026) signatures as new data objects, following ADR 0003: `cosmic_v3_6_sbs_sigs_grch37`, `cosmic_v3_6_sbs_sigs_grch38`, `cosmic_v3_6_sbs_sigs_grch37_exome`, `cosmic_v3_6_sbs_sigs_grch38_exome`, `cosmic_v3_6_dbs_sigs_grch37`, `cosmic_v3_6_dbs_sigs_grch38` and `cosmic_v3_6_indel_sigs`. v3.6 has 101 SBS, 22 DBS and 25 Indel signatures, and revises the probabilities of signatures that were in v3.0. COSMIC publishes one Indel catalogue per version, so the Indel object has no build. `data-raw/make_cosmic_v3_6.R` rebuilds them from the COSMIC files; the exome SBS files come from SigProfilerAssignment, whose genome files match COSMIC's.
 * `cosmic_v3_sbs_sigs`, `cosmic_v3_dbs_sigs`, `cosmic_v3_indel_sigs` and `cosmic_v3_sbs_sigs_exome` are unchanged and stay COSMIC v3.0 (GRCh37), so code that uses them, for example in `predict_exposure()`, gives the same results. Their documentation now states the version and build.

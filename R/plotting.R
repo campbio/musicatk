@@ -24,15 +24,15 @@ NULL
   names(sig_names) <- colnames(signatures)
 
   # Reformat signature matrix into long data.frame
-  signatures %>%
-    as.data.frame() %>%
-    tibble::rownames_to_column(var = "motif") %>%
+  df <- signatures |>
+    as.data.frame() |>
+    tibble::rownames_to_column(var = "motif") |>
     tidyr::pivot_longer(
       cols = dplyr::all_of(names(sig_names)),
       names_to = "signature",
       values_to = "exposure",
       names_repair = "minimal"
-    ) -> df
+    )
 
   # Check for mutation color variable in annot table
   final_color_variable <- NULL
@@ -67,23 +67,23 @@ NULL
   return(list(df = df, names = sig_names))
 }
 
-.addSmallLegend <- function(myPlot, pointSize = 2,
-                            textSize = 10, spaceLegend = 0.5) {
-  myPlot +
+.add_small_legend <- function(my_plot, point_size = 2,
+                              text_size = 10, space_legend = 0.5) {
+  my_plot +
     ggplot2::guides(
       shape = ggplot2::guide_legend(
         override.aes =
-          list(size = pointSize)
+          list(size = point_size)
       ),
       color = ggplot2::guide_legend(
         override.aes =
-          list(size = pointSize)
+          list(size = point_size)
       )
     ) +
     ggplot2::theme(
-      legend.title = element_text(size = textSize),
-      legend.text = element_text(size = textSize),
-      legend.key.size = ggplot2::unit(spaceLegend, "lines"),
+      legend.title = element_text(size = text_size),
+      legend.text = element_text(size = text_size),
+      legend.key.size = ggplot2::unit(space_legend, "lines"),
       legend.box.background = ggplot2::element_rect(colour = "black"),
       legend.spacing.x = ggplot2::unit(0.25, "cm")
     )

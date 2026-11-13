@@ -1307,14 +1307,14 @@ create_musica_from_counts <- function(x, variant_class) {
 #' add_result(signatures, exposures, musica = musica_annot,
 #' result_name = "result", modality = "SBS96", model_id = "example_model")
 #' @export
-add_result <- function(signatures, exposures, musica, result_name, 
+add_result <- function(signatures, exposures, musica, result_name,
                        modality, model_id, make_copy = FALSE) {
-  
+
   # update global variable
   if (make_copy == FALSE) {
     var_name <- deparse(substitute(musica))
   }
-  
+
   # Put exposure columns in sample order, matched by sample name
   exposures <- as.matrix(exposures)
   samples <- sample_names(musica)
@@ -1331,31 +1331,32 @@ add_result <- function(signatures, exposures, musica, result_name,
     num_signatures = dim(signatures)[2],
     model_id = model_id, modality = modality
   )
-  
+
   # if this result name does not exist in result_list
   if (is.null(result_list(musica)[[result_name]])) {
     # make new list entry with the desired name and assign a new
     # result_collection object
-    musica@result_list[[result_name]] <- new("result_collection",
-                                             modality = SimpleList(),
-                                             parameter = list(), hyperparameter = list()
+    musica@result_list[[result_name]] <- new(
+      "result_collection",
+      modality = SimpleList(), parameter = list(), hyperparameter = list()
     )
   }
-  
+
   # if desired modality does not exist, create entry
   if (is.null(get_modality(musica, result_name, modality))) {
     musica@result_list[[result_name]]@modality[[modality]] <- list()
   }
-  
+
   # add result_model object in the list for the proper modality
-  musica@result_list[[result_name]]@modality[[modality]][[model_id]] <- model_result
+  musica@result_list[[result_name]]@modality[[modality]][[model_id]] <-
+    model_result
   # exposures must have the sample names as columns, in sample order
   methods::validObject(musica)
-  
+
   if (make_copy == FALSE) {
     assign(var_name, musica, envir = parent.frame())
   }
-  
+
   if (make_copy == TRUE) {
     return(musica)
   }
@@ -1454,7 +1455,7 @@ add_result <- function(signatures, exposures, musica, result_name,
             # If conversion was partial, need to subset to overlapping variants
             dt <- subset(dt, new_chr %in% genome_u)
 
-            new.inter <- intersect(new_chr_u, genome_u)
+            new_inter <- intersect(new_chr_u, genome_u)
             inter_sum <- sum(new_chr %in% genome_u)
             diff.sum <- sum(!new_chr %in% genome_u)
             warning(
@@ -1569,19 +1570,19 @@ add_result <- function(signatures, exposures, musica, result_name,
   if (!is.null(sample)) rfields["sample"] <- sample
 
   # Check for missing columns
-  col.ix <- match(tolower(rfields), tolower(colnames(dt)))
-  if (sum(is.na(col.ix) > 0)) {
-    missing.cols <- rfields[is.na(col.ix)]
+  col_ix <- match(tolower(rfields), tolower(colnames(dt)))
+  if (sum(is.na(col_ix) > 0)) {
+    missing_cols <- rfields[is.na(col_ix)]
     stop(
       "Some required columns are missing in the maf: ",
-      paste(missing.cols, collapse = ", ")
+      paste(missing_cols, collapse = ", ")
     )
   }
 
   # Adjust column case if needed
-  prev_col <- colnames(dt)[col.ix]
-  colnames(dt)[col.ix] <- rfields
-  mismatch_ix <- colnames(dt)[col.ix] != prev_col
+  prev_col <- colnames(dt)[col_ix]
+  colnames(dt)[col_ix] <- rfields
+  mismatch_ix <- colnames(dt)[col_ix] != prev_col
   if (sum(mismatch_ix) > 0) {
     warning(
       "Some columns in maf had the wrong case and were automatically ",

@@ -18,7 +18,8 @@ ground_truth(x) <- value
 \arguments{
 \item{x}{A \code{\linkS4class{full_benchmark}} object.}
 
-\item{value}{A \code{\linkS4class{musica}} object containing the ground truth.}
+\item{value}{A \code{\linkS4class{musica}} object containing the ground
+truth.}
 }
 \value{
 A \code{\linkS4class{musica}} object containing the ground truth.

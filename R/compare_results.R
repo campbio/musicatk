@@ -11,7 +11,7 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
     stop("Signatures must have the same number of motifs.")
   }
   if (!is.null(rownames(sig1)) && !is.null(rownames(sig2)) &&
-      !all(rownames(sig1) == rownames(sig2))) {
+        !all(rownames(sig1) == rownames(sig2))) {
     warning(
       "The names of the motifs in signature matrix one do not equal the ",
       "names of the motifs in signature matrix two."
@@ -101,7 +101,7 @@ compare_results <- function(musica, model_id, other_model_id,
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -133,8 +133,8 @@ compare_results <- function(musica, model_id, other_model_id,
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(other_musica, other_result_name)
-              @modality))) {
+          names(get_result_list_entry(other_musica, other_result_name)
+                @modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(other_musica, other_result_name)
@@ -195,8 +195,7 @@ compare_results <- function(musica, model_id, other_model_id,
                                   musica, res1_name = result_rename,
                                   res2_name = other_result_rename,
                                   decimals = decimals, same_scale = same_scale,
-                                  maxes = maxes
-  )
+                                  maxes = maxes)
   return(comparison)
 }
 
@@ -263,7 +262,7 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -343,8 +342,7 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
                                   musica, res1_name = result_rename,
                                   res2_name = cosmic_title,
                                   decimals = decimals, maxes = maxes,
-                                  same_scale = same_scale
-  )
+                                  same_scale = same_scale)
   attr(comparison, "cosmic_catalogue") <- catalogue$object
   return(comparison)
 }
@@ -504,7 +502,7 @@ compare_cosmic_v2 <- function(musica, model_id, modality = "SBS96",
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -565,8 +563,7 @@ compare_cosmic_v2 <- function(musica, model_id, modality = "SBS96",
                                   musica, res1_name = result_rename,
                                   res2_name = "COSMIC Signatures (V2)",
                                   decimals = decimals, maxes = maxes,
-                                  same_scale = same_scale
-  )
+                                  same_scale = same_scale)
 
   return(comparison)
 }
@@ -607,7 +604,7 @@ cosmic_v2_subtype_map <- function(tumor_type) {
     c(1, 5, 6)
   )
   partial <- grep(tumor_type, subtypes)
-  for (i in seq_len(length(partial))) {
+  for (i in seq_along(partial)) {
     message(subtypes[partial[i]])
     message(present_sig[[partial[i]]])
   }

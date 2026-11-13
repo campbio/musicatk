@@ -5,15 +5,16 @@ NULL
 
 #' Object that contains information for a full benchmarking analysis where
 #' multiple predictions may be benchmarked
-#' 
+#'
 #' @slot ground_truth A \code{\linkS4class{musica}} object containing the true
 #' signatures and exposures.
 #' @slot method_view_summary A matrix containing summary information across all
 #' benchmark runs, organized by run.
 #' @slot sig_view_summary A matrix containing summary information across all
 #' benchmark runs, organized by signature.
-#' @slot indv_benchmarks A list of \code{\linkS4class{single_benchmark}} objects,
-#' each containing information from a single benchmark run.
+#' @slot indv_benchmarks A list of
+#' \code{\linkS4class{single_benchmark}} objects, each containing information
+#' from a single benchmark run.
 #' @export
 #' @exportClass full_benchmark
 
@@ -27,7 +28,7 @@ setClass(
   )
 )
 
-# Getter and setter functions 
+# Getter and setter functions
 
 # --------ground_truth --------------
 #' @title Retrieve the ground_truth from a full_benchmark object
@@ -55,7 +56,8 @@ setMethod(
 
 #' @rdname ground_truth
 #' @param x A \code{\linkS4class{full_benchmark}} object.
-#' @param value A \code{\linkS4class{musica}} object containing the ground truth.
+#' @param value A \code{\linkS4class{musica}} object containing the ground
+#' truth.
 #' @export
 setGeneric(
   name = "ground_truth<-",
@@ -209,4 +211,3 @@ setReplaceMethod(
     return(x)
   }
 )
-

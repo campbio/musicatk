@@ -44,7 +44,7 @@ create_umap <- function(musica, model_name, modality = "SBS96",
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -163,8 +163,8 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
                       legend = TRUE,
                       strip_axes = FALSE) {
   # dummy variables
-  UMAP_1 <- NULL
-  UMAP_2 <- NULL
+  UMAP_1 <- NULL # nolint: object_name_linter.
+  UMAP_2 <- NULL # nolint: object_name_linter.
   exposure <- NULL
 
   # check if valid result_name
@@ -177,7 +177,7 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -228,8 +228,8 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
       annotation <- "cluster"
     }
 
-    umap <- umap %>%
-      as.data.frame() %>%
+    umap <- umap |>
+      as.data.frame() |>
       tibble::rownames_to_column(var = "sample")
     umap <- .add_annotation_to_df(musica,
       plot_dat = umap,
@@ -304,15 +304,15 @@ plot_umap <- function(musica, model_name, modality = "SBS96",
       color_lab <- "Counts"
     }
 
-    cbind(umap, t(exposures)) %>%
-      as.data.frame() %>%
-      tibble::rownames_to_column(var = "sample") %>%
+    df <- cbind(umap, t(exposures)) |>
+      as.data.frame() |>
+      tibble::rownames_to_column(var = "sample") |>
       tidyr::pivot_longer(
         cols = rownames(exposures),
         names_to = "signature",
         values_to = "exposure",
         names_repair = "minimal"
-      ) -> df
+      )
 
     # Ensure that the signature order will be the same as in the exposures
     df$signature <- factor(df$signature,
