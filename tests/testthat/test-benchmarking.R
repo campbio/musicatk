@@ -502,3 +502,31 @@ test_that("Summaries count each true signature once, at the Final stage (#198)",
   expect_identical(sig_view["SBS3", "Times Found"], 1L)
   expect_equal(sig_view["SBS3", "Mean CS"], round(best[["SBS3"]], 3))
 })
+
+test_that("predict_and_benchmark() benchmarks the model it discovers (#197)", {
+  data(cosmic_v2_sigs)
+  truth <- sim_truth(signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2")])
+  bench <- create_benchmark(truth$signatures, truth$exposures, truth$counts,
+    "SBS96"
+  )
+  musica <- create_musica_from_counts(truth$counts, "SBS96")
+  # an earlier lda2, made with another seed
+  suppressMessages(discover_signatures(musica, "SBS96", 2, "lda",
+    seed = 99, nstart = 1
+  ))
+  expected <- suppressMessages(discover_signatures(
+    create_musica_from_counts(truth$counts, "SBS96"), "SBS96", 2, "lda",
+    seed = 1, nstart = 1, make_copy = TRUE
+  ))
+
+  utils::capture.output(suppressMessages(
+    result <- predict_and_benchmark(musica, "SBS96", 2, 2, bench, "lda",
+      nstart = 1
+    )
+  ))
+  initial <- initial_pred(benchmark_get_entry(result, "lda2"))
+  expect_identical(model_id(initial), "lda2.1")
+  expect_equal(
+    signatures(initial), signatures(expected, "result", "SBS96", "lda2")
+  )
+})

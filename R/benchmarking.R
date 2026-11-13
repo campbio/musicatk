@@ -441,10 +441,11 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
 #' @param nstart Number of independent random starts used in the mutational
 #' signature algorithms. Default \code{10}.
 #' @param par_cores Number of parallel cores to use. Only used if
-#' \code{method = "nmf"}. Default \code{1}. 
+#' \code{method = "nmf"}. Default \code{1}.
 #'
-#' @return If \code{make_copy == TRUE}, a new \code{full_benchmark} object is
-#' returned. If \code{make_copy == FALSE}, nothing is returned.
+#' @return The \code{\linkS4class{full_benchmark}} object with a benchmark
+#' run added for each k. A new model is named \code{<algorithm><k>}, or
+#' \code{<algorithm><k>.<n>} if that name is taken in \code{musica}.
 #' @examples
 #' data(synthetic_breast_counts)
 #' data(synthetic_breast_true_exposures)
@@ -463,23 +464,27 @@ predict_and_benchmark <- function(musica, modality,
                                   plot = FALSE, seed = 1, nstart = 10, par_cores = 1){
   
   # loop through k values
-  for (k in c(k_min:k_max)){
-    
+  for (k in seq(k_min, k_max)) {
+
     message("Discovering signatures for k = ", k, "...")
-    
+
+    # the model's ID, '<algorithm><k>' or '<algorithm><k>.<n>' if that exists
+    model_id <- .unique_model_id(musica, result_name, modality,
+                                 paste0(algorithm, k))
+
     # discover signatures for a k value and save to musica object provided
     discover_signatures(musica = musica, modality = modality,
                         num_signatures = k, algorithm = algorithm,
-                        result_name = result_name,
-                        seed = seed, nstart = nstart, 
+                        result_name = result_name, model_id = model_id,
+                        seed = seed, nstart = nstart,
                         par_cores = par_cores)
-    
+
     message("Benchmarking prediction for k = ", k, "...\n")
-    
+
     # benchmark the prediction
-    full_benchmark <- benchmark(full_benchmark = full_benchmark, 
-                                prediction_musica = musica, 
-                                prediction_model_id = paste0(algorithm, k),
+    full_benchmark <- benchmark(full_benchmark = full_benchmark,
+                                prediction_musica = musica,
+                                prediction_model_id = model_id,
                                 prediction_modality = modality,
                                 prediction_result_name = result_name,
                                 method_id = paste0(algorithm, k),
