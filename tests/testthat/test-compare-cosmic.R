@@ -309,8 +309,8 @@ test_that("compare_results() returns the matches above the threshold", {
   grDevices::dev.off()
   expect_equal(comparison, sig_compare(sigs, sigs, threshold = 0.8))
   # each signature matches itself, most similar first
-  expect_true(all(c("Signature1", "Signature2", "Signature3") %in%
-    comparison$x_sig_name[comparison$x_sig_name == comparison$y_sig_name]))
+  self <- comparison$x_sig_name == comparison$y_sig_name
+  expect_setequal(comparison$x_sig_name[self], colnames(sigs))
   expect_false(is.unsorted(rev(comparison$cosine)))
   expect_error(
     compare_results(res, "not_a_model", "res"),
