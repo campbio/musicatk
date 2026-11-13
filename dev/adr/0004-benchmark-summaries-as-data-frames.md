@@ -1,8 +1,8 @@
 # 0004. Store benchmark summaries as data.frames
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-13
-- **Deciders:** Joshua D. Campbell (maintainer)
+- **Deciders:** Joshua D. Campbell (maintainer), 2026-11-13
 
 ## Context
 

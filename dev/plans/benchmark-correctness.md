@@ -2,7 +2,7 @@
 
 Changes results: yes. `benchmark()` summaries change for any prediction
 with duplicates or composites. The summary tables become data.frames
-(ADR 0004), and `full_benchmark_example` is rebuilt. Devel only; no
+(ADR 0004, accepted 2026-11-13), and `full_benchmark_example` is rebuilt. Devel only; no
 release port proposed (a large change to a niche workflow, and most of
 the bugs are crashes rather than silently wrong numbers).
 
