@@ -17,7 +17,10 @@ names of \code{count_table}, and signature names the column names of
 
 \item{count_table}{Summary table with per-sample un-normalized motif counts}
 
-\item{variant_class}{Mutations are SBS, DBS, or Indel.}
+\item{variant_class}{The count table: \code{"SBS96"} or \code{"DBS78"}.
+Aliases accepted by \link{create_musica_from_counts}, such as
+\code{"SBS"} or \code{"DBS"}, are stored under the table name, which is
+the \code{prediction_modality} to give to \link{benchmark}.}
 }
 \value{
 A \code{\linkS4class{full_benchmark}} object

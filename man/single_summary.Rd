@@ -4,8 +4,8 @@
 \alias{single_summary}
 \alias{single_summary,single_benchmark-method}
 \alias{single_summary<-}
-\alias{single_summary<-,single_benchmark,matrix-method}
-\title{Retrieve the single summary matrix from a single_benchmark object}
+\alias{single_summary<-,single_benchmark,data.frame-method}
+\title{Retrieve the single summary from a single_benchmark object}
 \usage{
 single_summary(x)
 
@@ -13,17 +13,19 @@ single_summary(x)
 
 single_summary(x) <- value
 
-\S4method{single_summary}{single_benchmark,matrix}(x) <- value
+\S4method{single_summary}{single_benchmark,data.frame}(x) <- value
 }
 \arguments{
 \item{x}{A \code{\linkS4class{single_benchmark}} object.}
 
-\item{value}{A matrix containing the summary infomation for the run.}
+\item{value}{A one-row data.frame containing the summary information for
+the run.}
 }
 \value{
-A matrix containing the summary.
+A data.frame containing the summary.
 }
 \description{
-The \code{single_summary} contains the summary information
-from the benchmark run.
+The \code{single_summary} is a one-row data.frame with the
+summary information from the benchmark run, as in
+\link{method_view_summary}.
 }

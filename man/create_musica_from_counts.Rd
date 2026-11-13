@@ -16,7 +16,9 @@ must be the standard motif names (e.g. \code{"C>A_ACA"} for SBS96 or
 motifs by name. Without row names, the rows must be in the standard motif
 order.}
 
-\item{variant_class}{Mutations are SBS, DBS, or Indel.}
+\item{variant_class}{\code{"SBS96"} (or \code{"SBS"}, \code{"SNV96"},
+\code{"SNV"}, \code{"snv"}) or \code{"DBS78"} (or \code{"DBS"},
+\code{"dbs"}, \code{"doublet"}). Indels are not supported yet.}
 }
 \value{
 Returns a musica object

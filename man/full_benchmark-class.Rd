@@ -15,11 +15,12 @@ multiple predictions may be benchmarked
 \item{\code{ground_truth}}{A \code{\linkS4class{musica}} object containing the true
 signatures and exposures.}
 
-\item{\code{method_view_summary}}{A matrix containing summary information across all
-benchmark runs, organized by run.}
+\item{\code{method_view_summary}}{A data.frame summarizing each benchmark run,
+with one row per run. See \link{method_view_summary}.}
 
-\item{\code{sig_view_summary}}{A matrix containing summary information across all
-benchmark runs, organized by signature.}
+\item{\code{sig_view_summary}}{A data.frame summarizing each true signature across
+all benchmark runs, with one row per signature. See
+\link{sig_view_summary}.}
 
 \item{\code{indv_benchmarks}}{A list of
 \code{\linkS4class{single_benchmark}} objects, each containing information

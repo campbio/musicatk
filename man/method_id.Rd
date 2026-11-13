@@ -21,7 +21,7 @@ method_id(x) <- value
 \item{value}{An identifier for the benchmark run.}
 }
 \value{
-A matrix containing the summary.
+A character string, the method ID.
 }
 \description{
 The \code{method_id} is the identifier for the benchmark run.
