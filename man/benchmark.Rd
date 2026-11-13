@@ -79,11 +79,12 @@ duplicate a true signature are merged: each predicted signature joins the
 true signature it matches best, and the signatures of a group are
 replaced by their exposure-weighted mean. In \emph{Final}, each composite
 (a predicted signature matching several true signatures) is split into
-one \code{"<true signature>_like"} piece per true signature: the composite
-is fitted to those true signatures with non-negative least squares, and
-each mutation type's probability is divided among them in proportion to
-the fit. The pieces add up to the composite and keep its noise, and each
-gets the composite's exposure times its share of the composite.
+\code{"<true signature>_like"} pieces: the composite is fitted to those
+true signatures with non-negative least squares, and each mutation type's
+probability is divided among them in proportion to the fit. A true
+signature with no weight in the fit gets no piece. The pieces add up to
+the composite and keep its noise, and each gets the composite's exposure
+times its share of the composite.
 
 The run's summary, one row of \link{method_view_summary}, has these
 columns:

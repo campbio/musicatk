@@ -7,6 +7,11 @@
 \format{
 An object of class \code{full_benchmark}
 }
+\source{
+Built by \code{data-raw/make_full_benchmark_example.R} from
+\code{synthetic_breast_counts}, \code{synthetic_breast_true_exposures},
+\code{example_predicted_sigs} and \code{example_predicted_exp}.
+}
 \usage{
 data(full_benchmark_example)
 }

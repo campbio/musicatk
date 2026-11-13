@@ -151,7 +151,7 @@ test_that("Stage aliases work in every benchmark accessor (#193)", {
   final <- benchmark_get_comparison(full_benchmark_example, "example_k8",
     "Final"
   )
-  for (alias in c("final", "Fin", "fin")) {
+  for (alias in c("final", "Fin", "fin", "FINAL")) {
     expect_identical(
       benchmark_get_comparison(full_benchmark_example, "example_k8", alias),
       final
@@ -159,7 +159,7 @@ test_that("Stage aliases work in every benchmark accessor (#193)", {
   }
   entry <- benchmark_get_entry(full_benchmark_example, "example_k8")
   expect_identical(
-    benchmark_get_comparison(full_benchmark_example, "example_k8", "init"),
+    benchmark_get_comparison(full_benchmark_example, "example_k8", "Init"),
     initial_comparison(entry)
   )
   expect_identical(
@@ -248,7 +248,7 @@ test_that("Benchmark summaries are data.frames with typed columns (#201)", {
 
   sig_view <- sig_view_summary(bench)
   expect_s3_class(sig_view, "data.frame")
-  expect_setequal(rownames(sig_view), colnames(truth$signatures))
+  expect_identical(rownames(sig_view), colnames(truth$signatures))
   expect_type(sig_view[["Times Found"]], "integer")
   expect_type(sig_view[["Max CS"]], "double")
   expect_type(sig_view[["Methods Found"]], "character")
@@ -442,6 +442,8 @@ test_that("Composite pieces keep the composite's noise (#191)", {
   expect_equal(unname(fraction), rep(fraction[[1]], length(fraction)))
   summary <- method_view_summary(bench)
   expect_equal(summary[["Initial RE"]], summary[["Final RE"]])
+  best <- tapply(final_comp$cosine, final_comp$y_sig_name, max)
+  expect_equal(summary[["Mean CS"]], round(mean(best), 3))
 
   # ggplot2 warns that the fitted lines leave the plots' fixed axes
   plots <- suppressWarnings(benchmark_plot_composite_exposures(bench, "m"))

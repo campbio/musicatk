@@ -132,7 +132,7 @@ method_view_summary(full_benchmark)
 
 ```
 
-The signature view summary has one row per true signature, with how many runs found it and its best cosine similarity across those runs.
+The signature view summary has one row per true signature, with how many runs found it and the mean, minimum and maximum over those runs of its best cosine similarity in each.
 
 ```{r view sig view summary}
 
@@ -151,7 +151,7 @@ nmf8_benchmark <- benchmark_get_entry(full_benchmark, "nmf8")
 
 ```
 
-Once a single benchmark object has been extracted, the three different predictions within it can be extracted. These include (1) the initial prediction, before any benchmarking adjustments have been made, (2) the intermediate prediction, after duplicate signatures have been merged, and (3) the final prediction, after each composite signature has also been split into one piece per true signature it matches. The pieces, named like `SBS3_like`, add up to the composite and keep its noise, so they are not copies of the true signatures.
+Once a single benchmark object has been extracted, the three different predictions within it can be extracted. These include (1) the initial prediction, before any benchmarking adjustments have been made, (2) the intermediate prediction, after duplicate signatures have been merged, and (3) the final prediction, after each composite signature has also been split into pieces, one for each true signature it matches that has weight in a fit of the composite. The pieces, named like `SBS3_like`, add up to the composite and keep its noise, so they are not copies of the true signatures.
 
 ```{r extract a prediction}
 

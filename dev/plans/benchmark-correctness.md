@@ -66,7 +66,7 @@ Fixes #188, #189, #190, #191, #192, #193, #195, #196, #197, #198, #199,
 - **#94.** Nine `class(x)[1] != "..."` checks (BiocCheck WARNING); a
   subclass of `full_benchmark` is rejected.
 - **#148 (benchmark copy).** `benchmark()` de-duplicates `method_id` by
-  stripping two characters, so the 11th repeat becomes `x..10`.
+  stripping two characters, so the 12th use of an ID becomes `x..11`.
 
 ## Approach
 
@@ -218,7 +218,7 @@ test per issue, each failing on its assertion first:
   warnings from `sig_view_summary`.
 - #94: a subclass of `full_benchmark` is accepted, and a non-benchmark
   still errors.
-- #148 copy: the 11th repeat of a `method_id` is `x.10`.
+- #148 copy: with `m` and `m.1`..`m.10` taken, the next run is `m.11`.
 - Existing tests are kept; any that check matrix summaries are updated
   to the data.frame layout. No test is weakened.
 
@@ -246,3 +246,28 @@ test per issue, each failing on its assertion first:
 - Checks: `make test`, `make coverage` (must not drop), `make lint`;
   `make check-full` and `make bioccheck` before the PR. The #94 BiocCheck
   WARNING should be gone.
+
+## Added in review
+
+From the spec review (fresh subagent):
+
+- `full_benchmark_example`'s documentation gets an `@source` naming the
+  data-raw script (was in the spec, missed).
+- `sig_view_summary` rows are in true-signature order, like "Sigs Found";
+  before, they followed the first run's Final comparison.
+- The docs, NEWS and article say a true signature with no weight in the
+  composite's NNLS fit gets no piece; the unreachable all-zero-weights
+  fallback in `.split_composite()` is removed (a cosine above the
+  threshold means a positive weight).
+- The stage aliases and case-insensitivity are documented under each
+  `prediction` argument, and tested ("Init", "FINAL").
+- The #191 test also checks Mean CS.
+- Noted, not changed: `.signature_matches()` keeps full-precision cosines,
+  while `sig_compare()` used to round them to 15 significant digits
+  through character. So `compare_results()` cosines differ by about
+  1e-15, and pairs whose cosines tie at 15 digits (identical signatures)
+  can come out in another order.
+- Not fixed (already on devel): `print(list())` with `plot = TRUE` and no
+  duplicates or composites; NaN for a duplicate group with zero total
+  exposure; reconstruction error assumes exposure rows follow signature
+  columns. Logged for group K/#202.

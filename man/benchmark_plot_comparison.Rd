@@ -22,7 +22,9 @@ object containing the comparison of interest}
 \item{prediction}{\code{"Initial"} for the comparison before any benchmarking
 adjustments have been made, \code{"Intermediate"} for the comparison after
 duplicates have been adjusted but before composites are adjusted, or
-\code{"Final"} for the comparison at the end of the benchmarking adjustments.}
+\code{"Final"} for the comparison at the end of the benchmarking adjustments.
+Case is ignored, and \code{"Init"}, \code{"Inter"} and \code{"Fin"} are
+accepted too.}
 
 \item{decimals}{Specifies rounding for similarity metric displayed. Default
 \code{2}.}

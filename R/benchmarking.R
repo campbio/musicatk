@@ -149,11 +149,12 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
 #' true signature it matches best, and the signatures of a group are
 #' replaced by their exposure-weighted mean. In \emph{Final}, each composite
 #' (a predicted signature matching several true signatures) is split into
-#' one \code{"<true signature>_like"} piece per true signature: the composite
-#' is fitted to those true signatures with non-negative least squares, and
-#' each mutation type's probability is divided among them in proportion to
-#' the fit. The pieces add up to the composite and keep its noise, and each
-#' gets the composite's exposure times its share of the composite.
+#' \code{"<true signature>_like"} pieces: the composite is fitted to those
+#' true signatures with non-negative least squares, and each mutation type's
+#' probability is divided among them in proportion to the fit. A true
+#' signature with no weight in the fit gets no piece. The pieces add up to
+#' the composite and keep its noise, and each gets the composite's exposure
+#' times its share of the composite.
 #'
 #' The run's summary, one row of \link{method_view_summary}, has these
 #' columns:
@@ -531,7 +532,9 @@ benchmark_get_entry <- function(full_benchmark, method_id){
 #' @param prediction \code{"Initial"} for the prediction before any benchmarking
 #' adjustments have been made, \code{"Intermediate"} for the prediction after
 #' duplicates have been adjusted but before composites are adjusted, or
-#' \code{"Final"} for the prediction at the end of the benchmarking adjustments. 
+#' \code{"Final"} for the prediction at the end of the benchmarking adjustments.
+#' Case is ignored, and \code{"Init"}, \code{"Inter"} and \code{"Fin"} are
+#' accepted too.
 #'
 #' @return A \code{\linkS4class{result_model}} object
 #' @examples
@@ -572,6 +575,8 @@ benchmark_get_prediction <- function(indv_benchmark, prediction){
 #' adjustments have been made, \code{"Intermediate"} for the signatures after
 #' duplicates have been adjusted but before composites are adjusted, or
 #' \code{"Final"} for the signatures at the end of the benchmarking adjustments.
+#' Case is ignored, and \code{"Init"}, \code{"Inter"} and \code{"Fin"} are
+#' accepted too.
 #' @param plotly If \code{TRUE}, the the plot will be made interactive
 #' using \code{\link[plotly]{plotly}}. Default \code{FALSE}.
 #' @param color_variable Name of the column in the variant annotation data.frame
@@ -667,6 +672,8 @@ benchmark_plot_signatures <- function(full_benchmark, method_id, prediction,
 #' adjustments have been made, \code{"Intermediate"} for the comparison after
 #' duplicates have been adjusted but before composites are adjusted, or
 #' \code{"Final"} for the comparison at the end of the benchmarking adjustments.
+#' Case is ignored, and \code{"Init"}, \code{"Inter"} and \code{"Fin"} are
+#' accepted too.
 #'
 #' @return A data.frame containing the comparison between true and predicted
 #' signatures
@@ -719,6 +726,8 @@ benchmark_get_comparison <- function(full_benchmark, method_id, prediction){
 #' adjustments have been made, \code{"Intermediate"} for the comparison after
 #' duplicates have been adjusted but before composites are adjusted, or
 #' \code{"Final"} for the comparison at the end of the benchmarking adjustments.
+#' Case is ignored, and \code{"Init"}, \code{"Inter"} and \code{"Fin"} are
+#' accepted too.
 #' @param decimals Specifies rounding for similarity metric displayed. Default
 #' \code{2}.
 #' @param same_scale If \code{TRUE}, the scale of the probability for each
@@ -809,6 +818,8 @@ benchmark_plot_comparison <- function(full_benchmark, method_id, prediction,
 #' adjustments have been made, \code{"Intermediate"} for the exposures after
 #' duplicates have been adjusted but before composites are adjusted, or
 #' \code{"Final"} for the exposures at the end of the benchmarking adjustments.
+#' Case is ignored, and \code{"Init"}, \code{"Inter"} and \code{"Fin"} are
+#' accepted too.
 #'
 #' @return Generates a  ggplot object
 #' @examples
@@ -1245,9 +1256,6 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
 # columns named by component; components with no weight get no piece.
 .split_composite <- function(composite, components) {
   weights <- lsei::nnls(components, composite)$x
-  if (sum(weights) == 0) {
-    weights <- rep(1, ncol(components))
-  }
   fitted <- sweep(components, 2, weights, "*")
   totals <- rowSums(fitted)
   shares <- fitted / totals
@@ -1475,8 +1483,8 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
 }
 
-# One row per true signature (and any other signature found), summarizing
-# the Final comparisons of all runs in 'benchmark'
+# One row per true signature, in their order, summarizing the Final
+# comparisons of all runs in 'benchmark'
 .signature_view_summary <- function(benchmark, prediction_modality) {
   runs <- indv_benchmarks(benchmark)
   truth <- get_model(ground_truth(benchmark), "ground_truth",
@@ -1484,8 +1492,7 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   comparisons <- lapply(runs, final_comparison)
   methods <- vapply(runs, method_id, character(1))
 
-  found_sigs <- unlist(lapply(comparisons, function(x) x$y_sig_name))
-  all_sigs <- unique(c(found_sigs, colnames(signatures(truth))))
+  all_sigs <- colnames(signatures(truth))
 
   rows <- lapply(all_sigs, function(sig) {
     # best cosine of 'sig' in each run that found it
