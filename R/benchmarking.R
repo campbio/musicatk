@@ -275,7 +275,7 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
   # correct duplicate signatures
   message("Correcting duplicates...")
   duplicates_corrected <- .correct_duplicates(
-    prediction, initial_comparison, truth_model
+    prediction, initial_comparison
   )
 
   # intermediate comparison of predicted and true signatures
@@ -918,19 +918,18 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
   # number of samples
   num_samples <- ncol(exposures(before))
   
-  # determine duplicate signatures
-  freq <- table(comparison$y_sig_name)
-  duplicated_signatures <- names(freq[freq > 1])
-  
+  # duplicate groups, as merged by benchmark()
+  groups <- .duplicate_groups(comparison)
+
   final_figures <- list()
-  
+
   # loop through duplicated signatures
-  for (duplicated_sig in duplicated_signatures){
-    
+  for (duplicated_sig in names(groups)) {
+
     before_exposures <- NULL
-    
+
     # signatures to combine
-    sigs_to_merge <- comparison[comparison$y_sig_name == duplicated_sig & !grepl("like", comparison$x_sig_name), 4]
+    sigs_to_merge <- groups[[duplicated_sig]]
     
     # get pre-merge exposures
     for (signature in sigs_to_merge){
@@ -965,17 +964,8 @@ benchmark_plot_duplicate_exposures <- function(full_benchmark, method_id){
     
     #print(before_plot)
     
-    # create new name for merged signature
-    new_sig_name <- "Merged Signature ("
-    for (sig in sigs_to_merge){
-      if (sig == sigs_to_merge[1]){
-        new_sig_name <- paste(new_sig_name, sig, sep = "")
-      }
-      else{
-        new_sig_name <- paste(new_sig_name, ".", sig, sep = "")
-      }
-    }
-    new_sig_name <- paste(new_sig_name, ")", sep = "")
+    # name of the merged signature
+    new_sig_name <- .merged_signature_name(sigs_to_merge)
     
     # get post-merge exposures
     tmp_exposures_list2 <- as.data.frame(as.vector(exposures(after)[new_sig_name,]))
@@ -1185,174 +1175,59 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   return(unname(stages[tolower(prediction)]))
 }
 
-# Function for addressing duplicates
-.correct_duplicates <- function(result, compare_cosmic_result, result_true){
-  
-  Sum <- NULL
-  Predicted <- NULL
-  True <- NULL
-  
+# Duplicate groups in 'comparison': each predicted signature joins the group
+# of the true signature it matches best (ties go to the earlier row), and a
+# true signature with two or more predicted signatures is duplicated. A list
+# named by true signature, in alphabetical order, of the predicted
+# signatures to merge, best match first.
+.duplicate_groups <- function(comparison) {
+  comparison <- comparison[order(comparison$cosine, decreasing = TRUE), ,
+                           drop = FALSE]
+  best <- comparison[!duplicated(comparison$x_sig_name), , drop = FALSE]
+  groups <- split(best$x_sig_name, best$y_sig_name)
+  return(groups[lengths(groups) > 1])
+}
+
+# Name of the signature merged from the duplicates 'sigs_to_merge'
+.merged_signature_name <- function(sigs_to_merge) {
+  return(paste0("Merged Signature (", paste(sigs_to_merge, collapse = "."),
+                ")"))
+}
+
+# Merge each group of duplicates in 'result' (see .duplicate_groups()) into
+# one signature, the exposure-weighted mean of the group, whose exposures
+# are the sum of the group's
+.correct_duplicates <- function(result, comparison) {
   exposures <- exposures(result)
   signatures <- signatures(result)
-  num_samples <- dim(exposures)[2]
-  
-  freq <- table(compare_cosmic_result$y_sig_name)
-  duplicated_signatures <- names(freq[freq > 1])
-  all_sigs_to_merge <- compare_cosmic_result[compare_cosmic_result$y_sig_name %in% duplicated_signatures & !grepl("like", compare_cosmic_result$x_sig_name), 4]
-  
-  corrected_sigs <- NULL
-  corrected_exposures <- NULL
-  
-  for (duplicated_sig in duplicated_signatures){
-    
-    duplicate_exposures_all <- NULL
-    
-    sigs_to_merge <- compare_cosmic_result[compare_cosmic_result$y_sig_name == duplicated_sig & !grepl("like", compare_cosmic_result$x_sig_name), 4]
-    
-    # add when removed the below
-    full_sig_names_to_merge <- sigs_to_merge
-    #sigs_to_merge <- str_remove(sigs_to_merge, "Signature")
-    
-    # convert sig numbers to full names
-    #full_sig_names_to_merge <- NULL
-    #for (sig_number in sigs_to_merge){
-    #  sig_name <- paste("Signature", sig_number, sep = "")
-    #  full_sig_names_to_merge <- c(full_sig_names_to_merge, sig_name)
-    #}
-    
-    sum <- 0
-    for (signature in full_sig_names_to_merge){
-      for (sample_index in 1:num_samples){
-        temp <- signatures[, signature] * exposures[signature, sample_index]
-        sum <- sum + temp
-      }
-      
-      tmp_exposures <- exposures[signature,]
-      tmp_exposures_list <- as.data.frame(as.vector(tmp_exposures))
-      true_exp <- .true_exposure(result_true, duplicated_sig,
-                                 colnames(exposures))
-      tmp_exposures_all <- cbind(tmp_exposures_list, as.data.frame(true_exp))
-      colnames(tmp_exposures_all) <- c("Predicted", "True")
-      tmp_exposures_all$Source <- signature
-      
-      duplicate_exposures_all <- rbind(duplicate_exposures_all, tmp_exposures_all)
-    }
-    
-    ## DOESNT WORK WHEN NOT ACTUALLY DUPICATE
-    rownames(duplicate_exposures_all) <- c(1: (num_samples * length(sigs_to_merge)))
-    
-    plot <- ggplot(duplicate_exposures_all, aes(x = Predicted, y = True)) + 
-      geom_point(size = 3) + 
-      facet_wrap(~Source, scales = "fixed") +
-      scale_x_continuous(labels = scales::comma, limits = c(0, max(max(duplicate_exposures_all$Predicted), max(duplicate_exposures_all$True)))) +
-      scale_y_continuous(labels = scales::comma,limits = c(0, max(max(duplicate_exposures_all$Predicted), max(duplicate_exposures_all$True)))) +
-      theme_classic() + 
-      labs(title=paste("Exposures of duplicated signature, ", duplicated_sig, sep = ""), 
-           subtitle = "Before merging",
-           x="Predicted Activity", y = "True Activity") + 
-      theme(text = element_text(size=15), axis.text = element_text(size = 15)) + 
-      geom_abline() + 
-      geom_smooth(method = "lm") +
-      theme(legend.title=element_blank())
-    
-    #print(plot)
-    
-    
-    total_sum <- sum(sum)
-    
-    normalized <- sum / total_sum
-    
-    merged_signature <- as.matrix(normalized)
-    
-    new_sig_name <- "Merged Signature ("
-    for (sig in sigs_to_merge){
-      if (sig == sigs_to_merge[1]){
-        new_sig_name <- paste(new_sig_name, sig, sep = "")
-      }
-      else{
-        new_sig_name <- paste(new_sig_name, ".", sig, sep = "")
-      }
-    }
-    new_sig_name <- paste(new_sig_name, ")", sep = "")
-    
-    colnames(merged_signature) <- new_sig_name
-    
-    corrected_sigs <- cbind(corrected_sigs, merged_signature)
-    
-    # update exposures
-    
-    merged_exposures <- 0
-    for (signature in full_sig_names_to_merge){
-      merged_exposures <- merged_exposures + exposures[signature,]
-    }
-    
-    merged_exposures <- t(as.matrix(merged_exposures))
-    
-    rownames(merged_exposures) <- new_sig_name
-    
-    corrected_exposures <- rbind(corrected_exposures, merged_exposures)
-    
-    # exposure plot after merging
-    
-    tmp_exposures_list <- as.data.frame(as.vector(merged_exposures))
-    true_exp <- .true_exposure(result_true, duplicated_sig,
-                               colnames(exposures))
-    tmp_exposures_all <- cbind(tmp_exposures_list, as.data.frame(true_exp))
-    colnames(tmp_exposures_all) <- c("Predicted", "True")
-    
-    rownames(tmp_exposures_all) <- c(1:num_samples)
-    
-    plot <- ggplot(tmp_exposures_all, aes(x = Predicted, y = True)) + 
-      geom_point(size = 3) + 
-      scale_x_continuous(labels = scales::comma, limits = c(0, max(max(tmp_exposures_all$Predicted), max(tmp_exposures_all$True)))) +
-      scale_y_continuous(labels = scales::comma, limits = c(0, max(max(tmp_exposures_all$Predicted), max(tmp_exposures_all$True)))) +
-      theme_classic() + 
-      labs(title=paste("Exposures of duplicated signature, ", duplicated_sig, sep = ""), 
-           subtitle = "After merging",
-           x="Predicted Activity (Merged)", y = "True Activity") + 
-      theme(text = element_text(size=15), axis.text = element_text(size = 15)) + 
-      geom_abline() + 
-      geom_smooth(method = "lm") +
-      theme(legend.title=element_blank())
-    
-    #print(plot)
-    
+  groups <- .duplicate_groups(comparison)
+
+  merged_sigs <- NULL
+  merged_exposures <- NULL
+  for (sigs_to_merge in groups) {
+    new_sig_name <- .merged_signature_name(sigs_to_merge)
+    group_exposures <- exposures[sigs_to_merge, , drop = FALSE]
+    merged <- signatures[, sigs_to_merge, drop = FALSE] %*%
+      rowSums(group_exposures)
+    merged <- merged / sum(merged)
+    colnames(merged) <- new_sig_name
+    merged_sigs <- cbind(merged_sigs, merged)
+    summed <- matrix(colSums(group_exposures), nrow = 1,
+                     dimnames = list(new_sig_name, colnames(exposures)))
+    merged_exposures <- rbind(merged_exposures, summed)
   }
-  
-  if (is.null(corrected_sigs) == FALSE){
-    
-    keep_sigs <- !colnames(signatures) %in% all_sigs_to_merge
-    unchanged_signatures <- as.data.frame(signatures)[, keep_sigs,
-                                                      drop = FALSE]
-    corrected_sigs <- cbind(unchanged_signatures, corrected_sigs)
-    
-    keep_rows <- !rownames(exposures) %in% all_sigs_to_merge
-    unchanged_exposures <- as.data.frame(exposures)[keep_rows, ,
-                                                    drop = FALSE]
-    corrected_exposures <- rbind(unchanged_exposures, corrected_exposures)
-    
-  }
-  
-  else{
-    
-    keep_sigs <- !colnames(signatures) %in% all_sigs_to_merge
-    unchanged_signatures <- as.data.frame(signatures)[, keep_sigs,
-                                                      drop = FALSE]
-    corrected_sigs <- unchanged_signatures
-    
-    keep_rows <- !rownames(exposures) %in% all_sigs_to_merge
-    unchanged_exposures <- as.data.frame(exposures)[keep_rows, ,
-                                                    drop = FALSE]
-    corrected_exposures <- unchanged_exposures
-    
-  }
-  
+
+  all_merged <- unlist(groups, use.names = FALSE)
+  keep_sigs <- !colnames(signatures) %in% all_merged
+  keep_rows <- !rownames(exposures) %in% all_merged
   duplicates_corrected <- result
-  signatures(duplicates_corrected) <- as.matrix(corrected_sigs)
-  exposures(duplicates_corrected) <- as.matrix(corrected_exposures)
-  
+  signatures(duplicates_corrected) <- cbind(
+    signatures[, keep_sigs, drop = FALSE], merged_sigs
+  )
+  exposures(duplicates_corrected) <- rbind(
+    exposures[keep_rows, , drop = FALSE], merged_exposures
+  )
   return(duplicates_corrected)
-  
 }
 
 # Function for addressing composites
@@ -1662,23 +1537,11 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
   # duplicate
   
-  num_duplicates <- 0
-  duplicated_signature_components <- character(0)
+  duplicated_signature_components <- unlist(
+    .duplicate_groups(comparison_results), use.names = FALSE
+  )
+  num_duplicates <- length(duplicated_signature_components)
 
-  freq <- table(comparison_results$y_sig_name)
-  
-  if(length(names(freq[freq > 1])) != 0){
-    duplicated_signatures <- names(freq[freq > 1])
-    duplicated_signature_components <- comparison_results[comparison_results$y_sig_name %in% duplicated_signatures, 4]
-    
-    for (duplicated_sig in duplicated_signatures){
-      sigs_to_merge <- comparison_results[comparison_results$y_sig_name == duplicated_sig 
-                                          & !grepl("like", comparison_results$x_sig_name), 4]
-      
-      num_duplicates <- num_duplicates + length(sigs_to_merge)
-    }
-  }
-  
   # composite
   
   freq <- table(comparison_results$x_sig_name)

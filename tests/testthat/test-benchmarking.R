@@ -323,3 +323,45 @@ test_that("A prediction with no match is recorded as a total miss (#200)", {
     regexp = "No predicted signature matches a true signature .*Initial"
   )
 })
+
+test_that("A predicted signature joins one duplicate group only (#188)", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS3", "SBS8")])
+  exposures <- truth$exposures
+  # P1 and P2 duplicate SBS3; P4 matches SBS3 (best) and SBS8
+  pred <- withr::with_seed(2, cbind(
+    P0 = noisy_sig(sigs[, "SBS1"]),
+    P1 = noisy_sig(sigs[, "SBS3"]),
+    P2 = noisy_sig(sigs[, "SBS3"]),
+    P3 = noisy_sig(sigs[, "SBS8"]),
+    P4 = noisy_sig((sigs[, "SBS3"] + sigs[, "SBS8"]) / 2)
+  ))
+  pred_exposures <- rbind(
+    P0 = exposures["SBS1", ],
+    P1 = exposures["SBS3", ] * 0.4,
+    P2 = exposures["SBS3", ] * 0.4,
+    P3 = exposures["SBS8", ] * 0.8,
+    P4 = (exposures["SBS3", ] + exposures["SBS8", ]) * 0.2
+  )
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+  bench <- run_benchmark(setup$bench, setup$prediction)
+  entry <- benchmark_get_entry(bench, "m")
+
+  expect_equal(
+    sum(exposures(intermediate_pred(entry))),
+    sum(exposures(initial_pred(entry)))
+  )
+  intermediate_sigs <- colnames(signatures(intermediate_pred(entry)))
+  expect_setequal(
+    intermediate_sigs, c("P0", "P3", "Merged Signature (P1.P2.P4)")
+  )
+  summary <- method_view_summary(bench)
+  expect_identical(summary[["Num Direct Matched"]], 2L)
+  expect_identical(summary[["Num Duplicates"]], 2L)
+  expect_identical(summary[["Num Dup/Comp"]], 1L)
+
+  # ggplot2 warns that the fitted lines leave the plots' fixed axes
+  plots <- suppressWarnings(benchmark_plot_duplicate_exposures(bench, "m"))
+  expect_length(plots, 1)
+})
