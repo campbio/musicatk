@@ -145,3 +145,29 @@ test_that("Benchmark functions accept subclasses of full_benchmark (#94)", {
     regexp = "is not a 'full_benchmark' object"
   )
 })
+
+test_that("Stage aliases work in every benchmark accessor (#193)", {
+  data(full_benchmark_example)
+  final <- benchmark_get_comparison(full_benchmark_example, "example_k8",
+    "Final"
+  )
+  for (alias in c("final", "Fin", "fin")) {
+    expect_identical(
+      benchmark_get_comparison(full_benchmark_example, "example_k8", alias),
+      final
+    )
+  }
+  entry <- benchmark_get_entry(full_benchmark_example, "example_k8")
+  expect_identical(
+    benchmark_get_comparison(full_benchmark_example, "example_k8", "init"),
+    initial_comparison(entry)
+  )
+  expect_identical(
+    benchmark_get_comparison(full_benchmark_example, "example_k8", "inter"),
+    intermediate_comparison(entry)
+  )
+  expect_error(
+    benchmark_get_comparison(full_benchmark_example, "example_k8", "last"),
+    regexp = "'prediction' must be one of"
+  )
+})

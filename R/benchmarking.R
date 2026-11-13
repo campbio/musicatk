@@ -518,21 +518,15 @@ benchmark_get_entry <- function(full_benchmark, method_id){
 #' @export
 benchmark_get_prediction <- function(indv_benchmark, prediction){
   
-  # check if prediction is one of Initial, Intermediate, or Final
-  valid <- c("Initial", "initial", "Init", "init", "Intermediate", "intermediate",
-             "Inter", "inter", "Final", "final", "Fin", "fin")
-  if (!(prediction %in% valid)){
-    stop("'prediction' must be one of: 'Initial', 'Intermediate', or 'Final'.")
-  }
+  # "Initial", "Intermediate" or "Final" (aliases accepted)
+  prediction <- .match_benchmark_stage(prediction)
   
   # access musica object for desired prediction
-  if (prediction %in% c("Initial", "initial", "Init", "init")){
+  if (prediction == "Initial") {
     result <- initial_pred(indv_benchmark)
-  }
-  else if (prediction %in% c("Intermediate", "intermediate", "Inter", "inter")){
+  } else if (prediction == "Intermediate") {
     result <- intermediate_pred(indv_benchmark)
-  }
-  else if (prediction %in% c("Final", "final", "Fin", "fin")){
+  } else {
     result <- final_pred(indv_benchmark)
   }
   return(result)
@@ -606,12 +600,8 @@ benchmark_plot_signatures <- function(full_benchmark, method_id, prediction,
     stop("'method_id' ", deparse(substitute(method_id)), " not found in ", deparse(substitute(full_benchmark)))
   }
   
-  # check if prediction is one of Initial, Intermediate, or Final
-  valid <- c("Initial", "initial", "Init", "init", "Intermediate", "intermediate",
-             "Inter", "inter", "Final", "final", "Fin", "fin")
-  if (!(prediction %in% valid)){
-    stop("'prediction' must be one of: 'Initial', 'Intermediate', or 'Final'.")
-  }
+  # "Initial", "Intermediate" or "Final" (aliases accepted)
+  prediction <- .match_benchmark_stage(prediction)
   
   # access individual benchmark object
   indv_benchmark <- benchmark_get_entry(full_benchmark, method_id)
@@ -673,24 +663,18 @@ benchmark_get_comparison <- function(full_benchmark, method_id, prediction){
     stop("'method_id' ", deparse(substitute(method_id)), " not found in ", deparse(substitute(full_benchmark)))
   }
   
-  # check if prediction is one of Initial, Intermediate, or Final
-  valid <- c("Initial", "initial", "Init", "init", "Intermediate", "intermediate",
-             "Inter", "inter", "Final", "final", "Fin", "fin")
-  if (!(prediction %in% valid)){
-    stop("'prediction' must be one of: 'Initial', 'Intermediate', or 'Final'.")
-  }
+  # "Initial", "Intermediate" or "Final" (aliases accepted)
+  prediction <- .match_benchmark_stage(prediction)
   
   # access individual benchmark object
   indv_benchmark <- benchmark_get_entry(full_benchmark, method_id)
   
   # access desired prediction
-  if (prediction == "Initial"){
+  if (prediction == "Initial") {
     comparison <- initial_comparison(indv_benchmark)
-  }
-  else if (prediction == "Intermediate"){
+  } else if (prediction == "Intermediate") {
     comparison <- intermediate_comparison(indv_benchmark)
-  }
-  else if (prediction == "Final"){
+  } else {
     comparison <- final_comparison(indv_benchmark)
   }
   
@@ -736,12 +720,8 @@ benchmark_plot_comparison <- function(full_benchmark, method_id, prediction,
     stop("'method_id' ", deparse(substitute(method_id)), " not found in ", deparse(substitute(full_benchmark)))
   }
   
-  # check if prediction is one of Initial, Intermediate, or Final
-  valid <- c("Initial", "initial", "Init", "init", "Intermediate", "intermediate",
-             "Inter", "inter", "Final", "final", "Fin", "fin")
-  if (!(prediction %in% valid)){
-    stop("'prediction' must be one of: 'Initial', 'Intermediate', or 'Final'.")
-  }
+  # "Initial", "Intermediate" or "Final" (aliases accepted)
+  prediction <- .match_benchmark_stage(prediction)
   
   comparison <- benchmark_get_comparison(full_benchmark, method_id, prediction)
   indv_benchmark <- benchmark_get_entry(full_benchmark, method_id)
@@ -826,12 +806,8 @@ benchmark_plot_exposures <- function(full_benchmark, method_id, prediction){
     stop("'method_id' ", deparse(substitute(method_id)), " not found in ", deparse(substitute(full_benchmark)))
   }
   
-  # check if prediction is one of Initial, Intermediate, or Final
-  valid <- c("Initial", "initial", "Init", "init", "Intermediate", "intermediate",
-             "Inter", "inter", "Final", "final", "Fin", "fin")
-  if (!(prediction %in% valid)){
-    stop("'prediction' must be one of: 'Initial', 'Intermediate', or 'Final'.")
-  }
+  # "Initial", "Intermediate" or "Final" (aliases accepted)
+  prediction <- .match_benchmark_stage(prediction)
   
   # access individual benchmark object
   indv_benchmark <- benchmark_get_entry(full_benchmark, method_id)
@@ -1181,6 +1157,24 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
 }
 
+
+# The benchmark stage that 'prediction' names: "Initial", "Intermediate" or
+# "Final". Also accepts "Init", "Inter" and "Fin", in any case.
+.match_benchmark_stage <- function(prediction) {
+  stages <- c(
+    initial = "Initial", init = "Initial",
+    intermediate = "Intermediate", inter = "Intermediate",
+    final = "Final", fin = "Final"
+  )
+  valid <- is.character(prediction) && length(prediction) == 1 &&
+    tolower(prediction) %in% names(stages)
+  if (!valid) {
+    stop(
+      "'prediction' must be one of: 'Initial', 'Intermediate', or 'Final'."
+    )
+  }
+  return(unname(stages[tolower(prediction)]))
+}
 
 # Function for addressing duplicates
 .correct_duplicates <- function(result, compare_cosmic_result, result_true){
