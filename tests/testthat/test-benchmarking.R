@@ -450,6 +450,31 @@ test_that("Composite pieces keep the composite's noise (#191)", {
   expect_length(plots, 1)
 })
 
+test_that("Splitting an unnormalised composite keeps the reconstruction", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS3", "SBS8")])
+  # P2's column sums to 2, as raw NMF signatures may
+  pred <- withr::with_seed(8, cbind(
+    P1 = noisy_sig(sigs[, "SBS1"]),
+    P2 = 2 * noisy_sig(rowMeans(sigs[, c("SBS3", "SBS8")]), 0.0005)
+  ))
+  pred_exposures <- rbind(
+    P1 = truth$exposures["SBS1", ],
+    P2 = colSums(truth$exposures[c("SBS3", "SBS8"), ]) / 2
+  )
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+  bench <- run_benchmark(setup$bench, setup$prediction, re_method = "raw")
+  entry <- benchmark_get_entry(bench, "m")
+  reconstruct <- function(model) {
+    signatures(model) %*%
+      exposures(model)[colnames(signatures(model)), , drop = FALSE]
+  }
+  expect_equal(
+    reconstruct(final_pred(entry)), reconstruct(intermediate_pred(entry))
+  )
+})
+
 test_that("A composite leaving one signature unchanged keeps its name (#192)", {
   data(cosmic_v2_sigs)
   sigs <- signatures(cosmic_v2_sigs)
@@ -526,7 +551,8 @@ test_that("predict_and_benchmark() benchmarks the model it discovers (#197)", {
       nstart = 1
     )
   ))
-  initial <- initial_pred(benchmark_get_entry(result, "lda2"))
+  expect_named(indv_benchmarks(result), "lda2.1")
+  initial <- initial_pred(benchmark_get_entry(result, "lda2.1"))
   expect_identical(model_id(initial), "lda2.1")
   expect_equal(
     signatures(initial), signatures(expected, "result", "SBS96", "lda2")
@@ -553,5 +579,25 @@ test_that("benchmark_plot_comparison() plots a stage with matches", {
   withr::defer(grDevices::dev.off())
   expect_no_error(
     benchmark_plot_comparison(full_benchmark_example, "example_k8", "final")
+  )
+})
+
+test_that("predict_and_benchmark() checks the benchmark before discovery", {
+  data(cosmic_v2_sigs)
+  truth <- sim_truth(signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2")])
+  bench <- create_benchmark(truth$signatures, truth$exposures, truth$counts,
+    "SBS96"
+  )
+  musica <- create_musica_from_counts(truth$counts, "SBS96")
+  local_mocked_bindings(
+    discover_signatures = function(...) stop("ran discovery")
+  )
+  expect_error(
+    predict_and_benchmark(musica, "DBS78", 2, 2, bench),
+    regexp = "'prediction_modality' is 'DBS78'"
+  )
+  expect_error(
+    predict_and_benchmark(musica, "SBS96", 2, 2, list()),
+    regexp = "'full_benchmark' must be a 'full_benchmark' object"
   )
 })

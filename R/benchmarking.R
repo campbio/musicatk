@@ -49,6 +49,27 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
   
 }
 
+# Stop unless 'full_benchmark' has the current summary format and a ground
+# truth of 'modality'
+.check_benchmark_modality <- function(full_benchmark, modality) {
+  # summaries were matrices before musicatk 2.7.18 (ADR 0004)
+  if (!is.data.frame(method_view_summary(full_benchmark))) {
+    stop(
+      "This full_benchmark was made with an older version of musicatk, ",
+      "which stored its summaries as matrices. Recreate it with ",
+      "create_benchmark()."
+    )
+  }
+  truth_musica <- ground_truth(full_benchmark)
+  if (is.null(get_modality(truth_musica, "ground_truth", modality))) {
+    stop(
+      "'prediction_modality' is '", modality, "', but the ground ",
+      "truth is '", paste(names(tables(truth_musica)), collapse = "', '"),
+      "'."
+    )
+  }
+}
+
 # The count-table name for a benchmark 'variant_class': "SBS96" or "DBS78"
 .benchmark_modality <- function(variant_class) {
   sbs <- c("snv", "SNV", "SNV96", "SBS", "SBS96")
@@ -218,31 +239,14 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
          "Use function 'create_benchmark' to initialize a 'full_benchmark' object")
   }
   
-  # summaries were matrices before musicatk 2.7.18 (ADR 0004)
-  if (!is.data.frame(method_view_summary(full_benchmark))) {
-    stop(
-      "This full_benchmark was made with an older version of musicatk, ",
-      "which stored its summaries as matrices. Recreate it with ",
-      "create_benchmark()."
-    )
-  }
+  # current format, and the ground truth's modality
+  .check_benchmark_modality(full_benchmark, prediction_modality)
 
   # check that prediction is a result model object
   if (!methods::is(prediction_musica, "musica")) {
     stop("'prediction' must be a 'musica' object.")
   }
   
-  # the prediction must be of the ground truth's modality
-  truth_musica <- ground_truth(full_benchmark)
-  if (is.null(get_modality(truth_musica, "ground_truth",
-                           prediction_modality))) {
-    stop(
-      "'prediction_modality' is '", prediction_modality, "', but the ground ",
-      "truth is '", paste(names(tables(truth_musica)), collapse = "', '"),
-      "'."
-    )
-  }
-
   # extract the result_model object containing the prediction to benchmark
   prediction <- get_model(prediction_musica, prediction_result_name, 
                           prediction_modality, prediction_model_id)
@@ -275,10 +279,9 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
             comparing benchmark runs with inconsistent thresholds.")
   }
   
-  # extract ground truth musica and model
-  truth <- truth_musica
-  truth_model <- get_model(truth, "ground_truth", prediction_modality,
-                           "ground_truth")
+  # extract the ground truth model
+  truth_model <- get_model(ground_truth(full_benchmark), "ground_truth",
+                           prediction_modality, "ground_truth")
 
   # initial comparison of predicted and true signatures
   message("\nComparing to true signatures (initial)...")
@@ -324,8 +327,7 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
   # create single benchmark object
   message("Creating individual benchmark object...")
   indv_benchmark <- new("single_benchmark", 
-                        initial_pred = get_model(prediction_musica, prediction_result_name,
-                                                 prediction_modality, prediction_model_id),
+                        initial_pred = prediction,
                         intermediate_pred = duplicates_corrected, 
                         final_pred = composites_corrected, initial_comparison = initial_comparison,
                         intermediate_comparison = duplicates_corrected_comparison,
@@ -448,6 +450,15 @@ predict_and_benchmark <- function(musica, modality,
                                   adjustment_threshold = 0.9, re_method = "prop",
                                   plot = FALSE, seed = 1, nstart = 10, par_cores = 1){
   
+  # check the benchmark before any discovery is run
+  if (!methods::is(full_benchmark, "full_benchmark")) {
+    stop(
+      "'full_benchmark' must be a 'full_benchmark' object. Use ",
+      "create_benchmark() to make one."
+    )
+  }
+  .check_benchmark_modality(full_benchmark, modality)
+
   # loop through k values
   for (k in seq(k_min, k_max)) {
 
@@ -472,7 +483,7 @@ predict_and_benchmark <- function(musica, modality,
                                 prediction_model_id = model_id,
                                 prediction_modality = modality,
                                 prediction_result_name = result_name,
-                                method_id = paste0(algorithm, k),
+                                method_id = model_id,
                                 threshold = threshold, 
                                 adjustment_threshold = adjustment_threshold,
                                 re_method = re_method,
@@ -1271,8 +1282,9 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
 }
 
 # Split each composite in 'result' (see .composite_pieces()) into pieces,
-# with .split_composite(). Each piece's exposure is the composite's times
-# the piece's share of it, so the reconstruction doesn't change.
+# with .split_composite(). Each piece's signature is normalised, and its
+# exposure is the composite's times the piece's sum, so the reconstruction
+# doesn't change (for a normalised composite, the sum is the piece's share).
 .correct_composites <- function(result, comparison, result_true) {
   exposures <- exposures(result)
   signatures <- signatures(result)
@@ -1287,7 +1299,7 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
       signatures(result_true)[, parts$true_sig, drop = FALSE]
     )
     piece_names <- parts$piece[match(colnames(split), parts$true_sig)]
-    fractions <- colSums(split) / sum(signatures[, composite])
+    fractions <- colSums(split)
     split <- sweep(split, 2, colSums(split), "/")
     colnames(split) <- piece_names
     piece_sigs <- cbind(piece_sigs, split)
@@ -1423,22 +1435,14 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   )
   num_duplicates <- length(duplicated_signature_components)
 
-  # composite
-  
-  freq <- table(comparison_results$x_sig_name)
-  composite_sigs <- names(freq[freq > 1])
-  num_composites <- length(composite_sigs)
-  
-  # dupcomp
-  
-  dupcomp_count <- 0
-  for (sig in composite_sigs) {
-    if (sig %in% duplicated_signature_components) {
-      dupcomp_count <- dupcomp_count + 1
-      num_composites <- num_composites - 1
-      num_duplicates <- num_duplicates - 1
-    }
-  }
+  # composites, as .correct_composites() finds them, and those that are
+  # also merged as duplicates (counted only as Dup/Comp)
+  composite_sigs <- unique(
+    .composite_pieces(comparison_results, predicted_sig_names)$composite
+  )
+  dupcomp_count <- sum(composite_sigs %in% duplicated_signature_components)
+  num_composites <- length(composite_sigs) - dupcomp_count
+  num_duplicates <- num_duplicates - dupcomp_count
   
   # matched
   
@@ -1495,10 +1499,13 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   all_sigs <- colnames(signatures(truth))
 
   rows <- lapply(all_sigs, function(sig) {
-    # best cosine of 'sig' in each run that found it
-    cs <- unlist(lapply(comparisons, .best_cosines, sig_names = sig))
-    found <- vapply(comparisons, function(x) sig %in% x$y_sig_name,
-                    logical(1))
+    # best cosine of 'sig' in each run, NA if the run missed it
+    best <- vapply(comparisons, function(x) {
+      cs <- .best_cosines(x, sig)
+      if (length(cs) == 0) NA_real_ else cs[[1]]
+    }, numeric(1))
+    found <- !is.na(best)
+    cs <- best[found]
     data.frame(
       "Times Found" = sum(found),
       "Times Missed" = sum(!found),
