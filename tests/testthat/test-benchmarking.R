@@ -447,3 +447,24 @@ test_that("Composite pieces keep the composite's noise (#191)", {
   plots <- suppressWarnings(benchmark_plot_composite_exposures(bench, "m"))
   expect_length(plots, 1)
 })
+
+test_that("A composite leaving one signature unchanged keeps its name (#192)", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS3", "SBS8")])
+  pred <- withr::with_seed(8, cbind(
+    P1 = noisy_sig(sigs[, "SBS1"]),
+    P2 = noisy_sig(rowMeans(sigs[, c("SBS3", "SBS8")]), 0.0005)
+  ))
+  pred_exposures <- rbind(
+    P1 = truth$exposures["SBS1", ],
+    P2 = colSums(truth$exposures[c("SBS3", "SBS8"), ])
+  )
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+  bench <- run_benchmark(setup$bench, setup$prediction)
+  final <- final_pred(benchmark_get_entry(bench, "m"))
+  expect_setequal(
+    colnames(signatures(final)), c("P1", "SBS3_like", "SBS8_like")
+  )
+  expect_identical(rownames(exposures(final)), colnames(signatures(final)))
+})
