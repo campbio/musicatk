@@ -260,26 +260,10 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
     message("No method_id provided, automatically generated method_id: ", method_id)
   }
   
-  # check if ID is unique
-  if (method_id %in% names(indv_benchmarks(full_benchmark))){
-    original_id <- method_id
-    
-    # update id to be unique
-    tag <- 1
-    while (method_id %in% names(indv_benchmarks(full_benchmark))){
-      if (tag > 1){
-        method_id <- substr(method_id, 1, nchar(method_id)-2)
-      }
-      method_id <- paste(method_id, ".", tag, sep = "")
-      tag <- tag + 1
-    }
-    
-    # display message that ID was not unique and was updated
-    message("method_id ", original_id, " already exists. method_id updated to ", 
-            method_id)
-    
-  }
-  
+  # make the ID unique: '<method_id>.<n>' if it is already used
+  method_id <- .unique_id(method_id, names(indv_benchmarks(full_benchmark)),
+                          "method_id")
+
   if (threshold != 0.8){
     warning("Default threshold overriden. Interpret results with caution if 
             comparing benchmark runs with inconsistent thresholds.")

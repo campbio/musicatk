@@ -1,6 +1,21 @@
 #' @importFrom NMF nmf
 NULL
 
+# Return 'id', or '<id>.<n>' with the smallest n not in 'existing'; a
+# message naming 'label' says when the ID was changed
+.unique_id <- function(id, existing, label) {
+  if (!id %in% existing) {
+    return(id)
+  }
+  tag <- 1
+  while (paste0(id, ".", tag) %in% existing) {
+    tag <- tag + 1
+  }
+  new_id <- paste0(id, ".", tag)
+  message(label, " ", id, " already exists. ", label, " updated to ", new_id)
+  return(new_id)
+}
+
 # Return 'model_id', or '<model_id>.<n>' with the smallest n not already
 # used by a model in 'result_name' and 'modality' of 'musica'
 .unique_model_id <- function(musica, result_name, modality, model_id) {
@@ -8,18 +23,7 @@ NULL
   if (!is.null(result_list(musica)[[result_name]])) {
     existing <- names(get_modality(musica, result_name, modality))
   }
-  if (!model_id %in% existing) {
-    return(model_id)
-  }
-  tag <- 1
-  while (paste0(model_id, ".", tag) %in% existing) {
-    tag <- tag + 1
-  }
-  new_id <- paste0(model_id, ".", tag)
-  message(
-    "model_id ", model_id, " already exists. model_id updated to ", new_id
-  )
-  return(new_id)
+  return(.unique_id(model_id, existing, "model_id"))
 }
 
 # Names of the samples (columns) of 'counts_table' with at least one

@@ -469,7 +469,7 @@ test_that("A composite leaving one signature unchanged keeps its name (#192)", {
   expect_identical(rownames(exposures(final)), colnames(signatures(final)))
 })
 
-test_that("Summaries count each true signature once, at the Final stage (#198)", {
+test_that("Summaries count each true signature once, in Final (#198)", {
   data(cosmic_v2_sigs)
   sigs <- signatures(cosmic_v2_sigs)
   truth <- sim_truth(sigs[, c("SBS1", "SBS3", "SBS8")])
@@ -529,4 +529,17 @@ test_that("predict_and_benchmark() benchmarks the model it discovers (#197)", {
   expect_equal(
     signatures(initial), signatures(expected, "result", "SBS96", "lda2")
   )
+})
+
+test_that("benchmark() makes method_id unique past eleven repeats (#148)", {
+  data(cosmic_v2_sigs)
+  truth <- sim_truth(signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2")])
+  setup <- setup_benchmark(truth, truth$signatures, truth$exposures)
+  bench <- run_benchmark(setup$bench, setup$prediction)
+  entry <- benchmark_get_entry(bench, "m")
+  repeats <- rep(list(entry), 11)
+  names(repeats) <- c("m", paste0("m.", 1:10))
+  indv_benchmarks(bench) <- repeats
+  bench <- run_benchmark(bench, setup$prediction)
+  expect_identical(utils::tail(names(indv_benchmarks(bench)), 1), "m.11")
 })
