@@ -287,8 +287,7 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
   # correct composite signatures
   message("Correcting composites...")
   composites_corrected <- .correct_composites(
-    duplicates_corrected, duplicates_corrected_comparison,
-    musica = prediction_musica, truth_model
+    duplicates_corrected, duplicates_corrected_comparison, truth_model
   )
 
   # final comparison between predicted and true signatures
@@ -1050,108 +1049,54 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   # pre correction comparison between predicted and true signatures
   comparison <- intermediate_comparison(indv_benchmark)
   
-  # number of samples
-  num_samples <- ncol(exposures(before))
-  
-  # find composite signatures
-  freq <- table(comparison$x_sig_name)
-  composite_signatures <- names(freq[freq > 1])
-  
-  count <- 1
-  
+  # composites and their pieces, as split by benchmark()
+  pieces <- .composite_pieces(comparison, colnames(signatures(before)))
+
   final_figures <- list()
-  
+
   # loop through composite signatures
-  for (composite_sig in composite_signatures){
-    
+  for (composite_sig in unique(pieces$composite)) {
+    parts <- pieces[pieces$composite == composite_sig, , drop = FALSE]
+
+    # pre-correction exposures: the composite against each component
     before_exposures <- NULL
-    
-    # list of SBS signatures that are the components of this composite signature
-    sig_components <- comparison[comparison$x_sig_name == composite_sig, 5]
-    
-    for (component_index in 1:length(sig_components)){
-      
-      # pre-correction exposures
-      tmp_exp <- exposures(before)[composite_sig,]
-      tmp_exp_list <- as.data.frame(as.vector(tmp_exp))
-      true_exp <- .true_exposure(result_true, sig_components[component_index],
-                                 colnames(exposures(before)))
-      tmp_exp_all <- cbind(tmp_exp_list, as.data.frame(true_exp))
-      colnames(tmp_exp_all) <- c("Predicted", "True")
-      tmp_exp_all$Source <- sig_components[component_index]
-      
-      before_exposures <- rbind(before_exposures, tmp_exp_all)
-      
+    for (true_sig in parts$true_sig) {
+      before_exposures <- rbind(before_exposures, data.frame(
+        Predicted = as.vector(exposures(before)[composite_sig, ]),
+        True = .true_exposure(result_true, true_sig,
+                              colnames(exposures(before))),
+        Source = true_sig
+      ))
     }
-    
-    rownames(before_exposures) <- c(1: (num_samples * length(sig_components)))
-    
+
     # plot pre-correction exposures
-    before_plot <- ggplot(before_exposures, aes(x = Predicted, y = True)) + 
-      geom_point(size = 3) + 
-      facet_wrap(~Source, scales = "fixed") +
-      scale_x_continuous(labels = scales::comma, limits = c(0, max(max(before_exposures$Predicted), max(before_exposures$True)))) +
-      scale_y_continuous(labels = scales::comma, limits = c(0, max(max(before_exposures$Predicted), max(before_exposures$True)))) +
-      theme_classic() + 
-      labs(title=paste("Exposures of composite signature, ", composite_sig, sep = ""), 
-           subtitle = "Before decomposing",
-           x="Predicted Activity", y = "True Activity") + 
-      theme(text = element_text(size=15), axis.text = element_text(size = 15)) + 
-      geom_abline() + 
-      geom_smooth(method = "lm") +
-      theme(legend.title=element_blank())
-    
-    #print(before_plot)
-    
-    colnames <- NULL
-    for (component in sig_components){
-      #colnames <- c(colnames, paste("Signature", component, "_like", sep = ""))
-      colnames <- c(colnames, paste(component, "_like", sep = ""))
-      
-    }
-    colnames <- colnames[colnames %in% rownames(exposures(after))]
-    sig_components <- gsub("_like", "", colnames)
-    
+    before_plot <- .composite_exposure_plot(
+      before_exposures, composite_sig, "Before decomposing"
+    )
+
+    # post-correction exposures: each piece against its true signature
+    parts <- parts[parts$piece %in% rownames(exposures(after)), ,
+                   drop = FALSE]
     after_exposures <- NULL
-    
-    for (component_index in 1:length(sig_components)){
-      
-      # post-correction exposure
-      tmp_exp <- exposures(after)[colnames[component_index],]
-      tmp_exp_list <- as.data.frame(as.vector(tmp_exp))
-      true_exp <- .true_exposure(result_true, sig_components[component_index],
-                                 colnames(exposures(after)))
-      tmp_exp_all <- cbind(tmp_exp_list, as.data.frame(true_exp))
-      colnames(tmp_exp_all) <- c("Predicted", "True")
-      tmp_exp_all$Source <- sig_components[component_index]
-      
-      after_exposures <- rbind(after_exposures, tmp_exp_all)
-      
+    for (index in seq_len(nrow(parts))) {
+      after_exposures <- rbind(after_exposures, data.frame(
+        Predicted = as.vector(exposures(after)[parts$piece[index], ]),
+        True = .true_exposure(result_true, parts$true_sig[index],
+                              colnames(exposures(after))),
+        Source = parts$true_sig[index]
+      ))
     }
-    
+
     # plot post-correction exposures
-    after_plot <- ggplot(after_exposures, aes(x = Predicted, y = True)) + 
-      geom_point(size = 3) + 
-      facet_wrap(~Source, scales = "fixed") +
-      scale_x_continuous(labels = scales::comma, limits = c(0, max(max(after_exposures$Predicted), max(after_exposures$True)))) +
-      scale_y_continuous(labels = scales::comma, limits = c(0, max(max(after_exposures$Predicted), max(after_exposures$True)))) +
-      theme_classic() + 
-      labs(title=paste("Exposures of composite signature, ", composite_sig, sep = ""), 
-           subtitle = "After decomposing",
-           x="Predicted Activity", y = "True Activity") + 
-      theme(text = element_text(size=15), axis.text = element_text(size = 15)) + 
-      geom_abline() + 
-      geom_smooth(method = "lm") +
-      theme(legend.title=element_blank())
-    
-    #print(after_plot)
-    
+    after_plot <- .composite_exposure_plot(
+      after_exposures, composite_sig, "After decomposing"
+    )
+
     figure <- ggpubr::ggarrange(before_plot, after_plot, ncol = 2, nrow = 1)
-    
+
     final_figures <- append(final_figures, list(figure))
-    
   }
-  
+
   return(final_figures)
   
 }
@@ -1230,213 +1175,112 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   return(duplicates_corrected)
 }
 
-# Function for addressing composites
-.correct_composites <- function(result, compare_cosmic_result, musica, result_true){
-  
-  Sum <- NULL
-  Predicted <- NULL
-  True <- NULL
-  
+# Predicted vs true exposures of a composite signature, one facet per true
+# signature, before or after it is split
+.composite_exposure_plot <- function(plot_df, composite_sig, subtitle) {
+  Predicted <- NULL # nolint: object_name_linter.
+  True <- NULL # nolint: object_name_linter.
+  limit <- max(plot_df$Predicted, plot_df$True)
+  plot <- ggplot(plot_df, aes(x = Predicted, y = True)) +
+    geom_point(size = 3) +
+    facet_wrap(~Source, scales = "fixed") +
+    scale_x_continuous(labels = scales::comma, limits = c(0, limit)) +
+    scale_y_continuous(labels = scales::comma, limits = c(0, limit)) +
+    theme_classic() +
+    labs(
+      title = paste0("Exposures of composite signature, ", composite_sig),
+      subtitle = subtitle,
+      x = "Predicted Activity", y = "True Activity"
+    ) +
+    theme(text = element_text(size = 15), axis.text = element_text(size = 15)) +
+    geom_abline() +
+    geom_smooth(method = "lm") +
+    theme(legend.title = element_blank())
+  return(plot)
+}
+
+# The composites in 'comparison' (predicted signatures matching two or more
+# true signatures, in alphabetical order) and the piece each is split into
+# per true signature (in comparison order): a data.frame with columns
+# composite, true_sig and piece. Pieces are named "<true signature>_like",
+# made unique against each other and the other names in 'signature_names'.
+.composite_pieces <- function(comparison, signature_names) {
+  counts <- table(comparison$x_sig_name)
+  composites <- names(counts[counts > 1])
+  rows <- comparison[comparison$x_sig_name %in% composites, , drop = FALSE]
+  rows <- rows[order(match(rows$x_sig_name, composites)), , drop = FALSE]
+  others <- setdiff(signature_names, composites)
+  names <- make.unique(c(others, paste0(rows$y_sig_name, "_like")))
+  return(data.frame(
+    composite = rows$x_sig_name,
+    true_sig = rows$y_sig_name,
+    piece = names[length(others) + seq_len(nrow(rows))],
+    stringsAsFactors = FALSE
+  ))
+}
+
+# Split the composite signature 'composite' (a probability vector) into one
+# piece per true signature in the columns of 'components'. The composite is
+# fitted with NNLS, and each motif's probability is divided among the
+# components in proportion to their fitted parts, so the pieces add up to
+# the composite and keep its noise. Returns the unnormalised pieces as
+# columns named by component; components with no weight get no piece.
+.split_composite <- function(composite, components) {
+  weights <- lsei::nnls(components, composite)$x
+  if (sum(weights) == 0) {
+    weights <- rep(1, ncol(components))
+  }
+  fitted <- sweep(components, 2, weights, "*")
+  totals <- rowSums(fitted)
+  shares <- fitted / totals
+  # motifs that no component fits are divided by the overall weights
+  unfitted <- totals == 0
+  if (any(unfitted)) {
+    shares[unfitted, ] <- matrix(weights / sum(weights), nrow = sum(unfitted),
+                                 ncol = ncol(components), byrow = TRUE)
+  }
+  pieces <- composite * shares
+  colnames(pieces) <- colnames(components)
+  return(pieces[, weights > 0, drop = FALSE])
+}
+
+# Split each composite in 'result' (see .composite_pieces()) into pieces,
+# with .split_composite(). Each piece's exposure is the composite's times
+# the piece's share of it, so the reconstruction doesn't change.
+.correct_composites <- function(result, comparison, result_true) {
   exposures <- exposures(result)
   signatures <- signatures(result)
-  num_samples <- dim(exposures)[2]
-  
-  freq <- table(compare_cosmic_result$x_sig_name)
-  composite_signatures <- names(freq[freq > 1])
-  #all_sigs_to_merge <- compare_cosmic_result[compare_cosmic_result$y_sig_name == duplicated_signatures, 4]
-  
-  corrected_sigs <- NULL
-  corrected_exposures <- NULL
-  
-  for (composite_sig in composite_signatures){
-    
-    composite_exp_all <- NULL
-    
-    # the full signature to separate
-    sig_to_separate <- signatures(result)[, composite_sig]
-    exposures_to_separate <- exposures(result)[composite_sig,]
-    
-    # list of SBS signatures that are the componenets of this composite signature
-    sig_components <- compare_cosmic_result[compare_cosmic_result$x_sig_name == composite_sig, 5]
-    
-    # number of components in this composite sig
-    num_components <- length(sig_components)
-    
-    # data frame of full signatures of components
-    component_signatures <- as.data.frame(signatures(result_true)[,sig_components]) # GENERALIZE
-    
-    separated_sigs <- matrix(ncol = 0, nrow = 96)
-    separated_exposures <- matrix(ncol = num_samples, nrow = 0)
-    
-    # perform nnls   
-    nnls_result <- lsei::nnls(as.matrix(component_signatures), as.vector(sig_to_separate))
-    
-    for (component_index in 1:num_components){
-      
-      new_signature <- component_signatures[ , component_index] * nnls_result$x[component_index]
-      if (sum(new_signature) != 0){
-        separated_sigs <- cbind(separated_sigs, new_signature)
-      }
-      else{
-        num_components <- num_components - 1
-        sig_components <- sig_components[-component_index]
-      }
-      
-    }
-    
-    # renormalize
-    separated_sigs <- prop.table(separated_sigs,2)
-    
-    # update exposures
-    
-    num_samples <- dim(musica@count_tables$SBS96@count_table)[2]
-    
-    nnls_exposure_results <- data.frame(factor1 = numeric(), factor2 = numeric())
-    
-    for (sample_index in 1:num_samples){
-      
-      #A <- as.matrix(signatures(result_true))
-      A <- as.matrix(separated_sigs)
-      #b <- as.vector(sig_to_separate * exposures_to_separate[sample_index])
-      b <- as.vector(musica@count_tables$SBS96@count_table[,sample_index])
-      
-      nnls_exposure_result <- lsei::nnls(A, b)
-      
-      nnls_exposure_results[sample_index,1] <- nnls_exposure_result$x[1]
-      nnls_exposure_results[sample_index,2] <- nnls_exposure_result$x[2]
-      
-      
-    }
-    
-    #sig_component_result <- predict_exposure(musica = musica, g = "hg38", table_name = "SBS96", 
-    #signature_res = cosmic_v2_sigs, 
-    #signatures_to_use =  sig_components, algorithm = "lda")
-    
-    #tmp_exposures <- exposures(sig_component_result)
-    #tmp_exposures <- as.data.frame(t(tmp_exposures))
-    
-    #tmp_exposures$Sum <- rowSums(tmp_exposures)
-    
-    # added
-    #nnls_exposure_results <- nnls_exposure_results[,c(6,7)]
-    #nnls_exposure_results <- nnls_exposure_results[,c(2,1)]
-    
-    nnls_exposure_results$Sum <- rowSums(nnls_exposure_results)
-    
-    for (component_index in 1:num_components){
-      
-      # calculate the percent of the sum that each of the 96 channels contributes (reword this i know it doesnt make sense)
-      #tmp_exposures <- transform(tmp_exposures, percent1 = tmp_exposures[component_index] / Sum)
-      nnls_exposure_results <- transform(nnls_exposure_results, percent1 = nnls_exposure_results[component_index] / Sum)
-      
-      #separated_exposures <- rbind(separated_exposures, 
-      #exposures_to_separate * tmp_exposures[, component_index + num_components + 1])
-      separated_exposures <- rbind(separated_exposures, 
-                                   exposures_to_separate * nnls_exposure_results[, component_index + num_components + 1])
-      
-      
-      # for plotting
-      tmp_exp <- exposures[composite_sig,]
-      tmp_exp_list <- as.data.frame(as.vector(tmp_exp))
-      true_exp <- .true_exposure(result_true, sig_components[component_index],
-                                 colnames(exposures))
-      tmp_exp_all <- cbind(tmp_exp_list, as.data.frame(true_exp)) # GENERALIZE
-      colnames(tmp_exp_all) <- c("Predicted", "True")
-      tmp_exp_all$Source <- sig_components[component_index]
-      
-      composite_exp_all <- rbind(composite_exp_all, tmp_exp_all)
-      
-    }
-    
-    rownames(composite_exp_all) <- c(1: (num_samples * num_components))
-    
-    plot <- ggplot(composite_exp_all, aes(x = Predicted, y = True)) + 
-      geom_point(size = 3) + 
-      facet_wrap(~Source, scales = "fixed") +
-      scale_x_continuous(labels = scales::comma, limits = c(0, max(max(composite_exp_all$Predicted), max(composite_exp_all$True)))) +
-      scale_y_continuous(labels = scales::comma, limits = c(0, max(max(composite_exp_all$Predicted), max(composite_exp_all$True)))) +
-      theme_classic() + 
-      labs(title=paste("Exposures of composite signature, ", composite_sig, sep = ""), 
-           subtitle = "Before decomposing",
-           x="Predicted Activity", y = "True Activity") + 
-      theme(text = element_text(size=15), axis.text = element_text(size = 15)) + 
-      geom_abline() + 
-      geom_smooth(method = "lm") +
-      theme(legend.title=element_blank())
-    
-    #print(plot)
-    
-    colnames <- NULL
-    for (component in sig_components){
-      #colnames <- c(colnames, paste("Signature", component, "_like", sep = ""))
-      colnames <- c(colnames, paste(component, "_like", sep = ""))
-      
-    }
-    
-    colnames(separated_sigs) <- colnames
-    rownames(separated_exposures) <- colnames
-    
-    corrected_sigs <- cbind(corrected_sigs, separated_sigs)
-    corrected_exposures <- rbind(corrected_exposures, separated_exposures)
-    
-    # plot exposures after separation
-    
-    plot_exposures <- composite_exp_all
-    plot_exposures$Predicted <- c(t(separated_exposures))
-    
-    plot <- ggplot(plot_exposures, aes(x = Predicted, y = True)) + 
-      geom_point(size = 3) + 
-      facet_wrap(~Source, scales = "fixed") +
-      scale_x_continuous(labels = scales::comma, limits = c(0, max(max(plot_exposures$Predicted), max(plot_exposures$True)))) +
-      scale_y_continuous(labels = scales::comma, limits = c(0, max(max(plot_exposures$Predicted), max(plot_exposures$True)))) +
-      theme_classic() + 
-      labs(title=paste("Exposures of composite signature, ", composite_sig, sep = ""), 
-           subtitle = "After decomposing",
-           x="Predicted Activity", y = "True Activity") + 
-      theme(text = element_text(size=15), axis.text = element_text(size = 15)) + 
-      geom_abline() + 
-      geom_smooth(method = "lm") +
-      theme(legend.title=element_blank())
-    
-    #print(plot)
-    
-    
+  pieces <- .composite_pieces(comparison, colnames(signatures))
+
+  piece_sigs <- NULL
+  piece_exposures <- NULL
+  for (composite in unique(pieces$composite)) {
+    parts <- pieces[pieces$composite == composite, , drop = FALSE]
+    split <- .split_composite(
+      signatures[, composite],
+      signatures(result_true)[, parts$true_sig, drop = FALSE]
+    )
+    piece_names <- parts$piece[match(colnames(split), parts$true_sig)]
+    fractions <- colSums(split) / sum(signatures[, composite])
+    split <- sweep(split, 2, colSums(split), "/")
+    colnames(split) <- piece_names
+    piece_sigs <- cbind(piece_sigs, split)
+    split_exposures <- outer(fractions, exposures[composite, ])
+    dimnames(split_exposures) <- list(piece_names, colnames(exposures))
+    piece_exposures <- rbind(piece_exposures, split_exposures)
   }
-  
-  if (is.null(corrected_sigs) == FALSE){
-    
-    keep_sigs <- !colnames(signatures) %in% composite_signatures
-    unchanged_signatures <- as.data.frame(signatures)[, keep_sigs,
-                                                      drop = FALSE]
-    corrected_sigs <- cbind(unchanged_signatures, corrected_sigs)
-    
-    keep_rows <- !rownames(exposures) %in% composite_signatures
-    unchanged_exposures <- as.data.frame(exposures)[keep_rows, ,
-                                                    drop = FALSE]
-    corrected_exposures <- rbind(unchanged_exposures, corrected_exposures)
-    
-  }
-  
-  else{
-    
-    keep_sigs <- !colnames(signatures) %in% composite_signatures
-    unchanged_signatures <- as.data.frame(signatures)[, keep_sigs,
-                                                      drop = FALSE]
-    corrected_sigs <- unchanged_signatures
-    
-    keep_rows <- !rownames(exposures) %in% composite_signatures
-    unchanged_exposures <- as.data.frame(exposures)[keep_rows, ,
-                                                    drop = FALSE]
-    corrected_exposures <- unchanged_exposures
-    
-  }
-  
+
+  composites <- unique(pieces$composite)
+  keep_sigs <- !colnames(signatures) %in% composites
+  keep_rows <- !rownames(exposures) %in% composites
   composites_corrected <- result
-  signatures(composites_corrected) <- as.matrix(corrected_sigs)
-  exposures(composites_corrected) <- as.matrix(corrected_exposures)
-  
+  signatures(composites_corrected) <- cbind(
+    signatures[, keep_sigs, drop = FALSE], piece_sigs
+  )
+  exposures(composites_corrected) <- rbind(
+    exposures[keep_rows, , drop = FALSE], piece_exposures
+  )
   return(composites_corrected)
-  
 }
 
 # Matches between the signatures of 'result' and the true signatures of

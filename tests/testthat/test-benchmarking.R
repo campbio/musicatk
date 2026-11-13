@@ -365,3 +365,85 @@ test_that("A predicted signature joins one duplicate group only (#188)", {
   plots <- suppressWarnings(benchmark_plot_duplicate_exposures(bench, "m"))
   expect_length(plots, 1)
 })
+
+# Benchmark of SBS1, SBS2 (predicted as such) and a composite 'P3' of the
+# true signatures 'parts'
+composite_benchmark <- function(parts, sd = 0.0005, seed = 3) {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS2", parts)])
+  pred <- withr::with_seed(seed, cbind(
+    P1 = noisy_sig(sigs[, "SBS1"]),
+    P2 = noisy_sig(sigs[, "SBS2"]),
+    P3 = noisy_sig(rowMeans(sigs[, parts]), sd)
+  ))
+  pred_exposures <- rbind(
+    P1 = truth$exposures["SBS1", ],
+    P2 = truth$exposures["SBS2", ],
+    P3 = colSums(truth$exposures[parts, ])
+  )
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+  return(run_benchmark(setup$bench, setup$prediction))
+}
+
+test_that("A composite of three true signatures is split in three (#189)", {
+  bench <- composite_benchmark(c("SBS3", "SBS5", "SBS8"))
+  entry <- benchmark_get_entry(bench, "m")
+  final <- final_pred(entry)
+  pieces <- c("SBS3_like", "SBS5_like", "SBS8_like")
+  expect_setequal(colnames(signatures(final)), c("P1", "P2", pieces))
+  expect_equal(
+    colSums(exposures(final)[pieces, ]),
+    exposures(intermediate_pred(entry))["P3", ]
+  )
+})
+
+test_that("Composites of DBS78 signatures are split (#190)", {
+  data(cosmic_v3_dbs_sigs)
+  dbs <- signatures(cosmic_v3_dbs_sigs)
+  truth <- sim_truth(dbs[, c("DBS2", "DBS3", "DBS10")])
+  pred <- withr::with_seed(7, cbind(
+    P1 = noisy_sig(dbs[, "DBS2"]),
+    P2 = noisy_sig(0.6 * dbs[, "DBS3"] + 0.4 * dbs[, "DBS10"], 0.0005)
+  ))
+  pred_exposures <- rbind(
+    P1 = truth$exposures["DBS2", ],
+    P2 = colSums(truth$exposures[c("DBS3", "DBS10"), ])
+  )
+  setup <- setup_benchmark(truth, pred, pred_exposures, modality = "DBS78")
+  bench <- run_benchmark(setup$bench, setup$prediction, "DBS78")
+  final <- final_pred(benchmark_get_entry(bench, "m"))
+  expect_setequal(
+    colnames(signatures(final)), c("P1", "DBS3_like", "DBS10_like")
+  )
+})
+
+test_that("Composite pieces keep the composite's noise (#191)", {
+  bench <- composite_benchmark(c("SBS3", "SBS8"), sd = 0.004, seed = 5)
+  entry <- benchmark_get_entry(bench, "m")
+  final_comp <- benchmark_get_comparison(bench, "m", "Final")
+  pieces <- final_comp[grepl("_like$", final_comp$x_sig_name), ]
+  expect_setequal(pieces$x_sig_name, c("SBS3_like", "SBS8_like"))
+  # pieces are not copies of the true signatures
+  expect_true(all(pieces$cosine < 0.999))
+
+  # splitting doesn't change the reconstruction
+  reconstruct <- function(model) {
+    signatures(model) %*%
+      exposures(model)[colnames(signatures(model)), , drop = FALSE]
+  }
+  expect_equal(
+    reconstruct(final_pred(entry)), reconstruct(intermediate_pred(entry))
+  )
+  # each piece gets a fixed fraction of the composite's exposure
+  final_exposures <- exposures(final_pred(entry))
+  composite <- exposures(intermediate_pred(entry))["P3", ]
+  fraction <- final_exposures["SBS3_like", ] / composite
+  expect_equal(unname(fraction), rep(fraction[[1]], length(fraction)))
+  summary <- method_view_summary(bench)
+  expect_equal(summary[["Initial RE"]], summary[["Final RE"]])
+
+  # ggplot2 warns that the fitted lines leave the plots' fixed axes
+  plots <- suppressWarnings(benchmark_plot_composite_exposures(bench, "m"))
+  expect_length(plots, 1)
+})
