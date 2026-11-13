@@ -545,3 +545,13 @@ test_that("benchmark() makes method_id unique past eleven repeats (#148)", {
   bench <- run_benchmark(bench, setup$prediction)
   expect_identical(utils::tail(names(indv_benchmarks(bench)), 1), "m.11")
 })
+
+test_that("benchmark_plot_comparison() plots a stage with matches", {
+  data(full_benchmark_example)
+  path <- withr::local_tempfile(fileext = ".pdf")
+  grDevices::pdf(path)
+  withr::defer(grDevices::dev.off())
+  expect_no_error(
+    benchmark_plot_comparison(full_benchmark_example, "example_k8", "final")
+  )
+})
