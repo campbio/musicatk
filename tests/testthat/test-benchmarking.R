@@ -203,3 +203,13 @@ test_that("create_benchmark() stores the truth under the table name (#195)", {
     regexp = "'variant_class' must be"
   )
 })
+
+test_that("benchmark(plot = FALSE) draws nothing (#196)", {
+  data(cosmic_v2_sigs)
+  truth <- sim_truth(signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2")])
+  setup <- setup_benchmark(truth, truth$signatures, truth$exposures)
+  local_mocked_bindings(
+    .plot_compare_result_signatures = function(...) stop("drew a plot")
+  )
+  expect_no_error(run_benchmark(setup$bench, setup$prediction))
+})

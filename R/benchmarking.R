@@ -252,80 +252,44 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
             comparing benchmark runs with inconsistent thresholds.")
   }
   
-  # extract ground truth musica
-  truth <- ground_truth(full_benchmark)
-  
-  # temporary musica object for benchmarking
-  temp_musica <- prediction_musica
-  
-  # inital comparison of predicted and true signatures
+  # extract ground truth musica and model
+  truth <- truth_musica
+  truth_model <- get_model(truth, "ground_truth", prediction_modality,
+                           "ground_truth")
+
+  # initial comparison of predicted and true signatures
   message("\nComparing to true signatures (initial)...")
-  initial_comparison <- compare_results(musica = temp_musica, model_id = prediction_model_id, 
-                                        other_model_id = "ground_truth",
-                                        modality = prediction_modality, result_name = prediction_result_name, 
-                                        other_musica = truth, other_result_name = "ground_truth",
-                                        threshold = threshold, result_rename =
-                                          paste(prediction_model_id, "- Initial"),
-                                        other_result_rename =
-                                          "Ground Truth")
-  
-  # remove anything below 0.9 that already appears with at least 0.05 difference
-  initial_comparison <- .benchmark_comp_adj(initial_comparison, adjustment_threshold)
-  
+  initial_comparison <- .benchmark_compare(
+    prediction, truth_model, threshold, adjustment_threshold
+  )
+
   # correct duplicate signatures
   message("Correcting duplicates...")
-  duplicates_corrected <- .correct_duplicates(get_model(prediction_musica, prediction_result_name,
-                                                        prediction_modality, prediction_model_id),
-                                              initial_comparison,
-                                              get_model(truth, "ground_truth", prediction_modality, "ground_truth"))
-  
-  # add result_model with duplicates corrected to temp_musica
-  add_result(signatures(duplicates_corrected), exposures(duplicates_corrected), temp_musica, prediction_result_name,
-             prediction_modality, "duplicates_corrected")
-  
+  duplicates_corrected <- .correct_duplicates(
+    prediction, initial_comparison, truth_model
+  )
+
   # intermediate comparison of predicted and true signatures
   message("Comparing to true signatures (post duplicates corrected)...")
-  duplicates_corrected_comparison <- compare_results(musica = temp_musica, model_id = "duplicates_corrected",
-                                                     other_model_id = "ground_truth",
-                                                     modality = prediction_modality, result_name = prediction_result_name,
-                                                     other_musica = truth, other_result_name = "ground_truth",
-                                                     threshold = threshold, result_rename =
-                                                       paste(prediction_model_id, "- Intermediate"),
-                                                     other_result_rename =
-                                                       "Ground Truth")
-  
-  
-  # remove anything below 0.9 that already appears with at least 0.05 difference
-  duplicates_corrected_comparison <- .benchmark_comp_adj(duplicates_corrected_comparison, adjustment_threshold)
-  
+  duplicates_corrected_comparison <- .benchmark_compare(
+    duplicates_corrected, truth_model, threshold, adjustment_threshold
+  )
+
   # correct composite signatures
   message("Correcting composites...")
-  composites_corrected <- .correct_composites(get_model(temp_musica, prediction_result_name,
-                                                        prediction_modality, "duplicates_corrected"),
-                                              duplicates_corrected_comparison,
-                                              musica = temp_musica,
-                                              get_model(truth, "ground_truth", prediction_modality, "ground_truth"))
-  
-  # add result_model with composites corrected to temp_musica
-  add_result(signatures(composites_corrected), exposures(composites_corrected), temp_musica, prediction_result_name,
-             prediction_modality, "composites_corrected")
-  
+  composites_corrected <- .correct_composites(
+    duplicates_corrected, duplicates_corrected_comparison,
+    musica = prediction_musica, truth_model
+  )
+
   # final comparison between predicted and true signatures
   message("Comparing to true signatures (post composites corrected)...")
-  composites_corrected_comparison <- compare_results(musica = temp_musica, model_id = "composites_corrected",
-                                                     other_model_id = "ground_truth",
-                                                     modality = prediction_modality, result_name = prediction_result_name,
-                                                     other_musica = truth, other_result_name = "ground_truth",
-                                                     threshold = threshold, result_rename =
-                                                       paste(prediction_model_id, "- Final"),
-                                                     other_result_rename =
-                                                       "Ground Truth")
-  
-  # remove anything below 0.9 that already appears with at least 0.05 difference
-  composites_corrected_comparison <- .benchmark_comp_adj(composites_corrected_comparison, adjustment_threshold)
-  
+  composites_corrected_comparison <- .benchmark_compare(
+    composites_corrected, truth_model, threshold, adjustment_threshold
+  )
+
   # extract count table
-  count_table <- extract_count_tables(temp_musica)
+  count_table <- extract_count_tables(prediction_musica)
   count_table <- get_count_table(count_table[[prediction_modality]])
   
   # create summary matrix
@@ -1587,6 +1551,18 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
   return(composites_corrected)
   
+}
+
+# Matches between the signatures of 'result' and the true signatures of
+# 'truth' above 'threshold', without plotting, with low matches of a
+# predicted signature that also has a high one removed. No rows if nothing
+# matches.
+.benchmark_compare <- function(result, truth, threshold,
+                               adjustment_threshold) {
+  comparison <- .signature_matches(
+    signatures(result), signatures(truth), threshold = threshold
+  )
+  return(.benchmark_comp_adj(comparison, adjustment_threshold))
 }
 
 # Function for adjusting comparison 

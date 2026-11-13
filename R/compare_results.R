@@ -4,9 +4,18 @@ NULL
 sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
                         threshold = 0.9) {
   metric <- match.arg(metric)
+  comparison <- .signature_matches(sig1, sig2, metric, threshold)
+  if (nrow(comparison) == 0) {
+    stop("No matches found, try lowering threshold.")
+  }
+  return(comparison)
+}
 
-  sig1_names <- colnames(sig1)
-  sig2_names <- colnames(sig2)
+# Every pair of a signature (column) of 'sig1' and one of 'sig2' whose
+# similarity is above 'threshold', most similar first. A data.frame with
+# no rows when no pair is.
+.signature_matches <- function(sig1, sig2, metric = "cosine",
+                               threshold = 0.9) {
   if (nrow(sig1) != nrow(sig2)) {
     stop("Signatures must have the same number of motifs.")
   }
@@ -25,31 +34,23 @@ sig_compare <- function(sig1, sig2, metric = c("cosine", "jsd"),
     metric_name <- "cosine"
   }
 
-  comparison <- NULL
-  for (row in seq_len(nrow(matches))) {
-    line <- which(matches[row, ] > threshold)
-    if (length(line) > 0) {
-      for (match in line) {
-        comparison <- rbind(comparison, c(
-          matches[row, match], row, match,
-          sig1_names[row], sig2_names[match]
-        ))
-      }
-    }
-  }
-  if (is.null(comparison)) {
-    stop("No matches found, try lowering threshold.")
-  }
-  comparison <- data.frame(comparison, stringsAsFactors = FALSE)
+  # pairs in row order, then by column within a row
+  hits <- which(matches > threshold, arr.ind = TRUE)
+  hits <- hits[order(hits[, 1], hits[, 2]), , drop = FALSE]
+  comparison <- data.frame(
+    matches[hits],
+    as.numeric(hits[, 1]),
+    as.numeric(hits[, 2]),
+    as.character(colnames(sig1)[hits[, 1]]),
+    as.character(colnames(sig2)[hits[, 2]]),
+    stringsAsFactors = FALSE
+  )
   colnames(comparison) <- c(
     metric_name, "x_sig_index", "y_sig_index",
     "x_sig_name", "y_sig_name"
   )
-  comparison[[metric_name]] <- as.numeric(comparison[[metric_name]])
-  comparison$x_sig_index <- as.numeric(comparison$x_sig_index)
-  comparison$y_sig_index <- as.numeric(comparison$y_sig_index)
   comparison <- comparison[order(comparison[[metric_name]],
-                                 decreasing = TRUE), ]
+                                 decreasing = TRUE), , drop = FALSE]
   return(comparison)
 }
 
