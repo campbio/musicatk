@@ -171,3 +171,35 @@ test_that("Stage aliases work in every benchmark accessor (#193)", {
     regexp = "'prediction' must be one of"
   )
 })
+
+test_that("create_benchmark() stores the truth under the table name (#195)", {
+  data(cosmic_v2_sigs)
+  data(cosmic_v3_dbs_sigs)
+  truth <- sim_truth(signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2")])
+  setup <- setup_benchmark(truth, truth$signatures, truth$exposures,
+    modality = "SBS96", variant_class = "SBS"
+  )
+  truth_musica <- ground_truth(setup$bench)
+  expect_false(is.null(get_modality(truth_musica, "ground_truth", "SBS96")))
+  bench <- run_benchmark(setup$bench, setup$prediction, "SBS96")
+  expect_named(indv_benchmarks(bench), "m")
+  expect_error(
+    run_benchmark(setup$bench, setup$prediction, "DBS78"),
+    regexp = "'prediction_modality' .*DBS78.* ground truth .*SBS96"
+  )
+
+  dbs_truth <- sim_truth(signatures(cosmic_v3_dbs_sigs)[, c("DBS2", "DBS4")])
+  dbs_setup <- setup_benchmark(dbs_truth, dbs_truth$signatures,
+    dbs_truth$exposures,
+    modality = "DBS78"
+  )
+  dbs_bench <- run_benchmark(dbs_setup$bench, dbs_setup$prediction, "DBS78")
+  expect_named(indv_benchmarks(dbs_bench), "m")
+
+  expect_error(
+    create_benchmark(truth$signatures, truth$exposures, truth$counts,
+      "IND83"
+    ),
+    regexp = "'variant_class' must be"
+  )
+})

@@ -10,7 +10,10 @@
 #' names of \code{count_table}, and signature names the column names of
 #' \code{true_signatures}; they are matched by name, not position.
 #' @param count_table Summary table with per-sample un-normalized motif counts
-#' @param variant_class Mutations are SBS, DBS, or Indel.
+#' @param variant_class The count table: \code{"SBS96"} or \code{"DBS78"}.
+#' Aliases accepted by \link{create_musica_from_counts}, such as
+#' \code{"SBS"} or \code{"DBS"}, are stored under the table name, which is
+#' the \code{prediction_modality} to give to \link{benchmark}.
 #'
 #' @return A \code{\linkS4class{full_benchmark}} object
 #' @examples
@@ -24,7 +27,8 @@
 #' @export
 create_benchmark <- function(true_signatures, true_exposures, count_table, variant_class){
   
-  musica_truth <- create_musica_from_counts(count_table, variant_class)
+  modality <- .benchmark_modality(variant_class)
+  musica_truth <- create_musica_from_counts(count_table, modality)
   true_signatures <- as.matrix(true_signatures)
   # as.matrix() drops automatic data.frame row names, which are sample names
   exposure_matrix <- as.matrix(true_exposures)
@@ -36,13 +40,31 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
   )
   
   add_result(true_signatures, true_exposures, musica_truth, "ground_truth",
-             variant_class, "ground_truth")
+             modality, "ground_truth")
   
   # create benchmark object
   full_benchmark <- new("full_benchmark", ground_truth = musica_truth)
   
   return(full_benchmark)
   
+}
+
+# The count-table name for a benchmark 'variant_class': "SBS96" or "DBS78"
+.benchmark_modality <- function(variant_class) {
+  sbs <- c("snv", "SNV", "SNV96", "SBS", "SBS96")
+  dbs <- c("DBS", "dbs", "doublet", "DBS78")
+  if (is.character(variant_class) && length(variant_class) == 1) {
+    if (variant_class %in% sbs) {
+      return("SBS96")
+    }
+    if (variant_class %in% dbs) {
+      return("DBS78")
+    }
+  }
+  stop(
+    "'variant_class' must be \"SBS96\" or \"DBS78\" (or an alias such as ",
+    "\"SBS\" or \"DBS\")."
+  )
 }
 
 # True exposures as signatures x samples, rows and columns matched by name
@@ -97,8 +119,9 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
 #' containing the predicted signatures and exposures to benchmark.
 #' @param prediction_model_id The model id of the prediction to be located within
 #' prediction_musica
-#' @param prediction_modality The modality of the prediction to benchmark. Must be
-#' "SBS96", "DBS78", or "IND83".
+#' @param prediction_modality The modality of the prediction to benchmark,
+#' \code{"SBS96"} or \code{"DBS78"}. It must be the modality of the ground
+#' truth (the table name given by \link{create_benchmark}).
 #' @param prediction_result_name Name of the result list entry prediction to
 #' benchmark. Default \code{"result"}.
 #' @param method_id An identifier for the prediction being benchmarked. If not
@@ -170,6 +193,17 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
     stop("'prediction' must be a 'musica' object.")
   }
   
+  # the prediction must be of the ground truth's modality
+  truth_musica <- ground_truth(full_benchmark)
+  if (is.null(get_modality(truth_musica, "ground_truth",
+                           prediction_modality))) {
+    stop(
+      "'prediction_modality' is '", prediction_modality, "', but the ground ",
+      "truth is '", paste(names(tables(truth_musica)), collapse = "', '"),
+      "'."
+    )
+  }
+
   # extract the result_model object containing the prediction to benchmark
   prediction <- get_model(prediction_musica, prediction_result_name, 
                           prediction_modality, prediction_model_id)
