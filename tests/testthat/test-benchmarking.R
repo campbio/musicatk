@@ -213,3 +213,53 @@ test_that("benchmark(plot = FALSE) draws nothing (#196)", {
   )
   expect_no_error(run_benchmark(setup$bench, setup$prediction))
 })
+
+test_that("Benchmark summaries are data.frames with typed columns (#201)", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS2", "SBS3", "SBS8")])
+  # P1 is SBS1 and P2 a composite of SBS3 and SBS8; SBS2 is missed
+  pred <- withr::with_seed(5, cbind(
+    P1 = noisy_sig(sigs[, "SBS1"]),
+    P2 = noisy_sig(rowMeans(sigs[, c("SBS3", "SBS8")]))
+  ))
+  pred_exposures <- rbind(
+    P1 = truth$exposures["SBS1", ],
+    P2 = colSums(truth$exposures[c("SBS3", "SBS8"), ])
+  )
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+
+  # a global variable with this name must not change the counts
+  assign("duplicated_signature_components", "P2", envir = globalenv())
+  withr::defer(rm("duplicated_signature_components", envir = globalenv()))
+  expect_no_warning(bench <- run_benchmark(setup$bench, setup$prediction))
+
+  method_view <- method_view_summary(bench)
+  expect_s3_class(method_view, "data.frame")
+  expect_identical(rownames(method_view), "m")
+  expect_type(method_view[["Num Found"]], "integer")
+  expect_type(method_view[["Mean CS"]], "double")
+  expect_type(method_view[["Sigs Found"]], "character")
+  expect_identical(method_view[["Num Composites"]], 1L)
+  expect_identical(method_view[["Num Duplicates"]], 0L)
+  expect_identical(
+    single_summary(benchmark_get_entry(bench, "m")), method_view
+  )
+
+  sig_view <- sig_view_summary(bench)
+  expect_s3_class(sig_view, "data.frame")
+  expect_setequal(rownames(sig_view), colnames(truth$signatures))
+  expect_type(sig_view[["Times Found"]], "integer")
+  expect_type(sig_view[["Max CS"]], "double")
+  expect_type(sig_view[["Methods Found"]], "character")
+  expect_identical(sig_view["SBS2", "Times Missed"], 1L)
+  expect_true(is.na(sig_view["SBS2", "Min CS"]))
+
+  # A full_benchmark from an older version, with matrix summaries
+  legacy <- setup$bench
+  attr(legacy, "method_view_summary") <- matrix(nrow = 0, ncol = 0)
+  expect_error(
+    run_benchmark(legacy, setup$prediction),
+    regexp = "older version of musicatk"
+  )
+})

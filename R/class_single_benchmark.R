@@ -18,7 +18,7 @@ setClassUnion("CharOrNULL", c("character", "NULL"))
 #' and true signatures
 #' @slot final_comparison The final comparison between predicted and true
 #' signatures
-#' @slot single_summary A matrix summarizing the benchmark run
+#' @slot single_summary A one-row data.frame summarizing the benchmark run
 #' @slot method_id An identifier for the benchmark run
 #' @slot threshold Cosine similarity cutoff for comparing predicted and true
 #' signatures
@@ -39,7 +39,7 @@ setClass(
     initial_comparison = "data.frame",
     intermediate_comparison = "data.frame",
     final_comparison = "data.frame",
-    single_summary = "matrix",
+    single_summary = "data.frame",
     method_id = "character",
     threshold = "numeric",
     adjustment_threshold = "numeric",
@@ -336,12 +336,13 @@ setReplaceMethod(
 )
 
 # --------single_summary --------------
-#' @title Retrieve the single summary matrix from a single_benchmark object
-#' @description  The \code{single_summary} contains the summary information
-#' from the benchmark run.
+#' @title Retrieve the single summary from a single_benchmark object
+#' @description  The \code{single_summary} is a one-row data.frame with the
+#' summary information from the benchmark run, as in
+#' \link{method_view_summary}.
 #' @param x A \code{\linkS4class{single_benchmark}} object.
 #' @rdname single_summary
-#' @return A matrix containing the summary.
+#' @return A data.frame containing the summary.
 #' @export
 setGeneric(
   name = "single_summary",
@@ -361,7 +362,8 @@ setMethod(
 
 #' @rdname single_summary
 #' @param x A \code{\linkS4class{single_benchmark}} object.
-#' @param value A matrix containing the summary infomation for the run.
+#' @param value A one-row data.frame containing the summary information for
+#' the run.
 #' @export
 setGeneric(
   name = "single_summary<-",
@@ -373,7 +375,7 @@ setGeneric(
 #' @rdname single_summary
 setReplaceMethod(
   f = "single_summary",
-  signature = c("single_benchmark", "matrix"),
+  signature = c("single_benchmark", "data.frame"),
   definition = function(x, value) {
     x@single_summary <- value
     return(x)
@@ -385,7 +387,7 @@ setReplaceMethod(
 #' @description  The \code{method_id} is the identifier for the benchmark run.
 #' @param x A \code{\linkS4class{single_benchmark}} object.
 #' @rdname method_id
-#' @return A matrix containing the summary.
+#' @return A character string, the method ID.
 #' @export
 setGeneric(
   name = "method_id",

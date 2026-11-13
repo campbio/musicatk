@@ -188,6 +188,15 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
          "Use function 'create_benchmark' to initialize a 'full_benchmark' object")
   }
   
+  # summaries were matrices before musicatk 2.7.18 (ADR 0004)
+  if (!is.data.frame(method_view_summary(full_benchmark))) {
+    stop(
+      "This full_benchmark was made with an older version of musicatk, ",
+      "which stored its summaries as matrices. Recreate it with ",
+      "create_benchmark()."
+    )
+  }
+
   # check that prediction is a result model object
   if (!methods::is(prediction_musica, "musica")) {
     stop("'prediction' must be a 'musica' object.")
@@ -292,16 +301,12 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
   count_table <- extract_count_tables(prediction_musica)
   count_table <- get_count_table(count_table[[prediction_modality]])
   
-  # create summary matrix
+  # create the one-row summary data.frame
   message("Creating summary...")
-  single_summary <- as.matrix(.generate_summary(method_id, 
-                                                get_model(prediction_musica, prediction_result_name,
-                                                                     prediction_modality, prediction_model_id), 
-                                                get_model(truth, "ground_truth", prediction_modality, "ground_truth"), 
-                                                initial_comparison, 
-                                                count_table, 
-                                                composites_corrected, 
-                                                composites_corrected_comparison, re_method))
+  single_summary <- .generate_summary(
+    method_id, prediction, truth_model, initial_comparison, count_table,
+    composites_corrected, composites_corrected_comparison, re_method
+  )
   
   # create single benchmark object
   message("Creating individual benchmark object...")
@@ -1641,7 +1646,8 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   # duplicate
   
   num_duplicates <- 0
-  
+  duplicated_signature_components <- character(0)
+
   freq <- table(comparison_results$y_sig_name)
   
   if(length(names(freq[freq > 1])) != 0){
@@ -1665,13 +1671,11 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   # dupcomp
   
   dupcomp_count <- 0
-  if (exists("duplicated_signature_components")){
-    for (sig in composite_sigs){
-      if (sig %in% duplicated_signature_components){
-        dupcomp_count <- dupcomp_count + 1
-        num_composites <- num_composites - 1
-        num_duplicates <- num_duplicates - 1
-      }
+  for (sig in composite_sigs) {
+    if (sig %in% duplicated_signature_components) {
+      dupcomp_count <- dupcomp_count + 1
+      num_composites <- num_composites - 1
+      num_duplicates <- num_duplicates - 1
     }
   }
   
@@ -1713,159 +1717,75 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   #sigs_found_ordered <- paste(sigs_found_ordered, collapse = ", ")
   
   
-  # put in table
-  
-  summary <- data.frame(matrix(, nrow=13, ncol=1))
-  
-  rownames(summary) <- c("Num Found", "Num Direct Matched", "Num Missing", "Num Spurious", "Num Duplicates", "Num Composites", "Num Dup/Comp", "Initial RE", "Final RE", "Mean CS", "Min CS", "Max CS", "Sigs Found") 
-  
-  colnames(summary) <- title
-  
-  summary[1,1] <- num_found
-  summary[2,1] <- num_direct_matches
-  summary[3,1] <- num_missing
-  summary[4,1] <- num_spurious
-  summary[5,1] <- num_duplicates
-  summary[6,1] <- num_composites
-  summary[7,1] <- dupcomp_count
-  summary[8,1] <- initial_reconstruction_error
-  summary[9,1] <- end_reconstruction_error
-  summary[10,1] <- avg_cs
-  summary[11,1] <- min_cs
-  summary[12,1] <- max_cs
-  summary[13,1] <- sigs_found
-  
-  
+  # one row, named by the method ID, with typed columns
+  summary <- data.frame(
+    "Num Found" = as.integer(num_found),
+    "Num Direct Matched" = as.integer(num_direct_matches),
+    "Num Missing" = as.integer(num_missing),
+    "Num Spurious" = as.integer(num_spurious),
+    "Num Duplicates" = as.integer(num_duplicates),
+    "Num Composites" = as.integer(num_composites),
+    "Num Dup/Comp" = as.integer(dupcomp_count),
+    "Initial RE" = initial_reconstruction_error,
+    "Final RE" = end_reconstruction_error,
+    "Mean CS" = avg_cs,
+    "Min CS" = min_cs,
+    "Max CS" = max_cs,
+    "Sigs Found" = sigs_found,
+    row.names = title, check.names = FALSE, stringsAsFactors = FALSE
+  )
+
   return(summary)
   
 }
 
-# Function to make sig view summary
-.signature_view_summary <- function(benchmark, prediction_modality){
-  
-  indv_benchmarks <- indv_benchmarks(benchmark)
-  truth <- ground_truth(benchmark)
-  
-  truth <- get_model(truth, "ground_truth", prediction_modality, "ground_truth")
-  
-  final_comparison_list <- list()
-  method_list <- c()
-  
-  for (index in 1:length(indv_benchmarks)){
-    
-    final_comparison_list[[index]] <- final_comparison(indv_benchmarks[[index]])
-    method_list <- c(method_list, method_id(indv_benchmarks[[index]]))
-    
-  }
-  
-  summary_complete <- data.frame(matrix(, nrow=6, ncol=1))
-  
-  sigs_found <- NULL
-  for (final_comparison in final_comparison_list){
-    sigs_found <- c(sigs_found, final_comparison$y_sig_name)
-  }
-  
-  sigs_found <- unique(sigs_found)
-  sigs_found_ordered <- sigs_found
-  #sigs_found_ordered <- paste("Signature", sort(as.numeric(str_remove(sigs_found, "Signature"))), sep = "")
-  
-  all_sigs <- unique(c(sigs_found_ordered, colnames(signatures(truth))))
-  all_sigs_ordered <- all_sigs
-  #all_sigs_ordered <- paste("Signature", sort(as.numeric(str_remove(all_sigs, "Signature"))), sep = "")
-  
-  for (sig in all_sigs_ordered){
-    
-    summary <- data.frame(matrix(, nrow=6, ncol=1))
-    rownames(summary) <- c("Times Found", "Times Missed", "Mean CS", "Min CS", "Max CS", "Methods Found") 
-    colnames(summary) <- sig
-    
-    # times found
-    
-    count_found <- 0
-    index_found <- NULL
-    index <- 1
-    for (final_comparison in final_comparison_list){
-      if (sig %in% final_comparison$y_sig_name == TRUE){
-        count_found <- count_found + 1
-        index_found <- c(index_found, index)
+# One row per true signature (and any other signature found), summarizing
+# the Final comparisons of all runs in 'benchmark'
+.signature_view_summary <- function(benchmark, prediction_modality) {
+  runs <- indv_benchmarks(benchmark)
+  truth <- get_model(ground_truth(benchmark), "ground_truth",
+                     prediction_modality, "ground_truth")
+  comparisons <- lapply(runs, final_comparison)
+  methods <- vapply(runs, method_id, character(1))
+
+  found_sigs <- unlist(lapply(comparisons, function(x) x$y_sig_name))
+  all_sigs <- unique(c(found_sigs, colnames(signatures(truth))))
+
+  rows <- lapply(all_sigs, function(sig) {
+    found <- vapply(comparisons, function(x) sig %in% x$y_sig_name,
+                    logical(1))
+    cs <- unlist(lapply(comparisons, function(x) {
+      x$cosine[x$y_sig_name == sig]
+    }))
+    cs_stat <- function(f) {
+      if (length(cs) == 0) {
+        return(NA_real_)
       }
-      index <- index + 1
+      return(round(f(cs), 3))
     }
-    
-    # times missed
-    
-    count_missed <- 0
-    for (final_comparison in final_comparison_list){
-      if (sig %in% final_comparison$y_sig_name == FALSE){
-        count_missed <- count_missed + 1
-      }
-    }
-    
-    # mean CS
-    
-    cs <- NULL
-    for (final_comparison in final_comparison_list){
-      if (sig %in% final_comparison$y_sig_name == TRUE){
-        cs <- c(cs, final_comparison[final_comparison$y_sig_name == sig, 1])
-      }
-    }
-    
-    mean_cs <- mean(cs)
-    mean_cs <- round(mean_cs, 3)
-    if (is.null(cs)){
-      mean_cs <- NA
-    }
-    
-    # min cs
-    
-    min_cs <- min(cs)
-    min_cs <- round(min_cs, 3)
-    if (is.null(cs)){
-      min_cs <- NA
-    }
-    
-    # max cs
-    
-    max_cs <- max(cs)
-    max_cs <- round(max_cs, 3)
-    if (is.null(cs)){
-      max_cs <- NA
-    }
-    
-    # methods
-    
-    methods <- method_list[c(index_found)]
-    methods <- paste(methods, collapse = ", ")
-    
-    summary[1,1] <- count_found
-    summary[2,1] <- count_missed
-    summary[3,1] <- mean_cs
-    summary[4,1] <- min_cs
-    summary[5,1] <- max_cs
-    summary[6,1] <- methods
-    
-    summary_complete <- cbind(summary_complete, summary)
-    
-  }
-  
-  summary_complete <- summary_complete[,-1]
-  summary_complete[sapply(summary_complete, is.infinite)] <- NA
-  
-  #summary_complete <- t(summary_complete)
-  
-  #print(summary_complete)
-  return(summary_complete)
-  
+    data.frame(
+      "Times Found" = sum(found),
+      "Times Missed" = sum(!found),
+      "Mean CS" = cs_stat(mean),
+      "Min CS" = cs_stat(min),
+      "Max CS" = cs_stat(max),
+      "Methods Found" = paste(methods[found], collapse = ", "),
+      row.names = sig, check.names = FALSE, stringsAsFactors = FALSE
+    )
+  })
+  return(do.call(rbind, rows))
 }
 
 # Function for updating full benchmark object
 .update_benchmark <- function(full_benchmark, indv_benchmark, single_summary, prediction_modality){
   
-  # update summary
-  if (dim(method_view_summary(full_benchmark))[1] == 0 ){
+  # update summary, one row per run
+  if (nrow(method_view_summary(full_benchmark)) == 0) {
     method_view_summary(full_benchmark) <- single_summary
-  }else{
-    method_view_summary(full_benchmark) <- cbind(method_view_summary(full_benchmark), single_summary)
+  } else {
+    method_view_summary(full_benchmark) <- rbind(
+      method_view_summary(full_benchmark), single_summary
+    )
   }
   
   # update single benchmark list
@@ -1874,7 +1794,9 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   names(indv_benchmarks(full_benchmark))[length(indv_benchmarks(full_benchmark))] <- method_id(indv_benchmark)
   
   # update sig view summary
-  sig_view_summary(full_benchmark) <- as.matrix(.signature_view_summary(full_benchmark, prediction_modality))
+  sig_view_summary(full_benchmark) <- .signature_view_summary(
+    full_benchmark, prediction_modality
+  )
   
   return(full_benchmark)
   
