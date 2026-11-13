@@ -356,9 +356,11 @@ test_that("A predicted signature joins one duplicate group only (#188)", {
   expect_setequal(
     intermediate_sigs, c("P0", "P3", "Merged Signature (P1.P2.P4)")
   )
+  # SBS3 is matched by P1, P2 and P4, and SBS8 by P3 and P4: P1, P2 and P3
+  # are duplicates, P4 is both a duplicate and a composite, P0 is direct
   summary <- method_view_summary(bench)
-  expect_identical(summary[["Num Direct Matched"]], 2L)
-  expect_identical(summary[["Num Duplicates"]], 2L)
+  expect_identical(summary[["Num Direct Matched"]], 1L)
+  expect_identical(summary[["Num Duplicates"]], 3L)
   expect_identical(summary[["Num Dup/Comp"]], 1L)
 
   # ggplot2 warns that the fitted lines leave the plots' fixed axes
@@ -500,8 +502,8 @@ test_that("Summaries count each true signature once, in Final (#198)", {
   data(cosmic_v2_sigs)
   sigs <- signatures(cosmic_v2_sigs)
   truth <- sim_truth(sigs[, c("SBS1", "SBS3", "SBS8")])
-  # P3, a composite of SBS3 and SBS8, is split; its SBS3 piece and P2 then
-  # both match SBS3 in the Final stage
+  # P3, a composite of SBS3 and SBS8, is split; on devel, its SBS3 piece and
+  # P2 then both matched SBS3 in the Final stage and SBS3 counted twice
   pred <- withr::with_seed(4, cbind(
     P1 = noisy_sig(sigs[, "SBS1"]),
     P2 = noisy_sig(sigs[, "SBS3"]),
@@ -515,8 +517,6 @@ test_that("Summaries count each true signature once, in Final (#198)", {
   setup <- setup_benchmark(truth, pred, pred_exposures)
   bench <- run_benchmark(setup$bench, setup$prediction)
   final <- benchmark_get_comparison(bench, "m", "Final")
-  expect_identical(sum(final$y_sig_name == "SBS3"), 2L)
-
   best <- tapply(final$cosine, final$y_sig_name, max)
   summary <- method_view_summary(bench)
   expect_identical(summary[["Num Found"]], 3L)
@@ -528,6 +528,14 @@ test_that("Summaries count each true signature once, in Final (#198)", {
   sig_view <- sig_view_summary(bench)
   expect_identical(sig_view["SBS3", "Times Found"], 1L)
   expect_equal(sig_view["SBS3", "Mean CS"], round(best[["SBS3"]], 3))
+
+  # a true signature matched twice counts once, at its best cosine
+  doubled <- rbind(final, final[final$y_sig_name == "SBS3", ])
+  doubled$cosine[nrow(doubled)] <- 0.85
+  expect_equal(
+    .best_cosines(doubled, c("SBS1", "SBS3", "SBS8", "SBS13")),
+    c(SBS1 = best[["SBS1"]], SBS3 = best[["SBS3"]], SBS8 = best[["SBS8"]])
+  )
 })
 
 test_that("predict_and_benchmark() benchmarks the model it discovers (#197)", {
@@ -600,4 +608,46 @@ test_that("predict_and_benchmark() checks the benchmark before discovery", {
     predict_and_benchmark(musica, "SBS96", 2, 2, list()),
     regexp = "'full_benchmark' must be a 'full_benchmark' object"
   )
+})
+
+test_that("A composite piece and a duplicate prediction are merged in Final", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS3", "SBS8")])
+  # P2 is a composite of SBS3 and SBS8 (best match SBS8); P3 is SBS3
+  pred <- withr::with_seed(9, cbind(
+    P1 = noisy_sig(sigs[, "SBS1"]),
+    P2 = noisy_sig(rowMeans(sigs[, c("SBS3", "SBS8")]), 0.0005),
+    P3 = noisy_sig(sigs[, "SBS3"])
+  ))
+  pred_exposures <- rbind(
+    P1 = truth$exposures["SBS1", ],
+    P2 = truth$exposures["SBS3", ] * 0.5 + truth$exposures["SBS8", ],
+    P3 = truth$exposures["SBS3", ] * 0.5
+  )
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+  bench <- run_benchmark(setup$bench, setup$prediction)
+
+  # SBS3 is matched by P2 and P3: P3 is a duplicate, P2 a duplicate and
+  # a composite, each counted once
+  summary <- method_view_summary(bench)
+  expect_identical(summary[["Num Direct Matched"]], 1L)
+  expect_identical(summary[["Num Duplicates"]], 1L)
+  expect_identical(summary[["Num Dup/Comp"]], 1L)
+  expect_identical(summary[["Num Composites"]], 0L)
+
+  # in Final, P3 and the SBS3 piece of P2 are one signature
+  final <- benchmark_get_comparison(bench, "m", "Final")
+  expect_identical(anyDuplicated(final$y_sig_name), 0L)
+  final_sigs <- colnames(signatures(
+    final_pred(benchmark_get_entry(bench, "m"))
+  ))
+  merged <- grep("^Merged Signature", final_sigs, value = TRUE)
+  expect_length(merged, 1)
+  expect_true(grepl("P3", merged) && grepl("SBS3_like", merged))
+  expect_false("P3" %in% final_sigs)
+
+  # ggplot2 warns that the fitted lines leave the plots' fixed axes
+  plots <- suppressWarnings(benchmark_plot_composite_exposures(bench, "m"))
+  expect_length(plots, 1)
 })

@@ -175,7 +175,9 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
 #' probability is divided among them in proportion to the fit. A true
 #' signature with no weight in the fit gets no piece. The pieces add up to
 #' the composite and keep its noise, and each gets the composite's exposure
-#' times its share of the composite.
+#' times its share of the composite. Then a piece and another predicted
+#' signature that match the same true signature best are merged, as in
+#' Intermediate.
 #'
 #' The run's summary, one row of \link{method_view_summary}, has these
 #' columns:
@@ -183,9 +185,11 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
 #'   \item{Num Found, Num Missing}{True signatures matched, and not matched,
 #'   in the Final stage.}
 #'   \item{Num Direct Matched, Num Spurious, Num Duplicates, Num Composites,
-#'   Num Dup/Comp}{Initial predicted signatures that match one true
-#'   signature, match none, are merged as duplicates, are composites, or are
-#'   both a composite and merged as a duplicate.}
+#'   Num Dup/Comp}{Each Initial predicted signature is counted once. A
+#'   duplicate matches a true signature that another predicted signature
+#'   also matches; a composite matches several true signatures; Dup/Comp is
+#'   both. Otherwise it is a direct match (one true signature) or spurious
+#'   (none).}
 #'   \item{Initial RE, Final RE}{Reconstruction error of the Initial and
 #'   Final predictions, by \code{re_method}.}
 #'   \item{Mean CS, Min CS, Max CS}{Mean, minimum and maximum, over the true
@@ -303,9 +307,10 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
 
   # correct composite signatures
   message("Correcting composites...")
-  composites_corrected <- .correct_composites(
-    duplicates_corrected, duplicates_corrected_comparison, truth_model
-  )
+  composites_corrected <- .split_and_merge(
+    duplicates_corrected, duplicates_corrected_comparison, truth_model,
+    threshold, adjustment_threshold
+  )$model
 
   # final comparison between predicted and true signatures
   message("Comparing to true signatures (post composites corrected)...")
@@ -1089,8 +1094,17 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   # pre correction comparison between predicted and true signatures
   comparison <- intermediate_comparison(indv_benchmark)
   
-  # composites and their pieces, as split by benchmark()
+  # composites and their pieces, as split by benchmark(), and the Final
+  # signature holding each piece (a merged one if it was merged again)
   pieces <- .composite_pieces(comparison, colnames(signatures(before)))
+  merged_groups <- .split_and_merge(
+    before, comparison, result_true, threshold(indv_benchmark),
+    adjustment_threshold(indv_benchmark)
+  )$groups
+  pieces$final <- pieces$piece
+  for (group in merged_groups) {
+    pieces$final[pieces$piece %in% group] <- .merged_signature_name(group)
+  }
 
   final_figures <- list()
 
@@ -1114,13 +1128,14 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
       before_exposures, composite_sig, "Before decomposing"
     )
 
-    # post-correction exposures: each piece against its true signature
-    parts <- parts[parts$piece %in% rownames(exposures(after)), ,
+    # post-correction exposures: the Final signature holding each piece
+    # against the piece's true signature
+    parts <- parts[parts$final %in% rownames(exposures(after)), ,
                    drop = FALSE]
     after_exposures <- NULL
     for (index in seq_len(nrow(parts))) {
       after_exposures <- rbind(after_exposures, data.frame(
-        Predicted = as.vector(exposures(after)[parts$piece[index], ]),
+        Predicted = as.vector(exposures(after)[parts$final[index], ]),
         True = .true_exposure(result_true, parts$true_sig[index],
                               colnames(exposures(after))),
         Source = parts$true_sig[index]
@@ -1321,6 +1336,22 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   return(composites_corrected)
 }
 
+# The Final stage: split the composites of 'result' (see
+# .correct_composites()), then merge the duplicates the split made, such as
+# a piece and another predicted signature of the same true signature (see
+# .correct_duplicates()). Returns the Final model and the groups merged.
+.split_and_merge <- function(result, comparison, truth, threshold,
+                             adjustment_threshold) {
+  split <- .correct_composites(result, comparison, truth)
+  split_comparison <- .benchmark_compare(
+    split, truth, threshold, adjustment_threshold
+  )
+  return(list(
+    model = .correct_duplicates(split, split_comparison),
+    groups = .duplicate_groups(split_comparison)
+  ))
+}
+
 # Matches between the signatures of 'result' and the true signatures of
 # 'truth' above 'threshold', without plotting, with low matches of a
 # predicted signature that also has a high one removed. No rows if nothing
@@ -1430,9 +1461,14 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
   # duplicate
   
-  duplicated_signature_components <- unlist(
-    .duplicate_groups(comparison_results), use.names = FALSE
-  )
+  # predicted signatures matching a true signature that two or more
+  # predicted signatures match (merging uses best matches instead, see
+  # .duplicate_groups(), so that no signature is merged twice)
+  matches_per_true <- table(comparison_results$y_sig_name)
+  duplicated_true <- names(matches_per_true[matches_per_true > 1])
+  duplicated_signature_components <- unique(comparison_results$x_sig_name[
+    comparison_results$y_sig_name %in% duplicated_true
+  ])
   num_duplicates <- length(duplicated_signature_components)
 
   # composites, as .correct_composites() finds them, and those that are

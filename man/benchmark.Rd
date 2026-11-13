@@ -84,7 +84,9 @@ true signatures with non-negative least squares, and each mutation type's
 probability is divided among them in proportion to the fit. A true
 signature with no weight in the fit gets no piece. The pieces add up to
 the composite and keep its noise, and each gets the composite's exposure
-times its share of the composite.
+times its share of the composite. Then a piece and another predicted
+signature that match the same true signature best are merged, as in
+Intermediate.
 
 The run's summary, one row of \link{method_view_summary}, has these
 columns:
@@ -92,9 +94,11 @@ columns:
   \item{Num Found, Num Missing}{True signatures matched, and not matched,
   in the Final stage.}
   \item{Num Direct Matched, Num Spurious, Num Duplicates, Num Composites,
-  Num Dup/Comp}{Initial predicted signatures that match one true
-  signature, match none, are merged as duplicates, are composites, or are
-  both a composite and merged as a duplicate.}
+  Num Dup/Comp}{Each Initial predicted signature is counted once. A
+  duplicate matches a true signature that another predicted signature
+  also matches; a composite matches several true signatures; Dup/Comp is
+  both. Otherwise it is a direct match (one true signature) or spurious
+  (none).}
   \item{Initial RE, Final RE}{Reconstruction error of the Initial and
   Final predictions, by \code{re_method}.}
   \item{Mean CS, Min CS, Max CS}{Mean, minimum and maximum, over the true

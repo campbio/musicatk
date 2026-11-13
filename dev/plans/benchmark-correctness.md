@@ -271,3 +271,29 @@ From the spec review (fresh subagent):
   duplicates or composites; NaN for a duplicate group with zero total
   exposure; reconstruction error assumes exposure rows follow signature
   columns. Logged for group K/#202.
+
+## Added in code review
+
+From `/code-review` (high) of the branch:
+
+- Fixed: a composite whose column doesn't sum to 1 changed the
+  reconstruction; piece exposures now scale by the piece's sum.
+- Fixed: `predict_and_benchmark()` names each run after the model it
+  benchmarks, and checks `full_benchmark` and `modality` before any
+  discovery (`.check_benchmark_modality()`, shared with `benchmark()`).
+- Fixed: the summary finds composites with `.composite_pieces()`;
+  `initial_pred` reuses the fetched model; `.unique_id()` moves to
+  `R/misc_functions.R`.
+- **Maintainer decision (2026-11-13):** a composite piece and a separate
+  prediction of the same true signature both reached Final unmerged.
+  Final now merges again after the split (`.split_and_merge()`), so it
+  has one signature per true signature (by best match). The counts go
+  back to the old rule for duplicates: a predicted signature matching a
+  true signature that two or more predictions match is a duplicate
+  (Dup/Comp if it is also a composite). Each predicted signature is
+  counted once. Merging still uses best matches (#188).
+  `benchmark_plot_composite_exposures()` plots the Final signature that
+  holds each piece.
+- Declined: the lint CI failure on `R/benchmarking.R` (#257); the copied
+  ggplot code in `benchmark_plot_duplicate_exposures()` (#202) and the
+  O(runs^2) summary rebuild (#203), both on devel already.
