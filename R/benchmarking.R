@@ -143,6 +143,35 @@ create_benchmark <- function(true_signatures, true_exposures, count_table, varia
 #' object provided will be modified and nothing will be returned. Default
 #' \code{FALSE}.
 #'
+#' @details The prediction goes through three stages. \emph{Initial} is the
+#' prediction as given. In \emph{Intermediate}, predicted signatures that
+#' duplicate a true signature are merged: each predicted signature joins the
+#' true signature it matches best, and the signatures of a group are
+#' replaced by their exposure-weighted mean. In \emph{Final}, each composite
+#' (a predicted signature matching several true signatures) is split into
+#' one \code{"<true signature>_like"} piece per true signature: the composite
+#' is fitted to those true signatures with non-negative least squares, and
+#' each mutation type's probability is divided among them in proportion to
+#' the fit. The pieces add up to the composite and keep its noise, and each
+#' gets the composite's exposure times its share of the composite.
+#'
+#' The run's summary, one row of \link{method_view_summary}, has these
+#' columns:
+#' \describe{
+#'   \item{Num Found, Num Missing}{True signatures matched, and not matched,
+#'   in the Final stage.}
+#'   \item{Num Direct Matched, Num Spurious, Num Duplicates, Num Composites,
+#'   Num Dup/Comp}{Initial predicted signatures that match one true
+#'   signature, match none, are merged as duplicates, are composites, or are
+#'   both a composite and merged as a duplicate.}
+#'   \item{Initial RE, Final RE}{Reconstruction error of the Initial and
+#'   Final predictions, by \code{re_method}.}
+#'   \item{Mean CS, Min CS, Max CS}{Mean, minimum and maximum, over the true
+#'   signatures found, of each one's best cosine similarity in the Final
+#'   stage; \code{NA} if none was found.}
+#'   \item{Sigs Found}{The true signatures found.}
+#' }
+#'
 #' @return If \code{make_copy == TRUE}, a new \code{full_benchmark} object is
 #' returned. If \code{make_copy == FALSE}, nothing is returned.
 #' @examples
@@ -1345,6 +1374,16 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   return(TRUE)
 }
 
+# Best cosine similarity of each signature in 'sig_names' that 'comparison'
+# matches, named and in the order of 'sig_names'
+.best_cosines <- function(comparison, sig_names) {
+  found <- sig_names[sig_names %in% comparison$y_sig_name]
+  best <- vapply(found, function(sig) {
+    max(comparison$cosine[comparison$y_sig_name == sig])
+  }, numeric(1))
+  return(best)
+}
+
 # 'f' (mean, min or max) of cosine similarities 'cs', rounded to 3
 # decimals; NA when there are none
 .cs_stat <- function(cs, f) {
@@ -1367,11 +1406,12 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
 # Function to generate single run summary
 .generate_summary <- function(title, result_all, result_true, comparison_results, count_table, final_musica, final_comparison, re_method){
   
-  # missing
-  
+  # found and missing: true signatures matched in the Final stage, each
+  # counted once with its best cosine similarity
   true_sig_names <- colnames(signatures(result_true))
-  num_true <- length(true_sig_names)
-  num_missing <- length(true_sig_names[!(true_sig_names %in% comparison_results$y_sig_name)])
+  best_cs <- .best_cosines(final_comparison, true_sig_names)
+  num_found <- length(best_cs)
+  num_missing <- length(true_sig_names) - num_found
   
   # spurious
   
@@ -1416,24 +1456,14 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
   # stability
   
-  #  average cosine similarity
-  
-  cs <- final_comparison$cosine
-  avg_cs <- .cs_stat(cs, mean)
+  # mean, min and max over the found true signatures
+  avg_cs <- .cs_stat(best_cs, mean)
+  min_cs <- .cs_stat(best_cs, min)
+  max_cs <- .cs_stat(best_cs, max)
 
-  # min and max cosine similarity
-  min_cs <- .cs_stat(cs, min)
-  max_cs <- .cs_stat(cs, max)
-  
-  # signatures found
-  
-  sigs_found <- final_comparison$y_sig_name
-  num_found <- length(sigs_found)
-  sigs_found <- paste(sigs_found, collapse = ", ") # added when removed below
-  #sigs_found_ordered <- paste("SBS", sort(as.numeric(str_remove(sigs_found, "Signature"))), sep = "")
-  #sigs_found_ordered <- paste(sigs_found_ordered, collapse = ", ")
-  
-  
+  # true signatures found, in true-signature order
+  sigs_found <- paste(names(best_cs), collapse = ", ")
+
   # one row, named by the method ID, with typed columns
   summary <- data.frame(
     "Num Found" = as.integer(num_found),
@@ -1469,11 +1499,10 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   all_sigs <- unique(c(found_sigs, colnames(signatures(truth))))
 
   rows <- lapply(all_sigs, function(sig) {
+    # best cosine of 'sig' in each run that found it
+    cs <- unlist(lapply(comparisons, .best_cosines, sig_names = sig))
     found <- vapply(comparisons, function(x) sig %in% x$y_sig_name,
                     logical(1))
-    cs <- unlist(lapply(comparisons, function(x) {
-      x$cosine[x$y_sig_name == sig]
-    }))
     data.frame(
       "Times Found" = sum(found),
       "Times Missed" = sum(!found),

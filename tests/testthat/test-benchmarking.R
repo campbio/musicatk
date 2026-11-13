@@ -468,3 +468,37 @@ test_that("A composite leaving one signature unchanged keeps its name (#192)", {
   )
   expect_identical(rownames(exposures(final)), colnames(signatures(final)))
 })
+
+test_that("Summaries count each true signature once, at the Final stage (#198)", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS3", "SBS8")])
+  # P3, a composite of SBS3 and SBS8, is split; its SBS3 piece and P2 then
+  # both match SBS3 in the Final stage
+  pred <- withr::with_seed(4, cbind(
+    P1 = noisy_sig(sigs[, "SBS1"]),
+    P2 = noisy_sig(sigs[, "SBS3"]),
+    P3 = noisy_sig(0.45 * sigs[, "SBS3"] + 0.55 * sigs[, "SBS8"], 0.001)
+  ))
+  pred_exposures <- rbind(
+    P1 = truth$exposures["SBS1", ],
+    P2 = truth$exposures["SBS3", ] * 0.5,
+    P3 = truth$exposures["SBS3", ] * 0.5 + truth$exposures["SBS8", ]
+  )
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+  bench <- run_benchmark(setup$bench, setup$prediction)
+  final <- benchmark_get_comparison(bench, "m", "Final")
+  expect_identical(sum(final$y_sig_name == "SBS3"), 2L)
+
+  best <- tapply(final$cosine, final$y_sig_name, max)
+  summary <- method_view_summary(bench)
+  expect_identical(summary[["Num Found"]], 3L)
+  expect_identical(summary[["Num Missing"]], 0L)
+  expect_identical(summary[["Sigs Found"]], "SBS1, SBS3, SBS8")
+  expect_equal(summary[["Mean CS"]], round(mean(best), 3))
+  expect_equal(summary[["Min CS"]], round(min(best), 3))
+
+  sig_view <- sig_view_summary(bench)
+  expect_identical(sig_view["SBS3", "Times Found"], 1L)
+  expect_equal(sig_view["SBS3", "Mean CS"], round(best[["SBS3"]], 3))
+})
