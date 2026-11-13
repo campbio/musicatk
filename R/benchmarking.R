@@ -339,7 +339,8 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
     initial_sig_plot <- benchmark_plot_signatures(full_benchmark, method_id, prediction = "Initial")
     print(initial_sig_plot)
     # initial comparison plot
-    benchmark_plot_comparison(full_benchmark, method_id, prediction = "Initial", same_scale = FALSE)
+    .plot_stage_comparison(full_benchmark, method_id, "Initial",
+                           initial_comparison)
 
     # Duplicate signature exposures before/afters
     duplicate_plot <- benchmark_plot_duplicate_exposures(full_benchmark, method_id)
@@ -349,7 +350,8 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
     intermediate_sig_plot <- benchmark_plot_signatures(full_benchmark, method_id, prediction = "Intermediate")
     print(intermediate_sig_plot)
     # Intermediate comparison plot
-    benchmark_plot_comparison(full_benchmark, method_id, prediction = "Intermediate", same_scale = FALSE)
+    .plot_stage_comparison(full_benchmark, method_id, "Intermediate",
+                           duplicates_corrected_comparison)
     
     # Composite signature exposures before/afters
     composite_plot <- benchmark_plot_composite_exposures(full_benchmark, method_id)
@@ -358,11 +360,13 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
     # Final signatures plot
     final_sig_plot <- benchmark_plot_signatures(full_benchmark, method_id, prediction = "Final")
     print(final_sig_plot)
-    # Final comparison plot
-    benchmark_plot_comparison(full_benchmark, method_id, prediction = "Final", same_scale = FALSE)
-    # Final exposures plot
-    exposure_plot <- benchmark_plot_exposures(full_benchmark, method_id, prediction = "Final")
-    print(exposure_plot)
+    # Final comparison and exposures plots
+    if (.plot_stage_comparison(full_benchmark, method_id, "Final",
+                               composites_corrected_comparison)) {
+      exposure_plot <- benchmark_plot_exposures(full_benchmark, method_id,
+                                                prediction = "Final")
+      print(exposure_plot)
+    }
     
   }
   
@@ -727,6 +731,7 @@ benchmark_plot_comparison <- function(full_benchmark, method_id, prediction,
   prediction <- .match_benchmark_stage(prediction)
   
   comparison <- benchmark_get_comparison(full_benchmark, method_id, prediction)
+  .check_comparison_has_matches(comparison, prediction)
   indv_benchmark <- benchmark_get_entry(full_benchmark, method_id)
   result <- benchmark_get_prediction(indv_benchmark, prediction)
 
@@ -817,6 +822,7 @@ benchmark_plot_exposures <- function(full_benchmark, method_id, prediction){
   
   # access comparison for desired prediction
   comparison <- benchmark_get_comparison(full_benchmark, method_id, prediction)
+  .check_comparison_has_matches(comparison, prediction)
   
   # access desired prediction
   prediction <- benchmark_get_prediction(indv_benchmark, prediction)
@@ -1604,6 +1610,41 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
 }
 
+# Draw the comparison plot of one stage of a benchmark run, or say there is
+# nothing to plot when no signature matched; TRUE if it was drawn
+.plot_stage_comparison <- function(full_benchmark, method_id, prediction,
+                                   comparison) {
+  if (nrow(comparison) == 0) {
+    message(
+      "No predicted signature matches a true signature at the '",
+      prediction, "' stage; skipping its comparison plot."
+    )
+    return(FALSE)
+  }
+  benchmark_plot_comparison(full_benchmark, method_id, prediction,
+                            same_scale = FALSE)
+  return(TRUE)
+}
+
+# 'f' (mean, min or max) of cosine similarities 'cs', rounded to 3
+# decimals; NA when there are none
+.cs_stat <- function(cs, f) {
+  if (length(cs) == 0) {
+    return(NA_real_)
+  }
+  return(round(f(cs), 3))
+}
+
+# Stop, naming the stage, when 'comparison' has no matches to plot
+.check_comparison_has_matches <- function(comparison, prediction) {
+  if (nrow(comparison) == 0) {
+    stop(
+      "No predicted signature matches a true signature at the '",
+      prediction, "' stage, so there is nothing to plot."
+    )
+  }
+}
+
 # Function to generate single run summary
 .generate_summary <- function(title, result_all, result_true, comparison_results, count_table, final_musica, final_comparison, re_method){
   
@@ -1671,18 +1712,11 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   #  average cosine similarity
   
   cs <- final_comparison$cosine
-  avg_cs <- mean(cs)
-  avg_cs <- round(avg_cs, 3)
-  
-  # min cosine similarity
-  
-  min_cs <- min(cs)
-  min_cs <- round(min_cs, 3)
-  
-  # max cosine similarity
-  
-  max_cs <- max(cs)
-  max_cs <- round(max_cs, 3)
+  avg_cs <- .cs_stat(cs, mean)
+
+  # min and max cosine similarity
+  min_cs <- .cs_stat(cs, min)
+  max_cs <- .cs_stat(cs, max)
   
   # signatures found
   
@@ -1733,18 +1767,12 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
     cs <- unlist(lapply(comparisons, function(x) {
       x$cosine[x$y_sig_name == sig]
     }))
-    cs_stat <- function(f) {
-      if (length(cs) == 0) {
-        return(NA_real_)
-      }
-      return(round(f(cs), 3))
-    }
     data.frame(
       "Times Found" = sum(found),
       "Times Missed" = sum(!found),
-      "Mean CS" = cs_stat(mean),
-      "Min CS" = cs_stat(min),
-      "Max CS" = cs_stat(max),
+      "Mean CS" = .cs_stat(cs, mean),
+      "Min CS" = .cs_stat(cs, min),
+      "Max CS" = .cs_stat(cs, max),
       "Methods Found" = paste(methods[found], collapse = ", "),
       row.names = sig, check.names = FALSE, stringsAsFactors = FALSE
     )

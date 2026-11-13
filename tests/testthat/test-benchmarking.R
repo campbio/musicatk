@@ -289,3 +289,37 @@ test_that("Initial RE follows re_method (#199)", {
     method_view_summary(raw)[["Initial RE"]], round(expected_raw, 3)
   )
 })
+
+test_that("A prediction with no match is recorded as a total miss (#200)", {
+  data(cosmic_v2_sigs)
+  truth <- sim_truth(signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2", "SBS3")])
+  # one mutation type each, unlike any true signature
+  pred <- matrix(0, 96, 3,
+    dimnames = list(rownames(truth$signatures), c("P1", "P2", "P3"))
+  )
+  pred[1, "P1"] <- 1
+  pred[50, "P2"] <- 1
+  pred[90, "P3"] <- 1
+  pred_exposures <- truth$exposures
+  rownames(pred_exposures) <- colnames(pred)
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+
+  expect_no_warning(bench <- run_benchmark(setup$bench, setup$prediction))
+  summary <- method_view_summary(bench)
+  expect_identical(summary[["Num Found"]], 0L)
+  expect_identical(summary[["Num Missing"]], 3L)
+  expect_identical(summary[["Num Spurious"]], 3L)
+  expect_identical(summary[["Num Direct Matched"]], 0L)
+  expect_true(is.na(summary[["Mean CS"]]))
+  expect_true(is.na(summary[["Min CS"]]))
+  expect_identical(summary[["Sigs Found"]], "")
+  expect_equal(nrow(benchmark_get_comparison(bench, "m", "Final")), 0)
+  expect_error(
+    benchmark_plot_comparison(bench, "m", "Final"),
+    regexp = "No predicted signature matches a true signature .*Final"
+  )
+  expect_error(
+    benchmark_plot_exposures(bench, "m", "Initial"),
+    regexp = "No predicted signature matches a true signature .*Initial"
+  )
+})
