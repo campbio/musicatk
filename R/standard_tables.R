@@ -289,17 +289,17 @@ create_dbs78_table <- function(musica, overwrite = overwrite, verbose) {
 
   # Reverse complement more specific categories to the other strand
   rc_alt <- NULL
-  rc_ref_AT <- which(ref == "AT")
-  rc_alt <- c(rc_alt, rc_ref_AT[which(alt[rc_ref_AT] %in% c("TG", "GG", "TC"))])
+  rc_ref_at <- which(ref == "AT")
+  rc_alt <- c(rc_alt, rc_ref_at[which(alt[rc_ref_at] %in% c("TG", "GG", "TC"))])
 
-  rc_ref_CG <- which(ref == "CG")
-  rc_alt <- c(rc_alt, rc_ref_CG[which(alt[rc_ref_CG] %in% c("AC", "GA", "AA"))])
+  rc_ref_cg <- which(ref == "CG")
+  rc_alt <- c(rc_alt, rc_ref_cg[which(alt[rc_ref_cg] %in% c("AC", "GA", "AA"))])
 
-  rc_ref_GC <- which(ref == "GC")
-  rc_alt <- c(rc_alt, rc_ref_GC[which(alt[rc_ref_GC] %in% c("TT", "CT", "TG"))])
+  rc_ref_gc <- which(ref == "GC")
+  rc_alt <- c(rc_alt, rc_ref_gc[which(alt[rc_ref_gc] %in% c("TT", "CT", "TG"))])
 
-  rc_ref_TA <- which(ref == "TA")
-  rc_alt <- c(rc_alt, rc_ref_TA[which(alt[rc_ref_TA] %in% c("AG", "CC", "AC"))])
+  rc_ref_ta <- which(ref == "TA")
+  rc_alt <- c(rc_alt, rc_ref_ta[which(alt[rc_ref_ta] %in% c("AG", "CC", "AC"))])
 
   alt[rc_alt] <- rc(alt[rc_alt])
 
@@ -589,8 +589,8 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     )
   )
   context <- c(rep(c("1_1", "1_2", "1_3", "1_4", "1_5", "1_6+"), 2),
-  rep(c("1_0", "1_1", "1_2", "1_3", "1_4", "1_5+"), 2),
-  rep(c("1", "2", "3", "4", "5", "6+"), 4),
+    rep(c("1_0", "1_1", "1_2", "1_3", "1_4", "1_5+"), 2),
+    rep(c("1", "2", "3", "4", "5", "6+"), 4),
     #substr(motif[seq_len(24)], 7, 9),
     unlist(lapply(strsplit(motif[49:83], "_"), "[[", 4))
   )

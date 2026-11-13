@@ -11,7 +11,8 @@ An object of class \code{matrix}
 data(example_predicted_exp)
 }
 \description{
-A matrix containing the predicted signature exposure levels for a synthetic 
-breast cancer dataset with 214 samples, generated using NMF and k=8 signatures.
+A matrix containing the predicted signature exposure levels for a synthetic
+breast cancer dataset with 214 samples, generated using NMF and k=8
+signatures.
 }
 \keyword{datasets}

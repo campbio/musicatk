@@ -156,9 +156,9 @@ extract_count_tables <- function(musica) {
     if (length(type) != nrow(features)) {
       stop("'type' must be the same length as the number of rows in 'features'")
     }
-    type.rle <- S4Vectors::Rle(type)
+    type_rle <- S4Vectors::Rle(type)
   } else {
-    type.rle <- NULL
+    type_rle <- NULL
   }
   if (!is.null(color_mapping)) {
     if (is.null(annotation)) {
@@ -170,7 +170,7 @@ extract_count_tables <- function(musica) {
     # checks for color_variable
   }
   if (!is.null(color_mapping) && !is.null(color_variable) &&
-      !is.null(annotation)) {
+        !is.null(annotation)) {
     no_match <- setdiff(names(color_mapping), annotation[, color_variable])
     if (length(no_match) > 0) {
       # warning()
@@ -183,7 +183,7 @@ extract_count_tables <- function(musica) {
   tab <- new("count_table",
     name = name, count_table = count_table,
     annotation = annotation, features = features,
-    type = type.rle, color_variable = color_variable,
+    type = type_rle, color_variable = color_variable,
     color_mapping = color_mapping, description = description
   )
 

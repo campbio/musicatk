@@ -16,8 +16,8 @@
 #' musicatk()
 #' }
 musicatk <- function(include_version = TRUE, theme = "yeti") {
-  appDir <- system.file("shiny", package = "musicatk")
+  app_dir <- system.file("shiny", package = "musicatk")
   shiny::shinyOptions(include_version = include_version)
   shiny::shinyOptions(theme = theme)
-  shiny::runApp(appDir, display.mode = "normal")
+  shiny::runApp(app_dir, display.mode = "normal")
 }

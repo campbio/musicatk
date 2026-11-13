@@ -7,7 +7,7 @@
 setClassUnion("CharOrNULL", c("character", "NULL"))
 
 #' Object that contains information for an individual benchmark run
-#' 
+#'
 #' @slot initial_pred The initial prediction
 #' @slot intermediate_pred The intermediate prediction, after duplicates are
 #' corrected, but before composites are corrected
@@ -47,7 +47,7 @@ setClass(
   )
 )
 
-# Getter and setter functions 
+# Getter and setter functions
 
 # --------initial_pred --------------
 #' @title Retrieve initial prediction from a single_benchmark object
@@ -427,7 +427,7 @@ setReplaceMethod(
 # --------threshold --------------
 #' @title Retrieve the threshold from a single_benchmark object
 #' @description  The \code{threshold} is the cosine similarity cutoff for
-#' comparing predicted and true signatures. 
+#' comparing predicted and true signatures.
 #' @param x A \code{\linkS4class{single_benchmark}} object.
 #' @rdname threshold
 #' @return The threshold value.
@@ -560,9 +560,3 @@ setReplaceMethod(
     return(x)
   }
 )
-
-
-
-
-
-

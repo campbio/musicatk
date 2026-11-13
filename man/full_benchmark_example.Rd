@@ -11,7 +11,8 @@ An object of class \code{full_benchmark}
 data(full_benchmark_example)
 }
 \description{
-A \code{full_benchmark} object containing ground truth signatures and exposures
+A \code{full_benchmark} object containing ground truth signatures and
+exposures
 from a synthetic breast cancer dataset with 8 known signatures as well as
 a disocvery prediction that has been benchmarked.
 }

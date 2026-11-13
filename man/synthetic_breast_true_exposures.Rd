@@ -11,7 +11,7 @@ An object of class \code{data.frame}
 data(synthetic_breast_true_exposures)
 }
 \description{
-A data.frame containing true signature exposure levels for a synthetic 
+A data.frame containing true signature exposure levels for a synthetic
 breast cancer dataset with 214 samples and 8 signatures.
 }
 \keyword{datasets}

@@ -143,7 +143,7 @@ NULL
         "use algorithm = \"lda\" for '", modality, "'."
       )
     }
-    decomp_res <- predict_decompTumor2Sig(counts_table, signature)
+    decomp_res <- .predict_decomp_tumor2sig(counts_table, signature)
     exposures <- t(do.call(rbind, decomp_res))
     colnames(exposures) <- colnames(counts_table)
     rownames(exposures) <- colnames(signature)
@@ -525,7 +525,7 @@ lda_posterior <- function(counts_table, signature, max.iter = 100,
   return(list(samp_sig_prob_mat = samp_sig_prob_mat, theta.poster = theta))
 }
 
-predict_decompTumor2Sig <- function(sample_mat, signature_mat) {
+.predict_decomp_tumor2sig <- function(sample_mat, signature_mat) {
   # Alexandrov-type prediction
   input_signatures_normalized <- apply(
     signature_mat, 2,
@@ -984,7 +984,7 @@ combine_predict_grid <- function(musica, modality, signature_res,
 
   # check if valid modality
   if (!(modality %in%
-        names(get_result_list_entry(musica, result_name)@modality))) {
+          names(get_result_list_entry(musica, result_name)@modality))) {
     stop(
       modality, " is not a valid modality. Current modalities are: ",
       paste(names(get_result_list_entry(musica, result_name)@modality),
@@ -1007,7 +1007,7 @@ combine_predict_grid <- function(musica, modality, signature_res,
   sig_names <- sig_names[order(sig_names)]
 
   comb <- NULL
-  for (i in seq_len(length(grid_list))) {
+  for (i in seq_along(grid_list)) {
     if (!table_selected(grid_list[[i]]) %in% modality) {
       stop(
         "Result number: ", i, " was not in selected table_name: ",
@@ -1042,8 +1042,9 @@ combine_predict_grid <- function(musica, modality, signature_res,
   comb <- comb[, samples[samples %in% colnames(comb)], drop = FALSE]
 
   musica@result_list[[result_name]]@modality[[modality]] <-
-    get_modality(musica, result_name, modality)[!names(
-      get_modality(musica, result_name, modality)) %in% model_ids]
+    get_modality(musica, result_name, modality)[
+      !names(get_modality(musica, result_name, modality)) %in% model_ids
+    ]
 
   if (is.null(model_rename)) {
     model_id <- paste(model_ids, collapse = ".")

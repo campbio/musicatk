@@ -21,7 +21,8 @@ benchmark runs, organized by run.}
 \item{\code{sig_view_summary}}{A matrix containing summary information across all
 benchmark runs, organized by signature.}
 
-\item{\code{indv_benchmarks}}{A list of \code{\linkS4class{single_benchmark}} objects,
-each containing information from a single benchmark run.}
+\item{\code{indv_benchmarks}}{A list of
+\code{\linkS4class{single_benchmark}} objects, each containing information
+from a single benchmark run.}
 }}
 

@@ -162,7 +162,7 @@
 
 #' synthetic_breast_counts
 #'
-#' A data.frame containing the SBS96 mutation counts for a synthetic breast 
+#' A data.frame containing the SBS96 mutation counts for a synthetic breast
 #' cancer dataset with 214 samples.
 #'
 #' @docType data
@@ -177,7 +177,7 @@
 
 #' synthetic_breast_true_exposures
 #'
-#' A data.frame containing true signature exposure levels for a synthetic 
+#' A data.frame containing true signature exposure levels for a synthetic
 #' breast cancer dataset with 214 samples and 8 signatures.
 #'
 #' @docType data
@@ -207,8 +207,9 @@
 
 #' example_predicted_exp
 #'
-#' A matrix containing the predicted signature exposure levels for a synthetic 
-#' breast cancer dataset with 214 samples, generated using NMF and k=8 signatures.
+#' A matrix containing the predicted signature exposure levels for a synthetic
+#' breast cancer dataset with 214 samples, generated using NMF and k=8
+#' signatures.
 #'
 #' @docType data
 #'
@@ -222,7 +223,8 @@
 
 #' full_benchmark_example
 #'
-#' A \code{full_benchmark} object containing ground truth signatures and exposures
+#' A \code{full_benchmark} object containing ground truth signatures and
+#' exposures
 #' from a synthetic breast cancer dataset with 8 known signatures as well as
 #' a disocvery prediction that has been benchmarked.
 #'

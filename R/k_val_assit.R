@@ -61,8 +61,8 @@ compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
   signatures_list <- list()
 
   # loop through the k values to test
-  for (index in seq_len(length(k_list))) {
-    
+  for (index in seq_along(k_list)) {
+
     message("\nk = ", k_list[index], ":\n", sep = "")
 
     # run discovery
@@ -98,15 +98,15 @@ compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
     signatures_list[[paste(k_list[index], "Signatures")]] <- signatures
 
     # calculate RE
-    RE <- .get_average_error(
+    re <- .get_average_error(
       result_actual, predicted_results_list, error_type,
       count_table, boot_tables_all
     )
-    avg_RE <- RE[[1]]
-    min_RE <- RE[[2]]
-    max_RE <- RE[[3]]
-    sd_RE <- RE[[4]]
-    sterror_RE <- sd_RE / sqrt(reps + 1)
+    avg_re <- re[[1]]
+    min_re <- re[[2]]
+    max_re <- re[[3]]
+    sd_re <- re[[4]]
+    sterror_re <- sd_re / sqrt(reps + 1)
 
     # add to dataframe
     if (k_list[index] > 1) {
@@ -119,11 +119,11 @@ compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
           max_sil_width = max_sil_width,
           sd_sil_width = sd_sil_width,
           sterror_sil_width = sterror_sil_width,
-          error = avg_RE,
-          min_error = min_RE,
-          max_error = max_RE,
-          sd_error = sd_RE,
-          sterror_error = sterror_RE
+          error = avg_re,
+          min_error = min_re,
+          max_error = max_re,
+          sd_error = sd_re,
+          sterror_error = sterror_re
         )
       )
     } else {
@@ -136,11 +136,11 @@ compare_k_vals <- function(musica, modality, reps = 100, min_k = 1, max_k = 10,
           max_sil_width = NA,
           sd_sil_width = NA,
           sterror_sil_width = NA,
-          error = avg_RE,
-          min_error = min_RE,
-          max_error = max_RE,
-          sd_error = sd_RE,
-          sterror_error = sterror_RE
+          error = avg_re,
+          min_error = min_re,
+          max_error = max_re,
+          sd_error = sd_re,
+          sterror_error = sterror_re
         )
       )
     }
@@ -265,13 +265,13 @@ plot_k_comparison <- function(k_comparison) {
 
 # generate all bootstrapped count tables that will be used
 .gen_all_boots <- function(count_table, reps) {
-  
+
   boot_tables_all <- NULL
-  
+
   for (iteration in seq_len(reps)) {
     boot_tables_all[[iteration]] <- .resample_count_table(count_table)
   }
-  
+
   return(boot_tables_all)
 }
 
@@ -372,147 +372,147 @@ plot_k_comparison <- function(k_comparison) {
 # This function copied from the conclust package, which has been removed from
 # the CRAN repository. Archived version available here:
 # https://cran.r-project.org/src/contrib/Archive/conclust/
-ckmeans <- function(data, k, mustLink, cantLink, maxIter = 100) {
+ckmeans <- function(data, k, must_link, cant_link, max_iter = 100) {
   dist <- function(x, y) {
     tmp <- x - y
     sum(tmp * tmp)
   }
-    
+
   violate <- function(i, j) {
     for (u in mlw[[i]]) {
       if (label[u] != 0 && label[u] != j)
-        return(1);
+        return(1)
     }
     for (u in clw[[i]]) {
       if (label[u] == j)
-        return(1);
+        return(1)
     }
     0
   }
-  
-  findMustLink <- function(i) {
-    tmp = c()
+
+  find_must_link <- function(i) {
+    tmp <- c()
     for (j in 1:n) {
-      if (M[i, j] == 1)
-        tmp = c(tmp, j)
+      if (must_mat[i, j] == 1)
+        tmp <- c(tmp, j)
     }
     tmp
   }
-  
-  findCantLink <- function(i) {
-    tmp = c()
+
+  find_cant_link <- function(i) {
+    tmp <- c()
     for (j in 1:n) {
-      if (C[i, j] == 1)
-        tmp = c(tmp, j)
+      if (cant_mat[i, j] == 1)
+        tmp <- c(tmp, j)
     }
     tmp
   }
-  
-  data = as.matrix(data)
+
+  data <- as.matrix(data)
   n <- nrow(data)
   d <- ncol(data)
-  nm <- nrow(mustLink)
-  nc <- nrow(cantLink)
-  
-  M = matrix(0, nrow = n, ncol = n)
+  nm <- nrow(must_link)
+  nc <- nrow(cant_link)
+
+  must_mat <- matrix(0, nrow = n, ncol = n)
   for (i in 1:nm) {
     if (i > nm)
-      break;
-    u = mustLink[i, 1]
-    v = mustLink[i, 2]
-    M[u, v] = 1
-    M[v, u] = 1
+      break
+    u <- must_link[i, 1]
+    v <- must_link[i, 2]
+    must_mat[u, v] <- 1
+    must_mat[v, u] <- 1
   }
   for (u in 1:n) {
     for (i in 1:n) {
       for (j in 1:n) {
-        if (M[i, u] == 1 && M[u, j] == 1)
-          M[i, j] = 1
+        if (must_mat[i, u] == 1 && must_mat[u, j] == 1)
+          must_mat[i, j] <- 1
       }
     }
   }
-  
-  tp = rep(0, n)
-  ntp = 0
+
+  tp <- rep(0, n)
+  ntp <- 0
   for (i in 1:n) {
     if (tp[i] == 0) {
-      ntp = ntp + 1
-      tp[i] = ntp
-      j = i + 1
+      ntp <- ntp + 1
+      tp[i] <- ntp
+      j <- i + 1
       while (j <= n) {
-        if (tp[j] == 0 && M[i, j] == 1)
-          tp[j] = ntp
-        j = j + 1
+        if (tp[j] == 0 && must_mat[i, j] == 1)
+          tp[j] <- ntp
+        j <- j + 1
       }
     }
   }
-  
-  findMember <- function(v) {
-    tmp = c()
+
+  find_member <- function(v) {
+    tmp <- c()
     for (u in 1:n) {
       if (tp[u] == v)
-        tmp = c(tmp, u)
+        tmp <- c(tmp, u)
     }
     tmp
   }
-  tmpPi = lapply(1:ntp, findMember)
-  
-  C = matrix(0, nrow = n, ncol = n)
+  tmp_pi <- lapply(1:ntp, find_member)
+
+  cant_mat <- matrix(0, nrow = n, ncol = n)
   for (i in 1:nc) {
     if (i > nc)
-      break;
-    u = cantLink[i, 1]
-    v = cantLink[i, 2]
-    x = tp[u]
-    y = tp[v]
+      break
+    u <- cant_link[i, 1]
+    v <- cant_link[i, 2]
+    x <- tp[u]
+    y <- tp[v]
     if (x != y) {
-      for (p in tmpPi[[x]]) {
-        for (q in tmpPi[[y]]) {
-          C[p, q] = 1
-          C[q, p] = 1
+      for (p in tmp_pi[[x]]) {
+        for (q in tmp_pi[[y]]) {
+          cant_mat[p, q] <- 1
+          cant_mat[q, p] <- 1
         }
       }
     }
   }
-  
-  mlw <- lapply(1:n, findMustLink)
-  clw <- lapply(1:n, findCantLink)
-  
+
+  mlw <- lapply(1:n, find_must_link)
+  clw <- lapply(1:n, find_cant_link)
+
   #set.seed(9191)
   tmp <- sample(1:n, k)
-  C <- matrix(nrow = k, ncol = d)
+  centers <- matrix(nrow = k, ncol = d)
   for (i in 1:k) {
-    C[i,] = data[tmp[i],]
+    centers[i, ] <- data[tmp[i], ]
   }
-  for (iter in 1:maxIter) {
+  for (iter in 1:max_iter) {
     label <- rep(0, n)
     for (i in 1:n) {
       dd <- rep(1e15, k)
       best <- -1
       for (j in 1:k) {
         if (violate(i, j) == 0) {
-          dd[j] <- dist(data[i,], C[j,])
+          dd[j] <- dist(data[i, ], centers[j, ])
           if (best == -1 || dd[j] < dd[best]) {
-            best = j
+            best <- j
           }
         }
       }
       if (best == -1)
-        return(0)    
+        return(0)
       label[i] <- best
     }
-    if (iter == maxIter)
+    if (iter == max_iter)
       return(label)
-    C2 <- matrix(0, nrow = k, ncol = d)
+    center_sums <- matrix(0, nrow = k, ncol = d)
     dem <- rep(0, k)
     for (i in 1:n) {
-      j = label[i]
-      C2[j,] = C2[j,] + data[i,]
-      dem[j] = dem[j] + 1
+      j <- label[i]
+      center_sums[j, ] <- center_sums[j, ] + data[i, ]
+      dem[j] <- dem[j] + 1
     }
     for (i in 1:k) {
       if (dem[i] > 0)
-        C[i,] = 1.0 * C2[i,] / dem[i]
+        centers[i, ] <- 1.0 * center_sums[i, ] / dem[i]
     }
   }
 }
@@ -545,10 +545,10 @@ ckmeans <- function(data, k, mustLink, cantLink, maxIter = 100) {
 
   # must link constraint is empty matrix
   must_link <- matrix(c(NA, NA), nrow = 1)
-  
+
   ckmeans <- ckmeans(
     data = t(signatures), k = k,
-    mustLink = must_link, cantLink = cant_link
+    must_link = must_link, cant_link = cant_link
   )
 
   return(ckmeans)
@@ -668,7 +668,7 @@ ckmeans <- function(data, k, mustLink, cantLink, maxIter = 100) {
   errors <- c(errors, error)
 
   # loop through the bootstrapped predictions
-  for (index in seq_len(length(predicted_results_list))) {
+  for (index in seq_along(predicted_results_list)) {
     # access the musica result object
     prediction <- predicted_results_list[[index]]
 
