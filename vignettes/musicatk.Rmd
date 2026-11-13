@@ -243,32 +243,43 @@ plot_signatures(musica, model_id = "ex_result", modality = "SBS96")
 By default, the scales on the y-axis are forced to be the same across all 
 signatures. This behavior can be turned off by setting `same_scale = FALSE`.
 Signatures can be re-named based on prior knowledge and displayed in the plots.
-Here, each signature is named after the known etiology of its most similar
-COSMIC V3 signature (see the comparison to COSMIC below). The exome version of
+Here, each signature is named after the etiology of the most similar COSMIC V3
+signature among a few with well-known etiologies (see the comparison to COSMIC
+below). The exome version of
 the COSMIC signatures is used because these samples were sequenced by whole
-exome sequencing. A signature whose closest COSMIC signature is not in the list
-of etiologies gets the name of that COSMIC signature. APOBEC activity usually
+exome sequencing, and `genome_build = "hg38"` because the variants were called
+on hg38. For whole genome data, use `sample_type = "genome"`. By default the
+comparison uses the latest COSMIC version, v3.6 (101 SBS signatures), and
+`compare_cosmic_v3` prints a message naming the version and build it used. Set
+`cosmic_version = "3.0"` to reproduce results from earlier versions of
+musicatk. Only matches to the signatures in the list of etiologies are used,
+since a newer COSMIC signature of another etiology can be slightly more
+similar; a signature with no such match keeps its name. APOBEC activity usually
 causes two COSMIC signatures together, SBS2 and SBS13, so a discovered APOBEC
 signature is often a mix of both and less similar to either one alone; a
 threshold of 0.7 keeps it among the matches:
 
 ```{r, name_sigs}
 # Compare each signature to the COSMIC V3 signatures
-matches <- compare_cosmic_v3(musica, "ex_result", "exome", threshold = 0.7)
+matches <- compare_cosmic_v3(musica, "ex_result", "exome",
+  genome_build = "hg38", threshold = 0.7
+)
 
-# Keep the most similar COSMIC signature of each signature
-best <- matches[!duplicated(matches$x_sig_name), ]
-best_match <- best$y_sig_name[match(colnames(sigs), best$x_sig_name)]
-
-# Name each signature after the etiology of its most similar COSMIC signature
+# COSMIC signatures with well-known etiologies
 etiology <- c(
   SBS4 = "Smoking", SBS2 = "APOBEC", SBS13 = "APOBEC",
   SBS7a = "UV", SBS7b = "UV"
 )
+
+# Keep the most similar of these for each signature (matches are sorted by
+# decreasing similarity)
+matches <- matches[matches$y_sig_name %in% names(etiology), ]
+best <- matches[!duplicated(matches$x_sig_name), ]
+best_match <- best$y_sig_name[match(colnames(sigs), best$x_sig_name)]
+
+# Name each signature after the etiology of that COSMIC signature
 sig_names <- colnames(sigs)
-sig_names[!is.na(best_match)] <- best_match[!is.na(best_match)]
-known <- sig_names %in% names(etiology)
-sig_names[known] <- etiology[sig_names[known]]
+sig_names[!is.na(best_match)] <- etiology[best_match[!is.na(best_match)]]
 # Signature names must be unique, e.g. if two signatures look like APOBEC
 sig_names <- make.unique(sig_names, sep = " ")
 name_signatures(musica, "ex_result", sig_names)

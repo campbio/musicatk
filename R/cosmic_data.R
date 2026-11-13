@@ -19,10 +19,19 @@
 #' @source COSMIC v2, <https://cancer.sanger.ac.uk/cosmic/signatures_v2>
 "cosmic_v2_sigs"
 
-#' COSMIC v3 SBS96 Exome Signatures Result Object
+#' COSMIC v3.0 SBS96 Exome Signatures Result Object (GRCh37)
 #'
 #' Data from COSMIC formatted to be used for prediction with individual tumors
-#' and cohorts.
+#' and cohorts. Contains the 65 COSMIC v3.0 SBS signatures normalized to the
+#' GRCh37 exome.
+#'
+#' @section Version:
+#' This object is COSMIC v3.0 and will stay v3.0, so code that uses it gives
+#' the same results across musicatk releases. The v3.6 exome catalogues are
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch37_exome}} and
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch38_exome}}.
+#' \code{compare_cosmic_v3(sample_type = "exome")} uses the newest version by
+#' default; set \code{cosmic_version = "3.0"} to compare against this object.
 #'
 #' @docType data
 #'
@@ -34,16 +43,25 @@
 #' @keywords datasets
 #'
 #' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
-#' The repertoire of mutational signatures in human cancer. Nature 578, 94–101
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
 #' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
 #'
-#' @source COSMIC v3, <https://cancer.sanger.ac.uk/cosmic/signatures>
+#' @source COSMIC v3.0 (May 2019), <https://cancer.sanger.ac.uk/signatures/>
 "cosmic_v3_sbs_sigs_exome"
 
-#' COSMIC v3 SBS96 Genome Signatures Result Object
+#' COSMIC v3.0 SBS96 Genome Signatures Result Object (GRCh37)
 #'
 #' Data from COSMIC formatted to be used for prediction with individual tumors
-#' and cohorts.
+#' and cohorts. Contains the 67 COSMIC v3.0 SBS signatures normalized to the
+#' GRCh37 genome.
+#'
+#' @section Version:
+#' This object is COSMIC v3.0 and will stay v3.0, so code that uses it gives the
+#' same results across musicatk releases. Newer COSMIC versions ship as separate
+#' objects with the version in their names, such as
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch37}}. \code{compare_cosmic_v3()} uses
+#' the newest version by default; set \code{cosmic_version = "3.0"} to compare
+#' against this object.
 #'
 #' @docType data
 #'
@@ -55,16 +73,25 @@
 #' @keywords datasets
 #'
 #' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
-#' The repertoire of mutational signatures in human cancer. Nature 578, 94–101
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
 #' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
 #'
-#' @source COSMIC v3, <https://cancer.sanger.ac.uk/cosmic/signatures>
+#' @source COSMIC v3.0 (May 2019), <https://cancer.sanger.ac.uk/signatures/>
 "cosmic_v3_sbs_sigs"
 
-#' COSMIC v3 DBS Genome Signatures Result Object
+#' COSMIC v3.0 DBS Genome Signatures Result Object (GRCh37)
 #'
 #' Data from COSMIC formatted to be used for prediction with individual tumors
-#' and cohorts.
+#' and cohorts. Contains the 11 COSMIC v3.0 DBS signatures normalized to the
+#' GRCh37 genome.
+#'
+#' @section Version:
+#' This object is COSMIC v3.0 and will stay v3.0, so code that uses it gives the
+#' same results across musicatk releases. Newer COSMIC versions ship as separate
+#' objects with the version in their names, such as
+#' \code{\link{cosmic_v3_6_dbs_sigs_grch37}}. \code{compare_cosmic_v3()} uses
+#' the newest version by default; set \code{cosmic_version = "3.0"} to compare
+#' against this object.
 #'
 #' @docType data
 #'
@@ -76,16 +103,25 @@
 #' @keywords datasets
 #'
 #' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
-#' The repertoire of mutational signatures in human cancer. Nature 578, 94–101
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
 #' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
 #'
-#' @source COSMIC v3, <https://cancer.sanger.ac.uk/cosmic/signatures>
+#' @source COSMIC v3.0 (May 2019), <https://cancer.sanger.ac.uk/signatures/>
 "cosmic_v3_dbs_sigs"
 
-#' COSMIC v3 Indel Genome Signatures Result Object
+#' COSMIC v3.0 Indel Genome Signatures Result Object
 #'
 #' Data from COSMIC formatted to be used for prediction with individual tumors
-#' and cohorts.
+#' and cohorts. Contains the 17 COSMIC v3.0 Indel signatures. COSMIC publishes
+#' one Indel catalogue per version, used for any build.
+#'
+#' @section Version:
+#' This object is COSMIC v3.0 and will stay v3.0, so code that uses it gives the
+#' same results across musicatk releases. Newer COSMIC versions ship as separate
+#' objects with the version in their names, such as
+#' \code{\link{cosmic_v3_6_indel_sigs}}. \code{compare_cosmic_v3()} uses the
+#' newest version by default; set \code{cosmic_version = "3.0"} to compare
+#' against this object.
 #'
 #' @docType data
 #'
@@ -97,11 +133,193 @@
 #' @keywords datasets
 #'
 #' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
-#' The repertoire of mutational signatures in human cancer. Nature 578, 94–101
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
 #' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
 #'
-#' @source COSMIC v3, <https://cancer.sanger.ac.uk/cosmic/signatures>
+#' @source COSMIC v3.0 (May 2019), <https://cancer.sanger.ac.uk/signatures/>
 "cosmic_v3_indel_sigs"
+
+#' COSMIC v3.6 SBS96 Genome Signatures Result Object (GRCh37)
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 101 COSMIC v3.6 SBS signatures normalized to the
+#' GRCh37 trinucleotide frequencies. \code{\link{cosmic_v3_6_sbs_sigs_grch38}}
+#' has the same signatures normalized to GRCh38. Use the object that matches the
+#' build the variants were called against. \code{compare_cosmic_v3()} picks it
+#' from \code{genome_build}.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_sbs_sigs_grch37)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_sbs_sigs_grch37"
+
+#' COSMIC v3.6 SBS96 Genome Signatures Result Object (GRCh38)
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 101 COSMIC v3.6 SBS signatures normalized to the
+#' GRCh38 trinucleotide frequencies. \code{\link{cosmic_v3_6_sbs_sigs_grch37}}
+#' has the same signatures normalized to GRCh37. Use the object that matches the
+#' build the variants were called against. \code{compare_cosmic_v3()} picks it
+#' from \code{genome_build}.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_sbs_sigs_grch38)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_sbs_sigs_grch38"
+
+#' COSMIC v3.6 SBS96 Exome Signatures Result Object (GRCh37)
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 101 COSMIC v3.6 SBS signatures normalized to the
+#' GRCh37 exome trinucleotide frequencies, for whole-exome data.
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch38_exome}} has the same signatures
+#' normalized to the GRCh38 exome, and
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch37}} to the GRCh37 genome.
+#' \code{compare_cosmic_v3(sample_type = "exome")} picks it from
+#' \code{genome_build}.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_sbs_sigs_grch37_exome)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), exome-normalized matrices from
+#' SigProfilerAssignment
+#' (<https://github.com/SigProfilerSuite/SigProfilerAssignment>), whose genome
+#' matrices match <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_sbs_sigs_grch37_exome"
+
+#' COSMIC v3.6 SBS96 Exome Signatures Result Object (GRCh38)
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 101 COSMIC v3.6 SBS signatures normalized to the
+#' GRCh38 exome trinucleotide frequencies, for whole-exome data.
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch37_exome}} has the same signatures
+#' normalized to the GRCh37 exome, and
+#' \code{\link{cosmic_v3_6_sbs_sigs_grch38}} to the GRCh38 genome.
+#' \code{compare_cosmic_v3(sample_type = "exome")} picks it from
+#' \code{genome_build}.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_sbs_sigs_grch38_exome)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), exome-normalized matrices from
+#' SigProfilerAssignment
+#' (<https://github.com/SigProfilerSuite/SigProfilerAssignment>), whose genome
+#' matrices match <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_sbs_sigs_grch38_exome"
+
+#' COSMIC v3.6 DBS Genome Signatures Result Object (GRCh37)
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 22 COSMIC v3.6 DBS signatures normalized to the
+#' GRCh37 dinucleotide frequencies. \code{\link{cosmic_v3_6_dbs_sigs_grch38}}
+#' has the same signatures normalized to GRCh38. Use the object that matches the
+#' build the variants were called against. \code{compare_cosmic_v3()} picks it
+#' from \code{genome_build}.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_dbs_sigs_grch37)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_dbs_sigs_grch37"
+
+#' COSMIC v3.6 DBS Genome Signatures Result Object (GRCh38)
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 22 COSMIC v3.6 DBS signatures normalized to the
+#' GRCh38 dinucleotide frequencies. \code{\link{cosmic_v3_6_dbs_sigs_grch37}}
+#' has the same signatures normalized to GRCh37. Use the object that matches the
+#' build the variants were called against. \code{compare_cosmic_v3()} picks it
+#' from \code{genome_build}.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_dbs_sigs_grch38)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_dbs_sigs_grch38"
+
+#' COSMIC v3.6 Indel Genome Signatures Result Object
+#'
+#' Data from COSMIC formatted to be used for prediction with individual tumors
+#' and cohorts. Contains the 25 COSMIC v3.6 Indel signatures. COSMIC publishes
+#' one Indel catalogue per version, used for any build.
+#'
+#' @docType data
+#'
+#' @usage data(cosmic_v3_6_indel_sigs)
+#'
+#' @format An object of class \code{result_model}.
+#' See [predict_exposure()].
+#'
+#' @keywords datasets
+#'
+#' @references Alexandrov, L.B., Kim, J., Haradhvala, N.J. et al. (2020)
+#' The repertoire of mutational signatures in human cancer. Nature 578, 94-101
+#' ([Nature](https://doi.org/10.1038/s41586-020-1943-3))
+#'
+#' @source COSMIC v3.6 (May 2026), <https://cancer.sanger.ac.uk/signatures/>
+"cosmic_v3_6_indel_sigs"
 
 #' Replication strand of the hg19 genome as a GRanges object
 #'

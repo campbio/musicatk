@@ -15,7 +15,9 @@ compare_cosmic_v3(
   threshold = 0.9,
   result_rename = deparse(substitute(model_id)),
   decimals = 2,
-  same_scale = FALSE
+  same_scale = FALSE,
+  genome_build = "hg19",
+  cosmic_version = "latest"
 )
 }
 \arguments{
@@ -42,9 +44,29 @@ for 1 minus the Jensen-Shannon Divergence. Default \code{"cosine"}.}
 \item{same_scale}{If \code{TRUE}, the scale of the probability for each
 signature will be the same. If \code{FALSE}, then the scale of the y-axis
 will be adjusted for each signature. Default \code{TRUE}.}
+
+\item{genome_build}{Reference build the COSMIC signatures are normalized to,
+either \code{"hg19"}/\code{"GRCh37"} or \code{"hg38"}/\code{"GRCh38"}. This
+should match the build the variants were called against. Case is ignored,
+and \code{"19"}, \code{"38"}, \code{19} and \code{38} also work. COSMIC
+publishes one Indel catalogue per version, used for either build. The v3.0
+exome catalogue is GRCh37 only. Default \code{"hg19"}.}
+
+\item{cosmic_version}{COSMIC version to compare against: \code{"latest"},
+\code{"3.0"} or \code{"3.6"} (also given as the number \code{3.6} or as
+\code{"v3.6"}). \code{"latest"} uses the newest version that
+has a catalogue for the sample type, modality and build, which is v3.6
+for every catalogue musicatk ships. Use \code{"3.0"} to reproduce results
+from musicatk 2.7.15 and earlier, which compared against v3.0 (GRCh37)
+only. A version without a
+matching catalogue is an error listing the catalogues musicatk ships;
+there is no fallback to another version or build. Default \code{"latest"}.}
 }
 \value{
-Returns the comparisons
+Returns the comparisons. Its \code{"cosmic_catalogue"} attribute is
+the name of the COSMIC data object compared against, such as
+\code{"cosmic_v3_6_sbs_sigs_grch37"}, and a message names its version,
+modality, sample type and build.
 }
 \description{
 Compare a result object to COSMIC V3 Signatures; Select exome or genome for
@@ -52,8 +74,13 @@ SBS and only genome for DBS or Indel classes
 }
 \examples{
 data(res)
+# The example data are hg38, so compare against the GRCh38 catalogue
 compare_cosmic_v3(res,
   model_id = "res", modality = "SBS96",
-  sample_type = "genome", threshold = 0.8
+  sample_type = "genome", genome_build = "hg38", threshold = 0.8
 )
+}
+\seealso{
+\code{\link{cosmic_v3_6_sbs_sigs_grch37}} and the other COSMIC
+signature objects.
 }

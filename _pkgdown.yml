@@ -141,6 +141,13 @@ reference:
   - '`cosmic_v3_indel_sigs`'
   - '`cosmic_v3_sbs_sigs`'
   - '`cosmic_v3_sbs_sigs_exome`'
+  - '`cosmic_v3_6_sbs_sigs_grch37`'
+  - '`cosmic_v3_6_sbs_sigs_grch38`'
+  - '`cosmic_v3_6_sbs_sigs_grch37_exome`'
+  - '`cosmic_v3_6_sbs_sigs_grch38_exome`'
+  - '`cosmic_v3_6_dbs_sigs_grch37`'
+  - '`cosmic_v3_6_dbs_sigs_grch38`'
+  - '`cosmic_v3_6_indel_sigs`'
 - title: Miscellaneous functions
   contents:
   - '`cosmic_v2_subtype_map`'

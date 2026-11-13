@@ -777,9 +777,6 @@ parse_delete_event <- function(idstr) {
 ###################### Nathan's Code ##########################################
   # needed to predict cosmic sigs
   data("cosmic_v2_sigs")
-  data("cosmic_v3_sbs_sigs")
-  data("cosmic_v3_dbs_sigs")
-  data("cosmic_v3_indel_sigs")
 
   # Renaming COSMIC signatures.
   sbs_aet <- list("SBS1" =
@@ -817,6 +814,10 @@ parse_delete_event <- function(idstr) {
                   "SBS20" = "SBS20 - MMR deficiency + POLD1 mutation",
                   "SBS21" = "SBS21 - MMR deficiency",
                   "SBS22" = "SBS22 - Aristolochic acid exposure",
+                  # COSMIC v3.4 split SBS22 and SBS40 into a/b/c variants
+                  "SBS22a" = "SBS22a - Aristolochic acid exposure",
+                  "SBS22b" = "SBS22b - Aristolochic acid exposure",
+                  "SBS22c" = "SBS22c - Aristolochic acid exposure",
                   "SBS23" = "SBS23 - Unknown",
                   "SBS24" = "SBS24 - Aflatoxin exposure",
                   "SBS25" = "SBS25 - Unknown (Unknown chemotherapy)",
@@ -837,6 +838,9 @@ parse_delete_event <- function(idstr) {
                     "SBS38 - Unknown (UV light exposure (indirect effect))",
                   "SBS39" = "SBS39 - Unknown",
                   "SBS40" = "SBS40 - Unknown",
+                  "SBS40a" = "SBS40a - Unknown",
+                  "SBS40b" = "SBS40b - Unknown",
+                  "SBS40c" = "SBS40c - Unknown",
                   "SBS41" = "SBS41 - Unknown",
                   "SBS42" = "SBS42 - Haloalkanes exposure",
                   "SBS43" = "SBS43 - Unknown (Possible sequencing artifact)",
@@ -919,17 +923,53 @@ parse_delete_event <- function(idstr) {
                     "ID17" = "ID17 - TOP2A mutation",
                     "ID18" = "ID18 - Colibactin exposure"
   )
-  colnames(signatures(cosmic_v3_sbs_sigs)) <-
-    sbs_aet[colnames(signatures(cosmic_v3_sbs_sigs))]
-  colnames(signatures(cosmic_v3_dbs_sigs)) <-
-    dbs_aet[colnames(signatures(cosmic_v3_dbs_sigs))]
-  colnames(signatures(cosmic_v3_indel_sigs)) <-
-    indel_aet[colnames(signatures(cosmic_v3_indel_sigs))]
-
-  cosmic_objects <- list("cosmic_v3_sbs_sigs" = cosmic_v3_sbs_sigs,
-                      "cosmic_v3_dbs_sigs" = cosmic_v3_dbs_sigs,
-                      "cosmic_v3_indel_sigs" = cosmic_v3_indel_sigs,
-                      "cosmic_v2_sigs" = cosmic_v2_sigs)
+  # COSMIC adds signatures faster than the aetiology tables above are updated,
+  # so fall back to the bare signature name rather than labelling it "NULL".
+  fill_aet <- function(nms, aet) {
+    vapply(nms, function(n) if (n %in% names(aet)) aet[[n]] else n,
+           character(1), USE.NAMES = FALSE)
+  }
+  # COSMIC signature sets offered for prediction, newest version first
+  # (ADR 0003). Names are the labels shown; values are the data objects.
+  cosmic_predict_choices <- list(
+    "COSMIC v3.6 SBS (GRCh37)" = "cosmic_v3_6_sbs_sigs_grch37",
+    "COSMIC v3.6 SBS (GRCh38)" = "cosmic_v3_6_sbs_sigs_grch38",
+    "COSMIC v3.6 SBS exome (GRCh37)" = "cosmic_v3_6_sbs_sigs_grch37_exome",
+    "COSMIC v3.6 SBS exome (GRCh38)" = "cosmic_v3_6_sbs_sigs_grch38_exome",
+    "COSMIC v3.6 DBS (GRCh37)" = "cosmic_v3_6_dbs_sigs_grch37",
+    "COSMIC v3.6 DBS (GRCh38)" = "cosmic_v3_6_dbs_sigs_grch38",
+    "COSMIC v3.6 Indel" = "cosmic_v3_6_indel_sigs",
+    "COSMIC v3.0 SBS (GRCh37)" = "cosmic_v3_sbs_sigs",
+    "COSMIC v3.0 SBS exome (GRCh37)" = "cosmic_v3_sbs_sigs_exome",
+    "COSMIC v3.0 DBS (GRCh37)" = "cosmic_v3_dbs_sigs",
+    "COSMIC v3.0 Indel" = "cosmic_v3_indel_sigs",
+    "COSMIC v2 Signatures" = "cosmic_v2_sigs"
+  )
+  cosmic_aet <- list(SBS96 = sbs_aet, DBS78 = dbs_aet, IND83 = indel_aet)
+  cosmic_v3_objects <- setdiff(unlist(cosmic_predict_choices), "cosmic_v2_sigs")
+  label_cosmic <- function(x) {
+    obj <- getExportedValue("musicatk", x)
+    colnames(signatures(obj)) <-
+      fill_aet(colnames(signatures(obj)), cosmic_aet[[modality(obj)]])
+    obj
+  }
+  cosmic_objects <- lapply(
+    stats::setNames(nm = cosmic_v3_objects), label_cosmic
+  )
+  cosmic_objects$cosmic_v2_sigs <- cosmic_v2_sigs
+  # The default prediction set: v3.6 SBS for the import genome's build
+  default_predict_cosmic <- function() {
+    if (identical(vals$genome, "hg38")) {
+      "cosmic_v3_6_sbs_sigs_grch38"
+    } else {
+      "cosmic_v3_6_sbs_sigs_grch37"
+    }
+  }
+  # The compare tab picks the build with its own genome build input
+  # compare_cosmic_v3() picks the catalogue from the modality, build and
+  # version, so V3 is one choice here
+  compare_cosmic_choices <- c("COSMIC V3" = "cosmic_v3",
+                              "COSMIC V2" = "cosmic_v2_sigs")
 
   # Update musica object list whenever a result or musica object is altered
   output$annotation_musica_list <- renderUI({
@@ -1348,13 +1388,8 @@ parse_delete_event <- function(idstr) {
     if (is.null(other)) {
       tagList(
         selectInput("predicted_result", "Result to Predict",
-                    choices = list("Cosmic" = list(
-                      "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
-                      "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
-                      "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
-                      "Cosmic V2 Signatures" = "cosmic_v2_sigs"
-                      )),
-                    selected = "cosmic_v3_sbs_sigs"),
+                    choices = list("Cosmic" = cosmic_predict_choices),
+                    selected = default_predict_cosmic()),
         bsTooltip("predicted_result",
                   "Result model object containing the signatures to predict. 
                   Can use existing COSMIC signatures or signatures from a 
@@ -1364,13 +1399,9 @@ parse_delete_event <- function(idstr) {
     else {
     tagList(
       selectInput("predicted_result", "Result to Predict",
-                  choices = list("Cosmic" = list(
-                    "Cosmic V3 SBS Signatures" = "cosmic_v3_sbs_sigs",
-                    "Cosmic V3 DBS Signatures" = "cosmic_v3_dbs_sigs",
-                    "Cosmic V3 INDEL Signatures" = "cosmic_v3_indel_sigs",
-                    "Cosmic V2 Signatures" = "cosmic_v2_sigs"),
+                  choices = list("Cosmic" = cosmic_predict_choices,
                                  "your signatures" = as.list(other)),
-                  selected = "cosmic_v3_sbs_sigs"),
+                  selected = default_predict_cosmic()),
       #bsTooltip("predicted_result",
       #          "Result model object containing the signatures to predict. 
       #          Can use existing COSMIC signatures or signatures from a 
@@ -1572,11 +1603,31 @@ parse_delete_event <- function(idstr) {
     }
     else{
       output$compare_result_b_cosmic <- renderUI({
+        # Start from the build the variants were imported with, when known
+        build <- if (isTRUE(vals$genome %in% c("hg19", "hg38"))) {
+          vals$genome
+        } else {
+          "hg19"
+        }
         tagList(
           selectInput("select_result_b_cosmic", "Select Cosmic",
-                      choices = as.list(names(cosmic_objects))),
+                      choices = as.list(compare_cosmic_choices)),
           bsTooltip("select_result_b_cosmic",
                     "Cosmic database to compare to",
+                    placement = "right", trigger = "hover", options = NULL),
+          selectInput("compare_genome_build", "Genome build",
+                      choices = c("hg19", "hg38"), selected = build),
+          bsTooltip("compare_genome_build",
+                    paste("Build the variants were called on. Picks the",
+                          "matching COSMIC V3 signatures; not used for V2."),
+                    placement = "right", trigger = "hover", options = NULL),
+          selectInput("compare_cosmic_version", "COSMIC version",
+                      choices = c("Latest" = "latest", "3.0" = "3.0"),
+                      selected = "latest"),
+          bsTooltip("compare_cosmic_version",
+                    paste("COSMIC V3 release to compare to. Use 3.0 to",
+                          "reproduce results from earlier musicatk versions;",
+                          "not used for V2."),
                     placement = "right", trigger = "hover", options = NULL)
         )
       })
@@ -1607,7 +1658,7 @@ parse_delete_event <- function(idstr) {
     #  other <- isolate(get_result(input$select_result_b))
     #}
     # Attempt to compare signatures
-    tryCatch({
+    compared <- tryCatch({
       if (input$cosmic_button == "cosmic"){
         if(input$select_result_b_cosmic == "cosmic_v2_sigs"){
           isolate(vals$comparison <-
@@ -1620,15 +1671,19 @@ parse_delete_event <- function(idstr) {
           b_name <- input$select_result_b_cosmic
         }
         else{
+          cosmic_version <- input$compare_cosmic_version
           isolate(vals$comparison <-
                     compare_cosmic_v3(vals$musica, model_id = input$select_model_a, 
                                       sample_type = "genome",
+                                      genome_build = input$compare_genome_build,
+                                      cosmic_version = cosmic_version,
                                       modality = input$select_modality_a,
                                       result_name = input$select_result_a,
                                       threshold = as.numeric(input$Threshold),
                                       metric = input$compare_metric,
                                       result_rename = paste0(input$select_model_a)))
-          b_name <- input$select_result_b_cosmic
+          # Name the catalogue compare_cosmic_v3() chose, e.g. for "latest"
+          b_name <- attr(isolate(vals$comparison), "cosmic_catalogue")
         }
       }
       else{
@@ -1649,9 +1704,15 @@ parse_delete_event <- function(idstr) {
       #          compare_results(isolate(get_result(input$select_result_a)),
       #                other, threshold = as.numeric(input$Threshold),
       #                metric = input$compare_metric))
+      TRUE
     }, error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
+      FALSE
     })
+    # A failed comparison has no table to label
+    if (!compared) {
+      return()
+    }
     colnames(vals$comparison) <- c(input$compare_metric,
                                    paste0(input$select_model_a, "-Index"),
                                    paste0(b_name, "-Index"),
