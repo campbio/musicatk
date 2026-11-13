@@ -1604,30 +1604,6 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id){
   
 }
 
-# Function for claculating RE
-.get_reconstruction_error <- function(result, count_table){
-  
-  # extract exposures and signatures matrices
-  expos <- exposures(result)
-  sigs <- signatures(result)
-  
-  # convert count table to probabilities
-  count_table_probs <- prop.table(count_table, 2)
-  
-  # convert exposure matrix to probabilities
-  expos_probs <- prop.table(expos, 2)
-  
-  # multiply signature and exposure matrices
-  predicted_count_probs <- sigs %*% expos_probs
-  
-  # calculate sum of differences (reconstruction error)
-  reconstruction_error <- sum(abs(count_table_probs - predicted_count_probs))
-  
-  # return reconstruction error
-  return(reconstruction_error)
-  
-}
-
 # Function to generate single run summary
 .generate_summary <- function(title, result_all, result_true, comparison_results, count_table, final_musica, final_comparison, re_method){
   

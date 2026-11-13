@@ -263,3 +263,29 @@ test_that("Benchmark summaries are data.frames with typed columns (#201)", {
     regexp = "older version of musicatk"
   )
 })
+
+test_that("Initial RE follows re_method (#199)", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS2")])
+  pred <- withr::with_seed(6, cbind(
+    P1 = noisy_sig(sigs[, "SBS1"]), P2 = noisy_sig(sigs[, "SBS2"])
+  ))
+  pred_exposures <- truth$exposures
+  rownames(pred_exposures) <- colnames(pred)
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+
+  prop <- run_benchmark(setup$bench, setup$prediction)
+  expected_prop <- sum(abs(
+    prop.table(truth$counts, 2) - pred %*% prop.table(pred_exposures, 2)
+  ))
+  expect_equal(
+    method_view_summary(prop)[["Initial RE"]], round(expected_prop, 3)
+  )
+
+  raw <- run_benchmark(setup$bench, setup$prediction, re_method = "raw")
+  expected_raw <- sum(abs(truth$counts - pred %*% pred_exposures))
+  expect_equal(
+    method_view_summary(raw)[["Initial RE"]], round(expected_raw, 3)
+  )
+})
