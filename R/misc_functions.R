@@ -47,3 +47,18 @@
   res <- temp %*% t(temp) / (sqrt(rowSums(temp^2) %*% t(rowSums(temp^2))))
   return(res[seq(n_x), -seq(n_x), drop = FALSE])
 }
+
+# Return 'id', or '<id>.<n>' with the smallest n not in 'existing'; a
+# message naming 'label' says when the ID was changed
+.unique_id <- function(id, existing, label) {
+  if (!id %in% existing) {
+    return(id)
+  }
+  tag <- 1
+  while (paste0(id, ".", tag) %in% existing) {
+    tag <- tag + 1
+  }
+  new_id <- paste0(id, ".", tag)
+  message(label, " ", id, " already exists. ", label, " updated to ", new_id)
+  return(new_id)
+}

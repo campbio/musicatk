@@ -1091,7 +1091,9 @@ create_musica_from_variants <- function(x, genome,
 #' (e.g. \code{"A[C>A]A"} or \code{"AC>CA"}), and the rows are matched to the
 #' motifs by name. Without row names, the rows must be in the standard motif
 #' order.
-#' @param variant_class Mutations are SBS, DBS, or Indel.
+#' @param variant_class \code{"SBS96"} (or \code{"SBS"}, \code{"SNV96"},
+#' \code{"SNV"}, \code{"snv"}) or \code{"DBS78"} (or \code{"DBS"},
+#' \code{"dbs"}, \code{"doublet"}). Indels are not supported yet.
 #' @return Returns a musica object
 #' @examples
 #' data(musica)
@@ -1163,7 +1165,7 @@ create_musica_from_counts <- function(x, variant_class) {
 
     # add count table to musica object
     tables(musica)[["SBS96"]] <- tab
-  } else if (variant_class %in% c("DBS", "dbs", "doublet")) {
+  } else if (variant_class %in% c("DBS", "dbs", "doublet", "DBS78")) {
     if (nrow(x) != 78) {
       stop("DBS78 'count_table' must have 78 rows.")
     }

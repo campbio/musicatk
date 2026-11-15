@@ -30,8 +30,9 @@ containing the predicted signatures and exposures to benchmark.}
 \item{prediction_model_id}{The model id of the prediction to be located within
 prediction_musica}
 
-\item{prediction_modality}{The modality of the prediction to benchmark. Must be
-"SBS96", "DBS78", or "IND83".}
+\item{prediction_modality}{The modality of the prediction to benchmark,
+\code{"SBS96"} or \code{"DBS78"}. It must be the modality of the ground
+truth (the table name given by \link{create_benchmark}).}
 
 \item{prediction_result_name}{Name of the result list entry prediction to
 benchmark. Default \code{"result"}.}
@@ -70,6 +71,41 @@ Perform benchmarking on a signature discovery prediction compared
 to a ground truth. Potential errors in the predicted signatures, such as
 composite or duplicate signatures are adjusted, and a summary of the accuracy
 of the prediction is given.
+}
+\details{
+The prediction goes through three stages. \emph{Initial} is the
+prediction as given. In \emph{Intermediate}, predicted signatures that
+duplicate a true signature are merged: each predicted signature joins the
+true signature it matches best, and the signatures of a group are
+replaced by their exposure-weighted mean. In \emph{Final}, each composite
+(a predicted signature matching several true signatures) is split into
+\code{"<true signature>_like"} pieces: the composite is fitted to those
+true signatures with non-negative least squares, and each mutation type's
+probability is divided among them in proportion to the fit. A true
+signature with no weight in the fit gets no piece. The pieces add up to
+the composite and keep its noise, and each gets the composite's exposure
+times its share of the composite. Then a piece and another predicted
+signature that match the same true signature best are merged, as in
+Intermediate.
+
+The run's summary, one row of \link{method_view_summary}, has these
+columns:
+\describe{
+  \item{Num Found, Num Missing}{True signatures matched, and not matched,
+  in the Final stage.}
+  \item{Num Direct Matched, Num Spurious, Num Duplicates, Num Composites,
+  Num Dup/Comp}{Each Initial predicted signature is counted once. A
+  duplicate matches a true signature that another predicted signature
+  also matches; a composite matches several true signatures; Dup/Comp is
+  both. Otherwise it is a direct match (one true signature) or spurious
+  (none).}
+  \item{Initial RE, Final RE}{Reconstruction error of the Initial and
+  Final predictions, by \code{re_method}.}
+  \item{Mean CS, Min CS, Max CS}{Mean, minimum and maximum, over the true
+  signatures found, of each one's best cosine similarity in the Final
+  stage; \code{NA} if none was found.}
+  \item{Sigs Found}{The true signatures found.}
+}
 }
 \examples{
 data(synthetic_breast_counts)

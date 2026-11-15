@@ -65,8 +65,9 @@ signature algorithms. Default \code{10}.}
 \code{method = "nmf"}. Default \code{1}.}
 }
 \value{
-If \code{make_copy == TRUE}, a new \code{full_benchmark} object is
-returned. If \code{make_copy == FALSE}, nothing is returned.
+The \code{\linkS4class{full_benchmark}} object with a benchmark
+run added for each k. A new model is named \code{<algorithm><k>}, or
+\code{<algorithm><k>.<n>} if that name is taken in \code{musica}.
 }
 \description{
 This function will discover signatures from a musica object using a given

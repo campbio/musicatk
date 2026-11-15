@@ -299,3 +299,25 @@ test_that("compare_cosmic_v3 checks cosmic_version and genome_build", {
     "genome_build must be one of"
   )
 })
+
+test_that("compare_results() returns the matches above the threshold", {
+  data(res)
+  sigs <- signatures(res, "result", "SBS96", "res")
+  path <- withr::local_tempfile(fileext = ".pdf")
+  grDevices::pdf(path)
+  comparison <- compare_results(res, "res", "res", threshold = 0.8)
+  grDevices::dev.off()
+  expect_equal(comparison, sig_compare(sigs, sigs, threshold = 0.8))
+  # each signature matches itself, most similar first
+  self <- comparison$x_sig_name == comparison$y_sig_name
+  expect_setequal(comparison$x_sig_name[self], colnames(sigs))
+  expect_false(is.unsorted(rev(comparison$cosine)))
+  expect_error(
+    compare_results(res, "not_a_model", "res"),
+    regexp = "not_a_model is not a valid model_id"
+  )
+  expect_error(
+    sig_compare(sigs, sigs[, 1, drop = FALSE] * 0 + 1 / 96, threshold = 0.99),
+    regexp = "No matches found"
+  )
+})

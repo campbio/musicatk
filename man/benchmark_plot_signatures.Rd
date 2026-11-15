@@ -30,7 +30,9 @@ object containing the signatures to be plotted}
 \item{prediction}{\code{"Initial"} for the signatures before any benchmarking
 adjustments have been made, \code{"Intermediate"} for the signatures after
 duplicates have been adjusted but before composites are adjusted, or
-\code{"Final"} for the signatures at the end of the benchmarking adjustments.}
+\code{"Final"} for the signatures at the end of the benchmarking adjustments.
+Case is ignored, and \code{"Init"}, \code{"Inter"} and \code{"Fin"} are
+accepted too.}
 
 \item{plotly}{If \code{TRUE}, the the plot will be made interactive
 using \code{\link[plotly]{plotly}}. Default \code{FALSE}.}

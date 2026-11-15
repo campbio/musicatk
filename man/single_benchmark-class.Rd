@@ -26,7 +26,7 @@ and true signatures}
 \item{\code{final_comparison}}{The final comparison between predicted and true
 signatures}
 
-\item{\code{single_summary}}{A matrix summarizing the benchmark run}
+\item{\code{single_summary}}{A one-row data.frame summarizing the benchmark run}
 
 \item{\code{method_id}}{An identifier for the benchmark run}
 

@@ -701,3 +701,29 @@ ignoring any `dis.method`. Now that `cluster_exposure()` uses `dis.method`
 for hclust (#173), k picked with `k_select()` may not suit a cosine or
 Manhattan clustering. Found by `/code-review` of PR G.
 
+
+---
+
+## 2026-11-13: benchmarking (PR I of #208)
+
+Found by the spec review of the PR I branch. All are on devel too; not
+fixed there. Candidates for #202 (group K).
+
+### 1. `benchmark(plot = TRUE)` prints `list()`
+
+With no duplicates or composites, `benchmark_plot_duplicate_exposures()`
+and `benchmark_plot_composite_exposures()` return empty lists, and
+`benchmark()` prints them, so "list()" appears in the output.
+
+### 2. A duplicate group with zero total exposure gives NaN
+
+`.correct_duplicates()` divides the exposure-weighted sum of the group's
+signatures by its total, which is 0 when every member has zero exposure
+in every sample, so the merged signature is all NaN.
+
+### 3. Reconstruction error assumes exposure rows follow signatures
+
+`.get_reconstruction_error()` multiplies `signatures %*% exposures`
+without matching the exposure rows to the signature columns by name. The
+benchmark corrections keep them in the same order, but a hand-built
+`result_model` with reordered rows would get a wrong error.

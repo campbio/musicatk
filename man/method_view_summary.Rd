@@ -4,7 +4,7 @@
 \alias{method_view_summary}
 \alias{method_view_summary,full_benchmark-method}
 \alias{method_view_summary<-}
-\alias{method_view_summary<-,full_benchmark,matrix-method}
+\alias{method_view_summary<-,full_benchmark,data.frame-method}
 \title{Retrieve the method_view_summary from a full_benchmark object}
 \usage{
 method_view_summary(x)
@@ -13,17 +13,18 @@ method_view_summary(x)
 
 method_view_summary(x) <- value
 
-\S4method{method_view_summary}{full_benchmark,matrix}(x) <- value
+\S4method{method_view_summary}{full_benchmark,data.frame}(x) <- value
 }
 \arguments{
 \item{x}{A \code{\linkS4class{full_benchmark}} object.}
 
-\item{value}{A matrix containing the method_view_summary.}
+\item{value}{A data.frame containing the method_view_summary.}
 }
 \value{
-A matrix containing the method view summary
+A data.frame containing the method view summary
 }
 \description{
-The \code{method_view_summary} is a matrix containing
-summary information from all benchmark runs, organized by run.
+The \code{method_view_summary} is a data.frame with one
+row per benchmark run (the row names are the method IDs). Its columns are
+described in \link{benchmark}.
 }

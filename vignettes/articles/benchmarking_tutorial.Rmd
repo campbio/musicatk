@@ -124,13 +124,15 @@ Any element of the `full_benchmark` or `single_benchmark` objects can be easily 
 
 ## Summary Tables
 
-Summary tables can easily be extracted from a `full_benchmark` object to visualize the results of the full analysis.
+Summary tables can easily be extracted from a `full_benchmark` object to visualize the results of the full analysis. Both are data.frames. The method view summary has one row per benchmark run. Its found and missing counts and its cosine similarities describe the final prediction, counting each true signature once at its best match, while the duplicate, composite and spurious counts describe the initial prediction. The `benchmark` help page describes each column.
 
 ```{r view method view summary}
 
 method_view_summary(full_benchmark)
 
 ```
+
+The signature view summary has one row per true signature, with how many runs found it and the mean, minimum and maximum over those runs of its best cosine similarity in each.
 
 ```{r view sig view summary}
 
@@ -149,7 +151,7 @@ nmf8_benchmark <- benchmark_get_entry(full_benchmark, "nmf8")
 
 ```
 
-Once a single benchmark object has been extracted, the three different predictions within it can be extracted. These include (1) the initial prediction, before any benchmarking adjustments have been made, (2) the intermediate prediction, after duplicate signatures have been adjusted, and (3) the final prediction, after both duplicate and composite signatures have been adjusted.
+Once a single benchmark object has been extracted, the three different predictions within it can be extracted. These include (1) the initial prediction, before any benchmarking adjustments have been made, (2) the intermediate prediction, after duplicate signatures have been merged, and (3) the final prediction, after each composite signature has also been split into pieces, one for each true signature it matches that has weight in a fit of the composite. The pieces, named like `SBS3_like`, add up to the composite and keep its noise, so they are not copies of the true signatures. A piece and another predicted signature of the same true signature are then merged, so the final prediction has one signature per true signature.
 
 ```{r extract a prediction}
 

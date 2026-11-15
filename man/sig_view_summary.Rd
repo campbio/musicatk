@@ -4,7 +4,7 @@
 \alias{sig_view_summary}
 \alias{sig_view_summary,full_benchmark-method}
 \alias{sig_view_summary<-}
-\alias{sig_view_summary<-,full_benchmark,matrix-method}
+\alias{sig_view_summary<-,full_benchmark,data.frame-method}
 \title{Retrieve the sig_view_summary from a full_benchmark object}
 \usage{
 sig_view_summary(x)
@@ -13,17 +13,22 @@ sig_view_summary(x)
 
 sig_view_summary(x) <- value
 
-\S4method{sig_view_summary}{full_benchmark,matrix}(x) <- value
+\S4method{sig_view_summary}{full_benchmark,data.frame}(x) <- value
 }
 \arguments{
 \item{x}{A \code{\linkS4class{full_benchmark}} object.}
 
-\item{value}{A matrix containing the sig_view_summary}
+\item{value}{A data.frame containing the sig_view_summary}
 }
 \value{
-A matrix containing the signature view summary
+A data.frame containing the signature view summary
 }
 \description{
-The \code{sig_view_summary} is a matrix containing
-summary information from all benchmark runs, organized by signature.
+The \code{sig_view_summary} is a data.frame with one row
+per true signature (the row names are the signature names), summarizing
+the Final stage of every benchmark run: the number of runs that found and
+missed the signature (\code{"Times Found"}, \code{"Times Missed"}), the
+mean, minimum and maximum over those runs of its best cosine similarity
+(\code{"Mean CS"}, \code{"Min CS"}, \code{"Max CS"}; \code{NA} if it was
+never found), and the runs that found it (\code{"Methods Found"}).
 }

@@ -14,7 +14,9 @@ function.}
 \item{prediction}{\code{"Initial"} for the prediction before any benchmarking
 adjustments have been made, \code{"Intermediate"} for the prediction after
 duplicates have been adjusted but before composites are adjusted, or
-\code{"Final"} for the prediction at the end of the benchmarking adjustments.}
+\code{"Final"} for the prediction at the end of the benchmarking adjustments.
+Case is ignored, and \code{"Init"}, \code{"Inter"} and \code{"Fin"} are
+accepted too.}
 }
 \value{
 A \code{\linkS4class{result_model}} object
