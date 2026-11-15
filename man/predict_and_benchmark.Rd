@@ -36,10 +36,10 @@ to be the same name supplied to the table building functions such as
 created with the \link{create_benchmark} function or returned from a previous
 \code{benchmark} run.}
 
-\item{algorithm}{Method to use for mutational signature discovery. One of 
+\item{algorithm}{Method to use for mutational signature discovery. One of
 \code{"lda"} or \code{"nmf"}. Default \code{"lda"}.}
 
-\item{result_name}{Name of the result list entry to save prediction. 
+\item{result_name}{Name of the result list entry to save prediction.
 Default \code{"result"}.}
 
 \item{threshold}{Cosine similarity cutoff for comparing predicted and true
@@ -70,18 +70,22 @@ run added for each k. A new model is named \code{<algorithm><k>}, or
 \code{<algorithm><k>.<n>} if that name is taken in \code{musica}.
 }
 \description{
-This function will discover signatures from a musica object using a given
-algorithm and a range of k values. A new discovery is done for each k value.
-As each discovery is completed, the prediction is benchmarked.
+This function will discover signatures from a musica object
+using a given algorithm and a range of k values. A new discovery is done
+for each k value. As each discovery is completed, the prediction is
+benchmarked.
 }
 \examples{
 data(synthetic_breast_counts)
 data(synthetic_breast_true_exposures)
-true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18", "SBS26")
+true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18",
+  "SBS26")
 true_signatures <- signatures(cosmic_v2_sigs)[,true_sigs]
-full_benchmark <- create_benchmark(true_signatures, 
+full_benchmark <- create_benchmark(true_signatures,
   synthetic_breast_true_exposures, synthetic_breast_counts, "SBS96")
-prediction_musica <- create_musica_from_counts(synthetic_breast_counts, "SBS96")
-predict_and_benchmark(prediction_musica, "SBS96", 7, 9, full_benchmark, "nmf")
+prediction_musica <- create_musica_from_counts(synthetic_breast_counts,
+  "SBS96")
+predict_and_benchmark(prediction_musica, "SBS96", 7, 9, full_benchmark,
+  "nmf")
 
 }

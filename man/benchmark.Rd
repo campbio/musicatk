@@ -27,8 +27,8 @@ created with the \link{create_benchmark} function or returned from a previous
 \item{prediction_musica}{An object of class \code{\linkS4class{musica}}
 containing the predicted signatures and exposures to benchmark.}
 
-\item{prediction_model_id}{The model id of the prediction to be located within
-prediction_musica}
+\item{prediction_model_id}{The model id of the prediction to be located
+within prediction_musica}
 
 \item{prediction_modality}{The modality of the prediction to benchmark,
 \code{"SBS96"} or \code{"DBS78"}. It must be the modality of the ground
@@ -67,10 +67,10 @@ If \code{make_copy == TRUE}, a new \code{full_benchmark} object is
 returned. If \code{make_copy == FALSE}, nothing is returned.
 }
 \description{
-Perform benchmarking on a signature discovery prediction compared
-to a ground truth. Potential errors in the predicted signatures, such as
-composite or duplicate signatures are adjusted, and a summary of the accuracy
-of the prediction is given.
+Perform benchmarking on a signature discovery prediction
+compared to a ground truth. Potential errors in the predicted signatures,
+such as composite or duplicate signatures are adjusted, and a summary of
+the accuracy of the prediction is given.
 }
 \details{
 The prediction goes through three stages. \emph{Initial} is the
@@ -111,11 +111,13 @@ columns:
 data(synthetic_breast_counts)
 data(synthetic_breast_true_exposures)
 data(cosmic_v2_sigs)
-true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18", "SBS26")
+true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18",
+  "SBS26")
 true_signatures <- signatures(cosmic_v2_sigs)[,true_sigs]
-full_benchmark <- create_benchmark(true_signatures, 
+full_benchmark <- create_benchmark(true_signatures,
   synthetic_breast_true_exposures, synthetic_breast_counts, "SBS96")
-prediction_musica <- create_musica_from_counts(synthetic_breast_counts, "SBS96")
+prediction_musica <- create_musica_from_counts(synthetic_breast_counts,
+  "SBS96")
 discover_signatures(prediction_musica, "SBS96", 8, "nmf")
 benchmark(full_benchmark, prediction_musica, "nmf8", "SBS96")
 
@@ -123,12 +125,14 @@ data(synthetic_breast_counts)
 data(synthetic_breast_true_exposures)
 data(example_predicted_sigs)
 data(example_predicted_exp)
-true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18", "SBS26")
+true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18",
+  "SBS26")
 true_signatures <- signatures(cosmic_v2_sigs)[,true_sigs]
-full_benchmark <- create_benchmark(true_signatures, 
+full_benchmark <- create_benchmark(true_signatures,
   synthetic_breast_true_exposures, synthetic_breast_counts, "SBS96")
-prediction_musica <- create_musica_from_counts(synthetic_breast_counts, "SBS96")
-add_result(example_predicted_sigs, example_predicted_exp, prediction_musica, 
+prediction_musica <- create_musica_from_counts(synthetic_breast_counts,
+  "SBS96")
+add_result(example_predicted_sigs, example_predicted_exp, prediction_musica,
   "result", "SBS96", "example_k8")
 benchmark(full_benchmark, prediction_musica, "example_k8", "SBS96")
 

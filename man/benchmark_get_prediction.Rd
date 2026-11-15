@@ -7,9 +7,9 @@
 benchmark_get_prediction(indv_benchmark, prediction)
 }
 \arguments{
-\item{indv_benchmark}{A \code{\linkS4class{single_benchmark}} object containing the
-desired prediction. This can be accessed using the \link{benchmark_get_entry}
-function.}
+\item{indv_benchmark}{A \code{\linkS4class{single_benchmark}} object
+containing the desired prediction. This can be accessed using the
+\link{benchmark_get_entry} function.}
 
 \item{prediction}{\code{"Initial"} for the prediction before any benchmarking
 adjustments have been made, \code{"Intermediate"} for the prediction after
@@ -22,8 +22,8 @@ accepted too.}
 A \code{\linkS4class{result_model}} object
 }
 \description{
-Access a \code{\linkS4class{result_model}} object containing a particular prediction
-from a \code{\linkS4class{single_benchmark}} object.
+Access a \code{\linkS4class{result_model}} object containing a
+particular prediction from a \code{\linkS4class{single_benchmark}} object.
 }
 \examples{
 data(full_benchmark_example)
