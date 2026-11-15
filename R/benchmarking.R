@@ -940,8 +940,7 @@ benchmark_plot_exposures <- function(full_benchmark, method_id, prediction) {
   sig <- c()
   index <- 1
   for (true_sig in comparison$y_sig_name) {
-    predicted_sig <-
-      comparison[index, 4]
+    predicted_sig <- comparison[index, 4]
     predicted <- c(predicted, exposures(prediction)[predicted_sig, ])
     true <- c(true, .true_exposure(truth, true_sig,
                                    colnames(exposures(prediction))))
