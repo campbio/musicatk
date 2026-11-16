@@ -17,10 +17,10 @@ object of interest}
 A list of ggplot objects
 }
 \description{
-After a prediction has been benchmarked with the \link{benchmark} function,
-the true and predicted exposures can be plotted both before and after the
-composite signature adjustment. The effect of the adjustment can then be
-observed.
+After a prediction has been benchmarked with the
+\link{benchmark} function, the true and predicted exposures can be plotted
+both before and after the composite signature adjustment. The effect of the
+adjustment can then be observed.
 }
 \examples{
 data(full_benchmark_example)

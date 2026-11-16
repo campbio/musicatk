@@ -26,14 +26,16 @@ the \code{prediction_modality} to give to \link{benchmark}.}
 A \code{\linkS4class{full_benchmark}} object
 }
 \description{
-Initialize a \code{\linkS4class{full_benchmark}} object for benchmarking
+Initialize a \code{\linkS4class{full_benchmark}} object for
+benchmarking
 }
 \examples{
 data(synthetic_breast_counts)
 data(synthetic_breast_true_exposures)
-true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18", "SBS26")
+true_sigs <- c("SBS1", "SBS2", "SBS3", "SBS8", "SBS13", "SBS17", "SBS18",
+  "SBS26")
 true_signatures <- signatures(cosmic_v2_sigs)[,true_sigs]
-full_benchmark <- create_benchmark(true_signatures, 
+full_benchmark <- create_benchmark(true_signatures,
   synthetic_breast_true_exposures, synthetic_breast_counts, "SBS96")
 
 }

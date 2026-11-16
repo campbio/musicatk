@@ -24,9 +24,9 @@ accepted too.}
 Generates a  ggplot object
 }
 \description{
-After a prediction has been benchmarked with the \link{benchmark} function,
-the comparison between the true and predicted exposures at any stage of the
-benchmarking process can be plotted.
+After a prediction has been benchmarked with the
+\link{benchmark} function, the comparison between the true and predicted
+exposures at any stage of the benchmarking process can be plotted.
 }
 \examples{
 data(full_benchmark_example)

@@ -37,9 +37,9 @@ will be adjusted for each comparison. Default \code{FALSE}.}
 Returns the comparison plot
 }
 \description{
-After a prediction has been benchmarked with the \link{benchmark} function,
-the comparison between the true and predicted signatures at any step of the
-benchmarking process can be plotted.
+After a prediction has been benchmarked with the
+\link{benchmark} function, the comparison between the true and predicted
+signatures at any step of the benchmarking process can be plotted.
 }
 \examples{
 data(full_benchmark_example)

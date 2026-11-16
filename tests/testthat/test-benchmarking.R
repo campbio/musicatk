@@ -651,3 +651,35 @@ test_that("A composite piece and a duplicate prediction are merged in Final", {
   plots <- suppressWarnings(benchmark_plot_composite_exposures(bench, "m"))
   expect_length(plots, 1)
 })
+
+test_that("Benchmark functions check full_benchmark and method_id", {
+  data(full_benchmark_example)
+  data(synthetic_breast_counts)
+  musica <- create_musica_from_counts(synthetic_breast_counts, "SBS96")
+  expect_error(
+    benchmark(list(), musica, "m", "SBS96", make_copy = TRUE),
+    regexp = "is not a 'full_benchmark' object"
+  )
+  expect_error(
+    benchmark(full_benchmark_example, list(), "m", "SBS96",
+              make_copy = TRUE),
+    regexp = "'prediction' must be a 'musica' object"
+  )
+
+  # each takes (full_benchmark, method_id, ...)
+  calls <- list(
+    function(fb, id) benchmark_get_entry(fb, id),
+    function(fb, id) benchmark_plot_signatures(fb, id, "Final"),
+    function(fb, id) benchmark_get_comparison(fb, id, "Final"),
+    function(fb, id) benchmark_plot_comparison(fb, id, "Final"),
+    function(fb, id) benchmark_plot_exposures(fb, id, "Final"),
+    function(fb, id) benchmark_plot_duplicate_exposures(fb, id),
+    function(fb, id) benchmark_plot_composite_exposures(fb, id)
+  )
+  for (f in calls) {
+    expect_error(f(list(), "example_k8"),
+                 regexp = "is not a 'full_benchmark' object")
+    expect_error(f(full_benchmark_example, "missing_id"),
+                 regexp = "not found in")
+  }
+})

@@ -25,12 +25,14 @@ A data.frame containing the comparison between true and predicted
 signatures
 }
 \description{
-After a prediction has been benchmarked with the \link{benchmark} function,
-this function can be used to extract the comparison table between true and
-predicted signatures from any step in the benchmarking process.
+After a prediction has been benchmarked with the
+\link{benchmark} function, this function can be used to extract the
+comparison table between true and predicted signatures from any step in the
+benchmarking process.
 }
 \examples{
 data(full_benchmark_example)
-final_comparison <- benchmark_get_comparison(full_benchmark_example, "example_k8", "Final")
+final_comparison <- benchmark_get_comparison(full_benchmark_example,
+  "example_k8", "Final")
 
 }

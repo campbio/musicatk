@@ -38,7 +38,7 @@ accepted too.}
 using \code{\link[plotly]{plotly}}. Default \code{FALSE}.}
 
 \item{color_variable}{Name of the column in the variant annotation data.frame
-to use for coloring the mutation type bars. The variant annotation data.frame 
+to use for coloring the mutation type bars. The variant annotation data.frame
 can be found within the count table of the \code{\linkS4class{musica}}
 object. If \code{NULL}, then the default column specified in the count
 table will be used. Default \code{NULL}.}
@@ -55,33 +55,33 @@ table will be used. Default \code{NULL}.}
 \item{show_x_labels}{If \code{TRUE}, the labels for the mutation types
 on the x-axis will be shown. Default \code{TRUE}.}
 
-\item{show_y_labels}{If \code{TRUE}, the y-axis ticks and labels will be 
+\item{show_y_labels}{If \code{TRUE}, the y-axis ticks and labels will be
 shown. Default \code{TRUE}.}
 
 \item{same_scale}{If \code{TRUE}, the scale of the probability for each
 signature will be the same. If \code{FALSE}, then the scale of the y-axis
 will be adjusted for each signature. Default \code{FALSE}.}
 
-\item{y_max}{Vector of maximum y-axis limits for each signature. One value 
+\item{y_max}{Vector of maximum y-axis limits for each signature. One value
 may also be provided to specify a constant y-axis limit for all signatures.
-Vector length must be 1 or equivalent to the number of signatures. Default 
+Vector length must be 1 or equivalent to the number of signatures. Default
 \code{NULL}.}
 
 \item{annotation}{Vector of annotations to be displayed in the top right
 corner of each signature. Vector length must be equivalent to the number of
 signatures. Default \code{NULL}.}
 
-\item{percent}{If \code{TRUE}, the y-axis will be represented in percent 
+\item{percent}{If \code{TRUE}, the y-axis will be represented in percent
 format instead of mutation counts. Default \code{TRUE}.}
 }
 \value{
 Generates a ggplot or plotly object
 }
 \description{
-After a prediction has been benchmarked with the \link{benchmark} function,
-this function can be used to plot signatures from any step in the benchmarking
-process. Comparable to the \code{plot_signatures} function but compatible with
-benchmarking objects.
+After a prediction has been benchmarked with the
+\link{benchmark} function, this function can be used to plot signatures
+from any step in the benchmarking process. Comparable to the
+\code{plot_signatures} function but compatible with benchmarking objects.
 }
 \examples{
 data(full_benchmark_example)
