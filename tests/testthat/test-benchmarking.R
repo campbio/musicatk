@@ -683,3 +683,52 @@ test_that("Benchmark functions check full_benchmark and method_id", {
                  regexp = "not found in")
   }
 })
+
+test_that("benchmark(plot = TRUE) prints plots, not lists (#262)", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS2")])
+  path <- withr::local_tempfile(fileext = ".pdf")
+  grDevices::pdf(path)
+  withr::defer(grDevices::dev.off())
+  plot_output <- function(pred, pred_exposures) {
+    setup <- setup_benchmark(truth, pred, pred_exposures)
+    utils::capture.output(suppressMessages(suppressWarnings(
+      benchmark(setup$bench, setup$prediction, "pred", "SBS96",
+        method_id = "m", plot = TRUE, make_copy = TRUE
+      )
+    )))
+  }
+
+  # no duplicates or composites: the plot lists are empty
+  exact <- plot_output(truth$signatures, truth$exposures)
+  expect_false(any(grepl("list()", exact, fixed = TRUE)))
+
+  # a duplicate: its figure is printed without a list index
+  dup <- withr::with_seed(2, noisy_sig(sigs[, "SBS1"]))
+  duplicated <- plot_output(
+    cbind(truth$signatures, dupA = dup),
+    rbind(truth$exposures, dupA = 10)
+  )
+  expect_false(any(grepl("[[1]]", duplicated, fixed = TRUE)))
+})
+
+test_that("A duplicate group with no exposure is merged unweighted (#263)", {
+  data(cosmic_v2_sigs)
+  sigs <- signatures(cosmic_v2_sigs)
+  truth <- sim_truth(sigs[, c("SBS1", "SBS2", "SBS3")])
+  dup <- withr::with_seed(2, noisy_sig(sigs[, "SBS1"]))
+  pred <- cbind(truth$signatures, dupA = dup)
+  pred_exposures <- rbind(truth$exposures, dupA = 0)
+  pred_exposures["SBS1", ] <- 0
+  setup <- setup_benchmark(truth, pred, pred_exposures)
+  bench <- run_benchmark(setup$bench, setup$prediction)
+
+  intermediate <- intermediate_pred(benchmark_get_entry(bench, "m"))
+  merged <- signatures(intermediate)[, "Merged Signature (SBS1.dupA)"]
+  expected <- (sigs[, "SBS1"] + dup) / sum(sigs[, "SBS1"] + dup)
+  expect_equal(unname(merged), unname(expected))
+  summary <- method_view_summary(bench)
+  expect_true(is.finite(summary[["Final RE"]]))
+  expect_identical(summary[["Num Missing"]], 0L)
+})
