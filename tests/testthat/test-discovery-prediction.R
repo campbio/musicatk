@@ -312,10 +312,15 @@ test_that("Reconstruction error matches exposures to signatures (#264)", {
     .get_reconstruction_error(model, truth$counts, "raw")
   )
 
-  # repeated or missing names that don't line up are an error
+  # repeated, missing or empty names that don't line up are an error
   misaligned <- with_names(c("A", NA, "B"), c("A", "B", NA))
   expect_error(
     .get_reconstruction_error(misaligned, truth$counts, "raw"),
+    regexp = "rownames of 'exposures' must match the colnames"
+  )
+  empty <- with_names(c("A", "", "B"), c("A", "B", ""))
+  expect_error(
+    .get_reconstruction_error(empty, truth$counts, "raw"),
     regexp = "rownames of 'exposures' must match the colnames"
   )
 

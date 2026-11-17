@@ -688,9 +688,7 @@ test_that("benchmark(plot = TRUE) prints plots, not lists (#262)", {
   data(cosmic_v2_sigs)
   sigs <- signatures(cosmic_v2_sigs)
   truth <- sim_truth(sigs[, c("SBS1", "SBS2")])
-  path <- withr::local_tempfile(fileext = ".pdf")
-  grDevices::pdf(path)
-  withr::defer(grDevices::dev.off())
+  withr::local_pdf(withr::local_tempfile(fileext = ".pdf"))
   plot_output <- function(pred, pred_exposures) {
     setup <- setup_benchmark(truth, pred, pred_exposures)
     utils::capture.output(suppressMessages(suppressWarnings(
@@ -711,6 +709,17 @@ test_that("benchmark(plot = TRUE) prints plots, not lists (#262)", {
     rbind(truth$exposures, dupA = 10)
   )
   expect_false(any(grepl("[[1]]", duplicated, fixed = TRUE)))
+
+  # each duplicate and composite figure is printed once
+  local_mocked_bindings(
+    benchmark_plot_duplicate_exposures = function(...) list("dup figure"),
+    benchmark_plot_composite_exposures = function(...) list("comp figure")
+  )
+  mocked <- plot_output(truth$signatures, truth$exposures)
+  expect_identical(
+    grep("figure", mocked, value = TRUE),
+    c("[1] \"dup figure\"", "[1] \"comp figure\"")
+  )
 })
 
 test_that("A duplicate group with no exposure is merged unweighted (#263)", {

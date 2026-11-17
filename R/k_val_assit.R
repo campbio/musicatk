@@ -629,14 +629,15 @@ ckmeans <- function(data, k, must_link, cant_link, max_iter = 100) {
 
 # The rows of 'expos' in the order of the columns of 'sigs', matched by
 # name. Unnamed rows or columns, and names already in the same order, are
-# left as they are. Repeated or missing names can't be matched.
+# left as they are. Repeated, missing or empty names can't be matched.
 .exposures_for_signatures <- function(expos, sigs) {
   sig_names <- colnames(sigs)
   if (is.null(rownames(expos)) || is.null(sig_names) ||
         identical(rownames(expos), sig_names)) {
     return(expos)
   }
-  matchable <- !anyNA(sig_names) && !anyDuplicated(sig_names)
+  matchable <- !anyNA(sig_names) && !anyDuplicated(sig_names) &&
+    all(nzchar(sig_names))
   if (!matchable || !setequal(rownames(expos), sig_names) ||
         nrow(expos) != length(sig_names)) {
     stop(
