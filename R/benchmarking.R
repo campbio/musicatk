@@ -1295,7 +1295,7 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id) {
     new_sig_name <- .merged_signature_name(sigs_to_merge)
     group_exposures <- exposures[sigs_to_merge, , drop = FALSE]
     weights <- rowSums(group_exposures)
-    if (sum(weights) == 0) {
+    if (isTRUE(sum(weights) == 0)) {
       weights[] <- 1
     }
     merged <- signatures[, sigs_to_merge, drop = FALSE] %*% weights

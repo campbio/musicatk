@@ -294,6 +294,31 @@ test_that("Reconstruction error matches exposures to signatures (#264)", {
     )
   }
 
+  # repeated names that line up are left in their order
+  with_names <- function(sig_names, exposure_names) {
+    named <- model
+    sigs <- truth$signatures
+    colnames(sigs) <- sig_names
+    expos <- truth$exposures
+    rownames(expos) <- exposure_names
+    signatures(named) <- sigs
+    exposures(named) <- expos
+    return(named)
+  }
+  expect_equal(
+    .get_reconstruction_error(
+      with_names(c("A", "A", "B"), c("A", "A", "B")), truth$counts, "raw"
+    ),
+    .get_reconstruction_error(model, truth$counts, "raw")
+  )
+
+  # repeated or missing names that don't line up are an error
+  misaligned <- with_names(c("A", NA, "B"), c("A", "B", NA))
+  expect_error(
+    .get_reconstruction_error(misaligned, truth$counts, "raw"),
+    regexp = "rownames of 'exposures' must match the colnames"
+  )
+
   # exposure rows for other signatures are an error
   renamed <- model
   wrong_exposures <- truth$exposures
