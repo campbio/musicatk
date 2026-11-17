@@ -578,6 +578,7 @@ ckmeans <- function(data, k, must_link, cant_link, max_iter = 100) {
   # extract exposures and signatures matrices
   expos <- exposures(result_discov)
   sigs <- signatures(result_discov)
+  expos <- .exposures_for_signatures(expos, sigs)
 
   # samples with no mutations are not in the exposures
   count_table <- .table_for_exposures(count_table, expos)
@@ -603,6 +604,7 @@ ckmeans <- function(data, k, must_link, cant_link, max_iter = 100) {
   # extract exposures and signatures matrices
   expos <- exposures(result_discov)
   sigs <- signatures(result_discov)
+  expos <- .exposures_for_signatures(expos, sigs)
 
   # samples with no mutations are not in the exposures
   count_table <- .table_for_exposures(count_table, expos)
@@ -623,6 +625,21 @@ ckmeans <- function(data, k, must_link, cant_link, max_iter = 100) {
     return(count_table)
   }
   return(count_table[, colnames(expos), drop = FALSE])
+}
+
+# The rows of 'expos' in the order of the columns of 'sigs', matched by
+# name. Unnamed rows or columns are left in their order.
+.exposures_for_signatures <- function(expos, sigs) {
+  if (is.null(rownames(expos)) || is.null(colnames(sigs))) {
+    return(expos)
+  }
+  if (!identical(sort(rownames(expos)), sort(colnames(sigs)))) {
+    stop(
+      "The rownames of 'exposures' must match the colnames of ",
+      "'signatures'."
+    )
+  }
+  return(expos[colnames(sigs), , drop = FALSE])
 }
 
 # Return "prop" or "raw" for the accepted spellings of 'error_type'

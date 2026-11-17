@@ -275,3 +275,34 @@ test_that("LDA prediction of one sample doesn't warn (#152)", {
     signatures_to_use = 1:5, model_id = "p", make_copy = TRUE
   ))
 })
+
+test_that("Reconstruction error matches exposures to signatures (#264)", {
+  data(cosmic_v2_sigs)
+  truth <- sim_truth(signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2", "SBS3")])
+  model <- new("result_model",
+    signatures = truth$signatures, exposures = truth$exposures,
+    num_signatures = 3
+  )
+
+  # exposure rows in another order give the same error
+  reordered <- model
+  exposures(reordered) <- truth$exposures[c(3, 1, 2), ]
+  for (error_type in c("prop", "raw")) {
+    expect_equal(
+      .get_reconstruction_error(reordered, truth$counts, error_type),
+      .get_reconstruction_error(model, truth$counts, error_type)
+    )
+  }
+
+  # exposure rows for other signatures are an error
+  renamed <- model
+  wrong_exposures <- truth$exposures
+  rownames(wrong_exposures) <- c("A", "B", "C")
+  exposures(renamed) <- wrong_exposures
+  for (error_type in c("prop", "raw")) {
+    expect_error(
+      .get_reconstruction_error(renamed, truth$counts, error_type),
+      regexp = "rownames of 'exposures' must match the colnames"
+    )
+  }
+})
