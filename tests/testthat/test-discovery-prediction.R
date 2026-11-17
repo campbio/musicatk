@@ -18,6 +18,8 @@ test_that(".cosine() keeps a matrix for one signature (#162)", {
     musicatk::cosmic_v2_sigs, "decompTumor2Sig",
     signatures_to_use = 1, model_id = "one", make_copy = TRUE
   )
+  # compare_cosmic_v2() prints a plot; don't write Rplots.pdf
+  withr::local_pdf(NULL)
   comparison <- compare_cosmic_v2(one_sig, "one", threshold = 0.99)
   expect_identical(comparison$y_sig_name, "SBS1")
 })
