@@ -711,17 +711,23 @@ fixed there. Candidates for #202 (group K).
 
 ### 1. `benchmark(plot = TRUE)` prints `list()`
 
+Filed as #262.
+
 With no duplicates or composites, `benchmark_plot_duplicate_exposures()`
 and `benchmark_plot_composite_exposures()` return empty lists, and
 `benchmark()` prints them, so "list()" appears in the output.
 
 ### 2. A duplicate group with zero total exposure gives NaN
 
+Filed as #263.
+
 `.correct_duplicates()` divides the exposure-weighted sum of the group's
 signatures by its total, which is 0 when every member has zero exposure
 in every sample, so the merged signature is all NaN.
 
 ### 3. Reconstruction error assumes exposure rows follow signatures
+
+Filed as #264.
 
 `.get_reconstruction_error()` multiplies `signatures %*% exposures`
 without matching the exposure rows to the signature columns by name. The
