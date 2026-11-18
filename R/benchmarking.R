@@ -381,9 +381,11 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
                            initial_comparison)
 
     # Duplicate signature exposures before/afters
-    duplicate_plot <- benchmark_plot_duplicate_exposures(full_benchmark,
-                                                         method_id)
-    print(duplicate_plot)
+    duplicate_plots <- benchmark_plot_duplicate_exposures(full_benchmark,
+                                                          method_id)
+    for (figure in duplicate_plots) {
+      print(figure)
+    }
 
     # Intermediate signatures plot
     intermediate_sig_plot <- benchmark_plot_signatures(
@@ -395,9 +397,11 @@ benchmark <- function(full_benchmark, prediction_musica, prediction_model_id,
                            duplicates_corrected_comparison)
 
     # Composite signature exposures before/afters
-    composite_plot <- benchmark_plot_composite_exposures(full_benchmark,
-                                                         method_id)
-    print(composite_plot)
+    composite_plots <- benchmark_plot_composite_exposures(full_benchmark,
+                                                          method_id)
+    for (figure in composite_plots) {
+      print(figure)
+    }
 
     # Final signatures plot
     final_sig_plot <- benchmark_plot_signatures(full_benchmark, method_id,
@@ -1278,7 +1282,8 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id) {
 
 # Merge each group of duplicates in 'result' (see .duplicate_groups()) into
 # one signature, the exposure-weighted mean of the group, whose exposures
-# are the sum of the group's
+# are the sum of the group's. A group with no exposure in any sample is
+# merged with equal weights, as the weighted mean would divide by 0.
 .correct_duplicates <- function(result, comparison) {
   exposures <- exposures(result)
   signatures <- signatures(result)
@@ -1289,8 +1294,11 @@ benchmark_plot_composite_exposures <- function(full_benchmark, method_id) {
   for (sigs_to_merge in groups) {
     new_sig_name <- .merged_signature_name(sigs_to_merge)
     group_exposures <- exposures[sigs_to_merge, , drop = FALSE]
-    merged <- signatures[, sigs_to_merge, drop = FALSE] %*%
-      rowSums(group_exposures)
+    weights <- rowSums(group_exposures)
+    if (isTRUE(sum(weights) == 0)) {
+      weights[] <- 1
+    }
+    merged <- signatures[, sigs_to_merge, drop = FALSE] %*% weights
     merged <- merged / sum(merged)
     colnames(merged) <- new_sig_name
     merged_sigs <- cbind(merged_sigs, merged)

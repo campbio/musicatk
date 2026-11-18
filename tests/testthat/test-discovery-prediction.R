@@ -18,6 +18,8 @@ test_that(".cosine() keeps a matrix for one signature (#162)", {
     musicatk::cosmic_v2_sigs, "decompTumor2Sig",
     signatures_to_use = 1, model_id = "one", make_copy = TRUE
   )
+  # compare_cosmic_v2() prints a plot; don't write Rplots.pdf
+  withr::local_pdf(NULL)
   comparison <- compare_cosmic_v2(one_sig, "one", threshold = 0.99)
   expect_identical(comparison$y_sig_name, "SBS1")
 })
@@ -274,4 +276,65 @@ test_that("LDA prediction of one sample doesn't warn (#152)", {
     musicatk::cosmic_v2_sigs, "lda",
     signatures_to_use = 1:5, model_id = "p", make_copy = TRUE
   ))
+})
+
+test_that("Reconstruction error matches exposures to signatures (#264)", {
+  data(cosmic_v2_sigs)
+  truth <- sim_truth(signatures(cosmic_v2_sigs)[, c("SBS1", "SBS2", "SBS3")])
+  model <- new("result_model",
+    signatures = truth$signatures, exposures = truth$exposures,
+    num_signatures = 3
+  )
+
+  # exposure rows in another order give the same error
+  reordered <- model
+  exposures(reordered) <- truth$exposures[c(3, 1, 2), ]
+  for (error_type in c("prop", "raw")) {
+    expect_equal(
+      .get_reconstruction_error(reordered, truth$counts, error_type),
+      .get_reconstruction_error(model, truth$counts, error_type)
+    )
+  }
+
+  # repeated names that line up are left in their order
+  with_names <- function(sig_names, exposure_names) {
+    named <- model
+    sigs <- truth$signatures
+    colnames(sigs) <- sig_names
+    expos <- truth$exposures
+    rownames(expos) <- exposure_names
+    signatures(named) <- sigs
+    exposures(named) <- expos
+    return(named)
+  }
+  expect_equal(
+    .get_reconstruction_error(
+      with_names(c("A", "A", "B"), c("A", "A", "B")), truth$counts, "raw"
+    ),
+    .get_reconstruction_error(model, truth$counts, "raw")
+  )
+
+  # repeated, missing or empty names that don't line up are an error
+  misaligned <- with_names(c("A", NA, "B"), c("A", "B", NA))
+  expect_error(
+    .get_reconstruction_error(misaligned, truth$counts, "raw"),
+    regexp = "rownames of 'exposures' must match the colnames"
+  )
+  empty <- with_names(c("A", "", "B"), c("A", "B", ""))
+  expect_error(
+    .get_reconstruction_error(empty, truth$counts, "raw"),
+    regexp = "rownames of 'exposures' must match the colnames"
+  )
+
+  # exposure rows for other signatures are an error
+  renamed <- model
+  wrong_exposures <- truth$exposures
+  rownames(wrong_exposures) <- c("A", "B", "C")
+  exposures(renamed) <- wrong_exposures
+  for (error_type in c("prop", "raw")) {
+    expect_error(
+      .get_reconstruction_error(renamed, truth$counts, error_type),
+      regexp = "rownames of 'exposures' must match the colnames"
+    )
+  }
 })

@@ -578,6 +578,7 @@ ckmeans <- function(data, k, must_link, cant_link, max_iter = 100) {
   # extract exposures and signatures matrices
   expos <- exposures(result_discov)
   sigs <- signatures(result_discov)
+  expos <- .exposures_for_signatures(expos, sigs)
 
   # samples with no mutations are not in the exposures
   count_table <- .table_for_exposures(count_table, expos)
@@ -603,6 +604,7 @@ ckmeans <- function(data, k, must_link, cant_link, max_iter = 100) {
   # extract exposures and signatures matrices
   expos <- exposures(result_discov)
   sigs <- signatures(result_discov)
+  expos <- .exposures_for_signatures(expos, sigs)
 
   # samples with no mutations are not in the exposures
   count_table <- .table_for_exposures(count_table, expos)
@@ -623,6 +625,27 @@ ckmeans <- function(data, k, must_link, cant_link, max_iter = 100) {
     return(count_table)
   }
   return(count_table[, colnames(expos), drop = FALSE])
+}
+
+# The rows of 'expos' in the order of the columns of 'sigs', matched by
+# name. Unnamed rows or columns, and names already in the same order, are
+# left as they are. Repeated, missing or empty names can't be matched.
+.exposures_for_signatures <- function(expos, sigs) {
+  sig_names <- colnames(sigs)
+  if (is.null(rownames(expos)) || is.null(sig_names) ||
+        identical(rownames(expos), sig_names)) {
+    return(expos)
+  }
+  matchable <- !anyNA(sig_names) && !anyDuplicated(sig_names) &&
+    all(nzchar(sig_names))
+  if (!matchable || !setequal(rownames(expos), sig_names) ||
+        nrow(expos) != length(sig_names)) {
+    stop(
+      "The rownames of 'exposures' must match the colnames of ",
+      "'signatures'."
+    )
+  }
+  return(expos[sig_names, , drop = FALSE])
 }
 
 # Return "prop" or "raw" for the accepted spellings of 'error_type'

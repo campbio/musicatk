@@ -1,3 +1,8 @@
+# musicatk 2.7.20 (2026-11-17)
+* `benchmark()` merges a group of duplicate signatures that has no exposure in any sample with equal weights, the plain mean of the group. Before, the exposure-weighted mean divided by 0, so the merged signature was all NaN, its true signature was counted as missing and Final RE was NaN (#263). **Summaries of predictions with such a group change.**
+* `benchmark(plot = TRUE)` prints each duplicate and composite figure on its own. Before, it printed the lists holding them, so "list()" appeared when there were none, and "[[1]]" above each figure (#262).
+* The reconstruction error used by `benchmark()` and `compare_k_vals()` matches exposure rows to signatures by name, and stops if the names differ. Before, it assumed they were in the same order, so a `result_model` whose exposure rows had been reordered got a wrong error. Results from the package's own discovery and benchmark functions don't change (#264).
+
 # musicatk 2.7.19 (2026-11-15)
 * `R/benchmarking.R` now passes lintr. This changes only formatting, not results, messages or the exported functions and their arguments (#257).
 
