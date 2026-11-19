@@ -59,10 +59,12 @@ Default \code{1}.}
 as in \code{\link{cluster_exposure}}. Options are "euclidean" (default),
 "manhattan", "jaccard", "cosine" (1 - cosine similarity), and "canberra".
 "kmeans" accepts only "euclidean", "hkmeans" accepts "euclidean",
-"manhattan" and "canberra", and "clara" accepts "euclidean", "manhattan"
-and "jaccard". "wss" and "silhouette" are computed from this
+"manhattan" and "canberra", and "clara" accepts "euclidean" and
+"manhattan". "wss" and "silhouette" are computed from this
 dissimilarity. "gap_stat" clusters with it, but \link[cluster]{clusGap}
-measures the spread within clusters with Euclidean distance.}
+measures the spread within clusters with Euclidean distance. With
+"gap_stat", "fanny" also clusters the data \link[cluster]{clusGap}
+simulates, and may warn that it has not converged on some of it.}
 
 \item{hc.method}{Method of hierarchical clustering, for "hclust" and
 "hkmeans", as in \code{\link{cluster_exposure}}. Options are "ward.D"

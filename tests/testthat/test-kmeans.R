@@ -306,3 +306,34 @@ test_that(desc = "k_select rejects distances a method can't use (#248)", {
     "should be one of"
   )
 })
+
+test_that(desc = "clara rejects jaccard, which can crash cluster::clara()", {
+  fx <- .clust_fixture()
+  expect_error(
+    cluster_exposure(fx$musica, "res_annot", nclust = 2, method = "clara",
+                     dis.method = "jaccard"),
+    "For clara clustering.*euclidean, manhattan"
+  )
+  expect_error(
+    k_select(fx$musica, "res_annot", clust.method = "clara",
+             dis.method = "jaccard"),
+    "For clara clustering.*euclidean, manhattan"
+  )
+  # jaccard still works with the methods that use philentropy
+  expect_s3_class(
+    k_select(fx$musica, "res_annot", method = "silhouette",
+             clust.method = "pam", dis.method = "jaccard", n = 4),
+    "ggplot"
+  )
+})
+
+test_that(desc = "k_select with fanny needs at least six samples (#248)", {
+  fx <- .clust_fixture()
+  e <- exposures(fx$musica, "result", "SBS96", "res_annot")
+  exposures(fx$musica, "result", "SBS96", "res_annot") <-
+    e[, seq_len(5), drop = FALSE]
+  expect_error(
+    k_select(fx$musica, "res_annot", clust.method = "fanny"),
+    "needs at least six samples; the model has 5"
+  )
+})

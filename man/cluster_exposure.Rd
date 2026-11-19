@@ -47,7 +47,8 @@ will be used for clustering.}
 "euclidean" (default), "manhattan", "jaccard", "cosine" (1 - cosine
 similarity), and "canberra". "kmeans" accepts only "euclidean",
 "hkmeans" accepts "euclidean", "manhattan" and "canberra", and "clara"
-accepts "euclidean", "manhattan" and "jaccard".}
+accepts "euclidean" and "manhattan" (\link[cluster]{clara}'s "jaccard" can
+crash R).}
 
 \item{hc.method}{Methods to perform hierarchical clustering. Options are
 "ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty",

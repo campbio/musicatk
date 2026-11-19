@@ -19,7 +19,8 @@
 #' "euclidean" (default), "manhattan", "jaccard", "cosine" (1 - cosine
 #' similarity), and "canberra". "kmeans" accepts only "euclidean",
 #' "hkmeans" accepts "euclidean", "manhattan" and "canberra", and "clara"
-#' accepts "euclidean", "manhattan" and "jaccard".
+#' accepts "euclidean" and "manhattan" (\link[cluster]{clara}'s "jaccard" can
+#' crash R).
 #' @param hc.method Methods to perform hierarchical clustering. Options are
 #' "ward.D" (default), "ward.D2", "single", "complete", "average", "mcquitty",
 #' "median", and "centroid".
@@ -125,10 +126,11 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
     stop("For hkmeans clustering, please choose the following methods to ",
          "calculate dissimilarity matrix: euclidean, manhattan, canberra")
   }
-  if (method == "clara" &&
-        !dis_method %in% c("euclidean", "manhattan", "jaccard")) {
+  # cluster::clara(metric = "jaccard") can crash R (cluster 2.1.8.2)
+  if (method == "clara" && !dis_method %in% c("euclidean", "manhattan")) {
     stop("For clara clustering, please choose the following methods to ",
-         "calculate dissimilarity matrix: euclidean, manhattan, jaccard")
+         "calculate dissimilarity matrix: euclidean, manhattan. ",
+         "Use \"pam\", \"fanny\" or \"hclust\" for other distances.")
   }
 }
 
@@ -379,10 +381,12 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' as in \code{\link{cluster_exposure}}. Options are "euclidean" (default),
 #' "manhattan", "jaccard", "cosine" (1 - cosine similarity), and "canberra".
 #' "kmeans" accepts only "euclidean", "hkmeans" accepts "euclidean",
-#' "manhattan" and "canberra", and "clara" accepts "euclidean", "manhattan"
-#' and "jaccard". "wss" and "silhouette" are computed from this
+#' "manhattan" and "canberra", and "clara" accepts "euclidean" and
+#' "manhattan". "wss" and "silhouette" are computed from this
 #' dissimilarity. "gap_stat" clusters with it, but \link[cluster]{clusGap}
-#' measures the spread within clusters with Euclidean distance.
+#' measures the spread within clusters with Euclidean distance. With
+#' "gap_stat", "fanny" also clusters the data \link[cluster]{clusGap}
+#' simulates, and may warn that it has not converged on some of it.
 #' @param hc.method Method of hierarchical clustering, for "hclust" and
 #' "hkmeans", as in \code{\link{cluster_exposure}}. Options are "ward.D"
 #' (default), "ward.D2", "single", "complete", "average", "mcquitty",
