@@ -62,10 +62,11 @@ as in \code{\link{cluster_exposure}}. Options are "euclidean" (default),
 "manhattan" and "canberra", and "clara" accepts "euclidean" and
 "manhattan". "wss" and "silhouette" are computed from this
 dissimilarity (for "hkmeans", with \link[stats]{dist}, as
-\link[factoextra]{hkmeans} uses). "gap_stat" clusters with it, but \link[cluster]{clusGap}
-measures the spread within clusters with Euclidean distance. With
-"gap_stat", "fanny" also clusters the data \link[cluster]{clusGap}
-simulates, and may warn that it has not converged on some of it.}
+\link[factoextra]{hkmeans} uses). "gap_stat" clusters with it, but
+\link[cluster]{clusGap} measures the spread within clusters with Euclidean
+distance. With "gap_stat", "fanny" also clusters the data
+\link[cluster]{clusGap} simulates, and may warn that it has not converged
+on some of it.}
 
 \item{hc.method}{Method of hierarchical clustering, for "hclust" and
 "hkmeans", as in \code{\link{cluster_exposure}}. Options are "ward.D"
