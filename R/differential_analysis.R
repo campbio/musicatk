@@ -18,12 +18,15 @@
 #' used to perform differential analysis on signature exposures. For
 #' \code{"glm.nb"}, the first level of \code{annotation} (the first in sorted
 #' order for a character column) is the reference group.
-#' @param group1 character vector used in the Wilcox test. Elements in
-#' \code{group1} are compared to elements in \code{group2}. This is
-#' required for \code{annotation} with more than 2 levels.
-#' @param group2 character vector used in the Wilcox test. Elements in
-#' \code{group2} are compared to elements in \code{group1}. This is
-#' required for \code{annotation} with more than 2 levels.
+#' @param group1 Character vector or factor used in the Wilcox test. Elements
+#' in \code{group1} are compared to elements in \code{group2}. This is
+#' required for \code{annotation} with more than 2 levels; with 2 levels, or
+#' for other methods, it is ignored with a message. Each pair must compare two
+#' different groups and be given once, in either order. Default \code{NULL}.
+#' @param group2 Character vector or factor used in the Wilcox test. Elements
+#' in \code{group2} are compared to elements in \code{group1}. This is
+#' required for \code{annotation} with more than 2 levels. Default
+#' \code{NULL}.
 #' @param ... Additional arguments to be passed to the chosen method
 #' @return A data frame whose columns depend on the method. P-values are
 #' adjusted with the Benjamini-Hochberg method (\code{fdr} columns).
@@ -100,27 +103,37 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
     stop("annotation must have at least 2 unique values")
   }
   if (!is.null(c(group1, group2))) {
-    if (method != "wilcox" || length(groups) == 2) {
-      message("'annotations' is of length 2. 'group1' and 'group2' were
-                ignored.")
+    if (method != "wilcox") {
+      message("'group1' and 'group2' are only used by method = \"wilcox\" ",
+              "and were ignored.")
+    } else if (length(groups) == 2) {
+      message("'annotation' has two values, so 'group1' and 'group2' were ",
+              "ignored; '", groups[1], "' is compared with '", groups[2],
+              "'.")
     }
   }
   diff.out <- 0
   if (method == "wilcox") {
     if (length(groups) > 2) {
       if (is.null(group1) || is.null(group2)) {
-        stop("Parameters 'group1' and 'group2' are required for annotations
-        containing more than 2 unique elements.")
+        stop("Parameters 'group1' and 'group2' are required for annotations ",
+             "containing more than 2 unique elements.")
       }
+      # Levels taken from a factor annotation are compared as text
+      if (is.factor(group1)) group1 <- as.character(group1)
+      if (is.factor(group2)) group2 <- as.character(group2)
       if (!is.character(group1) || !is.character(group2)) {
-        stop("Parameter 'group1' and 'group2' must be character vectors.")
+        stop("Parameter 'group1' and 'group2' must be character vectors ",
+             "or factors.")
       }
       if (length(group1) != length(group2)) {
         stop("'group1' and 'group2' must be the same length.")
       }
       if (any(group1 == group2)) {
-        stop("All pairs of 'group1' and 'group2' must be unique")
+        stop("Each pair of 'group1' and 'group2' must compare two different ",
+             "groups.")
       }
+      .check_unique_pairs(group1, group2)
       if (!all(group1 %in% annotations)) {
         stop("'group1' does not exist in annotations.")
       }
@@ -195,6 +208,19 @@ exposure_differential_analysis <- function(musica, model_name, annotation,
   return(diff.out)
 }
 
+
+# Stops if a pair of groups is compared more than once, in either order
+.check_unique_pairs <- function(group1, group2) {
+  first <- pmin(group1, group2)
+  second <- pmax(group1, group2)
+  repeated <- duplicated(data.frame(first, second))
+  if (any(repeated)) {
+    i <- which(repeated)[1]
+    stop("Each pair of 'group1' and 'group2' must be given once, in either ",
+         "order; the pair '", first[i], "' and '", second[i],
+         "' is given more than once.")
+  }
+}
 
 #' @title Plot a differential analysis of exposures
 #' @description \code{plot_differential_analysis} plots the false discovery

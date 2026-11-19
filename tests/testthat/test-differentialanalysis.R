@@ -24,7 +24,7 @@ test_that(desc = "Diff Anal Input validity", {
       group1 = "test1",
       group2 = "test2"
     ),
-    regexp = "'annotations' is of length 2."
+    regexp = "has two values"
   )
   expect_error(
     exposure_differential_analysis(res_annot, "res_annot", "test",
@@ -70,7 +70,7 @@ test_that(desc = "Diff Anal Input validity", {
       group1 = c("A", "C"),
       group2 = c("B", "C")
     ),
-    regexp = "must be unique"
+    regexp = "must compare two different groups"
   )
   expect_error(
     exposure_differential_analysis(res_annot, "res_annot", "test",
@@ -298,5 +298,67 @@ test_that(desc = "glm.nb rejects groups named like its other columns", {
       method = "glm.nb"
     ),
     "can't be named 'ANOVA'"
+  )
+})
+
+test_that(desc = "wilcox accepts factor group1 and group2 (#249)", {
+  fx <- .diff_fixture()
+  samp_annot(fx$musica, "test") <- factor(samp_annot(fx$musica)$test)
+  test_factor <- samp_annot(fx$musica)$test
+  expected <- exposure_differential_analysis(fx$musica, "res_annot", "test",
+    method = "wilcox", group1 = c("A", "B"), group2 = c("B", "C")
+  )
+  observed <- exposure_differential_analysis(fx$musica, "res_annot", "test",
+    method = "wilcox", group1 = test_factor[c(1, 2)],
+    group2 = test_factor[c(2, 3)]
+  )
+  expect_equal(observed, expected)
+})
+
+test_that(desc = "group1/group2 messages give the real reason (#250)", {
+  fx <- .diff_fixture()
+  for (m in c("kruskal", "glm.nb")) {
+    expect_message(
+      suppressWarnings(
+        exposure_differential_analysis(fx$musica, "res_annot", "test",
+          method = m, group1 = "A", group2 = "B"
+        )
+      ),
+      regexp = "only used by method = \"wilcox\""
+    )
+  }
+  expect_message(
+    exposure_differential_analysis(fx$musica, "res_annot", "Tumor_Subtypes",
+      method = "wilcox", group1 = "Skin", group2 = "Lung"
+    ),
+    regexp = "has two values.*'Lung' is compared with 'Skin'"
+  )
+  expect_error(
+    exposure_differential_analysis(fx$musica, "res_annot", "test",
+      method = "wilcox"
+    ),
+    regexp = "required for annotations containing more than 2 unique"
+  )
+})
+
+test_that(desc = "wilcox rejects repeated pairs, in either order (#251)", {
+  fx <- .diff_fixture()
+  expect_error(
+    exposure_differential_analysis(fx$musica, "res_annot", "test",
+      method = "wilcox", group1 = c("A", "A"), group2 = c("B", "B")
+    ),
+    regexp = "'A' and 'B' is given more than once"
+  )
+  expect_error(
+    exposure_differential_analysis(fx$musica, "res_annot", "test",
+      method = "wilcox", group1 = c("A", "C", "B"), group2 = c("B", "A", "A")
+    ),
+    regexp = "'A' and 'B' is given more than once"
+  )
+  expect_error(
+    exposure_differential_analysis(fx$musica, "res_annot", "test",
+      method = "wilcox", group1 = c("A", "C"), group2 = c("B", "C")
+    ),
+    regexp = "must compare two different groups"
   )
 })
