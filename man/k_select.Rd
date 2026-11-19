@@ -61,7 +61,8 @@ as in \code{\link{cluster_exposure}}. Options are "euclidean" (default),
 "kmeans" accepts only "euclidean", "hkmeans" accepts "euclidean",
 "manhattan" and "canberra", and "clara" accepts "euclidean" and
 "manhattan". "wss" and "silhouette" are computed from this
-dissimilarity. "gap_stat" clusters with it, but \link[cluster]{clusGap}
+dissimilarity (for "hkmeans", with \link[stats]{dist}, as
+\link[factoextra]{hkmeans} uses). "gap_stat" clusters with it, but \link[cluster]{clusGap}
 measures the spread within clusters with Euclidean distance. With
 "gap_stat", "fanny" also clusters the data \link[cluster]{clusGap}
 simulates, and may warn that it has not converged on some of it.}

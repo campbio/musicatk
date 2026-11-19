@@ -337,3 +337,21 @@ test_that(desc = "k_select with fanny needs at least six samples (#248)", {
     "needs at least six samples; the model has 5"
   )
 })
+
+test_that(desc = "k_select scores hkmeans with the distance it clusters on", {
+  fx <- .clust_fixture()
+  # Zeros make philentropy's canberra differ from stats::dist()'s
+  e <- exposures(fx$musica, "result", "SBS96", "res_annot")
+  e[1, c(1, 2, 3)] <- 0
+  e[2, c(4, 5)] <- 0
+  exposures(fx$musica, "result", "SBS96", "res_annot") <- e
+  expos <- t(sweep(e, 2, colSums(e), FUN = "/"))
+  d <- stats::dist(expos, method = "canberra")
+  expected <- withr::with_seed(1, .silhouette_widths(d, 4, function(k) {
+    factoextra::hkmeans(expos, k, hc.metric = "canberra",
+                        hc.method = "ward.D")$cluster
+  }))
+  p <- k_select(fx$musica, "res_annot", method = "silhouette",
+                clust.method = "hkmeans", dis.method = "canberra", n = 4)
+  expect_equal(p$data$y, expected)
+})

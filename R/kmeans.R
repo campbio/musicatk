@@ -147,6 +147,16 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
   diss
 }
 
+# Evaluates expr without philentropy::distance()'s "Metric: ..." messages,
+# which it prints even with mute.message = TRUE (philentropy 0.10.0)
+.muffle_philentropy <- function(expr) {
+  withCallingHandlers(expr, message = function(m) {
+    if (startsWith(conditionMessage(m), "Metric:")) {
+      invokeRestart("muffleMessage")
+    }
+  })
+}
+
 # Clusters the rows (samples) of expos into k clusters. Returns the cluster
 # numbers, named by sample. The arguments are those of cluster_exposure().
 .cluster_rows <- function(expos, k, method, dis_method, hc_method,
@@ -383,7 +393,8 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' "kmeans" accepts only "euclidean", "hkmeans" accepts "euclidean",
 #' "manhattan" and "canberra", and "clara" accepts "euclidean" and
 #' "manhattan". "wss" and "silhouette" are computed from this
-#' dissimilarity. "gap_stat" clusters with it, but \link[cluster]{clusGap}
+#' dissimilarity (for "hkmeans", with \link[stats]{dist}, as
+#' \link[factoextra]{hkmeans} uses). "gap_stat" clusters with it, but \link[cluster]{clusGap}
 #' measures the spread within clusters with Euclidean distance. With
 #' "gap_stat", "fanny" also clusters the data \link[cluster]{clusGap}
 #' simulates, and may warn that it has not converged on some of it.
@@ -483,25 +494,29 @@ k_select <- function(musica, model_name, modality = "SBS96",
             n_samples, " samples, instead of n = ", n, ".")
     n <- n_samples - 1
   }
-  # Cluster as cluster_exposure() does. philentropy::distance() prints a
-  # message for each call, even with mute.message = TRUE, so it is muffled.
+  # Cluster as cluster_exposure() does
   cluster_fun <- function(x, k) {
-    clusters <- suppressMessages(.cluster_rows(x, k,
+    clusters <- .muffle_philentropy(.cluster_rows(x, k,
       method = clust.method, dis_method = dis.method,
       hc_method = hc.method
     ))
     list(cluster = clusters)
   }
-  diss <- suppressMessages(.exposure_dissimilarity(expos, dis.method))
   run_nbclust <- function() {
     if (method == "gap_stat") {
       # clusGap() clusters simulated data, so diss can't be given
-      factoextra::fviz_nbclust(expos, cluster_fun, method = method,
-                               k.max = n)
-    } else {
-      factoextra::fviz_nbclust(expos, cluster_fun, method = method,
-                               diss = diss, k.max = n)
+      return(factoextra::fviz_nbclust(expos, cluster_fun, method = method,
+                                      k.max = n))
     }
+    # Score with the distance the clusters come from; hkmeans builds its
+    # tree with stats::dist(), whose canberra differs from philentropy's
+    diss <- if (clust.method == "hkmeans") {
+      stats::dist(expos, method = dis.method)
+    } else {
+      .muffle_philentropy(.exposure_dissimilarity(expos, dis.method))
+    }
+    factoextra::fviz_nbclust(expos, cluster_fun, method = method,
+                             diss = diss, k.max = n)
   }
   if (is.null(seed)) {
     run_nbclust()
