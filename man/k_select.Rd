@@ -13,7 +13,9 @@ k_select(
   clust.method = "kmeans",
   n = 10,
   proportional = TRUE,
-  seed = 1
+  seed = 1,
+  dis.method = "euclidean",
+  hc.method = "ward.D"
 )
 }
 \arguments{
@@ -35,12 +37,15 @@ plot. Options are "wss" (total within cluster sum of squares), "silhouette"
 "wss".}
 
 \item{clust.method}{A character string indicating clustering method. Options
-are "kmeans" (default), "hclust" (hierarchical clustering), "hkmeans", "pam",
-and "clara".}
+are "kmeans" (default), "fanny", "hkmeans", "hclust" (hierarchical
+clustering), "pam", and "clara". The samples are clustered as
+\code{\link{cluster_exposure}} clusters them, with its default settings
+for the other arguments.}
 
 \item{n}{An integer indicating maximum number of clusters to test. Default is
-10. It is lowered, with a message, to the number of samples minus one.
-At least three samples are needed.}
+10. It is lowered, with a message, to the number of samples minus one, or
+for "fanny" to half the number of samples minus one. At least three samples
+(six for "fanny") are needed.}
 
 \item{proportional}{Logical, indicating if proportional exposure (default)
 will be used for clustering.}
@@ -49,6 +54,24 @@ will be used for clustering.}
 "gap_stat"), so the plot is the same each time; the caller's random number
 state is left unchanged. \code{NULL} uses the caller's random number state.
 Default \code{1}.}
+
+\item{dis.method}{Method to calculate the dissimilarity between samples,
+as in \code{\link{cluster_exposure}}. Options are "euclidean" (default),
+"manhattan", "jaccard", "cosine" (1 - cosine similarity), and "canberra".
+"kmeans" accepts only "euclidean", "hkmeans" accepts "euclidean",
+"manhattan" and "canberra", and "clara" accepts "euclidean" and
+"manhattan". "wss" and "silhouette" are computed from this
+dissimilarity (for "hkmeans", with \link[stats]{dist}, as
+\link[factoextra]{hkmeans} uses). "gap_stat" clusters with it, but
+\link[cluster]{clusGap} measures the spread within clusters with Euclidean
+distance. With "gap_stat", "fanny" also clusters the data
+\link[cluster]{clusGap} simulates, and may warn that it has not converged
+on some of it.}
+
+\item{hc.method}{Method of hierarchical clustering, for "hclust" and
+"hkmeans", as in \code{\link{cluster_exposure}}. Options are "ward.D"
+(default), "ward.D2", "single", "complete", "average", "mcquitty",
+"median", and "centroid".}
 }
 \value{
 A ggplot object.
@@ -67,6 +90,9 @@ k_select(res_annot, model_name = "res_annot", method = "wss", n = 6)
 k_select(res_annot, model_name = "res_annot", method = "silhouette", n = 6)
 # Plot gap statistics against number of clusters
 k_select(res_annot, model_name = "res_annot", method = "gap_stat", n = 6)
+# Choose k for hierarchical clustering on 1 - cosine similarity
+k_select(res_annot, model_name = "res_annot", method = "silhouette",
+  clust.method = "hclust", dis.method = "cosine", n = 6)
 }
 \seealso{
 \link[factoextra]{fviz_nbclust}

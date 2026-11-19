@@ -34,13 +34,16 @@ used to perform differential analysis on signature exposures. For
 \code{"glm.nb"}, the first level of \code{annotation} (the first in sorted
 order for a character column) is the reference group.}
 
-\item{group1}{character vector used in the Wilcox test. Elements in
-\code{group1} are compared to elements in \code{group2}. This is
-required for \code{annotation} with more than 2 levels.}
+\item{group1}{Character vector or factor used in the Wilcox test. Elements
+in \code{group1} are compared to elements in \code{group2}. This is
+required for \code{annotation} with more than 2 levels; with 2 levels, or
+for other methods, it is ignored with a message. Each pair must compare two
+different groups and be given once, in either order. Default \code{NULL}.}
 
-\item{group2}{character vector used in the Wilcox test. Elements in
-\code{group2} are compared to elements in \code{group1}. This is
-required for \code{annotation} with more than 2 levels.}
+\item{group2}{Character vector or factor used in the Wilcox test. Elements
+in \code{group2} are compared to elements in \code{group1}. This is
+required for \code{annotation} with more than 2 levels. Default
+\code{NULL}.}
 
 \item{...}{Additional arguments to be passed to the chosen method}
 }

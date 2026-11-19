@@ -229,3 +229,129 @@ test_that(desc = "k_select names samples with zero exposure", {
   expect_error(k_select(res_annot, "res_annot", method = "wss", n = 6),
                regexp = colnames(exposure_matrix)[5])
 })
+
+# Average silhouette widths for k = 2..k_max, as fviz_nbclust() plots them
+.silhouette_widths <- function(diss, k_max, cluster_fun) {
+  vapply(seq(2, k_max), function(k) {
+    summary(cluster::silhouette(cluster_fun(k), diss))$avg.width
+  }, numeric(1))
+}
+
+test_that(desc = "k_select clusters as cluster_exposure does (#248)", {
+  fx <- .clust_fixture()
+  # hclust uses dis.method and hc.method, with ward.D as cluster_exposure
+  for (m in c("euclidean", "cosine")) {
+    d <- .clust_diss(fx$expos, m)
+    tree <- stats::hclust(d, method = "ward.D")
+    expected <- .silhouette_widths(d, 4, function(k) stats::cutree(tree, k))
+    expect_no_message(
+      p <- k_select(fx$musica, "res_annot", method = "silhouette",
+                    clust.method = "hclust", n = 4, dis.method = m)
+    )
+    expect_equal(p$data$y, expected)
+  }
+  # pam uses dis.method
+  d <- .clust_diss(fx$expos, "manhattan")
+  expected <- .silhouette_widths(d, 4, function(k) {
+    cluster::pam(d, k = k, diss = TRUE, cluster.only = TRUE)
+  })
+  p <- k_select(fx$musica, "res_annot", method = "silhouette",
+                clust.method = "pam", n = 4, dis.method = "manhattan")
+  expect_equal(p$data$y, expected)
+})
+
+test_that(desc = "k_select offers fanny, up to n/2 - 1 clusters (#248)", {
+  fx <- .clust_fixture()
+  d <- .clust_diss(fx$expos, "cosine")
+  expected <- .silhouette_widths(d, 5, function(k) {
+    cluster::fanny(d, k = k, diss = TRUE, maxit = 500,
+                   tol = 1e-15)$clustering
+  })
+  # 12 samples: fanny allows at most 12 / 2 - 1 = 5 clusters
+  expect_message(
+    p <- k_select(fx$musica, "res_annot", method = "silhouette",
+                  clust.method = "fanny", dis.method = "cosine"),
+    "Testing up to 5 clusters"
+  )
+  expect_equal(p$data$y, expected)
+  # fanny may not converge on the data clusGap() simulates
+  p <- suppressWarnings(
+    k_select(fx$musica, "res_annot", method = "gap_stat",
+             clust.method = "fanny", n = 3),
+    classes = "simpleWarning"
+  )
+  expect_s3_class(p, "ggplot")
+})
+
+test_that(desc = "k_select rejects distances a method can't use (#248)", {
+  fx <- .clust_fixture()
+  expect_error(
+    k_select(fx$musica, "res_annot", clust.method = "kmeans",
+             dis.method = "cosine"),
+    "For kmeans clustering"
+  )
+  expect_error(
+    k_select(fx$musica, "res_annot", clust.method = "hkmeans",
+             dis.method = "cosine"),
+    "For hkmeans clustering"
+  )
+  expect_error(
+    k_select(fx$musica, "res_annot", clust.method = "clara",
+             dis.method = "cosine"),
+    "For clara clustering"
+  )
+  expect_error(
+    k_select(fx$musica, "res_annot", clust.method = "hclust",
+             dis.method = "nope"),
+    "should be one of"
+  )
+})
+
+test_that(desc = "clara rejects jaccard, which can crash cluster::clara()", {
+  fx <- .clust_fixture()
+  expect_error(
+    cluster_exposure(fx$musica, "res_annot", nclust = 2, method = "clara",
+                     dis.method = "jaccard"),
+    "For clara clustering.*euclidean, manhattan"
+  )
+  expect_error(
+    k_select(fx$musica, "res_annot", clust.method = "clara",
+             dis.method = "jaccard"),
+    "For clara clustering.*euclidean, manhattan"
+  )
+  # jaccard still works with the methods that use philentropy
+  expect_s3_class(
+    k_select(fx$musica, "res_annot", method = "silhouette",
+             clust.method = "pam", dis.method = "jaccard", n = 4),
+    "ggplot"
+  )
+})
+
+test_that(desc = "k_select with fanny needs at least six samples (#248)", {
+  fx <- .clust_fixture()
+  e <- exposures(fx$musica, "result", "SBS96", "res_annot")
+  exposures(fx$musica, "result", "SBS96", "res_annot") <-
+    e[, seq_len(5), drop = FALSE]
+  expect_error(
+    k_select(fx$musica, "res_annot", clust.method = "fanny"),
+    "needs at least six samples; the model has 5"
+  )
+})
+
+test_that(desc = "k_select scores hkmeans with the distance it clusters on", {
+  fx <- .clust_fixture()
+  # Zeros make philentropy's canberra differ from stats::dist()'s
+  e <- exposures(fx$musica, "result", "SBS96", "res_annot")
+  e[1, c(1, 2, 3)] <- 0
+  e[2, c(4, 5)] <- 0
+  exposures(fx$musica, "result", "SBS96", "res_annot") <- e
+  expos <- t(sweep(e, 2, colSums(e), FUN = "/"))
+  d <- stats::dist(expos, method = "canberra")
+  expected <- withr::with_seed(1, .silhouette_widths(d, 4, function(k) {
+    factoextra::hkmeans(expos, k, hc.metric = "canberra",
+                        hc.method = "ward.D")$cluster
+  }))
+  p <- k_select(fx$musica, "res_annot", method = "silhouette",
+                clust.method = "hkmeans", dis.method = "canberra", n = 4)
+  expect_equal(p$data$y, expected)
+})

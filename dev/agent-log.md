@@ -677,11 +677,15 @@ left out of that PR.
 
 ### 1. `exposure_differential_analysis()` rejects factor `group1`/`group2`
 
+Filed as #249; fixed in 2.7.21.
+
 `group1` and `group2` must be character, although the annotation itself
 may be a factor. Passing `levels(f)[1:2]` works; `f[1:2]` errors with
 "must be character vectors". The Shiny app passes character vectors.
 
 ### 2. Misleading message for kruskal and glm.nb with group1/group2
+
+Filed as #250; fixed in 2.7.21.
 
 With three or more groups and `method = "kruskal"` or `"glm.nb"`, giving
 `group1`/`group2` prints "'annotations' is of length 2. 'group1' and
@@ -689,11 +693,15 @@ With three or more groups and `method = "kruskal"` or `"glm.nb"`, giving
 
 ### 3. Duplicate wilcox pairs are accepted
 
+Filed as #251; fixed in 2.7.21.
+
 The error says pairs "must be unique", but the check only rejects
 `group1[i] == group2[i]`, so `group1 = c("A", "A")`,
 `group2 = c("B", "B")` runs the same comparison twice.
 
 ### 4. `k_select()` doesn't match `cluster_exposure()`'s distances
+
+Filed as #248; fixed in 2.7.21.
 
 `k_select()` has no `"fanny"` option, and its `"hclust"` and `"pam"` paths
 call `fviz_nbclust()` on the exposure matrix with Euclidean distance,
