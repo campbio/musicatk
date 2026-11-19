@@ -85,18 +85,12 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
     model = model_name
   )
 
-  method <- match.arg(method, c(
-    "kmeans", "fanny", "hkmeans", "hclust",
-    "pam", "clara"
-  ))
-  dis.method <- match.arg(dis.method, c( # nolint: object_name_linter.
-    "euclidean", "manhattan",
-    "jaccard", "cosine", "canberra"
-  ))
-  hc.method <- match.arg(hc.method, c( # nolint: object_name_linter.
-    "ward.D", "ward.D2", "single", "complete",
-    "average", "mcquitty", "median", "centroid"
-  ))
+  method <- match.arg(method, .cluster_methods)
+  dis.method <- match.arg(dis.method, # nolint: object_name_linter.
+                          .cluster_dis_methods)
+  hc.method <- match.arg(hc.method, # nolint: object_name_linter.
+                         .cluster_hc_methods)
+  .check_cluster_distance(method, dis.method)
   # read exposure data
   expos <- exposures(result)
   if (isTRUE(proportional)) {
@@ -104,26 +98,65 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
   } else {
     expos <- t(expos)
   }
-  # Calculate dissimilarity matrix for the methods that use one
-  if (method %in% c("fanny", "hclust", "pam")) {
-    diss <- philentropy::distance(x = expos, method = dis.method,
-                                  use.row.names = TRUE, as.dist.obj = TRUE)
-    # philentropy's "cosine" is a similarity
-    if (dis.method == "cosine") {
-      diss <- 1 - diss
-      # Rounding can leave identical directions slightly below zero
-      diss[diss < 0] <- 0
-    }
+  clusters <- .cluster_rows(expos, nclust,
+    method = method, dis_method = dis.method,
+    hc_method = hc.method, clara_samples = clara.samples,
+    iter_max = iter.max, tol = tol, nstart = nstart, seed = seed
+  )
+  clust_out <- data.frame(cluster = clusters)
+  return(clust_out)
+}
+
+# Choices shared by cluster_exposure() and k_select()
+.cluster_methods <- c("kmeans", "fanny", "hkmeans", "hclust", "pam", "clara")
+.cluster_dis_methods <- c("euclidean", "manhattan", "jaccard", "cosine",
+                          "canberra")
+.cluster_hc_methods <- c("ward.D", "ward.D2", "single", "complete",
+                         "average", "mcquitty", "median", "centroid")
+
+# Stops if a clustering method can't use the chosen dissimilarity
+.check_cluster_distance <- function(method, dis_method) {
+  if (method == "kmeans" && dis_method != "euclidean") {
+    stop("For kmeans clustering, dis.method must be \"euclidean\"; ",
+         "use \"pam\", \"fanny\" or \"hclust\" for other distances.")
   }
-  # Perform clustering
+  if (method == "hkmeans" &&
+        !dis_method %in% c("euclidean", "manhattan", "canberra")) {
+    stop("For hkmeans clustering, please choose the following methods to ",
+         "calculate dissimilarity matrix: euclidean, manhattan, canberra")
+  }
+  if (method == "clara" &&
+        !dis_method %in% c("euclidean", "manhattan", "jaccard")) {
+    stop("For clara clustering, please choose the following methods to ",
+         "calculate dissimilarity matrix: euclidean, manhattan, jaccard")
+  }
+}
+
+# Dissimilarity between the rows (samples) of expos
+.exposure_dissimilarity <- function(expos, dis_method) {
+  diss <- philentropy::distance(x = expos, method = dis_method,
+                                use.row.names = TRUE, as.dist.obj = TRUE)
+  # philentropy's "cosine" is a similarity
+  if (dis_method == "cosine") {
+    diss <- 1 - diss
+    # Rounding can leave identical directions slightly below zero
+    diss[diss < 0] <- 0
+  }
+  diss
+}
+
+# Clusters the rows (samples) of expos into k clusters. Returns the cluster
+# numbers, named by sample. The arguments are those of cluster_exposure().
+.cluster_rows <- function(expos, k, method, dis_method, hc_method,
+                          clara_samples = 5, iter_max = NULL, tol = 1e-15,
+                          nstart = 10, seed = NULL) {
+  if (method %in% c("fanny", "hclust", "pam")) {
+    diss <- .exposure_dissimilarity(expos, dis_method)
+  }
   if (method == "kmeans") {
-    if (dis.method != "euclidean") {
-      stop("For kmeans clustering, dis.method must be \"euclidean\"; ",
-           "use \"pam\", \"fanny\" or \"hclust\" for other distances.")
-    }
     run_kmeans <- function() {
-      stats::kmeans(x = expos, centers = nclust,
-                    iter.max = if (is.null(iter.max)) 10 else iter.max,
+      stats::kmeans(x = expos, centers = k,
+                    iter.max = if (is.null(iter_max)) 10 else iter_max,
                     nstart = nstart)
     }
     res <- if (is.null(seed)) {
@@ -131,45 +164,28 @@ cluster_exposure <- function(musica, model_name, modality = "SBS96",
     } else {
       withr::with_seed(seed, run_kmeans())
     }
-    clust_out <- data.frame(cluster = res$cluster)
+    res$cluster
   } else if (method == "fanny") {
-    res <- cluster::fanny(
-      x = diss, k = nclust, diss = TRUE,
-      maxit = if (is.null(iter.max)) 500 else iter.max,
+    cluster::fanny(
+      x = diss, k = k, diss = TRUE,
+      maxit = if (is.null(iter_max)) 500 else iter_max,
       tol = tol
-    )
-    clust_out <- data.frame(cluster = res$clustering)
+    )$clustering
   } else if (method == "hkmeans") {
-    if (!dis.method %in% c("euclidean", "manhattan", "canberra")) {
-      stop("For hkmeans clustering, please choose the following methods to 
-           calculate dissimilarity matrix: euclidean, manhattan, canberra")
-    }
-    res <- factoextra::hkmeans(
-      x = expos, k = nclust, hc.metric = dis.method,
-      hc.method = hc.method,
-      iter.max = if (is.null(iter.max)) 10 else iter.max
-    )
-    clust_out <- data.frame(cluster = res$cluster)
+    factoextra::hkmeans(
+      x = expos, k = k, hc.metric = dis_method,
+      hc.method = hc_method,
+      iter.max = if (is.null(iter_max)) 10 else iter_max
+    )$cluster
   } else if (method == "hclust") {
-    res <- factoextra::hcut(x = diss, k = nclust, isdiss = TRUE,
-                            hc_method = hc.method)
-    clust_out <- data.frame(cluster = res$cluster)
+    factoextra::hcut(x = diss, k = k, isdiss = TRUE,
+                     hc_method = hc_method)$cluster
   } else if (method == "pam") {
-    clust_out <- data.frame(cluster = cluster::pam(
-      x = diss, k = nclust,
-      diss = TRUE,
-      cluster.only = TRUE
-    ))
+    cluster::pam(x = diss, k = k, diss = TRUE, cluster.only = TRUE)
   } else {
-    if (!dis.method %in% c("euclidean", "manhattan", "jaccard")) {
-      stop("For clara clustering, please choose the following methods to 
-           calculate dissimilarity matrix: euclidean, manhattan, jaccard")
-    }
-    res <- cluster::clara(x = expos, k = nclust, metric = dis.method,
-                          samples = clara.samples)
-    clust_out <- data.frame(cluster = res$clustering)
+    cluster::clara(x = expos, k = k, metric = dis_method,
+                   samples = clara_samples)$clustering
   }
-  return(clust_out)
 }
 
 #' @title Visualize clustering results
@@ -345,17 +361,32 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' (average silhouette coefficient), and "gap_stat" (gap statistic). Default is
 #' "wss".
 #' @param clust.method A character string indicating clustering method. Options
-#' are "kmeans" (default), "hclust" (hierarchical clustering), "hkmeans", "pam",
-#' and "clara".
+#' are "kmeans" (default), "fanny", "hkmeans", "hclust" (hierarchical
+#' clustering), "pam", and "clara". The samples are clustered as
+#' \code{\link{cluster_exposure}} clusters them, with its default settings
+#' for the other arguments.
 #' @param n An integer indicating maximum number of clusters to test. Default is
-#' 10. It is lowered, with a message, to the number of samples minus one.
-#' At least three samples are needed.
+#' 10. It is lowered, with a message, to the number of samples minus one, or
+#' for "fanny" to half the number of samples minus one. At least three samples
+#' (six for "fanny") are needed.
 #' @param proportional Logical, indicating if proportional exposure (default)
 #' will be used for clustering.
 #' @param seed Seed for the random steps (k-means starts, and the bootstrap of
 #' "gap_stat"), so the plot is the same each time; the caller's random number
 #' state is left unchanged. \code{NULL} uses the caller's random number state.
 #' Default \code{1}.
+#' @param dis.method Method to calculate the dissimilarity between samples,
+#' as in \code{\link{cluster_exposure}}. Options are "euclidean" (default),
+#' "manhattan", "jaccard", "cosine" (1 - cosine similarity), and "canberra".
+#' "kmeans" accepts only "euclidean", "hkmeans" accepts "euclidean",
+#' "manhattan" and "canberra", and "clara" accepts "euclidean", "manhattan"
+#' and "jaccard". "wss" and "silhouette" are computed from this
+#' dissimilarity. "gap_stat" clusters with it, but \link[cluster]{clusGap}
+#' measures the spread within clusters with Euclidean distance.
+#' @param hc.method Method of hierarchical clustering, for "hclust" and
+#' "hkmeans", as in \code{\link{cluster_exposure}}. Options are "ward.D"
+#' (default), "ward.D2", "single", "complete", "average", "mcquitty",
+#' "median", and "centroid".
 #' @return A ggplot object.
 #' @seealso \link[factoextra]{fviz_nbclust}
 #' @examples
@@ -367,12 +398,15 @@ plot_cluster <- function(musica, model_name, modality = "SBS96",
 #' k_select(res_annot, model_name = "res_annot", method = "silhouette", n = 6)
 #' # Plot gap statistics against number of clusters
 #' k_select(res_annot, model_name = "res_annot", method = "gap_stat", n = 6)
+#' # Choose k for hierarchical clustering on 1 - cosine similarity
+#' k_select(res_annot, model_name = "res_annot", method = "silhouette",
+#'   clust.method = "hclust", dis.method = "cosine", n = 6)
 #' @export
 # nolint start: object_name_linter.
 k_select <- function(musica, model_name, modality = "SBS96",
                      result_name = "result", method = "wss",
                      clust.method = "kmeans", n = 10, proportional = TRUE,
-                     seed = 1) {
+                     seed = 1, dis.method = "euclidean", hc.method = "ward.D") {
   # nolint end
   # check if valid result_name
   if (!(result_name %in% names(result_list(musica)))) {
@@ -409,7 +443,12 @@ k_select <- function(musica, model_name, modality = "SBS96",
 
   method <- match.arg(method, c("wss", "silhouette", "gap_stat"))
   clust.method <- match.arg(clust.method, # nolint: object_name_linter.
-                            c("kmeans", "hclust", "hkmeans", "pam", "clara"))
+                            .cluster_methods)
+  dis.method <- match.arg(dis.method, # nolint: object_name_linter.
+                          .cluster_dis_methods)
+  hc.method <- match.arg(hc.method, # nolint: object_name_linter.
+                         .cluster_hc_methods)
+  .check_cluster_distance(clust.method, dis.method)
   expos <- exposures(result)
   if (isTRUE(proportional)) {
     expos <- t(.proportional_exposures(expos))
@@ -424,27 +463,40 @@ k_select <- function(musica, model_name, modality = "SBS96",
     stop("k_select() needs at least three samples; the model has ",
          n_samples, ".")
   }
-  if (n > n_samples - 1) {
+  if (clust.method == "fanny") {
+    max_k <- n_samples %/% 2 - 1
+    if (max_k < 2) {
+      stop("k_select() with clust.method = \"fanny\" needs at least six ",
+           "samples; the model has ", n_samples, ".")
+    }
+    if (n > max_k) {
+      message("Testing up to ", max_k, " clusters, the most fanny allows ",
+              "for ", n_samples, " samples, instead of n = ", n, ".")
+      n <- max_k
+    }
+  } else if (n > n_samples - 1) {
     message("Testing up to ", n_samples - 1, " clusters, one fewer than the ",
             n_samples, " samples, instead of n = ", n, ".")
     n <- n_samples - 1
   }
+  # Cluster as cluster_exposure() does. philentropy::distance() prints a
+  # message for each call, even with mute.message = TRUE, so it is muffled.
+  cluster_fun <- function(x, k) {
+    clusters <- suppressMessages(.cluster_rows(x, k,
+      method = clust.method, dis_method = dis.method,
+      hc_method = hc.method
+    ))
+    list(cluster = clusters)
+  }
+  diss <- suppressMessages(.exposure_dissimilarity(expos, dis.method))
   run_nbclust <- function() {
-    if (clust.method == "kmeans") {
-      factoextra::fviz_nbclust(expos, stats::kmeans, method = method,
-                               k.max = n, nstart = 10)
-    } else if (clust.method == "hclust") {
-      factoextra::fviz_nbclust(expos, factoextra::hcut, method = method,
-                               k.max = n)
-    } else if (clust.method == "hkmeans") {
-      factoextra::fviz_nbclust(expos, factoextra::hkmeans, method = method,
-                               k.max = n)
-    } else if (clust.method == "pam") {
-      factoextra::fviz_nbclust(expos, cluster::pam, method = method,
+    if (method == "gap_stat") {
+      # clusGap() clusters simulated data, so diss can't be given
+      factoextra::fviz_nbclust(expos, cluster_fun, method = method,
                                k.max = n)
     } else {
-      factoextra::fviz_nbclust(expos, cluster::clara, method = method,
-                               k.max = n)
+      factoextra::fviz_nbclust(expos, cluster_fun, method = method,
+                               diss = diss, k.max = n)
     }
   }
   if (is.null(seed)) {
