@@ -253,7 +253,7 @@ test_that("IND83 counts five or more copies of longer inserted units", {
 test_that("IND83 bins an indel the same wherever it is written", {
   # Issue #235
   # hg38 chr1:2253479-2253490 is GG ACACACAC TT. One more AC unit can be
-  # inserted after any base from the first G to the last C, and one unit
+  # inserted after any base from the second G to the last C, and one unit
   # deleted starting at any base of the tract; as CA when the indel is
   # written out of phase.
   g <- select_genome("hg38")
@@ -273,7 +273,7 @@ test_that("IND83 bins an indel the same wherever it is written", {
   expect_equal(unname(.ind83_bins(deletions, g)),
     rep("DEL_repeats_2_3", 7)
   )
-  # hg38 chr9:128695506-128695521 is TTAC|AATA|AAACTAAAT. Deleting AATA,
+  # hg38 chr9:128695506-128695522 is TTAC|AATA|AAACTAAAT. Deleting AATA,
   # ATAA or TAAA leaves the same sequence, with 2 bp (AA) of microhomology.
   shifted <- data.frame(
     chr = "chr9", start = 128695510:128695512, end = 128695513:128695515,
@@ -281,6 +281,19 @@ test_that("IND83 bins an indel the same wherever it is written", {
     sample = c("left", "shift_1", "shift_2")
   )
   expect_equal(unname(.ind83_bins(shifted, g)), rep("DEL_MH_4_2", 3))
+
+  # Shifting within the flanks: a rotated unit, a left flank that runs
+  # out, a left flank made only of copies, and a split microhomology
+  aligned <- musicatk:::.left_align_indels(
+    unit = c("CA", "CA", "AC", "ATAA"),
+    lflank = c("GGGGGA", "", "ACACAC", "TTACA"),
+    rflank = c("CACTT", "CATT", "TT", "AACT")
+  )
+  expect_identical(aligned, list(
+    unit = c("AC", "CA", "AC", "AATA"),
+    lflank = c("GGGGG", "", "", "TTAC"),
+    rflank = c("ACACTT", "CATT", "ACACACTT", "AAACT")
+  ))
 })
 
 test_that("IND83 says when there are no indels or no variant types", {

@@ -73,8 +73,7 @@ get the same bin; the variants themselves are not changed.
 SigProfilerMatrixGenerator bins an indel at the position it is given,
 so the two give the same bins for indels that are left-aligned, for
 example with \code{bcftools norm}, but can differ for indels written
-in the middle of a repeat or a microhomology. Most variant callers
-left-align indels.
+in the middle of a repeat or a microhomology.
 }
 \examples{
 g <- select_genome("hg38")

@@ -444,8 +444,7 @@ rc <- function(dna) {
 #' SigProfilerMatrixGenerator bins an indel at the position it is given,
 #' so the two give the same bins for indels that are left-aligned, for
 #' example with \code{bcftools norm}, but can differ for indels written
-#' in the middle of a repeat or a microhomology. Most variant callers
-#' left-align indels.
+#' in the middle of a repeat or a microhomology.
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
