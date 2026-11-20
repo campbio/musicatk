@@ -20,6 +20,12 @@ It was run on three sets of variants:
   indels). PCAWG data is controlled access, so only aggregate counts are
   reported.
 
+A later check (#235, section "Indels written mid-repeat") found that SPMG
+bins an indel at the position it is given, and since musicatk 2.7.22
+musicatk bins it as if it were left-aligned. The results below are for
+musicatk 2.7.9; the two tools still agree on left-aligned indels, but can
+differ on indels written in the middle of a repeat or a microhomology.
+
 **Result:** every difference has a known cause. Where both tools read a
 variant the same way, all SBS96, DBS78 and IND83 counts agree. In the TCGA
 and PCAWG data, every one of the 1.41 million indels musicatk counts gets
@@ -258,19 +264,25 @@ in HGVS). 2,051 of them have a position in between.
 | In between | 1,773 of 2,886 |
 | Right-aligned | 2,886 of 2,886 |
 
+The in-between row includes the 835 events that can be written at only
+one or two positions, whose in-between record is the left-aligned one.
+Of the 2,051 events with a position in between, 938 agree.
+
 - **SPMG bins an indel at the position it is given.** For 1,113 events it
   gives the in-between record a different bin from the left-aligned one:
   most are repeats of 2 bp or more read in another phase (`CA` in an `AC`
   repeat counts one copy fewer), and some are deletions whose microhomology
   is split between the two sides (`DEL_MH_4_1` for `DEL_MH_4_2`).
-  musicatk 2.7.21 and earlier did the same, and agreed with SPMG on all
-  three records.
+  musicatk 2.7.21 did the same: in an earlier scratch run of a draft of
+  this script on a similar set of 2,890 events, it agreed with SPMG on
+  all three records of every event. The script only runs the working
+  tree, so check out an earlier version to repeat that.
 - **musicatk bins each indel as if it were left-aligned** (#235), so all
   three records of an event get the bin SPMG gives the left-aligned one
   (2,886 of 2,886 for each). Left-aligned and right-aligned records get
   the same bin from both tools.
 - **So the two tools agree on left-aligned indels**, such as those from
-  `bcftools norm` and most variant callers. The TCGA and PCAWG runs above
+  `bcftools norm`. The TCGA and PCAWG runs above
   used musicatk 2.7.9, which binned an indel at its given position as SPMG
   does, so they don't show how many of those records are written in
   between; they have not been rerun with this change.
