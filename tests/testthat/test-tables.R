@@ -294,6 +294,11 @@ test_that("IND83 bins an indel the same wherever it is written", {
     lflank = c("GGGGG", "", "", "TTAC"),
     rflank = c("ACACTT", "CATT", "ACACACTT", "AAACT")
   ))
+  # No indel that can shift
+  expect_identical(
+    musicatk:::.left_align_indels("CA", "GG", "TT"),
+    list(unit = "CA", lflank = "GG", rflank = "TT")
+  )
 })
 
 test_that("IND83 says when there are no indels or no variant types", {

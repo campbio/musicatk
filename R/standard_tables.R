@@ -691,6 +691,9 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   ins <- indels$Variant_Type == "INS"
   unit <- ifelse(ins, indels$alt, indels$ref)
   len <- nchar(unit)
+  # Enough for the counts, which stop at 5+. .left_align_indels() relies
+  # on this: an indel in a longer repeat isn't shifted all the way, but
+  # it already has 5 or more copies next to it.
   width <- ifelse(len == 1, 7L, len * 5L)
   left_end <- ifelse(ins, indels$start, indels$start - 1L)
   right_start <- ifelse(ins, indels$start + 1L, indels$start + len)
@@ -775,7 +778,12 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
 # Then at most nchar(unit) - 1 single-base shifts are left. Returns a list
 # of the shifted 'unit', 'lflank' and 'rflank'.
 .left_align_indels <- function(unit, lflank, rflank) {
-  aligned <- vapply(seq_along(unit), function(i) {
+  # Only an indel whose last base matches the base before it can shift
+  shifts <- which(
+    substring(lflank, nchar(lflank)) == substring(unit, nchar(unit)) &
+      nchar(lflank) > 0
+  )
+  aligned <- vapply(shifts, function(i) {
     u <- unit[i]
     left <- lflank[i]
     right <- rflank[i]
@@ -794,9 +802,10 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     }
     c(u, left, right)
   }, character(3))
-  list(
-    unit = aligned[1, ], lflank = aligned[2, ], rflank = aligned[3, ]
-  )
+  unit[shifts] <- aligned[1, ]
+  lflank[shifts] <- aligned[2, ]
+  rflank[shifts] <- aligned[3, ]
+  list(unit = unit, lflank = lflank, rflank = rflank)
 }
 
 .micro_right <- function(letter, string) {
