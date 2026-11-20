@@ -273,10 +273,9 @@ Of the 2,051 events with a position in between, 938 agree.
   most are repeats of 2 bp or more read in another phase (`CA` in an `AC`
   repeat counts one copy fewer), and some are deletions whose microhomology
   is split between the two sides (`DEL_MH_4_1` for `DEL_MH_4_2`).
-  musicatk 2.7.21 did the same: in an earlier scratch run of a draft of
-  this script on a similar set of 2,890 events, it agreed with SPMG on
-  all three records of every event. The script only runs the working
-  tree, so check out an earlier version to repeat that.
+  musicatk 2.7.21 did the same: run from an export of `devel` at 36dc365
+  (with this script copied in), it agreed with SPMG on all three records
+  of all 2,886 events.
 - **musicatk bins each indel as if it were left-aligned** (#235), so all
   three records of an event get the bin SPMG gives the left-aligned one
   (2,886 of 2,886 for each). Left-aligned and right-aligned records get
