@@ -250,6 +250,39 @@ test_that("IND83 counts five or more copies of longer inserted units", {
   expect_equal(unname(.ind83_bins(tab, g)), "INS_repeats_3_5+")
 })
 
+test_that("IND83 bins an indel the same wherever it is written", {
+  # Issue #235
+  # hg38 chr1:2253479-2253490 is GG ACACACAC TT. One more AC unit can be
+  # inserted after any base from the first G to the last C, and one unit
+  # deleted starting at any base of the tract; as CA when the indel is
+  # written out of phase.
+  g <- select_genome("hg38")
+  insertions <- data.frame(
+    chr = "chr1", start = 2253480:2253488, end = 2253481:2253489,
+    ref = "-", alt = rep(c("AC", "CA"), length.out = 9),
+    sample = paste0("ins_", 2253480:2253488)
+  )
+  expect_equal(unname(.ind83_bins(insertions, g)),
+    rep("INS_repeats_2_4", 9)
+  )
+  deletions <- data.frame(
+    chr = "chr1", start = 2253481:2253487, end = 2253482:2253488,
+    ref = rep(c("AC", "CA"), length.out = 7), alt = "-",
+    sample = paste0("del_", 2253481:2253487)
+  )
+  expect_equal(unname(.ind83_bins(deletions, g)),
+    rep("DEL_repeats_2_3", 7)
+  )
+  # hg38 chr9:128695506-128695521 is TTAC|AATA|AAACTAAAT. Deleting AATA,
+  # ATAA or TAAA leaves the same sequence, with 2 bp (AA) of microhomology.
+  shifted <- data.frame(
+    chr = "chr9", start = 128695510:128695512, end = 128695513:128695515,
+    ref = c("AATA", "ATAA", "TAAA"), alt = "-",
+    sample = c("left", "shift_1", "shift_2")
+  )
+  expect_equal(unname(.ind83_bins(shifted, g)), rep("DEL_MH_4_2", 3))
+})
+
 test_that("IND83 says when there are no indels or no variant types", {
   data(musica)
   g <- select_genome("hg38")
