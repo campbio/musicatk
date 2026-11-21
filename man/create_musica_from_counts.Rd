@@ -10,15 +10,18 @@ create_musica_from_counts(x, variant_class)
 \item{x}{A data.table, matrix, or data.frame that contains counts of mutation
 types for each sample, with samples as columns. The column names are used
 as the sample names and must be unique. If \code{x} has row names, they
-must be the standard motif names (e.g. \code{"C>A_ACA"} for SBS96 or
-\code{"AC>NN_CA"} for DBS78) or the COSMIC/SigProfiler names
-(e.g. \code{"A[C>A]A"} or \code{"AC>CA"}), and the rows are matched to the
-motifs by name. Without row names, the rows must be in the standard motif
-order.}
+must be the standard motif names (e.g. \code{"C>A_ACA"} for SBS96,
+\code{"AC>NN_CA"} for DBS78 or \code{"DEL_C_1_0"} for IND83) or the
+COSMIC/SigProfiler names (e.g. \code{"A[C>A]A"}, \code{"AC>CA"} or
+\code{"1:Del:C:0"}), and the rows are matched to the motifs by name.
+Without row names, the rows must be in the standard motif order.}
 
 \item{variant_class}{\code{"SBS96"} (or \code{"SBS"}, \code{"SNV96"},
-\code{"SNV"}, \code{"snv"}) or \code{"DBS78"} (or \code{"DBS"},
-\code{"dbs"}, \code{"doublet"}). Indels are not supported yet.}
+\code{"SNV"}, \code{"snv"}), \code{"DBS78"} (or \code{"DBS"},
+\code{"dbs"}, \code{"doublet"}) or \code{"IND83"} (or \code{"ID83"},
+\code{"ID"}, \code{"IND"}, \code{"ind"}, \code{"INDEL"},
+\code{"Indel"}, \code{"indel"}). The count table is stored under the
+table name: \code{"SBS96"}, \code{"DBS78"} or \code{"IND83"}.}
 }
 \value{
 Returns a musica object
@@ -34,4 +37,15 @@ algorithms.
 data(musica)
 count_table <- get_count_table(extract_count_tables(musica)$SBS96)
 musica <- create_musica_from_counts(count_table, "SBS96")
+
+# Simulate indel counts for two samples, one row per IND83 motif
+data(cosmic_v3_indel_sigs)
+indel_motifs <- rownames(signatures(cosmic_v3_indel_sigs))
+set.seed(1)
+indel_counts <- matrix(rpois(166, lambda = 5), nrow = 83)
+rownames(indel_counts) <- indel_motifs
+colnames(indel_counts) <- c("sample1", "sample2")
+
+# Create a musica object holding the IND83 table
+indel_counts_musica <- create_musica_from_counts(indel_counts, "IND83")
 }

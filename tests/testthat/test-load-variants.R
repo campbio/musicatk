@@ -223,6 +223,76 @@ test_that("create_musica_from_counts matches rows to motifs by name", {
   expect_identical(get_count_table(tables(from_dbs_bracket)$DBS78), dbs)
 })
 
+test_that("create_musica_from_counts loads IND83 and SigProfiler ID83", {
+  # Issue #239
+  data(indel_musica)
+  g <- select_genome("hg38")
+  built <- indel_musica
+  suppressMessages(build_standard_table(built, g, "IND83"))
+  ind83 <- tables(built)$IND83
+  counts <- get_count_table(ind83)
+  names(dimnames(counts)) <- NULL
+
+  # Same counts, motif annotation and colours as build_standard_table()
+  expect_ind83 <- function(musica) {
+    tab <- tables(musica)$IND83
+    observed <- get_count_table(tab)
+    names(dimnames(observed)) <- NULL
+    expect_identical(observed, counts)
+    expect_identical(get_annot_tab(tab), get_annot_tab(ind83))
+    expect_identical(get_color_mapping(tab), get_color_mapping(ind83))
+  }
+
+  # SigProfiler names in SigProfiler (COSMIC) order
+  one_bp <- c("1:Del:C:", "1:Del:T:", "1:Ins:C:", "1:Ins:T:")
+  sigprofiler <- c(
+    paste0(rep(one_bp, each = 6), 0:5),
+    paste0(rep(2:5, each = 6), ":Del:R:", 0:5),
+    paste0(rep(2:5, each = 6), ":Ins:R:", 0:5),
+    "2:Del:M:1", "3:Del:M:1", "3:Del:M:2", "4:Del:M:1", "4:Del:M:2",
+    "4:Del:M:3", paste0("5:Del:M:", 1:5)
+  )
+  spmg <- counts
+  rownames(spmg) <- sigprofiler
+  expect_ind83(create_musica_from_counts(spmg, "ID83"))
+
+  # musicatk names, shuffled, with an alias
+  set.seed(239)
+  expect_ind83(create_musica_from_counts(counts[sample(83), ], "ID"))
+  expect_ind83(create_musica_from_counts(
+    as.data.frame(spmg[rev(seq_len(83)), ]), "IND83"
+  ))
+
+  unnamed <- unname(counts)
+  colnames(unnamed) <- colnames(counts)
+  expect_message(
+    from_unnamed <- create_musica_from_counts(unnamed, "IND83"),
+    regexp = "standard IND83 order"
+  )
+  expect_ind83(from_unnamed)
+
+  expect_error(
+    create_musica_from_counts(counts[-1, ], "IND83"),
+    regexp = "IND83 'count_table' must have 83 rows"
+  )
+  misnamed <- spmg
+  rownames(misnamed)[1] <- "1:Del:A:0"
+  expect_error(
+    create_musica_from_counts(misnamed, "IND83"),
+    regexp = "Not matched: 1:Del:A:0.*Missing: DEL_C_1_0"
+  )
+  duplicated_row <- counts
+  rownames(duplicated_row)[2] <- rownames(counts)[1]
+  expect_error(
+    create_musica_from_counts(duplicated_row, "IND83"),
+    regexp = "Duplicated: DEL_C_1_0.*Missing: DEL_C_1_1"
+  )
+  expect_error(
+    create_musica_from_counts(counts, "SBS192"),
+    regexp = "'variant_class' must be \"SBS96\", \"DBS78\" or \"IND83\""
+  )
+})
+
 test_that("MAFs without records or with only silent variants are read", {
   # Issue #241
   maf_file <- system.file("extdata", "public_TCGA_lung.maf",

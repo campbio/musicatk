@@ -1086,19 +1086,33 @@ create_musica_from_variants <- function(x, genome,
 #' @param x A data.table, matrix, or data.frame that contains counts of mutation
 #' types for each sample, with samples as columns. The column names are used
 #' as the sample names and must be unique. If \code{x} has row names, they
-#' must be the standard motif names (e.g. \code{"C>A_ACA"} for SBS96 or
-#' \code{"AC>NN_CA"} for DBS78) or the COSMIC/SigProfiler names
-#' (e.g. \code{"A[C>A]A"} or \code{"AC>CA"}), and the rows are matched to the
-#' motifs by name. Without row names, the rows must be in the standard motif
-#' order.
+#' must be the standard motif names (e.g. \code{"C>A_ACA"} for SBS96,
+#' \code{"AC>NN_CA"} for DBS78 or \code{"DEL_C_1_0"} for IND83) or the
+#' COSMIC/SigProfiler names (e.g. \code{"A[C>A]A"}, \code{"AC>CA"} or
+#' \code{"1:Del:C:0"}), and the rows are matched to the motifs by name.
+#' Without row names, the rows must be in the standard motif order.
 #' @param variant_class \code{"SBS96"} (or \code{"SBS"}, \code{"SNV96"},
-#' \code{"SNV"}, \code{"snv"}) or \code{"DBS78"} (or \code{"DBS"},
-#' \code{"dbs"}, \code{"doublet"}). Indels are not supported yet.
+#' \code{"SNV"}, \code{"snv"}), \code{"DBS78"} (or \code{"DBS"},
+#' \code{"dbs"}, \code{"doublet"}) or \code{"IND83"} (or \code{"ID83"},
+#' \code{"ID"}, \code{"IND"}, \code{"ind"}, \code{"INDEL"},
+#' \code{"Indel"}, \code{"indel"}). The count table is stored under the
+#' table name: \code{"SBS96"}, \code{"DBS78"} or \code{"IND83"}.
 #' @return Returns a musica object
 #' @examples
 #' data(musica)
 #' count_table <- get_count_table(extract_count_tables(musica)$SBS96)
 #' musica <- create_musica_from_counts(count_table, "SBS96")
+#'
+#' # Simulate indel counts for two samples, one row per IND83 motif
+#' data(cosmic_v3_indel_sigs)
+#' indel_motifs <- rownames(signatures(cosmic_v3_indel_sigs))
+#' set.seed(1)
+#' indel_counts <- matrix(rpois(166, lambda = 5), nrow = 83)
+#' rownames(indel_counts) <- indel_motifs
+#' colnames(indel_counts) <- c("sample1", "sample2")
+#'
+#' # Create a musica object holding the IND83 table
+#' indel_counts_musica <- create_musica_from_counts(indel_counts, "IND83")
 #' @export
 create_musica_from_counts <- function(x, variant_class) {
   if (canCoerce(x, "matrix")) {
@@ -1233,11 +1247,38 @@ create_musica_from_counts <- function(x, variant_class) {
     tables(musica)[["DBS78"]] <- tab
   } else if (variant_class %in% c(
     "INDEL", "Indel", "indel", "ind", "IND",
-    "ID"
+    "ID", "IND83", "ID83"
   )) {
-    stop("Not yet supported.")
+    if (nrow(x) != 83) {
+      stop("IND83 'count_table' must have 83 rows.")
+    }
+
+    # same motifs, annotation and colours as create_ind83_table()
+    annotation <- .ind83_annotation()
+    color_mapping <- .ind83_color_mapping(annotation)
+
+    # match count table rows to the IND83 motifs by name
+    x <- .match_count_rows(x, annotation$motif, "IND83")
+
+    # create count table object
+    tab <- new("count_table",
+      name = "IND83", count_table = x,
+      annotation = annotation, features = as.data.frame(annotation$motif[1]),
+      type = S4Vectors::Rle("INDEL"), color_variable = "mutation",
+      color_mapping = color_mapping, description = paste0(
+        "Standard count table for ",
+        "small insertions and",
+        " deletions"
+      )
+    )
+
+    # add count table to musica object
+    tables(musica)[["IND83"]] <- tab
   } else {
-    stop("Only SBS and DBS classes are supported")
+    stop(
+      "'variant_class' must be \"SBS96\", \"DBS78\" or \"IND83\" (or an ",
+      "alias such as \"SBS\", \"DBS\" or \"ID83\")."
+    )
   }
 
   return(musica)
@@ -1247,8 +1288,9 @@ create_musica_from_counts <- function(x, variant_class) {
 
 # Puts the rows of a count matrix in the order of 'motifs', matching them
 # by row name. COSMIC/SigProfiler names are converted to musicatk names
-# first: A[C>A]G becomes C>A_ACG and AC>CA becomes AC>NN_CA. Without row
-# names, the rows are assumed to be in the order of 'motifs'.
+# first: A[C>A]G becomes C>A_ACG, AC>CA becomes AC>NN_CA, and ID83 names
+# are converted by .id83_to_musicatk(). Without row names, the rows are
+# assumed to be in the order of 'motifs'.
 .match_count_rows <- function(x, motifs, table_name) {
   if (!is.null(rownames(x))) {
     rownames(x) <- sub(
@@ -1256,6 +1298,7 @@ create_musica_from_counts <- function(x, variant_class) {
       rownames(x)
     )
     rownames(x) <- sub("^([ACGT]{2})>([ACGT]{2})$", "\\1>NN_\\2", rownames(x))
+    rownames(x) <- .id83_to_musicatk(rownames(x))
   }
   if (is.null(rownames(x))) {
     message(
@@ -1282,6 +1325,28 @@ create_musica_from_counts <- function(x, variant_class) {
   return(x[motifs, , drop = FALSE])
 }
 
+# Converts SigProfiler ID83 names to musicatk IND83 motifs, leaving other
+# names as they are: 1:Del:C:0 becomes DEL_C_1_0, 2:Ins:R:5 becomes
+# INS_repeats_2_5+ and 5:Del:M:5 becomes DEL_MH_5+_5+. A size or count of 5
+# is the last bin, 5+.
+.id83_to_musicatk <- function(x) {
+  pattern <- "^([1-5]):(Del|Ins):([CTRM]):([0-5])$"
+  id83 <- grepl(pattern, x)
+  if (!any(id83)) {
+    return(x)
+  }
+  size <- sub(pattern, "\\1", x[id83])
+  type <- toupper(sub(pattern, "\\2", x[id83]))
+  kind <- sub(pattern, "\\3", x[id83])
+  n <- sub(pattern, "\\4", x[id83])
+  plus <- function(v) ifelse(v == "5", "5+", v)
+  repeat_kind <- ifelse(kind == "M", "MH", "repeats")
+  x[id83] <- ifelse(size == "1",
+    paste(type, kind, "1", plus(n), sep = "_"),
+    paste(type, repeat_kind, plus(size), plus(n), sep = "_")
+  )
+  x
+}
 
 #' Load an external model into a musica object
 #'
