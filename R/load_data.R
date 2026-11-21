@@ -1328,28 +1328,28 @@ create_musica_from_counts <- function(x, variant_class) {
 
 # Converts SigProfiler ID83 names to musicatk IND83 motifs, leaving other
 # names as they are: 1:Del:C:0 becomes DEL_C_1_0, 2:Ins:R:5 becomes
-# INS_repeats_2_5+ and 5:Del:M:5 becomes DEL_MH_5+_5+. A size or count of 5
-# is the last bin, 5+. Only 1 bp indels have a base (C or T), only longer
-# ones a repeat (R), and only longer deletions a microhomology (M), so a
-# name such as 2:Del:C:0 is left as it is and fails to match.
+# INS_repeats_2_5+ and 5:Del:M:5 becomes DEL_MH_5+_5+ (a size or count of
+# 5 is the last bin, 5+). Only the 83 ID83 names are converted, so a name
+# that is not an ID83 bin, such as 2:Del:C:0 or 2:Del:M:2, fails to match
+# under the name the user gave.
 .id83_to_musicatk <- function(x) {
-  pattern <- "^([1-5]):(Del|Ins):([CTRM]):([0-5])$"
-  valid <- "^(1:(Del|Ins):[CT]|[2-5]:(Del|Ins):R|[2-5]:Del:M):[0-5]$"
-  id83 <- grepl(valid, x)
-  if (!any(id83)) {
-    return(x)
-  }
-  size <- sub(pattern, "\\1", x[id83])
-  type <- toupper(sub(pattern, "\\2", x[id83]))
-  kind <- sub(pattern, "\\3", x[id83])
-  n <- sub(pattern, "\\4", x[id83])
-  plus <- function(v) ifelse(v == "5", "5+", v)
-  repeat_kind <- ifelse(kind == "M", "MH", "repeats")
-  x[id83] <- ifelse(size == "1",
-    paste(type, kind, "1", plus(n), sep = "_"),
-    paste(type, repeat_kind, plus(size), plus(n), sep = "_")
-  )
+  id83 <- match(x, .id83_names())
+  converted <- !is.na(id83)
+  x[converted] <- .ind83_motifs()[id83[converted]]
   x
+}
+
+# The 83 SigProfiler ID83 names, in the order of .ind83_motifs()
+.id83_names <- function() {
+  one_bp <- c("1:Del:C:", "1:Del:T:", "1:Ins:C:", "1:Ins:T:")
+  c(
+    paste0(rep(one_bp, each = 6), 0:5),
+    paste0(rep(2:5, each = 6), ":Del:R:", 0:5),
+    paste0(rep(2:5, each = 6), ":Ins:R:", 0:5),
+    paste0(c(2, 3, 3, 4, 4, 4, 5, 5, 5, 5, 5), ":Del:M:",
+      c(1, 1, 2, 1, 2, 3, 1, 2, 3, 4, 5)
+    )
+  )
 }
 
 #' Load an external model into a musica object
