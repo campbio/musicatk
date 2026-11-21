@@ -281,6 +281,13 @@ test_that("create_musica_from_counts loads IND83 and SigProfiler ID83", {
     create_musica_from_counts(misnamed, "IND83"),
     regexp = "Not matched: 1:Del:A:0.*Missing: DEL_C_1_0"
   )
+  # A 1 bp base (C, T) with a longer indel is not read as a repeat
+  wrong_kind <- spmg
+  rownames(wrong_kind)[25] <- "2:Del:C:0"
+  expect_error(
+    create_musica_from_counts(wrong_kind, "IND83"),
+    regexp = "Not matched: 2:Del:C:0.*Missing: DEL_repeats_2_0"
+  )
   duplicated_row <- counts
   rownames(duplicated_row)[2] <- rownames(counts)[1]
   expect_error(

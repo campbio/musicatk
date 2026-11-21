@@ -1107,7 +1107,8 @@ create_musica_from_variants <- function(x, genome,
 #' data(cosmic_v3_indel_sigs)
 #' indel_motifs <- rownames(signatures(cosmic_v3_indel_sigs))
 #' set.seed(1)
-#' indel_counts <- matrix(rpois(166, lambda = 5), nrow = 83)
+#' simulated_counts <- rpois(166, lambda = 5)
+#' indel_counts <- matrix(simulated_counts, nrow = 83)
 #' rownames(indel_counts) <- indel_motifs
 #' colnames(indel_counts) <- c("sample1", "sample2")
 #'
@@ -1328,10 +1329,13 @@ create_musica_from_counts <- function(x, variant_class) {
 # Converts SigProfiler ID83 names to musicatk IND83 motifs, leaving other
 # names as they are: 1:Del:C:0 becomes DEL_C_1_0, 2:Ins:R:5 becomes
 # INS_repeats_2_5+ and 5:Del:M:5 becomes DEL_MH_5+_5+. A size or count of 5
-# is the last bin, 5+.
+# is the last bin, 5+. Only 1 bp indels have a base (C or T), only longer
+# ones a repeat (R), and only longer deletions a microhomology (M), so a
+# name such as 2:Del:C:0 is left as it is and fails to match.
 .id83_to_musicatk <- function(x) {
   pattern <- "^([1-5]):(Del|Ins):([CTRM]):([0-5])$"
-  id83 <- grepl(pattern, x)
+  valid <- "^(1:(Del|Ins):[CT]|[2-5]:(Del|Ins):R|[2-5]:Del:M):[0-5]$"
+  id83 <- grepl(valid, x)
   if (!any(id83)) {
     return(x)
   }

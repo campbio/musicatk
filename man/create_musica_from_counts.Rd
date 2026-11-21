@@ -42,7 +42,8 @@ musica <- create_musica_from_counts(count_table, "SBS96")
 data(cosmic_v3_indel_sigs)
 indel_motifs <- rownames(signatures(cosmic_v3_indel_sigs))
 set.seed(1)
-indel_counts <- matrix(rpois(166, lambda = 5), nrow = 83)
+simulated_counts <- rpois(166, lambda = 5)
+indel_counts <- matrix(simulated_counts, nrow = 83)
 rownames(indel_counts) <- indel_motifs
 colnames(indel_counts) <- c("sample1", "sample2")
 
