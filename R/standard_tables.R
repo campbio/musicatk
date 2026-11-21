@@ -566,13 +566,7 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     )
   }
 
-  motifs <- c(
-    .get_indel_motifs("bp1", 0, 0),
-    .get_indel_motifs("bp1", 1, 0),
-    .get_indel_motifs("del", NA, NA),
-    .get_indel_motifs("ins", NA, NA),
-    .get_indel_motifs("micro", NA, NA)
-  )
+  motifs <- .ind83_motifs()
   # Count every sample in sample_names() order, matched by name, and every
   # motif, whichever indel classes are present
   labels <- .classify_indels(indels, g)
@@ -587,29 +581,8 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     ncol = nlevels(samples),
     dimnames = dimlist
   )
-  motif <- rownames(mut_table)
-
-  mutation <- c(
-    substr(motif[seq_len(24)], 1, 5),
-    paste(unlist(lapply(strsplit(motif[25:83], "_"), "[[", 1)),
-      unlist(lapply(strsplit(motif[25:83], "_"), "[[", 2)),
-      unlist(lapply(strsplit(motif[25:83], "_"), "[[", 3)),
-      sep = "_"
-    )
-  )
-  context <- c(rep(c("1_1", "1_2", "1_3", "1_4", "1_5", "1_6+"), 2),
-    rep(c("1_0", "1_1", "1_2", "1_3", "1_4", "1_5+"), 2),
-    rep(c("1", "2", "3", "4", "5", "6+"), 4),
-    #substr(motif[seq_len(24)], 7, 9),
-    unlist(lapply(strsplit(motif[49:83], "_"), "[[", 4))
-  )
-  annotation <- data.frame(
-    motif = motif, mutation = mutation,
-    context = context
-  )
-
-  color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
-  names(color_mapping) <- unique(annotation$mutation)
+  annotation <- .ind83_annotation()
+  color_mapping <- .ind83_color_mapping(annotation)
 
   dummy_features <- rep(NA, nrow(indels))
 
@@ -629,6 +602,47 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     return_table = TRUE, overwrite = overwrite
   )
   return(tab)
+}
+
+# The 83 IND83 motifs in standard (COSMIC) order
+.ind83_motifs <- function() {
+  c(
+    .get_indel_motifs("bp1", 0, 0),
+    .get_indel_motifs("bp1", 1, 0),
+    .get_indel_motifs("del", NA, NA),
+    .get_indel_motifs("ins", NA, NA),
+    .get_indel_motifs("micro", NA, NA)
+  )
+}
+
+# The motif, mutation and context of each IND83 motif, used by
+# create_ind83_table() and create_musica_from_counts()
+.ind83_annotation <- function() {
+  motif <- .ind83_motifs()
+  mutation <- c(
+    substr(motif[seq_len(24)], 1, 5),
+    paste(unlist(lapply(strsplit(motif[25:83], "_"), "[[", 1)),
+      unlist(lapply(strsplit(motif[25:83], "_"), "[[", 2)),
+      unlist(lapply(strsplit(motif[25:83], "_"), "[[", 3)),
+      sep = "_"
+    )
+  )
+  context <- c(rep(c("1_1", "1_2", "1_3", "1_4", "1_5", "1_6+"), 2),
+    rep(c("1_0", "1_1", "1_2", "1_3", "1_4", "1_5+"), 2),
+    rep(c("1", "2", "3", "4", "5", "6+"), 4),
+    unlist(lapply(strsplit(motif[49:83], "_"), "[[", 4))
+  )
+  data.frame(
+    motif = motif, mutation = mutation,
+    context = context
+  )
+}
+
+# One colour per IND83 mutation type in 'annotation'
+.ind83_color_mapping <- function(annotation) {
+  color_mapping <- .gg_color_hue(length(unique(annotation$mutation)))
+  names(color_mapping) <- unique(annotation$mutation)
+  color_mapping
 }
 
 .get_indel_motifs <- function(indel, ins, plus) {
