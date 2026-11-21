@@ -65,6 +65,15 @@ the bases before it, is binned by the length of that microhomology.
 Deletions are read as spanning \code{start} to the last deleted base,
 and insertions as following the base at \code{start}, the convention
 \code{\link{create_musica_from_variants}} uses.
+
+An indel in a repeat or a microhomology can be written at several
+positions that all give the same sequence. Each indel is binned as if
+it were shifted as far left as it goes (left-aligned), so all of them
+get the same bin; the variants themselves are not changed.
+SigProfilerMatrixGenerator bins an indel at the position it is given,
+so the two give the same bins for indels that are left-aligned, for
+example with \code{bcftools norm}, but can differ for indels written
+in the middle of a repeat or a microhomology.
 }
 \examples{
 g <- select_genome("hg38")

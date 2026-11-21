@@ -437,6 +437,15 @@ rc <- function(dna) {
 #' and insertions as following the base at \code{start}, the convention
 #' \code{\link{create_musica_from_variants}} uses.
 #'
+#' An indel in a repeat or a microhomology can be written at several
+#' positions that all give the same sequence. Each indel is binned as if
+#' it were shifted as far left as it goes (left-aligned), so all of them
+#' get the same bin; the variants themselves are not changed.
+#' SigProfilerMatrixGenerator bins an indel at the position it is given,
+#' so the two give the same bins for indels that are left-aligned, for
+#' example with \code{bcftools norm}, but can differ for indels written
+#' in the middle of a repeat or a microhomology.
+#'
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param g A \linkS4class{BSgenome} object indicating which genome
 #' reference the variants and their coordinates were derived from.
@@ -682,6 +691,9 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
   ins <- indels$Variant_Type == "INS"
   unit <- ifelse(ins, indels$alt, indels$ref)
   len <- nchar(unit)
+  # Enough for the counts, which stop at 5+. .left_align_indels() relies
+  # on this: an indel in a longer repeat isn't shifted all the way, but
+  # it already has 5 or more copies next to it.
   width <- ifelse(len == 1, 7L, len * 5L)
   left_end <- ifelse(ins, indels$start, indels$start - 1L)
   right_start <- ifelse(ins, indels$start + 1L, indels$start + len)
@@ -712,6 +724,13 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
       as.character = TRUE
     )
   }
+
+  # Bin each indel as if it were left-aligned, so an indel gets the same
+  # bin wherever it is written along a repeat or a microhomology (#235)
+  aligned <- .left_align_indels(unit, lflank, rflank)
+  unit <- aligned$unit
+  lflank <- aligned$lflank
+  rflank <- aligned$rflank
 
   # 1 bp indels are named by their pyrimidine base, so A and G indels are
   # read on the other strand
@@ -748,6 +767,45 @@ create_ind83_table <- function(musica, g, overwrite = FALSE,
     sep = "_"
   )
   labels
+}
+
+# Shift each indel left within its flanks, as far as it goes: the inserted
+# or deleted sequence 'unit' moves one base left while the base before it
+# equals its last base, which rotates the unit and moves that base from
+# 'lflank' to the front of 'rflank'. Whole copies of the unit at the end of
+# 'lflank' are moved first; that doesn't change the number of copies on
+# both sides, so the flanks only need to hold the copies that are counted.
+# Then at most nchar(unit) - 1 single-base shifts are left. Returns a list
+# of the shifted 'unit', 'lflank' and 'rflank'.
+.left_align_indels <- function(unit, lflank, rflank) {
+  # Only an indel whose last base matches the base before it can shift
+  shifts <- which(
+    substring(lflank, nchar(lflank)) == substring(unit, nchar(unit)) &
+      nchar(lflank) > 0
+  )
+  aligned <- vapply(shifts, function(i) {
+    u <- unit[i]
+    left <- lflank[i]
+    right <- rflank[i]
+    len <- nchar(u)
+    copies <- .count_repeat_left(u, left)
+    if (copies > 0) {
+      left <- substr(left, 1, nchar(left) - copies * len)
+      right <- paste0(strrep(u, copies), right)
+    }
+    last <- substr(u, len, len)
+    while (nchar(left) > 0 && substr(left, nchar(left), nchar(left)) == last) {
+      u <- paste0(last, substr(u, 1, len - 1))
+      left <- substr(left, 1, nchar(left) - 1)
+      right <- paste0(last, right)
+      last <- substr(u, len, len)
+    }
+    c(u, left, right)
+  }, character(3))
+  unit[shifts] <- aligned[1, ]
+  lflank[shifts] <- aligned[2, ]
+  rflank[shifts] <- aligned[3, ]
+  list(unit = unit, lflank = lflank, rflank = rflank)
 }
 
 .micro_right <- function(letter, string) {

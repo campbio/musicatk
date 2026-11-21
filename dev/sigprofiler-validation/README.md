@@ -20,6 +20,12 @@ It was run on three sets of variants:
   indels). PCAWG data is controlled access, so only aggregate counts are
   reported.
 
+A later check (#235, section "Indels written mid-repeat") found that SPMG
+bins an indel at the position it is given, and since musicatk 2.7.22
+musicatk bins it as if it were left-aligned. The results below are for
+musicatk 2.7.9; the two tools still agree on left-aligned indels, but can
+differ on indels written in the middle of a repeat or a microhomology.
+
 **Result:** every difference has a known cause. Where both tools read a
 variant the same way, all SBS96, DBS78 and IND83 counts agree. In the TCGA
 and PCAWG data, every one of the 1.41 million indels musicatk counts gets
@@ -241,6 +247,45 @@ no sample names or positions, and deletes its working copies.
   base differs) that musicatk removes.
 - **Left out by both tools:** 3,247 compound deletions.
 
+## Indels written mid-repeat (#235)
+
+Run 2026-11-20 with musicatk 2.7.22 (`fix/indel-left-align`, loaded from
+the working tree) and SPMG 1.6.0. An indel in a repeat or a microhomology
+can be written at several positions that give the same sequence.
+`compare_positions.R` generates 2,886 indels on hg38 chr1:10-30 Mb (random
+1-8 bp deletions, random 1-8 bp tandem duplications, and one unit inserted
+into or deleted from a 2-5 bp microsatellite) and writes each three ways:
+left-aligned, at a random position in between, and right-aligned (3′, as
+in HGVS). 2,051 of them have a position in between.
+
+| Record | musicatk agrees with SPMG |
+|---|---|
+| Left-aligned | 2,886 of 2,886 |
+| In between | 1,773 of 2,886 |
+| Right-aligned | 2,886 of 2,886 |
+
+The in-between row includes the 835 events that can be written at only
+one or two positions, whose in-between record is the left-aligned one.
+Of the 2,051 events with a position in between, 938 agree.
+
+- **SPMG bins an indel at the position it is given.** For 1,113 events it
+  gives the in-between record a different bin from the left-aligned one:
+  most are repeats of 2 bp or more read in another phase (`CA` in an `AC`
+  repeat counts one copy fewer), and some are deletions whose microhomology
+  is split between the two sides (`DEL_MH_4_1` for `DEL_MH_4_2`).
+  musicatk 2.7.21 did the same: run from an export of `devel` at 36dc365
+  (with this script copied in), it agreed with SPMG on all three records
+  of all 2,886 events.
+- **musicatk bins each indel as if it were left-aligned** (#235), so all
+  three records of an event get the bin SPMG gives the left-aligned one
+  (2,886 of 2,886 for each). Left-aligned and right-aligned records get
+  the same bin from both tools.
+- **So the two tools agree on left-aligned indels**, such as those from
+  `bcftools norm`. The TCGA and PCAWG runs above
+  used musicatk 2.7.9, which binned an indel at its given position as SPMG
+  does, so they don't show how many of those records are written in
+  between; they have not been rerun with this change.
+
 ## Rerun
 
 You need SPMG and its GRCh38 reference in a Python environment (Python 3.12
@@ -254,6 +299,12 @@ Then, from the package root:
 ```sh
 python dev/sigprofiler-validation/run_spmg.py inst/extdata <out_dir>
 Rscript dev/sigprofiler-validation/compare.R inst/extdata <out_dir>
+```
+
+For the indels written mid-repeat:
+
+```sh
+Rscript dev/sigprofiler-validation/compare_positions.R <out_dir> <python>
 ```
 
 For the large runs, add TCGAbiolinks (for the download) and BSgenome hg19
