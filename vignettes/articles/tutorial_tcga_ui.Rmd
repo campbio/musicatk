@@ -90,7 +90,7 @@ The "Build Tables" tab generates count tables for different mutation schemas. Th
 <br>
 
 SBS96 - Motifs are the six possible single base pair mutation types times the four possibilities each for upstream and downstream context bases (464 = 96 motifs) <br>
-SBS192_Trans - Motifs are an extension of SBS96 multiplied by the transcriptional strand (translated/untranslated), can be specified with "Transcript_Strand". <br>
+SBS192_Trans - Motifs are an extension of SBS96 multiplied by the transcriptional strand (transcribed/untranscribed), can be specified with "Transcript_Strand". <br>
 SBS192_Rep - Motifs are an extension of SBS96 multiplied by the replication strand (leading/lagging), can be specified with "Replication_Strand". <br>
 DBS - Motifs are the 78 possible double-base-pair substitutions. <br>
 INDEL - Motifs are 83 categories intended to capture different categories of indels based on base-pair change, repeats, or microhomology, insertion or deletion, and length.
