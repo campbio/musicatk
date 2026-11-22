@@ -174,11 +174,60 @@ test_that("SBS in overlapping genes on opposite strands have no strand", {
   expect_equal(sum(counts), 1)
 })
 
-test_that("annotate_transcript_strand stops when no chromosome names match", {
+# musica with "chr" stripped from the chromosome names of the given samples
+strip_chr <- function(musica, samples = NULL) {
+  dat <- variants(musica)
+  rows <- if (is.null(samples)) TRUE else dat$sample %in% samples
+  dat$chr[rows] <- sub("^chr", "", dat$chr[rows])
+  variants(musica) <- dat
+  musica
+}
+
+test_that("annotate_transcript_strand maps Ensembl-style chromosome names", {
   # Issue #230: Ensembl-style "1" against the TxDb's "chr1"
   data(musica)
+  ucsc <- musica
+  ensembl <- strip_chr(musica)
+  annotate_transcript_strand(ucsc, "hg38")
+  expect_message(
+    annotate_transcript_strand(ensembl, "hg38"),
+    "chromosome names to the UCSC style of the TxDb",
+    fixed = TRUE
+  )
+
+  # Same strands and table; the variants keep their names
+  expect_identical(
+    variants(ensembl)$Transcript_Strand,
+    variants(ucsc)$Transcript_Strand
+  )
+  expect_identical(
+    get_count_table(tables(ensembl)$Transcript_Strand),
+    get_count_table(tables(ucsc)$Transcript_Strand)
+  )
+  expect_identical(variants(ensembl)$chr, variants(strip_chr(musica))$chr)
+})
+
+test_that("annotate_transcript_strand maps names when styles are mixed", {
+  # Issue #230: one sample "chr1" style, the others "1" style
+  data(musica)
+  ucsc <- musica
+  mixed <- strip_chr(musica, sample_names(musica)[-1])
+  annotate_transcript_strand(ucsc, "hg38", build_table = FALSE)
+  expect_message(
+    annotate_transcript_strand(mixed, "hg38", build_table = FALSE),
+    "Mapped"
+  )
+  expect_identical(
+    variants(mixed)$Transcript_Strand,
+    variants(ucsc)$Transcript_Strand
+  )
+})
+
+test_that("annotate_transcript_strand stops when no chromosome names match", {
+  # Issue #230: names that can't be mapped to the TxDb's style
+  data(musica)
   dat <- variants(musica)
-  dat$chr <- sub("^chr", "", dat$chr)
+  dat$chr <- sub("^chr", "contig_", dat$chr)
   variants(musica) <- dat
   msg <- "None of the variants' chromosome names"
 

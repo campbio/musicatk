@@ -224,9 +224,12 @@ subset_variant_by_type <- function(tab, type) {
 #' \code{NA}. They are left out of the Transcript_Strand table and of
 #' SBS192 tables built with \code{"Transcript_Strand"}.
 #'
-#' The variants' chromosome names must use the TxDb's naming style (for
-#' example \code{"chr1"}, not \code{"1"}, for the bundled hg19 and hg38
-#' builds). If none of them are in the TxDb, an error is given.
+#' Chromosome names that aren't in the TxDb, such as Ensembl-style
+#' \code{"1"} against the \code{"chr1"} of the bundled hg19 and hg38
+#' builds, are mapped to the TxDb's naming style with
+#' \code{\link[GenomeInfoDb]{mapSeqlevels}}, with a message. The variants
+#' keep their names. If no chromosome name matches the TxDb, even after
+#' mapping, an error is given.
 #' @return None
 #' @examples
 #' data(musica)
@@ -256,11 +259,11 @@ annotate_transcript_strand <- function(musica, genome_build,
   dat <- variants(musica)
   sbs_index <- which(dat$Variant_Type == "SBS")
   sbs <- subset_variant_by_type(dat, "SBS")
-  .check_seqlevels(sbs$chr, GenomeInfoDb::seqlevels(genes), "the TxDb")
+  chr <- .match_seqlevels(sbs$chr, GenomeInfoDb::seqlevels(genes), "the TxDb")
 
   # Create VRanges object to determine strand of variants within genes
   vrange <- VariantAnnotation::VRanges(
-    seqnames = as.character(sbs$chr), ranges =
+    seqnames = chr, ranges =
       IRanges(
         sbs$start,
         sbs$end
@@ -331,10 +334,12 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' range is a C>A on the leading-strand template and is labelled
 #' \code{"leading"}.
 #'
-#' The variants' chromosome names must use the naming style of
-#' \code{rep_range} (for example \code{"chr1"}, not \code{"1"}, for the
-#' bundled data). If none of them are in \code{rep_range}, an error is
-#' given.
+#' Chromosome names that aren't in \code{rep_range}, such as
+#' Ensembl-style \code{"1"} against the \code{"chr1"} of the bundled data,
+#' are mapped to its naming style with
+#' \code{\link[GenomeInfoDb]{mapSeqlevels}}, with a message. The variants
+#' keep their names. If no chromosome name matches \code{rep_range}, even
+#' after mapping, an error is given.
 #' @examples
 #' data(musica)
 #' annotate_replication_strand(musica, "hg38")
@@ -344,11 +349,13 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
   dat <- variants(musica)
   sbs_index <- which(dat$Variant_Type == "SBS")
   sbs <- subset_variant_by_type(dat, "SBS")
-  .check_seqlevels(sbs$chr, GenomeInfoDb::seqlevels(rep_range), "rep_range")
+  chr <- .match_seqlevels(
+    sbs$chr, GenomeInfoDb::seqlevels(rep_range), "rep_range"
+  )
 
   # Create GRanges object to determine strand of variants within genes
   dat_range <- GenomicRanges::GRanges(
-    seqnames = as.character(sbs$chr), ranges =
+    seqnames = chr, ranges =
       IRanges(
         sbs$start,
         sbs$end
@@ -386,23 +393,62 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
   }
 }
 
-# Stop if none of the variants' chromosome names are in the reference, as
-# happens when their naming styles differ ("1" against "chr1")
-.check_seqlevels <- function(chr, ref_seqlevels, ref_name) {
-  chr <- unique(as.character(chr))
-  if (any(chr %in% ref_seqlevels)) {
-    return(invisible(NULL))
+# Return the chromosome names chr, with names that aren't in the reference
+# mapped to its naming style where GenomeInfoDb can ("1" to "chr1"), so
+# they overlap its ranges. Stop if none of them match the reference.
+.match_seqlevels <- function(chr, ref_seqlevels, ref_name) {
+  chr <- as.character(chr)
+  unmatched <- setdiff(unique(chr), ref_seqlevels)
+  style <- .seqlevels_style(ref_seqlevels)
+  mapped <- character(0)
+  if (length(unmatched) > 0 && !is.na(style)) {
+    mapped <- vapply(unmatched, .map_seqlevel, character(1), style = style)
+    mapped <- mapped[mapped %in% ref_seqlevels]
   }
-  examples <- function(x) {
-    paste0("\"", utils::head(x, 2), "\"", collapse = ", ")
+  if (length(mapped) > 0) {
+    message(
+      "Mapped ", length(mapped), " chromosome names to the ", style,
+      " style of ", ref_name, " (for example \"", names(mapped)[1],
+      "\" to \"", mapped[1], "\") to find overlaps. The variants keep ",
+      "their names."
+    )
+    hit <- chr %in% names(mapped)
+    chr[hit] <- mapped[chr[hit]]
   }
-  stop(
-    "None of the variants' chromosome names (for example ", examples(chr),
-    ") are in ", ref_name, " (for example ", examples(ref_seqlevels),
-    "). Use the same naming style for both, for example with ",
-    "GenomeInfoDb::seqlevelsStyle().",
-    call. = FALSE
+  if (!any(chr %in% ref_seqlevels)) {
+    examples <- function(x) {
+      paste0("\"", utils::head(unique(x), 2), "\"", collapse = ", ")
+    }
+    stop(
+      "None of the variants' chromosome names (for example ", examples(chr),
+      ") are in ", ref_name, " (for example ", examples(ref_seqlevels),
+      "), and they couldn't be mapped to its naming style. Use the same ",
+      "naming style for both, for example with ",
+      "GenomeInfoDb::seqlevelsStyle().",
+      call. = FALSE
+    )
+  }
+  chr
+}
+
+# The GenomeInfoDb naming style of the reference's seqlevels, or NA if it
+# has none
+.seqlevels_style <- function(seqlevels) {
+  style <- tryCatch(
+    GenomeInfoDb::seqlevelsStyle(seqlevels),
+    error = function(e) character(0)
   )
+  if (length(style) == 0) NA_character_ else style[1]
+}
+
+# One chromosome name mapped to a GenomeInfoDb naming style, or NA if it
+# can't be
+.map_seqlevel <- function(name, style) {
+  mapped <- tryCatch(
+    GenomeInfoDb::mapSeqlevels(name, style),
+    error = function(e) NA_character_
+  )
+  if (length(mapped) == 1) unname(as.character(mapped)) else NA_character_
 }
 
 # Swap "leading" and "lagging" where swap is TRUE; other labels are kept
