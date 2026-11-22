@@ -152,3 +152,19 @@ test_that("SBS192_Rep counts a G>T in a lagging bin as C>A leading", {
   expect_identical(length(counted), 1L)
   expect_match(counted, "^C>A_.C._leading$")
 })
+
+test_that("annotate_replication_strand stops when no chromosome names match", {
+  # Issue #230: Ensembl-style "1" against rep_range's "chr1"
+  data(musica)
+  dat <- variants(musica)
+  dat$chr <- sub("^chr", "", dat$chr)
+  variants(musica) <- dat
+  msg <- "None of the variants' chromosome names"
+
+  expect_error(annotate_replication_strand(musica, "hg38"), msg, fixed = TRUE)
+  expect_error(
+    annotate_replication_strand(musica, rep_range_hg38, build_table = FALSE),
+    msg,
+    fixed = TRUE
+  )
+})

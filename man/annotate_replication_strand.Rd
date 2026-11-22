@@ -34,6 +34,11 @@ with an A or G reference base have their pyrimidine on the minus
 strand, so they take the opposite label: a G>T in a \code{"lagging"}
 range is a C>A on the leading-strand template and is labelled
 \code{"leading"}.
+
+The variants' chromosome names must use the naming style of
+\code{rep_range} (for example \code{"chr1"}, not \code{"1"}, for the
+bundled data). If none of them are in \code{rep_range}, an error is
+given.
 }
 \examples{
 data(musica)

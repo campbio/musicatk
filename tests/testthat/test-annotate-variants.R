@@ -173,3 +173,18 @@ test_that("SBS in overlapping genes on opposite strands have no strand", {
   counts <- get_count_table(tables(musica)$Transcript_Strand)
   expect_equal(sum(counts), 1)
 })
+
+test_that("annotate_transcript_strand stops when no chromosome names match", {
+  # Issue #230: Ensembl-style "1" against the TxDb's "chr1"
+  data(musica)
+  dat <- variants(musica)
+  dat$chr <- sub("^chr", "", dat$chr)
+  variants(musica) <- dat
+  msg <- "None of the variants' chromosome names"
+
+  expect_error(annotate_transcript_strand(musica, "hg38"), msg, fixed = TRUE)
+  expect_error(annotate_transcript_strand(musica, "hg38", build_table = FALSE),
+    msg,
+    fixed = TRUE
+  )
+})

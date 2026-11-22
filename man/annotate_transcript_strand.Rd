@@ -27,6 +27,10 @@ on, relative to the gene. SBS outside genes, and SBS in overlapping
 genes on opposite strands (where the transcribed strand is unknown), get
 \code{NA}. They are left out of the Transcript_Strand table and of
 SBS192 tables built with \code{"Transcript_Strand"}.
+
+The variants' chromosome names must use the TxDb's naming style (for
+example \code{"chr1"}, not \code{"1"}, for the bundled hg19 and hg38
+builds). If none of them are in the TxDb, an error is given.
 }
 \examples{
 data(musica)
