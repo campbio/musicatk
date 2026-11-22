@@ -153,11 +153,47 @@ test_that("SBS192_Rep counts a G>T in a lagging bin as C>A leading", {
   expect_match(counted, "^C>A_.C._leading$")
 })
 
+test_that("annotate_replication_strand maps chromosome names", {
+  # Issue #230: Ensembl-style "1" variants against rep_range's "chr1"
+  data(musica)
+  ucsc <- musica
+  ensembl <- strip_chr(musica)
+  annotate_replication_strand(ucsc, "hg38")
+  expect_message(
+    annotate_replication_strand(ensembl, "hg38"),
+    "chromosome names to the naming style of rep_range",
+    fixed = TRUE
+  )
+  expect_identical(
+    variants(ensembl)$Replication_Strand,
+    variants(ucsc)$Replication_Strand
+  )
+  expect_identical(
+    get_count_table(tables(ensembl)$Replication_Strand),
+    get_count_table(tables(ucsc)$Replication_Strand)
+  )
+  expect_identical(variants(ensembl)$chr, variants(strip_chr(musica))$chr)
+
+  # And the other way: "chr1" variants against an NCBI-style rep_range
+  ncbi_range <- rep_range_hg38
+  GenomeInfoDb::seqlevelsStyle(ncbi_range) <- "NCBI"
+  by_ncbi <- musica
+  expect_message(
+    annotate_replication_strand(by_ncbi, ncbi_range, build_table = FALSE),
+    "to the naming style of rep_range",
+    fixed = TRUE
+  )
+  expect_identical(
+    variants(by_ncbi)$Replication_Strand,
+    variants(ucsc)$Replication_Strand
+  )
+})
+
 test_that("annotate_replication_strand stops when no chromosome names match", {
-  # Issue #230: Ensembl-style "1" against rep_range's "chr1"
+  # Issue #230: names that can't be mapped to rep_range's style
   data(musica)
   dat <- variants(musica)
-  dat$chr <- sub("^chr", "", dat$chr)
+  dat$chr <- sub("^chr", "contig_", dat$chr)
   variants(musica) <- dat
   msg <- "None of the variants' chromosome names"
 

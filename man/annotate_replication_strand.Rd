@@ -35,10 +35,14 @@ strand, so they take the opposite label: a G>T in a \code{"lagging"}
 range is a C>A on the leading-strand template and is labelled
 \code{"leading"}.
 
-The variants' chromosome names must use the naming style of
-\code{rep_range} (for example \code{"chr1"}, not \code{"1"}, for the
-bundled data). If none of them are in \code{rep_range}, an error is
-given.
+Chromosome names that aren't in \code{rep_range}, such as
+Ensembl-style \code{"1"} against the \code{"chr1"} of the bundled data,
+are mapped to its naming style with
+\code{\link[GenomeInfoDb]{mapSeqlevels}}, with a message. The variants
+keep their names. Mitochondrial names aren't mapped, because the
+mitochondrial sequences of some builds differ (GRCh37 \code{"MT"} and
+hg19 \code{"chrM"}). If no chromosome name matches \code{rep_range},
+even after mapping, an error is given.
 }
 \examples{
 data(musica)

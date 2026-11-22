@@ -28,9 +28,14 @@ genes on opposite strands (where the transcribed strand is unknown), get
 \code{NA}. They are left out of the Transcript_Strand table and of
 SBS192 tables built with \code{"Transcript_Strand"}.
 
-The variants' chromosome names must use the TxDb's naming style (for
-example \code{"chr1"}, not \code{"1"}, for the bundled hg19 and hg38
-builds). If none of them are in the TxDb, an error is given.
+Chromosome names that aren't in the TxDb, such as Ensembl-style
+\code{"1"} against the \code{"chr1"} of the bundled hg19 and hg38
+builds, are mapped to the TxDb's naming style with
+\code{\link[GenomeInfoDb]{mapSeqlevels}}, with a message. The variants
+keep their names. Mitochondrial names aren't mapped, because the
+mitochondrial sequences of some builds differ (GRCh37 \code{"MT"} and
+hg19 \code{"chrM"}). If no chromosome name matches the TxDb, even after
+mapping, an error is given.
 }
 \examples{
 data(musica)
