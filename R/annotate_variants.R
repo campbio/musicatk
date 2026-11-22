@@ -223,6 +223,10 @@ subset_variant_by_type <- function(tab, type) {
 #' genes on opposite strands (where the transcribed strand is unknown), get
 #' \code{NA}. They are left out of the Transcript_Strand table and of
 #' SBS192 tables built with \code{"Transcript_Strand"}.
+#'
+#' The variants' chromosome names must use the TxDb's naming style (for
+#' example \code{"chr1"}, not \code{"1"}, for the bundled hg19 and hg38
+#' builds). If none of them are in the TxDb, an error is given.
 #' @return None
 #' @examples
 #' data(musica)
@@ -252,6 +256,7 @@ annotate_transcript_strand <- function(musica, genome_build,
   dat <- variants(musica)
   sbs_index <- which(dat$Variant_Type == "SBS")
   sbs <- subset_variant_by_type(dat, "SBS")
+  .check_seqlevels(sbs$chr, GenomeInfoDb::seqlevels(genes), "the TxDb")
 
   # Create VRanges object to determine strand of variants within genes
   vrange <- VariantAnnotation::VRanges(
@@ -325,6 +330,11 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' strand, so they take the opposite label: a G>T in a \code{"lagging"}
 #' range is a C>A on the leading-strand template and is labelled
 #' \code{"leading"}.
+#'
+#' The variants' chromosome names must use the naming style of
+#' \code{rep_range} (for example \code{"chr1"}, not \code{"1"}, for the
+#' bundled data). If none of them are in \code{rep_range}, an error is
+#' given.
 #' @examples
 #' data(musica)
 #' annotate_replication_strand(musica, "hg38")
@@ -334,6 +344,7 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
   dat <- variants(musica)
   sbs_index <- which(dat$Variant_Type == "SBS")
   sbs <- subset_variant_by_type(dat, "SBS")
+  .check_seqlevels(sbs$chr, GenomeInfoDb::seqlevels(rep_range), "rep_range")
 
   # Create GRanges object to determine strand of variants within genes
   dat_range <- GenomicRanges::GRanges(
@@ -373,6 +384,25 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
     )
     eval.parent(substitute(tables(musica)[["Replication_Strand"]] <- tab))
   }
+}
+
+# Stop if none of the variants' chromosome names are in the reference, as
+# happens when their naming styles differ ("1" against "chr1")
+.check_seqlevels <- function(chr, ref_seqlevels, ref_name) {
+  chr <- unique(as.character(chr))
+  if (any(chr %in% ref_seqlevels)) {
+    return(invisible(NULL))
+  }
+  examples <- function(x) {
+    paste0("\"", utils::head(x, 2), "\"", collapse = ", ")
+  }
+  stop(
+    "None of the variants' chromosome names (for example ", examples(chr),
+    ") are in ", ref_name, " (for example ", examples(ref_seqlevels),
+    "). Use the same naming style for both, for example with ",
+    "GenomeInfoDb::seqlevelsStyle().",
+    call. = FALSE
+  )
 }
 
 # Swap "leading" and "lagging" where swap is TRUE; other labels are kept

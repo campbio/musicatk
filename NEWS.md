@@ -1,3 +1,6 @@
+# musicatk 2.7.24 (2026-11-22)
+* `annotate_transcript_strand()` and `annotate_replication_strand()` stop with an error when none of the variants' chromosome names are in the TxDb or `rep_range`, as happens when their naming styles differ (for example `"1"` against `"chr1"`). The error names both styles and suggests `GenomeInfoDb::seqlevelsStyle()`. Before, every SBS was left without a strand, the table was all zeros, and the only sign was a GenomicRanges warning that the objects had no sequence levels in common (#230). Variants on some chromosomes that aren't in the reference, such as chrM or unplaced contigs, are still left without a strand, with no error.
+
 # musicatk 2.7.23 (2026-11-21)
 * `create_musica_from_counts()` loads IND83 count tables, with `variant_class = "IND83"` (or `"ID83"`, `"ID"`, `"indel"` and the other indel aliases); before, it stopped with "Not yet supported." (#239). Rows are matched by name, and the ID83 names written by SigProfilerMatrixGenerator are accepted: `1:Del:C:0` is read as `DEL_C_1_0`, `2:Ins:R:5` as `INS_repeats_2_5+` and `5:Del:M:5` as `DEL_MH_5+_5+`. The table has the same motifs, annotation and colours as one from `build_standard_table(..., "IND83")`. An unknown `variant_class` now gets an error that lists `"SBS96"`, `"DBS78"` and `"IND83"`; before, it said only SBS and DBS were supported.
 
