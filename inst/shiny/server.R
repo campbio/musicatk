@@ -1192,8 +1192,6 @@ parse_delete_event <- function(idstr) {
     if (input$select_table != "Custom") {
       # Check inputs for SBS192
       if (input$select_table == "SBS192 - Transcript_Strand") {
-        annotate_transcript_strand(vals$musica, input$table_genome_list,
-                                   build_table = FALSE)
         table_name <- "SBS192"
         strand_type <- "Transcript_Strand"
       }
@@ -1202,6 +1200,10 @@ parse_delete_event <- function(idstr) {
         strand_type <- "Replication_Strand"
       }
       tryCatch({
+        if (identical(strand_type, "Transcript_Strand")) {
+          annotate_transcript_strand(vals$musica, input$table_genome_list,
+                                     build_table = FALSE)
+        }
         if (identical(strand_type, "Replication_Strand")) {
           annotate_replication_strand(vals$musica, input$table_genome_list,
                                       build_table = FALSE)
