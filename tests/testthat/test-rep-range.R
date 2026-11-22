@@ -157,14 +157,11 @@ test_that("annotate_replication_strand maps chromosome names", {
   # Issue #230: Ensembl-style "1" variants against rep_range's "chr1"
   data(musica)
   ucsc <- musica
-  ensembl <- musica
-  dat <- variants(ensembl)
-  dat$chr <- sub("^chr", "", dat$chr)
-  variants(ensembl) <- dat
+  ensembl <- strip_chr(musica)
   annotate_replication_strand(ucsc, "hg38")
   expect_message(
     annotate_replication_strand(ensembl, "hg38"),
-    "chromosome names to the UCSC style of rep_range",
+    "chromosome names to the naming style of rep_range",
     fixed = TRUE
   )
   expect_identical(
@@ -175,7 +172,7 @@ test_that("annotate_replication_strand maps chromosome names", {
     get_count_table(tables(ensembl)$Replication_Strand),
     get_count_table(tables(ucsc)$Replication_Strand)
   )
-  expect_identical(variants(ensembl)$chr, dat$chr)
+  expect_identical(variants(ensembl)$chr, variants(strip_chr(musica))$chr)
 
   # And the other way: "chr1" variants against an NCBI-style rep_range
   ncbi_range <- rep_range_hg38
@@ -183,7 +180,7 @@ test_that("annotate_replication_strand maps chromosome names", {
   by_ncbi <- musica
   expect_message(
     annotate_replication_strand(by_ncbi, ncbi_range, build_table = FALSE),
-    "to the NCBI style of rep_range",
+    "to the naming style of rep_range",
     fixed = TRUE
   )
   expect_identical(

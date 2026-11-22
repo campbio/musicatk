@@ -174,15 +174,6 @@ test_that("SBS in overlapping genes on opposite strands have no strand", {
   expect_equal(sum(counts), 1)
 })
 
-# musica with "chr" stripped from the chromosome names of the given samples
-strip_chr <- function(musica, samples = NULL) {
-  dat <- variants(musica)
-  rows <- if (is.null(samples)) TRUE else dat$sample %in% samples
-  dat$chr[rows] <- sub("^chr", "", dat$chr[rows])
-  variants(musica) <- dat
-  musica
-}
-
 test_that("annotate_transcript_strand maps Ensembl-style chromosome names", {
   # Issue #230: Ensembl-style "1" against the TxDb's "chr1"
   data(musica)
@@ -191,7 +182,7 @@ test_that("annotate_transcript_strand maps Ensembl-style chromosome names", {
   annotate_transcript_strand(ucsc, "hg38")
   expect_message(
     annotate_transcript_strand(ensembl, "hg38"),
-    "chromosome names to the UCSC style of the TxDb",
+    "chromosome names to the naming style of the TxDb",
     fixed = TRUE
   )
 
@@ -234,6 +225,36 @@ test_that("annotate_transcript_strand stops when no chromosome names match", {
   expect_error(annotate_transcript_strand(musica, "hg38"), msg, fixed = TRUE)
   expect_error(annotate_transcript_strand(musica, "hg38", build_table = FALSE),
     msg,
+    fixed = TRUE
+  )
+})
+
+test_that(".match_seqlevels picks the candidate that is in the reference", {
+  # Issue #230: "chr4" maps to both "4" and "LGIV" in the NCBI style, and
+  # an Ensembl-style reference is detected as both NCBI and Ensembl
+  expect_message(
+    chr <- musicatk:::.match_seqlevels(
+      c("chr1", "chr4", "chrX"), c("1", "4", "X"), "the reference"
+    ),
+    "Mapped 3 chromosome names",
+    fixed = TRUE
+  )
+  expect_identical(chr, c("1", "4", "X"))
+})
+
+test_that(".match_seqlevels doesn't map mitochondrial names", {
+  # Issue #230: GRCh37 "MT" and hg19 "chrM" are different sequences
+  expect_message(
+    chr <- musicatk:::.match_seqlevels(
+      c("1", "MT"), c("chr1", "chrM"), "the reference"
+    ),
+    "Mapped 1 chromosome name to",
+    fixed = TRUE
+  )
+  expect_identical(chr, c("chr1", "MT"))
+  expect_error(
+    musicatk:::.match_seqlevels("chrM", c("1", "MT"), "the reference"),
+    "None of the variants' chromosome names",
     fixed = TRUE
   )
 })

@@ -228,7 +228,9 @@ subset_variant_by_type <- function(tab, type) {
 #' \code{"1"} against the \code{"chr1"} of the bundled hg19 and hg38
 #' builds, are mapped to the TxDb's naming style with
 #' \code{\link[GenomeInfoDb]{mapSeqlevels}}, with a message. The variants
-#' keep their names. If no chromosome name matches the TxDb, even after
+#' keep their names. Mitochondrial names aren't mapped, because the
+#' mitochondrial sequences of some builds differ (GRCh37 \code{"MT"} and
+#' hg19 \code{"chrM"}). If no chromosome name matches the TxDb, even after
 #' mapping, an error is given.
 #' @return None
 #' @examples
@@ -338,8 +340,10 @@ annotate_transcript_strand <- function(musica, genome_build,
 #' Ensembl-style \code{"1"} against the \code{"chr1"} of the bundled data,
 #' are mapped to its naming style with
 #' \code{\link[GenomeInfoDb]{mapSeqlevels}}, with a message. The variants
-#' keep their names. If no chromosome name matches \code{rep_range}, even
-#' after mapping, an error is given.
+#' keep their names. Mitochondrial names aren't mapped, because the
+#' mitochondrial sequences of some builds differ (GRCh37 \code{"MT"} and
+#' hg19 \code{"chrM"}). If no chromosome name matches \code{rep_range},
+#' even after mapping, an error is given.
 #' @examples
 #' data(musica)
 #' annotate_replication_strand(musica, "hg38")
@@ -399,18 +403,20 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
 .match_seqlevels <- function(chr, ref_seqlevels, ref_name) {
   chr <- as.character(chr)
   unmatched <- setdiff(unique(chr), ref_seqlevels)
-  style <- .seqlevels_style(ref_seqlevels)
+  styles <- .seqlevels_styles(ref_seqlevels)
   mapped <- character(0)
-  if (length(unmatched) > 0 && !is.na(style)) {
-    mapped <- vapply(unmatched, .map_seqlevel, character(1), style = style)
-    mapped <- mapped[mapped %in% ref_seqlevels]
+  if (length(unmatched) > 0 && length(styles) > 0) {
+    mapped <- vapply(unmatched, .map_seqlevel, character(1),
+      styles = styles, ref_seqlevels = ref_seqlevels
+    )
+    mapped <- mapped[!is.na(mapped)]
   }
   if (length(mapped) > 0) {
     message(
-      "Mapped ", length(mapped), " chromosome names to the ", style,
-      " style of ", ref_name, " (for example \"", names(mapped)[1],
-      "\" to \"", mapped[1], "\") to find overlaps. The variants keep ",
-      "their names."
+      "Mapped ", length(mapped), " chromosome ",
+      ngettext(length(mapped), "name", "names"), " to the naming style of ",
+      ref_name, " (for example \"", names(mapped)[1], "\" to \"",
+      mapped[1], "\") to find overlaps. The variants keep their names."
     )
     hit <- chr %in% names(mapped)
     chr[hit] <- mapped[chr[hit]]
@@ -431,24 +437,32 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
   chr
 }
 
-# The GenomeInfoDb naming style of the reference's seqlevels, or NA if it
-# has none
-.seqlevels_style <- function(seqlevels) {
-  style <- tryCatch(
+# The GenomeInfoDb naming styles that fit the reference's seqlevels (often
+# more than one, such as NCBI and Ensembl), or none
+.seqlevels_styles <- function(seqlevels) {
+  tryCatch(
     GenomeInfoDb::seqlevelsStyle(seqlevels),
     error = function(e) character(0)
   )
-  if (length(style) == 0) NA_character_ else style[1]
 }
 
-# One chromosome name mapped to a GenomeInfoDb naming style, or NA if it
-# can't be
-.map_seqlevel <- function(name, style) {
-  mapped <- tryCatch(
-    GenomeInfoDb::mapSeqlevels(name, style),
-    error = function(e) NA_character_
-  )
-  if (length(mapped) == 1) unname(as.character(mapped)) else NA_character_
+# One chromosome name mapped to the reference's naming styles, or NA if it
+# can't be. GenomeInfoDb can give several candidates for one name ("chr4"
+# to "4" or "LGIV"), so only one that is in the reference is used.
+# Mitochondrial names are never mapped: GRCh37 "MT" and hg19 "chrM" are
+# different sequences, so positions would not match.
+.map_seqlevel <- function(name, styles, ref_seqlevels) {
+  if (toupper(sub("^chr", "", name, ignore.case = TRUE)) %in% c("M", "MT")) {
+    return(NA_character_)
+  }
+  candidates <- unlist(lapply(styles, function(style) {
+    tryCatch(
+      as.character(GenomeInfoDb::mapSeqlevels(name, style)),
+      error = function(e) character(0)
+    )
+  }))
+  candidates <- intersect(candidates, ref_seqlevels)
+  if (length(candidates) == 1) candidates else NA_character_
 }
 
 # Swap "leading" and "lagging" where swap is TRUE; other labels are kept

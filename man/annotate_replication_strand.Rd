@@ -39,8 +39,10 @@ Chromosome names that aren't in \code{rep_range}, such as
 Ensembl-style \code{"1"} against the \code{"chr1"} of the bundled data,
 are mapped to its naming style with
 \code{\link[GenomeInfoDb]{mapSeqlevels}}, with a message. The variants
-keep their names. If no chromosome name matches \code{rep_range}, even
-after mapping, an error is given.
+keep their names. Mitochondrial names aren't mapped, because the
+mitochondrial sequences of some builds differ (GRCh37 \code{"MT"} and
+hg19 \code{"chrM"}). If no chromosome name matches \code{rep_range},
+even after mapping, an error is given.
 }
 \examples{
 data(musica)

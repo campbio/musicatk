@@ -32,7 +32,9 @@ Chromosome names that aren't in the TxDb, such as Ensembl-style
 \code{"1"} against the \code{"chr1"} of the bundled hg19 and hg38
 builds, are mapped to the TxDb's naming style with
 \code{\link[GenomeInfoDb]{mapSeqlevels}}, with a message. The variants
-keep their names. If no chromosome name matches the TxDb, even after
+keep their names. Mitochondrial names aren't mapped, because the
+mitochondrial sequences of some builds differ (GRCh37 \code{"MT"} and
+hg19 \code{"chrM"}). If no chromosome name matches the TxDb, even after
 mapping, an error is given.
 }
 \examples{
