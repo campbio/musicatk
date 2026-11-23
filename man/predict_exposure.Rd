@@ -91,9 +91,11 @@ result <- predict_exposure(
   signature_res = cosmic_v2_sigs, algorithm = "lda"
 )
 
-# Predict using LDA-like algorithm with seed set to 2
+# Predict using LDA-like algorithm with seed set to 2. The first
+# prediction used the default model ID, so this one needs its own.
 predict_exposure(
   musica = musica, modality = "SBS96",
-  signature_res = cosmic_v2_sigs, algorithm = "lda", seed = 2
+  signature_res = cosmic_v2_sigs, algorithm = "lda", seed = 2,
+  model_id = "lda_seed2"
 )
 }
