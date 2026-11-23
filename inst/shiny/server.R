@@ -61,55 +61,49 @@ server <- function(input, output, session) {
     sort_sigs = NULL
   )
 
+  # Messages for the tab-navigation alerts below
+  no_data_msg <- paste0("No data was uploaded. Please go to \"Import\" and ",
+                        "upload your data.")
+  no_musica_found_msg <- paste0("No musica object was found. Please go to ",
+                                "\"Import\" or \"Create Musica Object\" to ",
+                                "upload or create an object.")
+  no_musica_created_msg <- paste0("No musica object was created. Please go ",
+                                  "to \"Create Musica Object\" to create a ",
+                                  "musica object, or go to \"Import\" -> ",
+                                  "\"Import Musica\" to upload a musica ",
+                                  "object.")
+  no_table_msg <- paste0("No mutation count table was created. Please go to ",
+                         "\"Build Tables\" to create a count table.")
+  no_results_msg <- paste0("No results in the musica object. Please go to ",
+                           "\"Signatures and Exposures\" -> \"Discover\" to ",
+                           "create results.")
+
+  # Shows an error alert and sends the user to the given tab
+  redirect_with_error <- function(text, tab) {
+    shinyalert::shinyalert("Error", text, "error")
+    updateTabItems(session, "menu", tab)
+  }
+
   #Control flow to detect user's progress and active tabs
   observeEvent(input$menu, {
     if (input$menu == "musica") {
       if (is.null(vals$var)) {
-        shinyalert::shinyalert("Error",
-                               paste0("No data was uploaded. ",
-                                      "Please go to \"Import\" ",
-                                      "and upload your data.", "error"))
-        updateTabItems(session, "menu", "import")
+        redirect_with_error(no_data_msg, "import")
       } else {
         removeCssClass(selector = "a[data-value='musica']",
                        class = "inactiveLink")
       }
-    } else if (input$menu == "annotations") {
+    } else if (input$menu %in% c("annotations", "download")) {
       if (is.null(vals$musica) && length(vals$res_names) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No musica object was found. ",
-                                      "Please go to \"Import\" or ",
-                                      "\"Create Musica Object\" to upload or ",
-                                      "create an object.", "error"))
-        updateTabItems(session, "menu", "import")
-      }
-    } else if (input$menu == "download") {
-      if (is.null(vals$musica) && length(vals$res_names) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No musica object was found. ",
-                                      "Please go to \"Import\" or ",
-                                      "\"Create Musica Object\" to upload or ",
-                                      "create an object.", "error"))
-        updateTabItems(session, "menu", "import")
+        redirect_with_error(no_musica_found_msg, "import")
       }
     } else if (input$menu == "tables") {
       if (is.null(vals$var) && is.null(vals$musica) &&
             is.null(vals$musica_upload)) {
-        shinyalert::shinyalert("Error",
-                               paste0("No data was uploaded. ",
-                                      "Please go to \"Import\" and upload ",
-                                      "your data.", "error"))
-        updateTabItems(session, "menu", "import")
+        redirect_with_error(no_data_msg, "import")
       } else if (!is.null(vals$var) && is.null(vals$musica) &&
                    is.null(vals$musica_upload)) {
-        shinyalert::shinyalert("Error",
-                               paste0("No musica object was created. ",
-                                      "Please go to \"Create Musica Object\", ",
-                                      "to create a musica object or go to ",
-                                      "\"Import\" -> \"Import Musica Result ",
-                                      "Object\" to upload a muscia object."),
-                               "error")
-        updateTabItems(session, "menu", "musica")
+        redirect_with_error(no_musica_created_msg, "musica")
       } else {
         removeCssClass(selector = "a[data-value='tables']",
                        class = "inactiveLink")
@@ -117,39 +111,18 @@ server <- function(input, output, session) {
     } else if (input$menu %in% c("discover", "predict")) {
       if (is.null(vals$var) && is.null(vals$musica) &&
             is.null(vals$musica_upload)) {
-        shinyalert::shinyalert("Error",
-                               paste0("No data was uploaded. ",
-                                      "Please go to \"Import\" and upload ",
-                                      "your data."), "error")
-        updateTabItems(session, "menu", "import")
+        redirect_with_error(no_data_msg, "import")
       } else if (!is.null(vals$var) && is.null(vals$musica) &&
                    is.null(vals$musica_upload)) {
-        shinyalert::shinyalert("Error",
-                               paste0("No musica object was created.",
-                                      "Please go to \"Create Musica Object\",",
-                                      "to create a musica object or go to ",
-                                      "\"Import\" -> \"Import Musica Result ",
-                                      "Object\" ",
-                                      "to upload a muscia object."), "error")
-        updateTabItems(session, "menu", "musica")
+        redirect_with_error(no_musica_created_msg, "musica")
       } else if (!is.null(vals$var) && !is.null(vals$musica) &&
                    length(tables(vals$musica)) == 0 &&
                    is.null(vals$musica_upload)) {
-        shinyalert::shinyalert("Error",
-                               paste0("No mutation count table was created. ",
-                                      "Please go to \"Build Tables\" to ",
-                                      "create count table."),
-                               "error")
-        updateTabItems(session, "menu", "tables")
+        redirect_with_error(no_table_msg, "tables")
       } else if (!is.null(vals$var) && is.null(vals$musica) &&
                    !is.null(vals$musica_upload) &&
                    length(tables(vals$musica_upload)) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No mutation count table was created. ",
-                                      "Please go to \"Build Tables\" to ",
-                                      "create count table."),
-                               "error")
-        updateTabItems(session, "menu", "tables")
+        redirect_with_error(no_table_msg, "tables")
       } else {
         removeCssClass(selector = "a[data-value='discover']",
                        class = "inactiveLink")
@@ -161,62 +134,29 @@ server <- function(input, output, session) {
                                  "heatmap")) {
       if (is.null(vals$var) && is.null(vals$musica) &&
             is.null(vals$musica_upload) && length(vals$res_names) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No data was uploaded. ",
-                                      "Please go to \"Import\" and upload ",
-                                      "your data."), "error")
-        updateTabItems(session, "menu", "import")
+        redirect_with_error(no_data_msg, "import")
       } else if (!is.null(vals$var) && is.null(vals$musica) &&
                    is.null(vals$musica_upload) &&
                    length(vals$res_names) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No musica object was created. ",
-                                      "Please go to \"Create Musica Object\" ",
-                                      "to create a musica object or go to ",
-                                      "\"Import\" -> \"Import Musica ",
-                                      "Object\ to upload a muscia object."),
-                               "error")
-        updateTabItems(session, "menu", "musica")
+        redirect_with_error(no_musica_created_msg, "musica")
       } else if (!is.null(vals$var) && !is.null(vals$musica) &&
                    length(tables(vals$musica)) == 0 &&
                    is.null(vals$musica_upload) &&
                    length(vals$res_names) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No mutation count table was created. ",
-                                      "Please go to \"Build Tables\" ",
-                                      "to create count table."),
-                               "error")
-        updateTabItems(session, "menu", "tables")
+        redirect_with_error(no_table_msg, "tables")
       } else if (!is.null(vals$var) && is.null(vals$musica)
                  && !is.null(vals$musica_upload)
                  && length(tables(vals$musica_upload)) == 0
                  && length(vals$res_names) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No mutation count table was created. ",
-                                      "Please go to \"Build Tables\" to ",
-                                      "create count table."),
-                               "error")
-        updateTabItems(session, "menu", "tables")
+        redirect_with_error(no_table_msg, "tables")
       } else if (!is.null(vals$var) && (!is.null(vals$musica) ||
                                           !is.null(vals$musica_upload))
                  && (length(tables(vals$musica)) != 0 ||
                        length(tables(vals$musica_upload)) != 0)
                  && length(vals$res_names) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No results in the musica object. ",
-                                      "Please go to \"Signatures and ",
-                                      "Exposures\" -> \"Discover Signatures ",
-                                      "and Exposures\" to create ",
-                                      "results."), "error")
-        updateTabItems(session, "menu", "discover")
+        redirect_with_error(no_results_msg, "discover")
       } else if (!is.null(vals$musica_upload) && length(vals$res_names) == 0) {
-        shinyalert::shinyalert("Error",
-                               paste0("No results in the musica object. ",
-                                      "Please go to \"Signatures and ",
-                                      "Exposures\" -> \"Discover Signatures ",
-                                      "and Exposures\" to create ",
-                                      "results."), "error")
-        updateTabItems(session, "menu", "discover")
+        redirect_with_error(no_results_msg, "discover")
       } else {
         removeCssClass(selector = "a[data-value='visualization']",
                        class = "inactiveLink")
@@ -1124,29 +1064,28 @@ server <- function(input, output, session) {
 
   #
   observeEvent(input$Combine, {
-    if (input$combined_table_name == "" ||
+    if (!isTruthy(input$combined_table_name) ||
           length(input$combine_tables) < 2) {
       output$combine_warning <- renderText({
         validate(
-          need(input$combined_table_name != "",
+          need(input$combined_table_name,
                "You must provide a name for the new result object."),
-          need(length(input$combine_tables) < 2,
+          need(length(input$combine_tables) >= 2,
                "You must select two or more tables to combine.")
         )
       })
       return()
     }
+    output$combine_warning <- renderText(NULL)
     shinybusy::show_spinner()
     tryCatch({
       combine_count_tables(vals$musica, input$combine_tables,
                            input$combined_table_name)
+      showNotification("Table created.")
     }, error = function(cond) {
       shinyalert::shinyalert(title = "Error", text = cond$message)
-      shinybusy::hide_spinner()
     })
     shinybusy::hide_spinner()
-    showNotification("Table created.")
-
   })
 
   output$allow_table <- renderUI({
@@ -1237,34 +1176,45 @@ server <- function(input, output, session) {
   ####### Section for the Discover Signatures and Exposures Tab #######
   # Event listener for discover_signatures.
   observeEvent(input$discover_signatures, {
-    if (input$discover_result_name == "" |
-      input$discover_model_name == "" |
-      input$number_of_signatures == "" |
-      input$n_start == "" |
-      dim(extract_count_tables(vals$musica)[[
-        input$select_discover_table
-      ]]@count_table)[2] < 2 |
-      input$number_of_signatures < 2) {
+    # Inputs can be NULL before their UI is rendered, and numericInput()
+    # gives NA when cleared, so they are checked with isTruthy()
+    count_tables <- if (is.null(vals$musica)) {
+      list()
+    } else {
+      extract_count_tables(vals$musica)
+    }
+    n_samples <- 0
+    if (isTruthy(input$select_discover_table) &&
+          input$select_discover_table %in% names(count_tables)) {
+      n_samples <- ncol(get_count_table(
+        count_tables[[input$select_discover_table]]
+      ))
+    }
+    enough_sigs <- isTruthy(input$number_of_signatures) &&
+      input$number_of_signatures >= 2
+    if (!isTruthy(input$discover_result_name) ||
+          !isTruthy(input$discover_model_name) ||
+          !isTruthy(input$n_start) ||
+          !enough_sigs || n_samples < 2) {
       output$discover_warning <- renderText({
         validate(
-          need(input$discover_result_name != "",
+          need(input$discover_result_name,
                "You must provide a result list name."),
-          need(input$discover_model_name != "",
+          need(input$discover_model_name,
                "You must provide a model ID."),
-          need(input$number_of_signatures != "",
+          need(input$number_of_signatures,
                "You must specify the number of expected signatures."),
-          need(input$n_start != "",
+          need(input$n_start,
                "Please specify the number of random starts."),
-          need(input$number_of_signatures >= 2,
+          need(!isTruthy(input$number_of_signatures) || enough_sigs,
                "Must specify 2 or more signatures."),
-          need(dim(extract_count_tables(vals$musica)[[
-            input$select_discover_table
-          ]]@count_table)[2] > 2,
-          "You must provide 2 or more samples")
+          need(n_samples >= 2,
+               "You must provide 2 or more samples")
         )
       })
       return()
     }
+    output$discover_warning <- renderText(NULL)
     if (paste0(input$discover_result_name, "/",
                input$select_discover_table, "/",
                input$discover_model_name) %in% names(vals$res_names)) {
@@ -1472,21 +1422,22 @@ server <- function(input, output, session) {
 
   # Event listener for Predict signatures
   observeEvent(input$predict_sigs, {
-    if (input$predict_result_name == "" |
-          input$predict_model_name == "" |
+    if (!isTruthy(input$predict_result_name) ||
+          !isTruthy(input$predict_model_name) ||
           length(input$pred_sigs) < 2) {
       output$predict_warning <- renderText({
         validate(
-          need(input$predict_result_name != "",
+          need(input$predict_result_name,
                "You must provide a result list name."),
-          need(input$predict_model_name != "",
+          need(input$predict_model_name,
                "You must provide a model ID."),
-          need(length(c(input$pred_sigs)) >= 2,
+          need(length(input$pred_sigs) >= 2,
                "You must select two or more signatures to predict.")
         )
       })
       return()
     }
+    output$predict_warning <- renderText(NULL)
     if (paste0(input$predict_result_name, "/", input$predict_table,
                "/", input$predict_model_name) %in% names(vals$res_names)) {
       #if (input$predict_result_name %in% names(vals$result_objects)) {
@@ -1667,21 +1618,22 @@ server <- function(input, output, session) {
 
   # Event listener triggers comparison.
   observeEvent(input$compare_results, {
-    if (is.null(input$select_result_a) || input$select_result_a == "" ||
-          input$select_model_a == "" ||
-          input$Threshold == "") {
+    if (!isTruthy(input$select_result_a) ||
+          !isTruthy(input$select_model_a) ||
+          !isTruthy(input$Threshold)) {
       output$compare_validate <- renderText({
         validate(
-          need(input$select_result_a != "",
+          need(input$select_result_a,
                "Please select a result object to compare."),
-          need(input$select_model_a != "",
+          need(input$select_model_a,
                "Please select a model ID to compare."),
-          need(input$Threshold == "",
+          need(input$Threshold,
                "Please provide a similarity threshold from 0 to 1.")
         )
       })
       return()
     }
+    output$compare_validate <- renderText(NULL)
     # Retreive either cosmic or custom result objects.
     #if (input$select_result_b %in% names(cosmic_objects)) {
     #  other <- cosmic_objects[[input$select_result_b]]
@@ -2200,7 +2152,7 @@ server <- function(input, output, session) {
   observeEvent(input$plot_type, {
     #If box or violin selected, generate options for plotting points;
     #group by and color by have two choices
-    if (input$plot_type %in% c("box", "violin") & vals$point_ind == 0) {
+    if (input$plot_type %in% c("box", "violin") && vals$point_ind == 0) {
       removeUI(selector = "#point_opt")
       insertUI(
         selector = "#points",
@@ -2354,7 +2306,8 @@ server <- function(input, output, session) {
 
   #if annotation is selected for group by, enable annotation option
   observeEvent(input$group1, {
-    if (input$group1 == "annotation" & input$color != "annotation") {
+    if (identical(input$group1, "annotation") &&
+          !identical(input$color, "annotation")) {
       if (ncol(samp_annot(vals$musica)) == 1) {
         shinyalert::shinyalert(
           title = "Error",
@@ -2383,7 +2336,7 @@ server <- function(input, output, session) {
         )
       }
     } else {
-      if (input$color != "annotation") {
+      if (!identical(input$color, "annotation")) {
         removeUI(selector = "div:has(>> #annotation)")
       }
     }
@@ -2391,7 +2344,8 @@ server <- function(input, output, session) {
 
   #if annotation is selected for color by, enable annotation option
   observeEvent(input$color, {
-    if (input$color == "annotation" & input$group1 != "annotation") {
+    if (identical(input$color, "annotation") &&
+          !identical(input$group1, "annotation")) {
       if (ncol(samp_annot(vals$musica)) == 1) {
         shinyalert::shinyalert(title = "Error",
                                text = "Annotation not found.
@@ -2415,7 +2369,7 @@ server <- function(input, output, session) {
         )
       }
     } else {
-      if (input$group1 != "annotation") {
+      if (!identical(input$group1, "annotation")) {
         removeUI(selector = "div:has(>> #annotation)")
       }
     }
