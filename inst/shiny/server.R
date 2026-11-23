@@ -80,6 +80,18 @@ server <- function(input, output, session) {
   duplicate_model_msg <- paste0("A model with this ID already exists in this ",
                                 "result list entry. Choose another model ID.")
 
+  # IDs of the models in a result list entry and modality of the current
+  # musica object. vals$res_names isn't used: it can still hold models of
+  # an object loaded earlier.
+  model_ids <- function(result_name, modality) {
+    if (is.null(vals$musica) || !isTruthy(result_name) ||
+          !isTruthy(modality) ||
+          is.null(result_list(vals$musica)[[result_name]])) {
+      return(character())
+    }
+    names(get_modality(vals$musica, result_name, modality))
+  }
+
   # Shows an error alert and sends the user to the given tab
   redirect_with_error <- function(text, tab) {
     shinyalert::shinyalert("Error", text, "error")
@@ -1199,8 +1211,8 @@ server <- function(input, output, session) {
       isTRUE(suppressWarnings(as.numeric(input$n_start)) >= 1)
     }
     new_model_id <- function() {
-      !paste0(input$discover_result_name, "/", input$select_discover_table,
-              "/", input$discover_model_name) %in% vals$res_names
+      !input$discover_model_name %in%
+        model_ids(input$discover_result_name, input$select_discover_table)
     }
     if (!isTruthy(input$discover_result_name) ||
           !isTruthy(input$discover_model_name) ||
@@ -1423,8 +1435,8 @@ server <- function(input, output, session) {
   # Event listener for Predict signatures
   observeEvent(input$predict_sigs, {
     new_model_id <- function() {
-      !paste0(input$predict_result_name, "/", input$predict_table, "/",
-              input$predict_model_name) %in% vals$res_names
+      !input$predict_model_name %in%
+        model_ids(input$predict_result_name, input$predict_table)
     }
     if (!isTruthy(input$predict_result_name) ||
           !isTruthy(input$predict_model_name) ||

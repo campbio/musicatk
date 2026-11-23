@@ -285,3 +285,33 @@ test_that("a successful discovery is recorded and announced", {
   })
   expect_match(notes(), "Discovery, m1, completed")
 })
+
+test_that("the model ID check uses the current musica object", {
+  notes <- record_notifications()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    # IDs left from an earlier object, which the current one doesn't have
+    vals$res_names <- "result/SBS96/m1"
+    vals$musica <- musica_sbs96_tiny
+    set_discover_inputs(session, "m1")
+    session$setInputs(discover_signatures = 1)
+    expect_false(session$isClosed())
+    expect_identical(names(get_modality(vals$musica, "result", "SBS96")),
+                     "m1")
+  })
+  expect_match(notes(), "Discovery, m1, completed")
+
+  alerts <- record_shinyalerts()
+  shiny::testServer(env$server, {
+    # A model the object has, though the app's list doesn't name it
+    vals$musica <- predict_exposure(musica_sbs96_tiny, "SBS96",
+                                    cosmic_v2_sigs, algorithm = "lda",
+                                    model_id = "p1", make_copy = TRUE)
+    vals$p_res <- cosmic_v2_sigs
+    set_predict_inputs(session, "p1", cosmic_v2_sigs)
+    session$setInputs(predict_sigs = 1)
+    expect_false(session$isClosed())
+    expect_error(output$predict_warning, "already exists")
+  })
+  expect_length(alerts(), 0)
+})

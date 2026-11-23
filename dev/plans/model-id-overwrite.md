@@ -112,8 +112,11 @@ discovery-prediction test file is slow, so new tests go in a new file,
 
 ### Duplicate IDs (#282)
 
-- The Discover and Predict guards also fail when
-  `paste0(result, "/", table, "/", model) %in% vals$res_names`. Their
+- The Discover and Predict guards also fail when the model ID is already
+  a model in that result list entry and modality of `vals$musica`.
+  (Changed during review: the spec first checked `vals$res_names`, which
+  isn't reset when another musica object is loaded, so it could refuse an
+  ID the current object doesn't have. Approved as option B.) Their
   validation output shows: "A model with this ID already exists in this
   result list entry. Choose another model ID."
 - Remove the overwrite modals and the `confirm_result_overwrite` and
@@ -140,6 +143,9 @@ filter.
 
 ### Tests (`tests/testthat/test-shiny-server.R`)
 
+- The check follows `vals$musica`, not `vals$res_names`: a stale entry
+  in `vals$res_names` doesn't block Discover, and a model the object has
+  blocks Predict though `vals$res_names` doesn't name it.
 - Discover with an ID already in `vals$res_names`: the duplicate
   message shows, and the stored models are unchanged. The same for
   Predict.
