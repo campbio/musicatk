@@ -138,3 +138,12 @@ test_that("auto_predict_grid() still adds .1 to a model_id already used", {
   expect_length(ids, 2)
   expect_identical(ids[2], paste0(ids[1], ".1"))
 })
+
+test_that("model_id must be a single string", {
+  for (bad in list(NA_character_, c("a", "b"), character(0))) {
+    expect_error(add_tiny(musica_sbs96_tiny, bad),
+                 "'model_id' must be a single string")
+    expect_error(predict_tiny(musica_sbs96_tiny, bad),
+                 "'model_id' must be a single string")
+  }
+})

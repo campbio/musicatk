@@ -1,13 +1,18 @@
 #' @importFrom NMF nmf
 NULL
 
+# IDs of the models in 'result_name' and 'modality' of 'musica', or NULL
+.model_ids <- function(musica, result_name, modality) {
+  if (is.null(result_list(musica)[[result_name]])) {
+    return(NULL)
+  }
+  return(names(get_modality(musica, result_name, modality)))
+}
+
 # Return 'model_id', or '<model_id>.<n>' with the smallest n not already
 # used by a model in 'result_name' and 'modality' of 'musica'
 .unique_model_id <- function(musica, result_name, modality, model_id) {
-  existing <- NULL
-  if (!is.null(result_list(musica)[[result_name]])) {
-    existing <- names(get_modality(musica, result_name, modality))
-  }
+  existing <- .model_ids(musica, result_name, modality)
   return(.unique_id(model_id, existing, "model_id"))
 }
 
@@ -18,10 +23,10 @@ NULL
   if (!isTRUE(overwrite) && !isFALSE(overwrite)) {
     stop("'overwrite' must be TRUE or FALSE.")
   }
-  existing <- NULL
-  if (!is.null(result_list(musica)[[result_name]])) {
-    existing <- names(get_modality(musica, result_name, modality))
+  if (!is.character(model_id) || length(model_id) != 1 || is.na(model_id)) {
+    stop("'model_id' must be a single string.")
   }
+  existing <- .model_ids(musica, result_name, modality)
   if (!overwrite && model_id %in% existing) {
     stop(
       "A model named '", model_id, "' already exists in result '",
