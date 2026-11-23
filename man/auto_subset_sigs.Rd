@@ -39,7 +39,8 @@ least one sample has more than this threshold proportion}
 \code{"result"}.}
 
 \item{model_id}{Identifier for the result. If \code{NULL}, will be
-automatically set to the algorithm and number of signatures. Default
+automatically set to the algorithm and number of signatures. If it is
+already used, \code{.1}, \code{.2}, and so on is added to it. Default
 \code{NULL}.}
 
 \item{seed}{Seed for the random start of \code{algorithm = "lda"}.

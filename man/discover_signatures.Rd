@@ -15,7 +15,8 @@ discover_signatures(
   nstart = 10,
   par_cores = 1,
   make_copy = FALSE,
-  table_name = NULL
+  table_name = NULL,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -52,6 +53,11 @@ object is updated and nothing is returned. If \code{TRUE}, a new
 \code{FALSE}.}
 
 \item{table_name}{Use modality instead}
+
+\item{overwrite}{If \code{TRUE}, a model already stored at
+\code{model_id} in \code{result_name} and \code{modality} is replaced. If
+\code{FALSE}, an existing \code{model_id} is an error. Default
+\code{FALSE}.}
 }
 \value{
 Returns nothing or a new \code{\linkS4class{musica}} object,
@@ -72,8 +78,9 @@ function and mutation count tables need to be created using functions such as
 
 Samples with no mutations in the count table are left out of the fit and
 of the exposures, with a message naming them. At least two samples need
-mutations. If \code{model_id} is already used, \code{.1}, \code{.2}, and
-so on is added to it.
+mutations. If \code{model_id} is already a model in \code{result_name}
+and \code{modality}, discovery stops with an error before fitting,
+unless \code{overwrite = TRUE}, which replaces that model.
 }
 \examples{
 data(musica)

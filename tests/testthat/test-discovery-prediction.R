@@ -25,12 +25,15 @@ test_that(".cosine() keeps a matrix for one signature (#162)", {
 })
 
 test_that("model_id de-duplication counts past 10 (#148)", {
+  # predict_exposure() stops on a reused ID; the grid functions make each
+  # ID unique with .unique_model_id() first, as here
   m <- musicatk::musica_sbs96
   for (i in seq_len(12)) {
-    m <- suppressMessages(predict_exposure(m, "SBS96",
+    id <- suppressMessages(.unique_model_id(m, "result", "SBS96", "p"))
+    m <- predict_exposure(m, "SBS96",
       musicatk::cosmic_v2_sigs, "decompTumor2Sig",
-      signatures_to_use = 1:2, model_id = "p", make_copy = TRUE
-    ))
+      signatures_to_use = 1:2, model_id = id, make_copy = TRUE
+    )
   }
   expect_identical(
     names(get_modality(m, "result", "SBS96")),

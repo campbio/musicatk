@@ -15,7 +15,8 @@ predict_exposure(
   verbose = FALSE,
   make_copy = FALSE,
   seed = 1,
-  table_name = NULL
+  table_name = NULL,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -55,6 +56,11 @@ unchanged. If \code{NULL}, the current random number state is used.
 Default \code{1}.}
 
 \item{table_name}{Use modality instead}
+
+\item{overwrite}{If \code{TRUE}, a model already stored at
+\code{model_id} in \code{result_name} and \code{modality} is replaced. If
+\code{FALSE}, an existing \code{model_id} is an error. Default
+\code{FALSE}.}
 }
 \value{
 Returns nothing or a new \code{\linkS4class{musica}} object,
@@ -71,6 +77,9 @@ their rows may be in any order; prediction stops when the signatures and
 the count table don't have the same motifs. \code{"decompTumor2Sig"} only
 supports SBS96 tables. Samples with no mutations are left out of the
 exposures, with a message naming them.
+If \code{model_id} is already a model in \code{result_name} and
+\code{modality}, prediction stops with an error, unless
+\code{overwrite = TRUE}, which replaces that model.
 }
 \examples{
 data(musica)
@@ -82,9 +91,11 @@ result <- predict_exposure(
   signature_res = cosmic_v2_sigs, algorithm = "lda"
 )
 
-# Predict using LDA-like algorithm with seed set to 2
+# Predict using LDA-like algorithm with seed set to 2. The first
+# prediction used the default model ID, so this one needs its own.
 predict_exposure(
   musica = musica, modality = "SBS96",
-  signature_res = cosmic_v2_sigs, algorithm = "lda", seed = 2
+  signature_res = cosmic_v2_sigs, algorithm = "lda", seed = 2,
+  model_id = "lda_seed2"
 )
 }

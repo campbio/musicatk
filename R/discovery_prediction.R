@@ -1,14 +1,40 @@
 #' @importFrom NMF nmf
 NULL
 
+# IDs of the models in 'result_name' and 'modality' of 'musica', or NULL
+.model_ids <- function(musica, result_name, modality) {
+  if (is.null(result_list(musica)[[result_name]])) {
+    return(NULL)
+  }
+  return(names(get_modality(musica, result_name, modality)))
+}
+
 # Return 'model_id', or '<model_id>.<n>' with the smallest n not already
 # used by a model in 'result_name' and 'modality' of 'musica'
 .unique_model_id <- function(musica, result_name, modality, model_id) {
-  existing <- NULL
-  if (!is.null(result_list(musica)[[result_name]])) {
-    existing <- names(get_modality(musica, result_name, modality))
-  }
+  existing <- .model_ids(musica, result_name, modality)
   return(.unique_id(model_id, existing, "model_id"))
+}
+
+# Stop when 'model_id' is already a model in 'result_name' and 'modality'
+# of 'musica', unless 'overwrite' is TRUE
+.check_model_id <- function(musica, result_name, modality, model_id,
+                            overwrite) {
+  if (!isTRUE(overwrite) && !isFALSE(overwrite)) {
+    stop("'overwrite' must be TRUE or FALSE.")
+  }
+  if (!is.character(model_id) || length(model_id) != 1 || is.na(model_id)) {
+    stop("'model_id' must be a single string.")
+  }
+  existing <- .model_ids(musica, result_name, modality)
+  if (!overwrite && model_id %in% existing) {
+    stop(
+      "A model named '", model_id, "' already exists in result '",
+      result_name, "', modality '", modality, "'. Use another 'model_id', ",
+      "or 'overwrite = TRUE' to replace it."
+    )
+  }
+  invisible(NULL)
 }
 
 # Names of the samples (columns) of 'counts_table' with at least one
@@ -158,8 +184,9 @@ NULL
 #'
 #' Samples with no mutations in the count table are left out of the fit and
 #' of the exposures, with a message naming them. At least two samples need
-#' mutations. If \code{model_id} is already used, \code{.1}, \code{.2}, and
-#' so on is added to it.
+#' mutations. If \code{model_id} is already a model in \code{result_name}
+#' and \code{modality}, discovery stops with an error before fitting,
+#' unless \code{overwrite = TRUE}, which replaces that model.
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param modality Modality to use for signature discovery. Needs
 #' to be the same name supplied to the table building functions such as
@@ -183,6 +210,10 @@ NULL
 #' \code{\linkS4class{musica}} object is created and returned. Default
 #' \code{FALSE}.
 #' @param table_name Use modality instead
+#' @param overwrite If \code{TRUE}, a model already stored at
+#' \code{model_id} in \code{result_name} and \code{modality} is replaced. If
+#' \code{FALSE}, an existing \code{model_id} is an error. Default
+#' \code{FALSE}.
 #' @return Returns nothing or a new \code{\linkS4class{musica}} object,
 #' depending on the \code{make_copy} parameter.
 #' @examples
@@ -198,7 +229,7 @@ discover_signatures <- function(musica, modality, num_signatures,
                                 algorithm = "lda", result_name = "result",
                                 model_id = NULL, seed = 1, nstart = 10,
                                 par_cores = 1, make_copy = FALSE,
-                                table_name = NULL) {
+                                table_name = NULL, overwrite = FALSE) {
   if (!is.null(table_name)) {
     warning("table_name argument deprecated. Use modality instead.")
     modality <- table_name
@@ -228,7 +259,7 @@ discover_signatures <- function(musica, modality, num_signatures,
   if (is.null(model_id)) {
     model_id <- paste(algorithm, num_signatures, sep = "")
   }
-  model_id <- .unique_model_id(musica, result_name, modality, model_id)
+  .check_model_id(musica, result_name, modality, model_id, overwrite)
 
   if (algorithm == "lda") {
     lda_counts_table <- t(counts_table)
@@ -301,23 +332,7 @@ discover_signatures <- function(musica, modality, num_signatures,
     FUN = "*"
   )
 
-  # if this result name does not exist in result_list
-  if (is.null(result_list(musica)[[result_name]])) {
-    # make new list entry with the desired name and assign a new
-    # result_collection object
-    musica@result_list[[result_name]] <- new("result_collection",
-      modality = SimpleList(),
-      parameter = list(), hyperparameter = list()
-    )
-  }
-
-  # if desired modality does not exist, create entry
-  if (is.null(get_modality(musica, result_name, modality))) {
-    musica@result_list[[result_name]]@modality[[modality]] <- list()
-  }
-
-  # add result_model object in the list for the proper modality
-  musica@result_list[[result_name]]@modality[[modality]][[model_id]] <- result
+  musica <- .store_model(musica, result_name, modality, model_id, result)
 
   if (make_copy == FALSE) {
     assign(var_name, musica, envir = parent.frame())
@@ -339,6 +354,9 @@ discover_signatures <- function(musica, modality, num_signatures,
 #' the count table don't have the same motifs. \code{"decompTumor2Sig"} only
 #' supports SBS96 tables. Samples with no mutations are left out of the
 #' exposures, with a message naming them.
+#' If \code{model_id} is already a model in \code{result_name} and
+#' \code{modality}, prediction stops with an error, unless
+#' \code{overwrite = TRUE}, which replaces that model.
 #' @param musica A \code{\linkS4class{musica}} object.
 #' @param modality Modality for posterior prediction. Must match the table type
 #' used to generate the prediction signatures
@@ -365,6 +383,10 @@ discover_signatures <- function(musica, modality, num_signatures,
 #' unchanged. If \code{NULL}, the current random number state is used.
 #' Default \code{1}.
 #' @param table_name Use modality instead
+#' @param overwrite If \code{TRUE}, a model already stored at
+#' \code{model_id} in \code{result_name} and \code{modality} is replaced. If
+#' \code{FALSE}, an existing \code{model_id} is an error. Default
+#' \code{FALSE}.
 #' @return Returns nothing or a new \code{\linkS4class{musica}} object,
 #' depending on the \code{make_copy} parameter.
 #' @examples
@@ -377,10 +399,12 @@ discover_signatures <- function(musica, modality, num_signatures,
 #'   signature_res = cosmic_v2_sigs, algorithm = "lda"
 #' )
 #'
-#' # Predict using LDA-like algorithm with seed set to 2
+#' # Predict using LDA-like algorithm with seed set to 2. The first
+#' # prediction used the default model ID, so this one needs its own.
 #' predict_exposure(
 #'   musica = musica, modality = "SBS96",
-#'   signature_res = cosmic_v2_sigs, algorithm = "lda", seed = 2
+#'   signature_res = cosmic_v2_sigs, algorithm = "lda", seed = 2,
+#'   model_id = "lda_seed2"
 #' )
 #' @export
 predict_exposure <- function(musica, modality, signature_res,
@@ -389,7 +413,8 @@ predict_exposure <- function(musica, modality, signature_res,
                              signatures_to_use = seq_len(ncol(
                                signatures(signature_res)
                              )), verbose = FALSE,
-                             make_copy = FALSE, seed = 1, table_name = NULL) {
+                             make_copy = FALSE, seed = 1, table_name = NULL,
+                             overwrite = FALSE) {
   if (!is.null(table_name)) {
     warning("table_name argument deprecated. Use modality instead.")
     modality <- table_name
@@ -403,17 +428,18 @@ predict_exposure <- function(musica, modality, signature_res,
   algorithm <- match.arg(algorithm)
   signature <- signatures(signature_res)[, signatures_to_use, drop = FALSE]
   counts_table <- .extract_count_table(musica, modality)
-  predicted <- .predict_exposures(counts_table, signature, algorithm,
-    modality,
-    seed = seed, verbose = verbose
-  )
 
   # if not model_id provided, fill one in
   if (is.null(model_id)) {
     model_id <-
       paste(algorithm, length(signatures_to_use), "_exp_pred", sep = "")
   }
-  model_id <- .unique_model_id(musica, result_name, modality, model_id)
+  .check_model_id(musica, result_name, modality, model_id, overwrite)
+
+  predicted <- .predict_exposures(counts_table, signature, algorithm,
+    modality,
+    seed = seed, verbose = verbose
+  )
 
   result <- methods::new("result_model",
     signatures = predicted$signatures,
@@ -422,23 +448,7 @@ predict_exposure <- function(musica, modality, signature_res,
     model_id = model_id, modality = modality
   )
 
-  # if this result name does not exist in result_list
-  if (is.null(result_list(musica)[[result_name]])) {
-    # make new list entry with the desired name and assign a new
-    # result_collection object
-    musica@result_list[[result_name]] <- new("result_collection",
-      modality = SimpleList(),
-      parameter = list(), hyperparameter = list()
-    )
-  }
-
-  # if modality does not exist, create entry
-  if (is.null(get_modality(musica, result_name, modality))) {
-    musica@result_list[[result_name]]@modality[[modality]] <- list()
-  }
-
-  # add result_model object in the list for the proper modality
-  musica@result_list[[result_name]]@modality[[modality]][[model_id]] <- result
+  musica <- .store_model(musica, result_name, modality, model_id, result)
 
   if (make_copy == FALSE) {
     assign(var_name, musica, envir = parent.frame())
@@ -873,7 +883,8 @@ auto_predict_grid <- function(musica, modality, signature_res, algorithm,
 #' @param result_name Name for result_list entry to save the results to. Default
 #' \code{"result"}.
 #' @param model_id Identifier for the result. If \code{NULL}, will be
-#' automatically set to the algorithm and number of signatures. Default
+#' automatically set to the algorithm and number of signatures. If it is
+#' already used, \code{.1}, \code{.2}, and so on is added to it. Default
 #' \code{NULL}.
 #' @param seed Seed for the random start of \code{algorithm = "lda"}.
 #' Default \code{1}.
@@ -906,6 +917,13 @@ auto_subset_sigs <- function(musica, modality, signature_res, algorithm,
       rare_exposure, "). Lower them to keep more signatures."
     )
   }
+
+  # As in predict_exposure(), and made unique, as auto_predict_grid()
+  # promises
+  if (is.null(model_id)) {
+    model_id <- paste(algorithm, length(to_use), "_exp_pred", sep = "")
+  }
+  model_id <- .unique_model_id(musica, result_name, modality, model_id)
 
   final_inferred <- predict_exposure(
     musica = musica, modality = modality,
