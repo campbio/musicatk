@@ -14,7 +14,8 @@ auto_subset_sigs(
   rare_exposure = 0.4,
   result_name = "result",
   model_id = NULL,
-  seed = 1
+  seed = 1,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -44,6 +45,11 @@ automatically set to the algorithm and number of signatures. Default
 
 \item{seed}{Seed for the random start of \code{algorithm = "lda"}.
 Default \code{1}.}
+
+\item{overwrite}{If \code{TRUE}, a model already stored at
+\code{model_id} in \code{result_name} and \code{modality} is replaced. If
+\code{FALSE}, an existing \code{model_id} is an error. Default
+\code{FALSE}.}
 }
 \value{
 Returns new \code{\linkS4class{musica}} object with the results.

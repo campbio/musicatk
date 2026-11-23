@@ -11,7 +11,8 @@ add_result(
   result_name,
   modality,
   model_id,
-  make_copy = FALSE
+  make_copy = FALSE,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -28,11 +29,18 @@ matched by name and put in \code{\link{sample_names}} order.}
 
 \item{modality}{Modality of the model}
 
-\item{model_id}{Name of model}
+\item{model_id}{Name of model. If it is already a model in
+\code{result_name} and \code{modality}, this stops with an error, unless
+\code{overwrite = TRUE}, which replaces that model.}
 
 \item{make_copy}{If \code{FALSE}, the inputted \code{\linkS4class{musica}}
 object is updated and nothing is returned. If \code{TRUE}, a new
 \code{\linkS4class{musica}} object is created and returned. Default
+\code{FALSE}.}
+
+\item{overwrite}{If \code{TRUE}, a model already stored at
+\code{model_id} in \code{result_name} and \code{modality} is replaced. If
+\code{FALSE}, an existing \code{model_id} is an error. Default
 \code{FALSE}.}
 }
 \value{
