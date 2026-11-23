@@ -1,3 +1,15 @@
+# musicatk 2.7.27 (2026-11-23)
+* Shiny app fixes; results don't change.
+  * Discover, Predict and Compare Signatures check their inputs without ending the session when an input hasn't been shown yet, and show the message for what is missing (#278). So do "Group By" and "Color By" set to annotation in Data Visualization.
+  * Discover accepts 10 or more signatures. Before, the number was compared as text, so "10" was rejected with "Must specify 2 or more signatures.". It also asks for 2 or more samples consistently; before, a table with exactly 2 samples got the "2 or more samples" message whenever another input was missing.
+  * Discover asks for a number of random starts of 1 or more, and Compare Signatures for a threshold from 0 to 1, when what's entered isn't one. Before, text such as "ten" passed the check and failed later.
+  * Message wording: Combine asks for "a name for the combined table" (it said "result object"), and "Disocvery" is spelled "Discovery".
+  * Combining fewer than two count tables says "You must select two or more tables to combine.", and comparing results with an empty threshold asks for one; before, neither message was shown (#277).
+  * When combining count tables fails, for example because a table with that name exists, the app no longer also says "Table created." (#279).
+  * The alerts shown when a tab isn't ready yet are styled as errors, and their text is fixed: missing spaces, "muscia", an unclosed quote, and tab names that didn't match the sidebar ("Import Musica", "Discover") (#280).
+  * Validation messages in Combine, Discover, Predict and Compare Signatures are cleared once the inputs are complete.
+  * `inst/shiny/server_tables.R` is removed. Nothing sourced it, and its `add_tables()` was an outdated copy of the one in `server.R` (#226, #275).
+
 # musicatk 2.7.26 (2026-11-22)
 * `inst/shiny/server.R`, the Shiny app's server code, now passes lintr (#257). Almost all the changes are formatting, and the app's results don't change. Two small fixes came with them. Comparing results before a result list is selected shows the "Please select a result object" message instead of ending the session (`||` instead of `|`). If every file is removed from the import table, it shows an empty table instead of a "differing number of rows" error (`seq_len()` instead of `seq()`).
 
