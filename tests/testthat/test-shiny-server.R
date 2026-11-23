@@ -24,6 +24,18 @@ test_that("comparing with no threshold asks for one (#277)", {
   })
 })
 
+test_that("comparing with a threshold outside 0 to 1 asks for one", {
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    session$setInputs(select_result_a = "result", select_model_a = "model")
+    for (threshold in c("abc", "5")) {
+      session$setInputs(Threshold = threshold)
+      session$setInputs(compare_results = threshold)
+      expect_error(output$compare_validate, "similarity threshold")
+    }
+  })
+})
+
 test_that("comparing before the model input exists doesn't fail (#278)", {
   env <- shiny_server_env()
   shiny::testServer(env$server, {
@@ -69,6 +81,23 @@ test_that("discovery accepts 10 or more signatures (#278)", {
                     error = function(e) conditionMessage(e))
     expect_match(msg, "model ID")
     expect_no_match(msg, "2 or more signatures")
+  })
+})
+
+test_that("discovery asks for random starts that are a number of 1 or more", {
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96_tiny
+    session$setInputs(discover_result_name = "result",
+                      discover_model_name = "model",
+                      number_of_signatures = "2",
+                      select_discover_table = "SBS96")
+    for (n_start in c("ten", "0")) {
+      session$setInputs(n_start = n_start)
+      session$setInputs(discover_signatures = n_start)
+      expect_false(session$isClosed())
+      expect_error(output$discover_warning, "random starts")
+    }
   })
 })
 

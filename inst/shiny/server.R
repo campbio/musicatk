@@ -1069,7 +1069,7 @@ server <- function(input, output, session) {
       output$combine_warning <- renderText({
         validate(
           need(input$combined_table_name,
-               "You must provide a name for the new result object."),
+               "You must provide a name for the combined table."),
           need(length(input$combine_tables) >= 2,
                "You must select two or more tables to combine.")
         )
@@ -1187,14 +1187,18 @@ server <- function(input, output, session) {
       }
       ncol(get_count_table(extract_count_tables(vals$musica)[[table_name]]))
     }
-    # number_of_signatures is a textInput(), so it is converted to a number
+    # number_of_signatures and n_start are textInput()s, so they are
+    # converted to numbers
     enough_sigs <- function() {
       n_sigs <- suppressWarnings(as.numeric(input$number_of_signatures))
       isTRUE(n_sigs >= 2)
     }
+    valid_n_start <- function() {
+      isTRUE(suppressWarnings(as.numeric(input$n_start)) >= 1)
+    }
     if (!isTruthy(input$discover_result_name) ||
           !isTruthy(input$discover_model_name) ||
-          !isTruthy(input$n_start) ||
+          !valid_n_start() ||
           !enough_sigs() || n_samples() < 2) {
       output$discover_warning <- renderText({
         validate(
@@ -1204,8 +1208,8 @@ server <- function(input, output, session) {
                "You must provide a model ID."),
           need(input$number_of_signatures,
                "You must specify the number of expected signatures."),
-          need(input$n_start,
-               "Please specify the number of random starts."),
+          need(valid_n_start(),
+               "Please specify the number of random starts, 1 or more."),
           need(!isTruthy(input$number_of_signatures) || enough_sigs(),
                "Must specify 2 or more signatures."),
           need(n_samples() >= 2,
@@ -1230,7 +1234,7 @@ server <- function(input, output, session) {
       ))
     } else {
       disc_sigs(input, vals)
-      showNotification(paste0("Disocvery, ",
+      showNotification(paste0("Discovery, ",
                               input$discover_model_name,
                               ", completed and saved to ",
                               input$discover_result_name, "."))
@@ -1618,16 +1622,21 @@ server <- function(input, output, session) {
 
   # Event listener triggers comparison.
   observeEvent(input$compare_results, {
+    # Threshold is a textInput(), so it is converted to a number
+    valid_threshold <- function() {
+      threshold <- suppressWarnings(as.numeric(input$Threshold))
+      isTRUE(threshold >= 0 && threshold <= 1)
+    }
     if (!isTruthy(input$select_result_a) ||
           !isTruthy(input$select_model_a) ||
-          !isTruthy(input$Threshold)) {
+          !valid_threshold()) {
       output$compare_validate <- renderText({
         validate(
           need(input$select_result_a,
                "Please select a result object to compare."),
           need(input$select_model_a,
                "Please select a model ID to compare."),
-          need(input$Threshold,
+          need(valid_threshold(),
                "Please provide a similarity threshold from 0 to 1.")
         )
       })
