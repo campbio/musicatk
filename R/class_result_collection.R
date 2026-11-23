@@ -271,3 +271,21 @@ setMethod(
     return(x@modality[[modality]][[model]])
   }
 )
+
+# Put 'model' (a result_model) at 'model_id' in 'result_name' and 'modality'
+# of 'musica', replacing any model there in place, and return 'musica'. The
+# result_list entry and the modality are created when missing.
+.store_model <- function(musica, result_name, modality, model_id, model) {
+  if (is.null(musica@result_list[[result_name]])) {
+    musica@result_list[[result_name]] <- methods::new("result_collection",
+      modality = S4Vectors::SimpleList(),
+      parameter = list(), hyperparameter = list()
+    )
+  }
+  if (is.null(musica@result_list[[result_name]]@modality[[modality]])) {
+    musica@result_list[[result_name]]@modality[[modality]] <- list()
+  }
+  musica@result_list[[result_name]]@modality[[modality]][[model_id]] <- model
+  methods::validObject(musica)
+  return(musica)
+}

@@ -1366,10 +1366,16 @@ create_musica_from_counts <- function(x, variant_class) {
 #' @param musica Existing musica object to add the new model to
 #' @param result_name Name of result list entry to store the model in
 #' @param modality Modality of the model
-#' @param model_id Name of model
+#' @param model_id Name of model. If it is already a model in
+#' \code{result_name} and \code{modality}, this stops with an error, unless
+#' \code{overwrite = TRUE}, which replaces that model.
 #' @param make_copy If \code{FALSE}, the inputted \code{\linkS4class{musica}}
 #' object is updated and nothing is returned. If \code{TRUE}, a new
 #' \code{\linkS4class{musica}} object is created and returned. Default
+#' \code{FALSE}.
+#' @param overwrite If \code{TRUE}, a model already stored at
+#' \code{model_id} in \code{result_name} and \code{modality} is replaced. If
+#' \code{FALSE}, an existing \code{model_id} is an error. Default
 #' \code{FALSE}.
 #' @return A \linkS4class{musica} object
 #' @examples
@@ -1379,12 +1385,15 @@ create_musica_from_counts <- function(x, variant_class) {
 #' result_name = "result", modality = "SBS96", model_id = "example_model")
 #' @export
 add_result <- function(signatures, exposures, musica, result_name,
-                       modality, model_id, make_copy = FALSE) {
+                       modality, model_id, make_copy = FALSE,
+                       overwrite = FALSE) {
 
   # update global variable
   if (make_copy == FALSE) {
     var_name <- deparse(substitute(musica))
   }
+
+  .check_model_id(musica, result_name, modality, model_id, overwrite)
 
   # Put exposure columns in sample order, matched by sample name
   exposures <- as.matrix(exposures)
@@ -1403,26 +1412,10 @@ add_result <- function(signatures, exposures, musica, result_name,
     model_id = model_id, modality = modality
   )
 
-  # if this result name does not exist in result_list
-  if (is.null(result_list(musica)[[result_name]])) {
-    # make new list entry with the desired name and assign a new
-    # result_collection object
-    musica@result_list[[result_name]] <- new(
-      "result_collection",
-      modality = SimpleList(), parameter = list(), hyperparameter = list()
-    )
-  }
-
-  # if desired modality does not exist, create entry
-  if (is.null(get_modality(musica, result_name, modality))) {
-    musica@result_list[[result_name]]@modality[[modality]] <- list()
-  }
-
-  # add result_model object in the list for the proper modality
-  musica@result_list[[result_name]]@modality[[modality]][[model_id]] <-
-    model_result
-  # exposures must have the sample names as columns, in sample order
-  methods::validObject(musica)
+  # exposures must have the sample names as columns, in sample order;
+  # .store_model() checks this
+  musica <- .store_model(musica, result_name, modality, model_id,
+                         model_result)
 
   if (make_copy == FALSE) {
     assign(var_name, musica, envir = parent.frame())
