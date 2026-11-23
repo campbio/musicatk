@@ -1176,26 +1176,26 @@ server <- function(input, output, session) {
   ####### Section for the Discover Signatures and Exposures Tab #######
   # Event listener for discover_signatures.
   observeEvent(input$discover_signatures, {
-    # Inputs can be NULL before their UI is rendered, and numericInput()
-    # gives NA when cleared, so they are checked with isTruthy()
-    count_tables <- if (is.null(vals$musica)) {
-      list()
-    } else {
-      extract_count_tables(vals$musica)
+    # Inputs can be NULL before their UI is rendered, so they are checked
+    # with isTruthy(). These are functions so that the message below
+    # updates as the inputs change.
+    n_samples <- function() {
+      table_name <- input$select_discover_table
+      if (is.null(vals$musica) || !isTruthy(table_name) ||
+            !table_name %in% names(extract_count_tables(vals$musica))) {
+        return(0)
+      }
+      ncol(get_count_table(extract_count_tables(vals$musica)[[table_name]]))
     }
-    n_samples <- 0
-    if (isTruthy(input$select_discover_table) &&
-          input$select_discover_table %in% names(count_tables)) {
-      n_samples <- ncol(get_count_table(
-        count_tables[[input$select_discover_table]]
-      ))
+    # number_of_signatures is a textInput(), so it is converted to a number
+    enough_sigs <- function() {
+      n_sigs <- suppressWarnings(as.numeric(input$number_of_signatures))
+      isTRUE(n_sigs >= 2)
     }
-    enough_sigs <- isTruthy(input$number_of_signatures) &&
-      input$number_of_signatures >= 2
     if (!isTruthy(input$discover_result_name) ||
           !isTruthy(input$discover_model_name) ||
           !isTruthy(input$n_start) ||
-          !enough_sigs || n_samples < 2) {
+          !enough_sigs() || n_samples() < 2) {
       output$discover_warning <- renderText({
         validate(
           need(input$discover_result_name,
@@ -1206,9 +1206,9 @@ server <- function(input, output, session) {
                "You must specify the number of expected signatures."),
           need(input$n_start,
                "Please specify the number of random starts."),
-          need(!isTruthy(input$number_of_signatures) || enough_sigs,
+          need(!isTruthy(input$number_of_signatures) || enough_sigs(),
                "Must specify 2 or more signatures."),
-          need(n_samples >= 2,
+          need(n_samples() >= 2,
                "You must provide 2 or more samples")
         )
       })

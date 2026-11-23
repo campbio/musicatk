@@ -1,6 +1,7 @@
 # musicatk 2.7.27 (2026-11-23)
 * Shiny app fixes; results don't change.
-  * Discover, Predict and Compare Signatures check their inputs without ending the session when an input hasn't been shown yet or a number box is cleared, and show the message for what is missing (#278). So do "Group By" and "Color By" set to annotation in Data Visualization.
+  * Discover, Predict and Compare Signatures check their inputs without ending the session when an input hasn't been shown yet, and show the message for what is missing (#278). So do "Group By" and "Color By" set to annotation in Data Visualization.
+  * Discover accepts 10 or more signatures. Before, the number was compared as text, so "10" was rejected with "Must specify 2 or more signatures.". It also asks for 2 or more samples consistently; before, a table with exactly 2 samples got the "2 or more samples" message whenever another input was missing.
   * Combining fewer than two count tables says "You must select two or more tables to combine.", and comparing results with an empty threshold asks for one; before, neither message was shown (#277).
   * When combining count tables fails, for example because a table with that name exists, the app no longer also says "Table created." (#279).
   * The alerts shown when a tab isn't ready yet are styled as errors, and their text is fixed: missing spaces, "muscia", an unclosed quote, and tab names that didn't match the sidebar ("Import Musica", "Discover") (#280).

@@ -1,9 +1,9 @@
 # Packages the Shiny app attaches with library(), in app.R, ui.R and
-# server.R, apart from musicatk and TCGAbiolinks. Later ones mask earlier
-# ones, as on the app's search path.
+# server.R, apart from musicatk and TCGAbiolinks, plus ggplot2, which plotly
+# attaches. Later ones mask earlier ones, as on the app's search path.
 shiny_app_packages <- c("shiny", "shinyjs", "shinydashboard", "shinybusy",
-                        "plotly", "sortable", "shinyBS", "shinyalert",
-                        "shinyjqui")
+                        "ggplot2", "plotly", "sortable", "shinyBS",
+                        "shinyalert", "shinyjqui")
 
 # Environment holding the app's server(), sourced from inst/shiny/server.R,
 # for shiny::testServer(). The packages above are reached through a parent

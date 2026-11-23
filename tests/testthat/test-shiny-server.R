@@ -44,17 +44,31 @@ test_that("predicting before its inputs exist doesn't fail (#278)", {
   })
 })
 
-test_that("discovering with a cleared number box doesn't fail (#278)", {
+test_that("discovering before its inputs exist doesn't fail (#278)", {
   env <- shiny_server_env()
   shiny::testServer(env$server, {
     vals$musica <- musica_sbs96_tiny
-    session$setInputs(discover_result_name = "result",
-                      discover_model_name = "model",
-                      number_of_signatures = NA, n_start = 1,
-                      select_discover_table = "SBS96")
     session$setInputs(discover_signatures = 1)
     expect_false(session$isClosed())
-    expect_error(output$discover_warning, "number of expected signatures")
+    expect_error(output$discover_warning, "result list name")
+  })
+})
+
+test_that("discovery accepts 10 or more signatures (#278)", {
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96_tiny
+    # The model ID is missing, so the check stops before discovery runs.
+    # number_of_signatures is text, and "10" >= 2 is FALSE as strings.
+    session$setInputs(discover_result_name = "result",
+                      discover_model_name = "",
+                      number_of_signatures = "10", n_start = "1",
+                      select_discover_table = "SBS96")
+    session$setInputs(discover_signatures = 1)
+    msg <- tryCatch(output$discover_warning,
+                    error = function(e) conditionMessage(e))
+    expect_match(msg, "model ID")
+    expect_no_match(msg, "2 or more signatures")
   })
 })
 
