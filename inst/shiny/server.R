@@ -77,6 +77,8 @@ server <- function(input, output, session) {
   no_results_msg <- paste0("No results in the musica object. Please go to ",
                            "\"Signatures and Exposures\" -> \"Discover\" to ",
                            "create results.")
+  duplicate_model_msg <- paste0("A model with this ID already exists in this ",
+                                "result list entry. Choose another model ID.")
 
   # Shows an error alert and sends the user to the given tab
   redirect_with_error <- function(text, tab) {
@@ -1196,10 +1198,14 @@ server <- function(input, output, session) {
     valid_n_start <- function() {
       isTRUE(suppressWarnings(as.numeric(input$n_start)) >= 1)
     }
+    new_model_id <- function() {
+      !paste0(input$discover_result_name, "/", input$select_discover_table,
+              "/", input$discover_model_name) %in% vals$res_names
+    }
     if (!isTruthy(input$discover_result_name) ||
           !isTruthy(input$discover_model_name) ||
           !valid_n_start() ||
-          !enough_sigs() || n_samples() < 2) {
+          !enough_sigs() || n_samples() < 2 || !new_model_id()) {
       output$discover_warning <- renderText({
         validate(
           need(input$discover_result_name,
@@ -1213,63 +1219,53 @@ server <- function(input, output, session) {
           need(!isTruthy(input$number_of_signatures) || enough_sigs(),
                "Must specify 2 or more signatures."),
           need(n_samples() >= 2,
-               "You must provide 2 or more samples")
+               "You must provide 2 or more samples"),
+          need(new_model_id(), duplicate_model_msg)
         )
       })
       return()
     }
     output$discover_warning <- renderText(NULL)
-    if (paste0(input$discover_result_name, "/",
-               input$select_discover_table, "/",
-               input$discover_model_name) %in% names(vals$res_names)) {
-      #if ("lda5" %in% names(vals$result_objects)) {
-      # Confirm overwrite of result object
-      showModal(modalDialog(
-        title =
-          "This model ID already exists in the chosen result list entry.",
-        "Do you want to overwrite the existing result?",
-        easyClose = TRUE,
-        footer = list(actionButton("confirm_result_overwrite", "OK"),
-                      modalButton("Cancel"))
-      ))
-    } else {
-      disc_sigs(input, vals)
-      showNotification(paste0("Discovery, ",
-                              input$discover_model_name,
-                              ", completed and saved to ",
-                              input$discover_result_name, "."))
-    }
+    disc_sigs(input, vals)
   })
 
-  # Wrapper function for discover_signature
+  # Wrapper function for discover_signatures(). On an error, an alert shows
+  # it and vals is unchanged.
   disc_sigs <- function(input, vals) {
-    name <- paste0(input$discover_result_name, "/",
-                   input$select_discover_table, "/",
-                   input$discover_model_name)
-    vals$musica <- discover_signatures(
-      vals$musica, modality = input$select_discover_table,
-      num_signatures = as.numeric(input$number_of_signatures),
-      algorithm = input$Method, result_name = input$discover_result_name,
-      model_id = input$discover_model_name,
-      #seed = input$Seed,
-      nstart = as.numeric(input$n_start), make_copy = TRUE
+    musica <- tryCatch(
+      discover_signatures(
+        vals$musica, modality = input$select_discover_table,
+        num_signatures = as.numeric(input$number_of_signatures),
+        algorithm = input$Method, result_name = input$discover_result_name,
+        model_id = input$discover_model_name,
+        nstart = as.numeric(input$n_start), make_copy = TRUE
+      ),
+      error = function(cond) {
+        shinyalert::shinyalert(title = "Error", text = cond$message,
+                               type = "error")
+        NULL
+      }
     )
-    #set_result(name, "test")
-    vals$res_names <- c(vals$res_names, name)
-    vals$res_names_full[[input$discover_result_name]][[
-      input$select_discover_table
-    ]] <- c(vals$res_names_full[[input$discover_result_name]][[
-      input$select_discover_table
-    ]], input$discover_model_name)
-
+    if (is.null(musica)) {
+      return()
+    }
+    record_model(musica, input$discover_result_name,
+                 input$select_discover_table, input$discover_model_name)
+    showNotification(paste0("Discovery, ",
+                            input$discover_model_name,
+                            ", completed and saved to ",
+                            input$discover_result_name, "."))
   }
 
-  # Run discover_signatures if overwrite confirmed.
-  observeEvent(input$confirm_result_overwrite, {
-    removeModal()
-    disc_sigs(input, vals)
-    showNotification("Existing result overwritten.")
-  })
+  # Stores 'musica', which has a new model, in vals, and adds the model to
+  # the lists of results the app offers
+  record_model <- function(musica, result_name, modality, model_id) {
+    vals$musica <- musica
+    vals$res_names <- c(vals$res_names,
+                        paste0(result_name, "/", modality, "/", model_id))
+    vals$res_names_full[[result_name]][[modality]] <-
+      c(vals$res_names_full[[result_name]][[modality]], model_id)
+  }
 
   # Discover Musica Result Object
   output$discover_result_name <- renderUI({
@@ -1426,9 +1422,13 @@ server <- function(input, output, session) {
 
   # Event listener for Predict signatures
   observeEvent(input$predict_sigs, {
+    new_model_id <- function() {
+      !paste0(input$predict_result_name, "/", input$predict_table, "/",
+              input$predict_model_name) %in% vals$res_names
+    }
     if (!isTruthy(input$predict_result_name) ||
           !isTruthy(input$predict_model_name) ||
-          length(input$pred_sigs) < 2) {
+          length(input$pred_sigs) < 2 || !new_model_id()) {
       output$predict_warning <- renderText({
         validate(
           need(input$predict_result_name,
@@ -1436,29 +1436,14 @@ server <- function(input, output, session) {
           need(input$predict_model_name,
                "You must provide a model ID."),
           need(length(input$pred_sigs) >= 2,
-               "You must select two or more signatures to predict.")
+               "You must select two or more signatures to predict."),
+          need(new_model_id(), duplicate_model_msg)
         )
       })
       return()
     }
     output$predict_warning <- renderText(NULL)
-    if (paste0(input$predict_result_name, "/", input$predict_table,
-               "/", input$predict_model_name) %in% names(vals$res_names)) {
-      #if (input$predict_result_name %in% names(vals$result_objects)) {
-      showModal(modalDialog(
-        title = "This model ID already exists in the chosen result list entry.",
-        "Do you want to overwrite the existing result object?",
-        easyClose = TRUE,
-        footer = list(actionButton("confirm_predict_overwrite", "OK"),
-                      modalButton("Cancel"))
-      ))
-    } else {
-      get_predict(input, vals)
-      showNotification(paste0("Prediction, ",
-                              input$predict_model_name,
-                              ", completed and saved to ",
-                              input$predict_result_name, "."))
-    }
+    get_predict(input, vals)
   })
 
   # Event listener displays additional options for deconstructSigs algorithm.
@@ -1470,34 +1455,36 @@ server <- function(input, output, session) {
   #  }
   #})
 
-  # Wrapper function for predict_exposures
-  get_predict <- function(inputs, vals) {
-    name <- paste0(input$predict_result_name, "/", input$predict_table, "/",
-                   input$predict_model_name)
-    vals$musica <- predict_exposure(
-      vals$musica,
-      modality = input$predict_table,
-      signature_res = vals$p_res,
-      algorithm = input$predict_algorithm,
-      result_name = input$predict_result_name,
-      model_id = input$predict_model_name,
-      signatures_to_use = input$pred_sigs,
-      make_copy = TRUE
+  # Wrapper function for predict_exposure(). On an error, an alert shows it
+  # and vals is unchanged.
+  get_predict <- function(input, vals) {
+    musica <- tryCatch(
+      predict_exposure(
+        vals$musica,
+        modality = input$predict_table,
+        signature_res = vals$p_res,
+        algorithm = input$predict_algorithm,
+        result_name = input$predict_result_name,
+        model_id = input$predict_model_name,
+        signatures_to_use = input$pred_sigs,
+        make_copy = TRUE
+      ),
+      error = function(cond) {
+        shinyalert::shinyalert(title = "Error", text = cond$message,
+                               type = "error")
+        NULL
+      }
     )
-    #set_result(name, "test")
-    vals$res_names <- c(vals$res_names, name)
-    vals$res_names_full[[input$predict_result_name]][[input$predict_table]] <-
-      c(vals$res_names_full[[input$predict_result_name]][[
-        input$predict_table
-      ]], input$predict_model_name)
+    if (is.null(musica)) {
+      return()
+    }
+    record_model(musica, input$predict_result_name, input$predict_table,
+                 input$predict_model_name)
+    showNotification(paste0("Prediction, ",
+                            input$predict_model_name,
+                            ", completed and saved to ",
+                            input$predict_result_name, "."))
   }
-
-  # Event triggers predict_exposures when user confirms overwrite.
-  observeEvent(input$confirm_predict_overwrite, {
-    removeModal()
-    get_predict(input, vals)
-    showNotification("Existing result overwritten.")
-  })
 
 
   ####### Compare Tab ########

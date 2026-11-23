@@ -48,3 +48,18 @@ record_shinyalerts <- function(env = parent.frame()) {
   )
   function() alerts
 }
+
+# Replaces shiny::showNotification() for the calling test and returns a
+# function that gives the notification texts shown so far.
+record_notifications <- function(env = parent.frame()) {
+  notes <- character()
+  testthat::local_mocked_bindings(
+    showNotification = function(ui, ...) {
+      notes <<- c(notes, as.character(ui))
+      invisible(NULL)
+    },
+    .package = "shiny",
+    .env = env
+  )
+  function() notes
+}

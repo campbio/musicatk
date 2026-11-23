@@ -199,3 +199,89 @@ test_that("tab-navigation alerts are errors with well-formed text (#280)", {
                                    gregexpr("\"", alert$text))) %% 2 == 0)
   }
 })
+
+# Sets the Discover inputs for a 2-signature lda run with model ID 'model'
+set_discover_inputs <- function(session, model) {
+  session$setInputs(discover_result_name = "result",
+                    discover_model_name = model, Method = "lda",
+                    number_of_signatures = "2", n_start = "1",
+                    select_discover_table = "SBS96")
+}
+
+# Sets the Predict inputs for an lda prediction with model ID 'model', using
+# the first two signatures of 'sigs'
+set_predict_inputs <- function(session, model, sigs) {
+  session$setInputs(predict_result_name = "result",
+                    predict_model_name = model, predict_table = "SBS96",
+                    predict_algorithm = "lda",
+                    pred_sigs = colnames(signatures(sigs))[1:2])
+}
+
+test_that("discovery with a model ID already used asks for another (#282)", {
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- discover_signatures(musica_sbs96_tiny, "SBS96", 2,
+                                       nstart = 1, model_id = "m1",
+                                       make_copy = TRUE)
+    vals$res_names <- "result/SBS96/m1"
+    set_discover_inputs(session, "m1")
+    session$setInputs(discover_signatures = 1)
+    expect_false(session$isClosed())
+    expect_error(output$discover_warning, "already exists")
+    expect_identical(names(get_modality(vals$musica, "result", "SBS96")),
+                     "m1")
+    expect_identical(vals$res_names, "result/SBS96/m1")
+  })
+})
+
+test_that("prediction with a model ID already used asks for another (#282)", {
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- predict_exposure(musica_sbs96_tiny, "SBS96",
+                                    cosmic_v2_sigs, algorithm = "lda",
+                                    model_id = "p1", make_copy = TRUE)
+    vals$res_names <- "result/SBS96/p1"
+    vals$p_res <- cosmic_v2_sigs
+    set_predict_inputs(session, "p1", cosmic_v2_sigs)
+    session$setInputs(predict_sigs = 1)
+    expect_false(session$isClosed())
+    expect_error(output$predict_warning, "already exists")
+    expect_identical(names(get_modality(vals$musica, "result", "SBS96")),
+                     "p1")
+    expect_identical(vals$res_names, "result/SBS96/p1")
+  })
+})
+
+test_that("a failed prediction shows the error and stores nothing (#283)", {
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96_tiny
+    # DBS signatures don't fit the SBS96 table
+    vals$p_res <- cosmic_v3_dbs_sigs
+    set_predict_inputs(session, "p1", cosmic_v3_dbs_sigs)
+    session$setInputs(predict_sigs = 1)
+    expect_false(session$isClosed())
+    expect_null(vals$res_names)
+    expect_length(result_list(vals$musica), 0)
+  })
+  expect_length(alerts(), 1)
+  expect_match(alerts()[[1]]$text, "motifs of 'signature_res' don't match")
+  expect_length(notes(), 0)
+})
+
+test_that("a successful discovery is recorded and announced", {
+  notes <- record_notifications()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96_tiny
+    set_discover_inputs(session, "m1")
+    session$setInputs(discover_signatures = 1)
+    expect_identical(vals$res_names, "result/SBS96/m1")
+    expect_identical(vals$res_names_full$result$SBS96, "m1")
+    expect_identical(names(get_modality(vals$musica, "result", "SBS96")),
+                     "m1")
+  })
+  expect_match(notes(), "Discovery, m1, completed")
+})
