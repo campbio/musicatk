@@ -878,20 +878,17 @@ auto_predict_grid <- function(musica, modality, signature_res, algorithm,
 #' @param result_name Name for result_list entry to save the results to. Default
 #' \code{"result"}.
 #' @param model_id Identifier for the result. If \code{NULL}, will be
-#' automatically set to the algorithm and number of signatures. Default
+#' automatically set to the algorithm and number of signatures. If it is
+#' already used, \code{.1}, \code{.2}, and so on is added to it. Default
 #' \code{NULL}.
 #' @param seed Seed for the random start of \code{algorithm = "lda"}.
 #' Default \code{1}.
-#' @param overwrite If \code{TRUE}, a model already stored at
-#' \code{model_id} in \code{result_name} and \code{modality} is replaced. If
-#' \code{FALSE}, an existing \code{model_id} is an error. Default
-#' \code{FALSE}.
 #' @return Returns new \code{\linkS4class{musica}} object with the results.
 #' @keywords internal
 auto_subset_sigs <- function(musica, modality, signature_res, algorithm,
                              min_exists = 0.05, proportion_samples = 0.25,
                              rare_exposure = 0.4, result_name = "result",
-                             model_id = NULL, seed = 1, overwrite = FALSE) {
+                             model_id = NULL, seed = 1) {
   # First pass with every signature; not stored. Messages about samples
   # with no mutations come from the second pass.
   first_pass <- .predict_exposures(
@@ -916,6 +913,13 @@ auto_subset_sigs <- function(musica, modality, signature_res, algorithm,
     )
   }
 
+  # As in predict_exposure(), and made unique, as auto_predict_grid()
+  # promises
+  if (is.null(model_id)) {
+    model_id <- paste(algorithm, length(to_use), "_exp_pred", sep = "")
+  }
+  model_id <- .unique_model_id(musica, result_name, modality, model_id)
+
   final_inferred <- predict_exposure(
     musica = musica, modality = modality,
     signature_res = signature_res,
@@ -924,8 +928,7 @@ auto_subset_sigs <- function(musica, modality, signature_res, algorithm,
     result_name = result_name,
     model_id = model_id,
     make_copy = TRUE,
-    seed = seed,
-    overwrite = overwrite
+    seed = seed
   )
 
   return(final_inferred)

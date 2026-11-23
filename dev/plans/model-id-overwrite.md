@@ -35,7 +35,8 @@ Shiny app has no replace option: it asks for another ID.
     'model_id', or 'overwrite = TRUE' to replace it."
   - Also stops unless `overwrite` is a single TRUE or FALSE.
   - Returns nothing.
-- `.store_model(musica, result_name, modality, model_id, model)`
+- `.store_model(musica, result_name, modality, model_id, model)`, in
+  `R/class_result_collection.R`, since it uses `@`
   - Creates the `result_collection` entry and the modality list when
     they're missing.
   - Puts `model` at `model_id`, replacing any model there.
@@ -62,13 +63,16 @@ Shiny app has no replace option: it asks for another ID.
   - In `discover_signatures()`, the sentence "If `model_id` is already
     used, `.1`, `.2`, and so on is added to it." becomes the new rule.
   - `predict_exposure()` and `add_result()` get the same sentence.
-- `auto_subset_sigs()` (exported) passes its `model_id` to
-  `predict_exposure()`. It gains `overwrite = FALSE` as its last argument
-  and passes it on, so its reruns follow the same rule. (Added during
-  spec self-review; not in the chat design.)
+- `auto_subset_sigs()` is internal, and only `auto_predict_grid()` calls
+  it. It fills in the default `model_id` and makes it unique with
+  `.unique_model_id()` before calling `predict_exposure()`, so
+  `auto_predict_grid()` keeps adding `.1` with or without
+  `sample_annotation`. (Changed during implementation: the spec first
+  said it was exported and gave it `overwrite`; review found that
+  `auto_predict_grid()` without an annotation then errored on a rerun.)
 - Unchanged:
   - `generate_result_grid()`, `auto_predict_grid()`,
-    `combine_predict_grid()` and `benchmark()`. They make their IDs
+    `combine_predict_grid()` and `predict_and_benchmark()`. They make their IDs
     unique with `.unique_model_id()` before calling the functions above,
     so they never clash. Their docs, and the tests at
     `test-discovery-prediction.R:178-196` and `test-benchmarking.R:562`,
@@ -150,7 +154,8 @@ filter.
   - the model is in `vals$musica`;
   - the notification shows.
 
-Each new test must fail on devel.
+Each new test must fail on devel, except the successful Discover, which
+guards the moved notification and record code and passes on devel too.
 
 ## Docs, NEWS, version, checks
 

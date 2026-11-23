@@ -20,12 +20,11 @@ test_that("discover_signatures() stops on a model_id already used", {
 
 test_that("discover_signatures() checks the model_id before fitting", {
   musica <- discover_tiny(musica_sbs96_tiny, "m1")
-  # 1000 signatures would fail in the fit, if the fit ran
-  expect_error(
-    discover_signatures(musica, "SBS96", num_signatures = 1000, nstart = 1,
-                        model_id = "m1", make_copy = TRUE),
-    clash_msg
-  )
+  local_mocked_bindings(LDA = function(...) stop("the fit ran"),
+                        .package = "topicmodels")
+  expect_error(discover_tiny(musica, "m1"), clash_msg)
+  # The mock is in place: a new ID reaches the fit
+  expect_error(discover_tiny(musica, "m2"), "the fit ran")
 })
 
 test_that("discover_signatures() with overwrite = TRUE replaces the model", {
@@ -128,4 +127,14 @@ test_that("overwrite must be a single TRUE or FALSE", {
     expect_error(predict_tiny(musica_sbs96_tiny, "p1", overwrite = bad),
                  "'overwrite' must be TRUE or FALSE")
   }
+})
+
+test_that("auto_predict_grid() still adds .1 to a model_id already used", {
+  musica <- auto_predict_grid(musica_annot, "SBS96", cosmic_v2_sigs, "lda",
+                              make_copy = TRUE)
+  musica <- auto_predict_grid(musica, "SBS96", cosmic_v2_sigs, "lda",
+                              make_copy = TRUE)
+  ids <- names(get_modality(musica, "result", "SBS96"))
+  expect_length(ids, 2)
+  expect_identical(ids[2], paste0(ids[1], ".1"))
 })
