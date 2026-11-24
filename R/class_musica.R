@@ -576,6 +576,39 @@ setReplaceMethod(
 #' # View the sample annotations
 #' samp_annot(musica_sbs96)
 add_samp_annot <- function(musica, annotations, sample_column) {
+  new_columns <- .check_annot_table(annotations, sample_column)
+  samples <- sample_names(musica)
+  rows <- .match_annot_rows(annotations[[sample_column]], samples,
+                            sample_column)
+  for (column in new_columns) {
+    samp_annot(musica, column) <- annotations[[column]][rows]
+  }
+
+  # Warn only once every column has been added, so an error above isn't
+  # preceded by a warning that suggests the annotations were added
+  missing <- samples[is.na(rows)]
+  if (length(missing) > 0) {
+    missing_text <- paste(utils::head(missing, 5), collapse = ", ")
+    if (length(missing) > 5) {
+      missing_text <- paste0(missing_text, ", ...")
+    }
+    warning(
+      length(missing),
+      if (length(missing) == 1) {
+        " sample has no row in 'annotations' and was given NA: "
+      } else {
+        " samples have no row in 'annotations' and were given NA: "
+      },
+      missing_text,
+      call. = FALSE
+    )
+  }
+  return(musica)
+}
+
+# Checks the 'annotations' and 'sample_column' arguments of add_samp_annot()
+# and returns the names of the annotation columns to add
+.check_annot_table <- function(annotations, sample_column) {
   if (!is.data.frame(annotations)) {
     stop("'annotations' must be a data.frame.")
   }
@@ -602,15 +635,19 @@ add_samp_annot <- function(musica, annotations, sample_column) {
       "'sample_column', because 'Samples' holds the sample names."
     )
   }
+  return(new_columns)
+}
 
-  ids <- as.character(annotations[[sample_column]])
-  samples <- sample_names(musica)
+# Returns the row of 'ids' for each sample in 'samples', NA when there is
+# none. Stops when no sample matches or a sample is in more than one row.
+.match_annot_rows <- function(ids, samples, sample_column) {
+  ids <- as.character(ids)
   rows <- match(samples, ids)
   if (all(is.na(rows))) {
+    example_text <- paste(utils::head(samples, 3), collapse = ", ")
     stop(
       "None of the sample names in column '", sample_column,
-      "' match the samples in 'musica', such as ",
-      paste(utils::head(samples, 3), collapse = ", "),
+      "' match the samples in 'musica', such as ", example_text,
       ". Check that 'sample_column' is the column with the sample names."
     )
   }
@@ -618,32 +655,13 @@ add_samp_annot <- function(musica, annotations, sample_column) {
   # rest of those rows
   repeated <- unique(ids[duplicated(ids) & ids %in% samples])
   if (length(repeated) > 0) {
+    repeated_text <- paste(utils::head(repeated, 5), collapse = ", ")
     stop(
       "These samples appear more than once in column '", sample_column,
-      "' of 'annotations': ", paste(utils::head(repeated, 5), collapse = ", ")
+      "' of 'annotations': ", repeated_text
     )
   }
-  for (column in new_columns) {
-    samp_annot(musica, column) <- annotations[[column]][rows]
-  }
-
-  # Warn only once every column has been added, so an error above isn't
-  # preceded by a warning that suggests the annotations were added
-  missing <- samples[is.na(rows)]
-  if (length(missing) > 0) {
-    warning(
-      length(missing),
-      if (length(missing) == 1) {
-        " sample has no row in 'annotations' and was given NA: "
-      } else {
-        " samples have no row in 'annotations' and were given NA: "
-      },
-      paste(utils::head(missing, 5), collapse = ", "),
-      if (length(missing) > 5) ", ...",
-      call. = FALSE
-    )
-  }
-  return(musica)
+  return(rows)
 }
 
 #' @title Retrieve sample names from a musica object
