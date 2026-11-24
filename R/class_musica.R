@@ -131,10 +131,8 @@ subset_musica_by_counts <- function(musica, table_name, num_counts) {
 #'   package = "musicatk"
 #' ), sep = "\t", header = TRUE)
 #'
-#' # Match the annotation rows to the sample order in the musica object
-#' annot_rows <- match(sample_names(musica_sbs96), annot$Sample_Names)
-#' tumor_subtypes <- annot$Tumor_Subtypes[annot_rows]
-#' samp_annot(musica_sbs96, "Tumor_Subtypes") <- tumor_subtypes
+#' # Add the annotations, matching the Sample_Names column to the samples
+#' musica_sbs96 <- add_samp_annot(musica_sbs96, annot, "Sample_Names")
 #'
 #' musica_sbs96 <- subset_musica_by_annotation(
 #'   musica_sbs96, "Tumor_Subtypes",
