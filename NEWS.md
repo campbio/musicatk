@@ -1,3 +1,7 @@
+# musicatk 2.7.30 (2026-11-24)
+* `add_samp_annot()` gains `convert = FALSE`. With `convert = TRUE`, character columns other than `sample_column` are converted to logical, integer, numeric or character with `type.convert()`, as `read.table()` does. Use it on a table read with `colClasses = "character"`, which keeps sample names such as `"001"` as they are in the file (#287).
+* Shiny app: uploaded sample annotations keep sample names that look like numbers. Before, the file was read with `read.delim()`, which read `"001"` as 1, so those samples didn't match and got `NA`, with a notification, or the upload failed when none matched (#287). The other columns get the same types as before.
+
 # musicatk 2.7.29 (2026-11-23)
 * New `add_samp_annot()` adds the columns of an annotation table, such as one read from a file, as sample annotations. Rows are matched to `sample_names()` by the names in `sample_column`, so they can be in any order. Rows for other samples are ignored, and samples without a row get `NA`, with a warning. The vignette and the `subset_musica_by_annotation()` example use it in place of `match()` (#211).
 * Shiny app: uploading sample annotations matches the rows to the samples by name, using `add_samp_annot()`, and samples without a row are listed in a notification (#211). Before, the rows were sorted by sample name and added by position. Since 2.7.2, which checks that the samples stay in order, the upload failed with an alert whenever the samples weren't already sorted; before that, it gave those samples the wrong annotations.
