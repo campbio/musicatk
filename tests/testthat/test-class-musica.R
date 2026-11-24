@@ -309,8 +309,10 @@ test_that("add_samp_annot() checks its inputs", {
   annot <- data.frame(id = samples, group = "a")
   expect_error(add_samp_annot(musica_sbs96, as.matrix(annot), "id"),
                regexp = "'annotations' must be a data.frame")
-  expect_error(add_samp_annot(musica_sbs96, annot, c("id", "group")),
-               regexp = "'sample_column' must be a single column name")
+  for (bad_column in list(c("id", "group"), NA_character_, 1)) {
+    expect_error(add_samp_annot(musica_sbs96, annot, bad_column),
+                 regexp = "'sample_column' must be a single column name")
+  }
   expect_error(add_samp_annot(musica_sbs96, annot, "sample"),
                regexp = "'sample_column' \\('sample'\\) is not a column")
   expect_error(add_samp_annot(musica_sbs96, annot, "group"),

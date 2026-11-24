@@ -35,6 +35,8 @@ annot <- read.table(system.file("extdata", "sample_annotations.txt",
 
 # Add the annotations, matching the Sample_Names column to the samples
 musica_sbs96 <- add_samp_annot(musica_sbs96, annot, "Sample_Names")
+
+# View the sample annotations
 samp_annot(musica_sbs96)
 }
 \seealso{
