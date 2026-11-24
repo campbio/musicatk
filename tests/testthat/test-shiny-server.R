@@ -338,6 +338,32 @@ test_that("uploaded annotations are matched to samples by name (#211)", {
   expect_identical(notes(), "Annotations have been added")
 })
 
+test_that("uploaded annotations keep number-like sample IDs (#287)", {
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  counts <- get_count_table(tables(musica_sbs96)$SBS96)[, 1:3]
+  colnames(counts) <- c("001", "002", "100000")
+  musica <- create_musica_from_counts(counts, "SBS96")
+  annot_file <- withr::local_tempfile(fileext = ".txt")
+  writeLines(c("id,group,score", "100000,A,3", "001,B,1.5", "002,C,2"),
+             annot_file)
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica
+    session$setInputs(annotation_header = TRUE, annotation_delimiter = ",",
+                      annotations_file = list(name = "annot.txt",
+                                              datapath = annot_file))
+    output$annotations
+    session$setInputs(annot_sample_column = "id")
+    session$setInputs(add_annotation = 1)
+    expect_false(session$isClosed())
+    expect_identical(samp_annot(vals$musica)$group, c("B", "C", "A"))
+    expect_identical(samp_annot(vals$musica)$score, c(1.5, 2, 3))
+  })
+  expect_length(alerts(), 0)
+  expect_identical(notes(), "Annotations have been added")
+})
+
 test_that("annotation upload shows missing samples in a notification", {
   notes <- record_notifications()
   alerts <- record_shinyalerts()

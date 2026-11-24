@@ -964,7 +964,9 @@ server <- function(input, output, session) {
   })
 
   # Read the annotation file, store it in vals$annotations, and display the
-  # contents as a data table.
+  # contents as a data table. Every column is read as character, so sample
+  # names such as "001" aren't read as numbers; add_annot() converts the
+  # other columns.
   output$annotations <- DT::renderDT({
     file <- input$annotations_file
     ext <- tools::file_ext(file$datapath)
@@ -976,7 +978,7 @@ server <- function(input, output, session) {
     vals$annotations <- read.delim(file$datapath,
                                    header = input$annotation_header,
                                    sep = delim,
-                                   as.is = TRUE)
+                                   colClasses = "character")
     vals$annotations
 
   }, options = list(autoWidth = FALSE, scrollX = TRUE))
@@ -998,7 +1000,7 @@ server <- function(input, output, session) {
   add_annot <- function(musica_object) {
     musica_object <- withCallingHandlers(
       add_samp_annot(musica_object, vals$annotations,
-                     input$annot_sample_column),
+                     input$annot_sample_column, convert = TRUE),
       warning = function(w) {
         showNotification(conditionMessage(w), type = "warning")
         invokeRestart("muffleWarning")

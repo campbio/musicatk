@@ -4,7 +4,7 @@
 \alias{add_samp_annot}
 \title{Add sample annotations from a table}
 \usage{
-add_samp_annot(musica, annotations, sample_column)
+add_samp_annot(musica, annotations, sample_column, convert = FALSE)
 }
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
@@ -14,6 +14,15 @@ sample names and one column per annotation.}
 
 \item{sample_column}{The name of the column in \code{annotations} that
 contains the sample names. They must match \code{\link{sample_names}}.}
+
+\item{convert}{If \code{TRUE}, every character column other than
+\code{sample_column} is converted to logical, integer, numeric or
+character with \code{\link[utils]{type.convert}}, as
+\code{\link[utils]{read.table}} does. Use it on a table read with
+\code{colClasses = "character"}, which keeps sample names such as
+\code{"001"} or \code{"100000"} as they are in the file, where
+\code{read.table} would read them as the numbers 1 or 1e+05. Default
+\code{FALSE}.}
 }
 \value{
 The \code{\linkS4class{musica}} object with every other column of
