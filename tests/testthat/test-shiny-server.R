@@ -315,3 +315,45 @@ test_that("the model ID check uses the current musica object", {
   })
   expect_length(alerts(), 0)
 })
+
+test_that("uploaded annotations are matched to samples by name (#211)", {
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  annot <- read.table(system.file("extdata", "sample_annotations.txt",
+                                  package = "musicatk"),
+                      sep = "\t", header = TRUE)
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    vals$annotations <- annot
+    session$setInputs(annot_sample_column = "Sample_Names")
+    session$setInputs(add_annotation = 1)
+    expect_false(session$isClosed())
+    samples <- sample_names(musica_sbs96)
+    expect_identical(sample_names(vals$musica), samples)
+    expected <- annot$Tumor_Subtypes[match(samples, annot$Sample_Names)]
+    expect_identical(samp_annot(vals$musica)$Tumor_Subtypes, expected)
+  })
+  expect_length(alerts(), 0)
+  expect_identical(notes(), "Annotations have been added")
+})
+
+test_that("annotation upload shows missing samples in a notification", {
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  samples <- sample_names(musica_sbs96)
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    vals$annotations <- data.frame(id = samples[-1], group = "a")
+    session$setInputs(annot_sample_column = "id")
+    session$setInputs(add_annotation = 1)
+    expect_false(session$isClosed())
+    expect_identical(samp_annot(vals$musica)$group,
+                     c(NA, rep("a", length(samples) - 1)))
+  })
+  expect_length(alerts(), 0)
+  expect_length(notes(), 2)
+  expect_match(notes()[1], "1 sample has no row")
+  expect_identical(notes()[2], "Annotations have been added")
+})

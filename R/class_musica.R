@@ -549,6 +549,92 @@ setReplaceMethod(
   }
 )
 
+#' @title Add sample annotations from a table
+#' @description Adds the columns of a table, such as one read from an
+#' annotation file, as sample annotations. Rows are matched to the samples in
+#' the \code{\linkS4class{musica}} object by name, so they can be in any
+#' order, and the samples keep their order. Rows for samples that aren't in
+#' the object are ignored. Samples without a row get \code{NA}, with a
+#' warning. An annotation that already exists is replaced.
+#' @param musica A \code{\linkS4class{musica}} object.
+#' @param annotations A \code{data.frame} with one row per sample: a column of
+#' sample names and one column per annotation.
+#' @param sample_column The name of the column in \code{annotations} that
+#' contains the sample names. They must match \code{\link{sample_names}}.
+#' @return The \code{\linkS4class{musica}} object with every other column of
+#' \code{annotations} added to its sample annotations.
+#' @seealso \code{\link{samp_annot}} to add a single annotation vector that
+#' is already in the order of the samples.
+#' @export
+#' @examples
+#' data(musica_sbs96)
+#' annot <- read.table(system.file("extdata", "sample_annotations.txt",
+#'   package = "musicatk"
+#' ), sep = "\t", header = TRUE)
+#'
+#' # Add the annotations, matching the Sample_Names column to the samples
+#' musica_sbs96 <- add_samp_annot(musica_sbs96, annot, "Sample_Names")
+#' samp_annot(musica_sbs96)
+add_samp_annot <- function(musica, annotations, sample_column) {
+  if (!is.data.frame(annotations)) {
+    stop("'annotations' must be a data.frame.")
+  }
+  if (!is.character(sample_column) || length(sample_column) != 1 ||
+        is.na(sample_column)) {
+    stop("'sample_column' must be a single column name.")
+  }
+  if (!sample_column %in% colnames(annotations)) {
+    stop(
+      "'sample_column' ('", sample_column, "') is not a column of ",
+      "'annotations'."
+    )
+  }
+  new_columns <- setdiff(colnames(annotations), sample_column)
+  if ("Samples" %in% new_columns) {
+    stop(
+      "'annotations' can't have a 'Samples' column other than ",
+      "'sample_column', because 'Samples' holds the sample names."
+    )
+  }
+
+  ids <- as.character(annotations[[sample_column]])
+  samples <- sample_names(musica)
+  rows <- match(samples, ids)
+  if (all(is.na(rows))) {
+    stop(
+      "None of the sample names in column '", sample_column,
+      "' match the samples in 'musica', such as ",
+      paste(utils::head(samples, 3), collapse = ", "),
+      ". Check that 'sample_column' is the column with the sample names."
+    )
+  }
+  # Repeated rows for samples that aren't in 'musica' are ignored like the
+  # rest of those rows
+  repeated <- unique(ids[duplicated(ids) & ids %in% samples])
+  if (length(repeated) > 0) {
+    stop(
+      "These samples appear more than once in column '", sample_column,
+      "' of 'annotations': ", paste(utils::head(repeated, 5), collapse = ", ")
+    )
+  }
+  missing <- samples[is.na(rows)]
+  if (length(missing) > 0) {
+    warning(
+      length(missing),
+      if (length(missing) == 1) " sample has" else " samples have",
+      " no row in 'annotations' and will be given NA: ",
+      paste(utils::head(missing, 5), collapse = ", "),
+      if (length(missing) > 5) ", ...",
+      call. = FALSE
+    )
+  }
+
+  for (column in new_columns) {
+    samp_annot(musica, column) <- annotations[[column]][rows]
+  }
+  return(musica)
+}
+
 #' @title Retrieve sample names from a musica object
 #' @description Sample names were included in the \code{sample} column
 #' in the variant object passed to \code{\link{create_musica_from_variants}}, or

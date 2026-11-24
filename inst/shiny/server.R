@@ -992,16 +992,18 @@ server <- function(input, output, session) {
     )
   })
 
-  # Add annotations to the provided musica_object
+  # Add annotations to the provided musica_object, matching rows to samples
+  # by name. A warning, such as samples without a row, is shown as a
+  # notification.
   add_annot <- function(musica_object) {
-    new_annot <- merge(samp_annot(musica_object),
-                       vals$annotations, by.x = "Samples",
-                       by.y = input$annot_sample_column,
-                       all.x = TRUE)
-    for (a in names(new_annot)) {
-      samp_annot(musica_object, a) <-
-        new_annot[, a]
-    }
+    musica_object <- withCallingHandlers(
+      add_samp_annot(musica_object, vals$annotations,
+                     input$annot_sample_column),
+      warning = function(w) {
+        showNotification(conditionMessage(w), type = "warning")
+        invokeRestart("muffleWarning")
+      }
+    )
     showNotification("Annotations have been added")
     return(musica_object)
   }
