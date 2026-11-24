@@ -564,9 +564,8 @@ setReplaceMethod(
 #' character with \code{\link[utils]{type.convert}}, as
 #' \code{\link[utils]{read.table}} does. Use it on a table read with
 #' \code{colClasses = "character"}, which keeps sample names such as
-#' \code{"001"} or \code{"100000"} as they are in the file, where
-#' \code{read.table} would read them as the numbers 1 or 1e+05. Default
-#' \code{FALSE}.
+#' \code{"001"} as they are in the file, where \code{read.table} would read
+#' them as numbers, so \code{"001"} would become 1. Default \code{FALSE}.
 #' @return The \code{\linkS4class{musica}} object with every other column of
 #' \code{annotations} added to its sample annotations.
 #' @seealso \code{\link{samp_annot}} to add a single annotation vector that
@@ -585,17 +584,14 @@ setReplaceMethod(
 #' samp_annot(musica_sbs96)
 add_samp_annot <- function(musica, annotations, sample_column,
                            convert = FALSE) {
-  new_columns <- .check_annot_table(annotations, sample_column)
   if (!isTRUE(convert) && !isFALSE(convert)) {
     stop("'convert' must be TRUE or FALSE.")
   }
+  new_columns <- .check_annot_table(annotations, sample_column)
   if (convert) {
-    for (column in new_columns) {
-      if (is.character(annotations[[column]])) {
-        annotations[[column]] <- utils::type.convert(annotations[[column]],
-                                                     as.is = TRUE)
-      }
-    }
+    annotations[new_columns] <- lapply(annotations[new_columns], function(x) {
+      if (is.character(x)) utils::type.convert(x, as.is = TRUE) else x
+    })
   }
   samples <- sample_names(musica)
   rows <- .match_annot_rows(annotations[[sample_column]], samples,

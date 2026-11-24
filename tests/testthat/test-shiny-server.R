@@ -345,8 +345,9 @@ test_that("uploaded annotations keep number-like sample IDs (#287)", {
   colnames(counts) <- c("001", "002", "100000")
   musica <- create_musica_from_counts(counts, "SBS96")
   annot_file <- withr::local_tempfile(fileext = ".txt")
-  writeLines(c("id,group,score", "100000,A,3", "001,B,1.5", "002,C,2"),
-             annot_file)
+  # Spaces after the commas, which number-like IDs read as numbers lost
+  writeLines(c("group, id, score", "A, 100000, 3", "B, 001, 1.5",
+               "C, 002, 2"), annot_file)
   env <- shiny_server_env()
   shiny::testServer(env$server, {
     vals$musica <- musica

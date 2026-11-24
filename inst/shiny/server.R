@@ -966,7 +966,8 @@ server <- function(input, output, session) {
   # Read the annotation file, store it in vals$annotations, and display the
   # contents as a data table. Every column is read as character, so sample
   # names such as "001" aren't read as numbers; add_annot() converts the
-  # other columns.
+  # other columns. Spaces around fields are dropped, as they were when
+  # number-like fields were read as numbers.
   output$annotations <- DT::renderDT({
     file <- input$annotations_file
     ext <- tools::file_ext(file$datapath)
@@ -978,7 +979,8 @@ server <- function(input, output, session) {
     vals$annotations <- read.delim(file$datapath,
                                    header = input$annotation_header,
                                    sep = delim,
-                                   colClasses = "character")
+                                   colClasses = "character",
+                                   strip.white = TRUE)
     vals$annotations
 
   }, options = list(autoWidth = FALSE, scrollX = TRUE))
