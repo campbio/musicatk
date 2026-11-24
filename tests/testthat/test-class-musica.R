@@ -259,3 +259,77 @@ test_that("name_signatures() returns the musica object with new names", {
   expect_identical(colnames(signatures(res, "result", "SBS96", "res")),
                    new_names)
 })
+
+test_that("add_samp_annot() matches annotation rows to samples by name", {
+  data(musica_sbs96)
+  samples <- sample_names(musica_sbs96)
+  annot <- read.table(system.file("extdata", "sample_annotations.txt",
+                                  package = "musicatk"),
+                      sep = "\t", header = TRUE)
+  # Rows in a different order from the samples, and one extra sample
+  annot <- annot[rev(seq_len(nrow(annot))), ]
+  annot <- rbind(annot, data.frame(Sample_Names = "Not_A_Sample",
+                                   Tumor_Subtypes = "Skin"))
+  annot$Age <- seq_len(nrow(annot))
+  expect_false(identical(annot$Sample_Names[seq_along(samples)], samples))
+
+  result <- add_samp_annot(musica_sbs96, annot, "Sample_Names")
+  expected <- annot[match(samples, annot$Sample_Names), ]
+  expect_identical(sample_names(result), samples)
+  expect_identical(colnames(samp_annot(result)),
+                   c("Samples", "Tumor_Subtypes", "Age"))
+  expect_identical(samp_annot(result)$Tumor_Subtypes,
+                   expected$Tumor_Subtypes)
+  expect_identical(samp_annot(result)$Age, expected$Age)
+  expect_true(methods::validObject(result))
+
+  # An existing annotation of the same name is replaced
+  annot$Tumor_Subtypes <- "Replaced"
+  result <- add_samp_annot(result, annot, "Sample_Names")
+  expect_identical(colnames(samp_annot(result)),
+                   c("Samples", "Tumor_Subtypes", "Age"))
+  expect_true(all(samp_annot(result)$Tumor_Subtypes == "Replaced"))
+})
+
+test_that("add_samp_annot() gives NA, with a warning, to missing samples", {
+  data(musica_sbs96)
+  samples <- sample_names(musica_sbs96)
+  annot <- data.frame(id = factor(samples[3:1]), group = c("c", "b", "a"))
+  expect_warning(
+    result <- add_samp_annot(musica_sbs96, annot, "id"),
+    regexp = paste0("9 samples have no row in 'annotations'.*", samples[4])
+  )
+  expect_identical(samp_annot(result)$group,
+                   c("a", "b", "c", rep(NA, length(samples) - 3)))
+})
+
+test_that("add_samp_annot() checks its inputs", {
+  data(musica_sbs96)
+  samples <- sample_names(musica_sbs96)
+  annot <- data.frame(id = samples, group = "a")
+  expect_error(add_samp_annot(musica_sbs96, as.matrix(annot), "id"),
+               regexp = "'annotations' must be a data.frame")
+  for (bad_column in list(c("id", "group"), NA_character_, 1)) {
+    expect_error(add_samp_annot(musica_sbs96, annot, bad_column),
+                 regexp = "'sample_column' must be a single column name")
+  }
+  expect_error(add_samp_annot(musica_sbs96, annot, "sample"),
+               regexp = "'sample_column' \\('sample'\\) is not a column")
+  expect_error(add_samp_annot(musica_sbs96, annot, "group"),
+               regexp = "None of the sample names in column 'group'")
+  duplicated_annot <- rbind(annot, annot[2, ])
+  expect_error(add_samp_annot(musica_sbs96, duplicated_annot, "id"),
+               regexp = paste0("more than once.*", samples[2]))
+  samples_annot <- data.frame(id = samples, Samples = "a")
+  expect_error(add_samp_annot(musica_sbs96, samples_annot, "id"),
+               regexp = "'Samples' column")
+  expect_error(add_samp_annot(musica_sbs96, annot["id"], "id"),
+               regexp = "no columns other than 'sample_column'")
+  # A column that fails gives only the error, not the missing-sample warning
+  list_annot <- data.frame(id = samples[-1])
+  list_annot$group <- I(as.list(seq_len(nrow(list_annot))))
+  expect_no_warning(
+    expect_error(add_samp_annot(musica_sbs96, list_annot, "id"),
+                 regexp = "must be a vector")
+  )
+})

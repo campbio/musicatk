@@ -72,6 +72,7 @@ reference:
   desc: Functions to add and manipulate sample annotations
   contents:
   - '`samp_annot`'
+  - '`add_samp_annot`'
   - '`sample_names`'
   - '`drop_annotation`'
 - title: K value help
