@@ -590,6 +590,12 @@ add_samp_annot <- function(musica, annotations, sample_column) {
     )
   }
   new_columns <- setdiff(colnames(annotations), sample_column)
+  if (length(new_columns) == 0) {
+    stop(
+      "'annotations' has no columns other than 'sample_column', so there ",
+      "are no annotations to add. Check the delimiter used to read it."
+    )
+  }
   if ("Samples" %in% new_columns) {
     stop(
       "'annotations' can't have a 'Samples' column other than ",
@@ -617,20 +623,25 @@ add_samp_annot <- function(musica, annotations, sample_column) {
       "' of 'annotations': ", paste(utils::head(repeated, 5), collapse = ", ")
     )
   }
+  for (column in new_columns) {
+    samp_annot(musica, column) <- annotations[[column]][rows]
+  }
+
+  # Warn only once every column has been added, so an error above isn't
+  # preceded by a warning that suggests the annotations were added
   missing <- samples[is.na(rows)]
   if (length(missing) > 0) {
     warning(
       length(missing),
-      if (length(missing) == 1) " sample has" else " samples have",
-      " no row in 'annotations' and will be given NA: ",
+      if (length(missing) == 1) {
+        " sample has no row in 'annotations' and was given NA: "
+      } else {
+        " samples have no row in 'annotations' and were given NA: "
+      },
       paste(utils::head(missing, 5), collapse = ", "),
       if (length(missing) > 5) ", ...",
       call. = FALSE
     )
-  }
-
-  for (column in new_columns) {
-    samp_annot(musica, column) <- annotations[[column]][rows]
   }
   return(musica)
 }

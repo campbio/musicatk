@@ -323,4 +323,13 @@ test_that("add_samp_annot() checks its inputs", {
   samples_annot <- data.frame(id = samples, Samples = "a")
   expect_error(add_samp_annot(musica_sbs96, samples_annot, "id"),
                regexp = "'Samples' column")
+  expect_error(add_samp_annot(musica_sbs96, annot["id"], "id"),
+               regexp = "no columns other than 'sample_column'")
+  # A column that fails gives only the error, not the missing-sample warning
+  list_annot <- data.frame(id = samples[-1])
+  list_annot$group <- I(as.list(seq_len(nrow(list_annot))))
+  expect_no_warning(
+    expect_error(add_samp_annot(musica_sbs96, list_annot, "id"),
+                 regexp = "must be a vector")
+  )
 })
