@@ -509,3 +509,60 @@ test_that("Create Table asks before replacing a DBS or Indel table (#291)", {
     expect_length(notes(), 0)
   }
 })
+
+test_that("the import genome list offers only selectable builds (#292)", {
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    html <- as.character(output$genome_list$html)
+    values <- regmatches(html, gregexpr("value=\"[^\"]+\"", html))[[1]]
+    expect_setequal(gsub("value=|\"", "", values), supported_genomes())
+    expect_match(html, "value=\"hg38\" selected")
+  })
+})
+
+test_that("a failed musica object creation shows an alert (#292)", {
+  alerts <- record_shinyalerts()
+  spinners <- character()
+  local_mocked_bindings(
+    show_spinner = function(...) spinners <<- c(spinners, "show"),
+    hide_spinner = function(...) spinners <<- c(spinners, "hide"),
+    .package = "shinybusy"
+  )
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$var <- variants(musica_sbs96_tiny)
+    # select_genome() doesn't load hg18
+    session$setInputs(GenomeSelect = "hg18")
+    session$setInputs(get_musica_object = 1)
+    expect_false(session$isClosed())
+    expect_null(vals$musica)
+    expect_null(vals$genome)
+  })
+  expect_length(alerts(), 1)
+  expect_match(alerts()[[1]]$text, "not currently selectable")
+  expect_identical(spinners, c("show", "hide"))
+})
+
+test_that("warnings from creating a musica object are notifications (#292)", {
+  local_mocked_bindings(
+    create_musica_from_variants = function(...) {
+      warning("Some variants were dropped")
+      musica_sbs96_tiny
+    },
+    .package = "musicatk"
+  )
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$var <- variants(musica_sbs96_tiny)
+    session$setInputs(GenomeSelect = "hg38")
+    session$setInputs(get_musica_object = 1)
+    expect_false(session$isClosed())
+    expect_identical(vals$musica, musica_sbs96_tiny)
+    expect_identical(vals$genome, "hg38")
+  })
+  expect_length(alerts(), 0)
+  expect_identical(notes(), c("Some variants were dropped",
+                              "Musica Object successfully created! "))
+})

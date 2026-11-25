@@ -351,15 +351,10 @@ server <- function(input, output, session) {
   })
 
   #Displaying list of available genomes
+  # Only the builds select_genome() loads
   output$genome_list <- renderUI({
-    g <- BSgenome::available.genomes()
-    g <- strsplit(g, ",")
-    gg <- gsub("^.*?\\.", "", g)
-    selectInput("GenomeSelect", "Choose genome:",
-                list("Common genomes" =
-                       list("hg38", "hg19", "hg18", "mm9", "mm10"),
-                     "Genomes" = gg),
-                width = "100%")
+    selectInput("GenomeSelect", "Choose genome:", supported_genomes(),
+                selected = "hg38", width = "100%")
   })
   output$genome_select <- renderText({
     paste("Genome selected:", input$GenomeSelect)
@@ -383,37 +378,37 @@ server <- function(input, output, session) {
   })
 
   #Adding the create musica funcionality
-  tryCatch({
-    observeEvent(input$get_musica_object, {
-      shinybusy::show_spinner()
-      vals$genome <- input$GenomeSelect
-      if (!is.null(vals$var)) {
+  observeEvent(input$get_musica_object, {
+    if (is.null(vals$var)) {
+      shinyalert("Error: Please import files first in the Import section!")
+      return()
+    }
+    shinybusy::show_spinner()
+    # An error is shown as an alert, and warnings as notifications, so that
+    # neither ends the session
+    tryCatch({
+      withCallingHandlers({
         vals$musica <- create_musica_from_variants(
           x = vals$var,
-          genome = select_genome(vals$genome),
+          genome = select_genome(input$GenomeSelect),
           check_ref_chromosomes = check_chr(),
           check_ref_bases = check_bases(),
           convert_dbs = convert_dbs(),
           standardize_indels = stand_indels()
         )
-
-        if (req(input$get_musica_object)) {
-          shinyjs::show(id = "download_musica")
-        } else {
-          shinyjs::hide(id = "download_musica")
-        }
-        shinybusy::hide_spinner()
-        showNotification("Musica Object successfully created! ")
-      } else {
-        shinyalert("Error: Please import files first in the Import section!")
-      }
+      }, warning = function(w) {
+        showNotification(conditionMessage(w), type = "warning")
+        invokeRestart("muffleWarning")
+      })
+      # Set only once the object is created, as later tabs read it
+      vals$genome <- input$GenomeSelect
+      shinyjs::show(id = "download_musica")
+      showNotification("Musica Object successfully created! ")
+    }, error = function(cond) {
+      shinyalert::shinyalert(title = "Error", text = conditionMessage(cond),
+                             type = "error")
     })
-  },
-  error = function(cond) {
-    shinyalert::shinyalert(title = "Error", text = cond$message)
-  },
-  warning = function(cond) {
-    shinyalert::shinyalert(title = "Error", text = cond$message)
+    shinybusy::hide_spinner()
   })
 
   output$musica_console <- renderPrint({
