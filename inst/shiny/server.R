@@ -380,7 +380,11 @@ server <- function(input, output, session) {
   #Adding the create musica funcionality
   observeEvent(input$get_musica_object, {
     if (is.null(vals$var)) {
-      shinyalert("Error: Please import files first in the Import section!")
+      shinyalert::shinyalert(
+        title = "Error",
+        text = "Please import files first in the Import section.",
+        type = "error"
+      )
       return()
     }
     shinybusy::show_spinner()

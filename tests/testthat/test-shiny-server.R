@@ -586,3 +586,19 @@ test_that("Build Tables says when the genome doesn't fit the table (#293)", {
     expect_identical(output$table_genome_warning, "")
   })
 })
+
+test_that("creating a musica object before importing shows an error", {
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    session$setInputs(GenomeSelect = "hg38")
+    session$setInputs(get_musica_object = 1)
+    expect_false(session$isClosed())
+    expect_null(vals$musica)
+  })
+  expect_length(alerts(), 1)
+  expect_identical(alerts()[[1]]$title, "Error")
+  expect_identical(alerts()[[1]]$type, "error")
+  expect_identical(alerts()[[1]]$text,
+                   "Please import files first in the Import section.")
+})
