@@ -303,6 +303,31 @@ test_that("add_samp_annot() gives NA, with a warning, to missing samples", {
                    c("a", "b", "c", rep(NA, length(samples) - 3)))
 })
 
+test_that("add_samp_annot(convert = TRUE) keeps number-like IDs (#287)", {
+  data(musica_sbs96)
+  counts <- get_count_table(tables(musica_sbs96)$SBS96)[, 1:3]
+  colnames(counts) <- c("001", "002", "100000")
+  musica <- create_musica_from_counts(counts, "SBS96")
+  annot_file <- withr::local_tempfile(fileext = ".txt")
+  writeLines(c("id\tgroup\tscore\tflag",
+               "100000\tA\t3\tTRUE",
+               "001\tB\t1.5\tFALSE",
+               "002\t\t\tTRUE"), annot_file)
+  # Every column read as character, so the sample IDs keep their form
+  annot <- utils::read.delim(annot_file, colClasses = "character")
+
+  result <- add_samp_annot(musica, annot, "id", convert = TRUE)
+  expect_identical(samp_annot(result)$Samples, c("001", "002", "100000"))
+  expect_identical(samp_annot(result)$group, c("B", "", "A"))
+  expect_identical(samp_annot(result)$score, c(1.5, NA, 3))
+  expect_identical(samp_annot(result)$flag, c(FALSE, TRUE, TRUE))
+
+  # The default leaves the columns as they are
+  result <- add_samp_annot(musica, annot, "id")
+  expect_identical(samp_annot(result)$score, c("1.5", "", "3"))
+  expect_identical(samp_annot(result)$flag, c("FALSE", "TRUE", "TRUE"))
+})
+
 test_that("add_samp_annot() checks its inputs", {
   data(musica_sbs96)
   samples <- sample_names(musica_sbs96)
@@ -325,6 +350,11 @@ test_that("add_samp_annot() checks its inputs", {
                regexp = "'Samples' column")
   expect_error(add_samp_annot(musica_sbs96, annot["id"], "id"),
                regexp = "no columns other than 'sample_column'")
+  for (bad_convert in list(NA, "yes", c(TRUE, FALSE))) {
+    expect_error(add_samp_annot(musica_sbs96, annot, "id",
+                                convert = bad_convert),
+                 regexp = "'convert' must be TRUE or FALSE")
+  }
   # A column that fails gives only the error, not the missing-sample warning
   list_annot <- data.frame(id = samples[-1])
   list_annot$group <- I(as.list(seq_len(nrow(list_annot))))
