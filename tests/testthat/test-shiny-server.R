@@ -566,3 +566,23 @@ test_that("warnings from creating a musica object are notifications (#292)", {
   expect_identical(notes(), c("Some variants were dropped",
                               "Musica Object successfully created! "))
 })
+
+test_that("Build Tables says when the genome doesn't fit the table (#293)", {
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    session$setInputs(select_table = "SBS192 - Transcript_Strand",
+                      table_genome_list = "mm10")
+    hint <- output$table_genome_warning
+    expect_identical(hint, paste0("SBS192 - Transcript_Strand needs one of ",
+                                  "these reference genomes: hg19, hg38."))
+    # Create Table gives the same message
+    session$setInputs(add_table = 1)
+    expect_identical(alerts()[[1]]$text, hint)
+    session$setInputs(table_genome_list = "hg38")
+    expect_identical(output$table_genome_warning, "")
+    session$setInputs(select_table = "SBS96", table_genome_list = "mm10")
+    expect_identical(output$table_genome_warning, "")
+  })
+})

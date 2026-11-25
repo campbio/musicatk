@@ -1137,20 +1137,32 @@ server <- function(input, output, session) {
     )
   }
 
+  # For a "Select Count Table" choice and a reference genome: a message
+  # saying which genomes the table needs, or NULL when the genome fits. The
+  # hint under the genome list and the Create Table alert both use it.
+  table_genome_problem <- function(choice, genome) {
+    builds <- supported_genomes(table_choice(choice)$strand_type)
+    if (isTRUE(genome %in% builds)) {
+      return(NULL)
+    }
+    paste0(choice, " needs one of these reference genomes: ",
+           paste(builds, collapse = ", "), ".")
+  }
+
+  output$table_genome_warning <- renderText({
+    req(input$select_table)
+    table_genome_problem(input$select_table, input$table_genome_list)
+  })
+
   # Event listener for add table button.
   observeEvent(input$add_table, {
-    choice <- table_choice(input$select_table)
-    table_name <- choice$name
+    table_name <- table_choice(input$select_table)$name
     # Check the genome first, so an unsupported one isn't found only after
     # the overwrite prompt
-    builds <- supported_genomes(choice$strand_type)
-    if (!isTRUE(input$table_genome_list %in% builds)) {
-      shinyalert::shinyalert(
-        title = "Error",
-        text = paste0(input$select_table, " needs one of these reference ",
-                      "genomes: ", paste(builds, collapse = ", "), "."),
-        type = "error"
-      )
+    problem <- table_genome_problem(input$select_table,
+                                    input$table_genome_list)
+    if (!is.null(problem)) {
+      shinyalert::shinyalert(title = "Error", text = problem, type = "error")
       return()
     }
     if (table_name %in% names(extract_count_tables(vals$musica))) {
