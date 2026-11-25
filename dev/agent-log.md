@@ -786,3 +786,11 @@ while the import list now comes from `supported_genomes()`. The choices
 could also be limited to `supported_genomes(strand_type)` for the selected
 table, which would make the #293 hint and the Create Table genome alert
 unnecessary.
+
+### 3. The import genome tooltip is out of date
+
+`inst/shiny/ui_musica.R` describes the genome list as "Full genome build
+versions of different organisms", but since #292 it offers only hg19,
+hg38, mm9 and mm10. The fix was left out of #292's PR because CI lints
+changed files in full, and this file has 26 existing lints; fix it with
+or after that file's lint cleanup.

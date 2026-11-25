@@ -40,8 +40,7 @@ shiny_panel_musica <- fluidPage(
            hr(),
            #Adding help tooltips
            bsTooltip("genome_list",
-                     paste("Genome build of the variants: hg19 or hg38",
-                           "(human), mm9 or mm10 (mouse)"),
+                     "Full genome build versions of different organisms",
                      placement = "bottom", trigger = "hover",
                      options = NULL),
            bsTooltip("ref_chr",
