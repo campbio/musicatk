@@ -59,15 +59,29 @@ supported_genomes <- function(strand_type = NULL) {
   if (is.null(strand_type)) {
     return(names(.genome_aliases()))
   }
-  strand_types <- c("Transcript_Strand", "Replication_Strand")
+  strand_data <- .strand_data()
   if (!(is.character(strand_type) && length(strand_type) == 1 &&
-          strand_type %in% strand_types)) {
+          strand_type %in% names(strand_data))) {
     stop(
       "strand_type must be NULL, \"Transcript_Strand\" or ",
       "\"Replication_Strand\"."
     )
   }
-  c("hg19", "hg38")
+  names(strand_data[[strand_type]])
+}
+
+# The bundled strand data for each build, by strand type: a TxDb package,
+# whose TxDb has the package's name, or a musicatk data set. The one list
+# of builds with strand data, for supported_genomes() and the annotation
+# functions.
+.strand_data <- function() {
+  list(
+    Transcript_Strand = c(
+      hg19 = "TxDb.Hsapiens.UCSC.hg19.knownGene",
+      hg38 = "TxDb.Hsapiens.UCSC.hg38.knownGene"
+    ),
+    Replication_Strand = c(hg19 = "rep_range", hg38 = "rep_range_hg38")
+  )
 }
 
 # The lowercase names accepted for each build that select_genome() loads

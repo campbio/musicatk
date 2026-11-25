@@ -474,3 +474,18 @@ test_that("Create Table without a genome shows an alert", {
   expect_length(alerts(), 1)
   expect_match(alerts()[[1]]$text, "genomes: hg19, hg38, mm9, mm10\\.$")
 })
+
+test_that("a confirmed overwrite doesn't also show a warning (#223)", {
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    session$setInputs(select_table = "SBS96", table_genome_list = "hg38")
+    session$setInputs(add_table = 1)
+    session$setInputs(confirmOverwrite = 1)
+    expect_false(session$isClosed())
+  })
+  expect_length(alerts(), 0)
+  expect_identical(notes(), "Table created.")
+})

@@ -243,16 +243,12 @@ annotate_transcript_strand <- function(musica, genome_build,
                                        build_table = TRUE) {
   # Anything but a TxDb or a build in supported_genomes() gets the error
   build <- .genome_build(genome_build)
+  txdb_pkgs <- .strand_data()$Transcript_Strand
   if (methods::is(genome_build, "TxDb")) {
     genes <- genes(genome_build)
-  } else if (identical(build, "hg19")) {
-    genes <- genes(
-      TxDb.Hsapiens.UCSC.hg19.knownGene
-    )
-  } else if (identical(build, "hg38")) {
-    genes <- genes(
-      TxDb.Hsapiens.UCSC.hg38.knownGene
-    )
+  } else if (build %in% names(txdb_pkgs)) {
+    pkg <- txdb_pkgs[[build]]
+    genes <- genes(getExportedValue(pkg, pkg))
   } else {
     stop(
       "Please select ",
@@ -484,11 +480,8 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
     return(rep_range)
   }
   build <- .genome_build(rep_range)
-  name <- if (identical(build, "hg19")) {
-    "rep_range"
-  } else if (identical(build, "hg38")) {
-    "rep_range_hg38"
-  } else {
+  data_sets <- .strand_data()$Replication_Strand
+  if (!build %in% names(data_sets)) {
     stop(
       "Replication strand data is bundled for ",
       paste(supported_genomes("Replication_Strand"), collapse = " and "),
@@ -497,5 +490,5 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
     )
   }
   # The lazy-loaded copy, so the .rda isn't read again on every call
-  getExportedValue("musicatk", name)
+  getExportedValue("musicatk", data_sets[[build]])
 }

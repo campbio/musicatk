@@ -1126,21 +1126,27 @@ server <- function(input, output, session) {
     }
   })
 
+  # For a "Select Count Table" choice: the name of the table it makes, the
+  # modality and strand_type for build_standard_table()
+  table_choice <- function(choice) {
+    switch(choice,
+      "SBS192 - Transcript_Strand" = list(name = "SBS192_Trans",
+                                          modality = "SBS192",
+                                          strand_type = "Transcript_Strand"),
+      "SBS192 - Replication_Strand" = list(name = "SBS192_Rep",
+                                           modality = "SBS192",
+                                           strand_type = "Replication_Strand"),
+      list(name = choice, modality = choice, strand_type = NULL)
+    )
+  }
+
   # Event listener for add table button.
   observeEvent(input$add_table, {
-    table_name <- input$select_table
-    strand_type <- NULL
-    if (table_name == "SBS192 - Replication_Strand") {
-      table_name <- "SBS192_Rep"
-      strand_type <- "Replication_Strand"
-    }
-    if (table_name == "SBS192 - Transcript_Strand") {
-      table_name <- "SBS192_Trans"
-      strand_type <- "Transcript_Strand"
-    }
+    choice <- table_choice(input$select_table)
+    table_name <- choice$name
     # Check the genome first, so an unsupported one isn't found only after
     # the overwrite prompt
-    builds <- supported_genomes(strand_type)
+    builds <- supported_genomes(choice$strand_type)
     if (!isTRUE(input$table_genome_list %in% builds)) {
       shinyalert::shinyalert(
         title = "Error",
@@ -1166,20 +1172,12 @@ server <- function(input, output, session) {
 
   # Function used in server.R to add counts tables.
   add_tables <- function(input, vals) {
-    table_name <- input$select_table
-    strand_type <- NULL
     if (input$select_table != "Custom") {
-      # Check inputs for SBS192
-      if (input$select_table == "SBS192 - Transcript_Strand") {
-        table_name <- "SBS192"
-        strand_type <- "Transcript_Strand"
-      }
-      if (input$select_table == "SBS192 - Replication_Strand") {
-        table_name <- "SBS192"
-        strand_type <- "Replication_Strand"
-      }
+      choice <- table_choice(input$select_table)
+      table_name <- choice$modality
+      strand_type <- choice$strand_type
       # Warnings, such as variants whose motifs weren't counted, are shown
-      # as notifications
+      # as notifications. Overwriting isn't, as the user confirmed it.
       tryCatch({
         withCallingHandlers({
           if (identical(strand_type, "Transcript_Strand")) {
@@ -1196,7 +1194,9 @@ server <- function(input, output, session) {
                                strand_type = strand_type,
                                overwrite = TRUE)
         }, warning = function(w) {
-          showNotification(conditionMessage(w), type = "warning")
+          if (!inherits(w, "musicatk_overwrite_warning")) {
+            showNotification(conditionMessage(w), type = "warning")
+          }
           invokeRestart("muffleWarning")
         })
         shiny::showNotification("Table created.")
