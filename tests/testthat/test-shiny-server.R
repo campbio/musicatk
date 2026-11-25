@@ -384,3 +384,80 @@ test_that("annotation upload shows missing samples in a notification", {
   expect_match(notes()[1], "1 sample has no row")
   expect_identical(notes()[2], "Annotations have been added")
 })
+
+test_that("unsupported strand genomes are rejected before overwriting (#227)", {
+  for (choice in c("SBS192 - Transcript_Strand",
+                   "SBS192 - Replication_Strand")) {
+    modals <- record_modals()
+    alerts <- record_shinyalerts()
+    musica_strand <- musica_sbs96
+    # Stands in for an existing SBS192 table, so the overwrite prompt applies
+    tables(musica_strand)[["SBS192_Trans"]] <- tables(musica_strand)$SBS96
+    tables(musica_strand)[["SBS192_Rep"]] <- tables(musica_strand)$SBS96
+    env <- shiny_server_env()
+    shiny::testServer(env$server, {
+      vals$musica <- musica_strand
+      session$setInputs(select_table = choice, table_genome_list = "mm10")
+      session$setInputs(add_table = 1)
+      expect_false(session$isClosed())
+      expect_identical(vals$musica, musica_strand)
+    })
+    expect_identical(modals(), 0)
+    expect_length(alerts(), 1)
+    expect_match(alerts()[[1]]$text, "hg19 and hg38 only")
+  }
+})
+
+test_that("an unsupported strand genome is rejected for a new table (#223)", {
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    session$setInputs(select_table = "SBS192 - Transcript_Strand",
+                      table_genome_list = "mm9")
+    session$setInputs(add_table = 1)
+    expect_false(session$isClosed())
+    expect_identical(vals$musica, musica_sbs96)
+  })
+  expect_length(alerts(), 1)
+  expect_match(alerts()[[1]]$text, "hg19 and hg38 only")
+})
+
+test_that("a supported strand genome still builds the table", {
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    session$setInputs(select_table = "SBS192 - Replication_Strand",
+                      table_genome_list = "hg38")
+    session$setInputs(add_table = 1)
+    expect_false(session$isClosed())
+    expect_true("SBS192_Rep" %in% names(tables(vals$musica)))
+  })
+  expect_length(alerts(), 0)
+  expect_true("Table created." %in% notes())
+})
+
+test_that("warnings from building a table are shown as notifications (#223)", {
+  local_mocked_bindings(
+    build_standard_table = function(...) {
+      warning("2 of 9 variants have motifs not in the SBS96 schema")
+    },
+    .package = "musicatk"
+  )
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    session$setInputs(select_table = "DBS", table_genome_list = "hg38")
+    session$setInputs(add_table = 1)
+    expect_false(session$isClosed())
+  })
+  expect_length(alerts(), 0)
+  expect_identical(
+    notes(),
+    c("2 of 9 variants have motifs not in the SBS96 schema", "Table created.")
+  )
+})

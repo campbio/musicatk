@@ -63,3 +63,18 @@ record_notifications <- function(env = parent.frame()) {
   )
   function() notes
 }
+
+# Replaces shiny::showModal() for the calling test and returns a function
+# that gives the number of modals shown so far.
+record_modals <- function(env = parent.frame()) {
+  n <- 0
+  testthat::local_mocked_bindings(
+    showModal = function(...) {
+      n <<- n + 1
+      invisible(NULL)
+    },
+    .package = "shiny",
+    .env = env
+  )
+  function() n
+}

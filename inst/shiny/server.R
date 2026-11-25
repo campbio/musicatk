@@ -1129,11 +1129,26 @@ server <- function(input, output, session) {
   # Event listener for add table button.
   observeEvent(input$add_table, {
     table_name <- input$select_table
+    strand_type <- NULL
     if (table_name == "SBS192 - Replication_Strand") {
       table_name <- "SBS192_Rep"
+      strand_type <- "Replication_Strand"
     }
     if (table_name == "SBS192 - Transcript_Strand") {
       table_name <- "SBS192_Trans"
+      strand_type <- "Transcript_Strand"
+    }
+    # Check the genome first, so an unsupported one isn't found only after
+    # the overwrite prompt
+    builds <- supported_genomes(strand_type)
+    if (!input$table_genome_list %in% builds) {
+      shinyalert::shinyalert(
+        title = "Error",
+        text = paste0(input$select_table, " is available for ",
+                      paste(builds, collapse = " and "), " only."),
+        type = "error"
+      )
+      return()
     }
     if (table_name %in% names(extract_count_tables(vals$musica))) {
       # Modal to confirm overwrite of existing table
@@ -1163,20 +1178,27 @@ server <- function(input, output, session) {
         table_name <- "SBS192"
         strand_type <- "Replication_Strand"
       }
+      # Warnings, such as variants whose motifs weren't counted, are shown
+      # as notifications
       tryCatch({
-        if (identical(strand_type, "Transcript_Strand")) {
-          annotate_transcript_strand(vals$musica, input$table_genome_list,
-                                     build_table = FALSE)
-        }
-        if (identical(strand_type, "Replication_Strand")) {
-          annotate_replication_strand(vals$musica, input$table_genome_list,
-                                      build_table = FALSE)
-        }
-        build_standard_table(vals$musica,
-                             select_genome(input$table_genome_list),
-                             modality = table_name,
-                             strand_type = strand_type,
-                             overwrite = TRUE)
+        withCallingHandlers({
+          if (identical(strand_type, "Transcript_Strand")) {
+            annotate_transcript_strand(vals$musica, input$table_genome_list,
+                                       build_table = FALSE)
+          }
+          if (identical(strand_type, "Replication_Strand")) {
+            annotate_replication_strand(vals$musica, input$table_genome_list,
+                                        build_table = FALSE)
+          }
+          build_standard_table(vals$musica,
+                               select_genome(input$table_genome_list),
+                               modality = table_name,
+                               strand_type = strand_type,
+                               overwrite = TRUE)
+        }, warning = function(w) {
+          showNotification(conditionMessage(w), type = "warning")
+          invokeRestart("muffleWarning")
+        })
         shiny::showNotification("Table created.")
       }, error = function(cond) {
         shinyalert::shinyalert(title = "Error", text = cond$message)
