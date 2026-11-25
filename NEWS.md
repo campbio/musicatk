@@ -1,3 +1,10 @@
+# musicatk 2.7.31 (2026-11-25)
+* New `supported_genomes()` lists the genome builds that can be given by name: those `select_genome()` loads, or with `strand_type`, those with bundled transcript or replication strand data (hg19 and hg38) (#227).
+* `annotate_transcript_strand()` accepts the same build names as `select_genome()`, `annotate_replication_strand()` and `compare_cosmic_v3()`: any case, and `"GRCh37"`/`"GRCh38"`. Before, it took only `"19"`, `"hg19"`, `"38"` and `"hg38"`, so `"HG38"` or `"GRCh38"` gave an error (#223). All four now share one build-name parser. `select_genome()` given more than one build gives its own error instead of "the condition has length > 1". Results don't change.
+* Shiny app fixes; results don't change.
+  * Create Table checks the reference genome before asking whether to overwrite an existing table. Choosing mm9 or mm10 with an SBS192 strand table shows an alert that it is available for hg19 and hg38 only; before, the app first asked to overwrite and then failed (#227).
+  * Warnings from building a table, such as variants with motifs that weren't counted, are shown as notifications. Before, the app didn't show them (#223).
+
 # musicatk 2.7.30 (2026-11-24)
 * `add_samp_annot()` gains `convert = FALSE`. With `convert = TRUE`, character columns other than `sample_column` are converted to logical, integer, numeric or character with `type.convert()`, as `read.table()` does. Use it on a table read with `colClasses = "character"`, which keeps sample names such as `"001"` as they are in the file (#287).
 * Shiny app: uploaded sample annotations keep sample names that look like numbers. Before, the file was read with `read.delim()`, which read `"001"` as 1, so those samples didn't match and got `NA`, with a notification, or the upload failed when none matched (#287). The other columns get the same types as before. Spaces around fields, such as after a comma, are now dropped from every column; before, only fields read as numbers lost them.
