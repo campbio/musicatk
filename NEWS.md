@@ -1,3 +1,9 @@
+# musicatk 2.7.32 (2026-11-25)
+* Shiny app fixes; results don't change.
+  * Create Table asks before replacing an existing DBS78 or IND83 table. Before, choosing DBS or Indel replaced the table without asking, because the app looked for tables named "DBS" and "Indel" (#291).
+  * The import tab's genome list offers only hg19, hg38, mm9 and mm10, the builds `select_genome()` loads, as listed by `supported_genomes()`. Before, it also offered hg18 and every `BSgenome::available.genomes()` build, and choosing one of those ended the session. An error while creating the musica object is now shown as an alert instead of ending the session, and its warnings are shown as notifications (#292).
+  * The Build Tables tab says under the reference genome list when the selected table needs another genome, such as hg19 or hg38 for the SBS192 strand tables, before Create Table is clicked (#293).
+
 # musicatk 2.7.31 (2026-11-25)
 * New `supported_genomes()` lists the genome builds that can be given by name: those `select_genome()` loads, or with `strand_type`, those with bundled transcript or replication strand data (hg19 and hg38) (#227).
 * `annotate_transcript_strand()` accepts the same build names as `select_genome()`, `annotate_replication_strand()` and `compare_cosmic_v3()`: any case, and `"GRCh37"`/`"GRCh38"`. Before, it took only `"19"`, `"hg19"`, `"38"` and `"hg38"`, so `"HG38"` or `"GRCh38"` gave an error (#223). All four now share one build-name parser. `select_genome()` given more than one build gives its own error instead of "the condition has length > 1". Results don't change.
