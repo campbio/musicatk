@@ -741,3 +741,26 @@ Filed as #264.
 without matching the exposure rows to the signature columns by name. The
 benchmark corrections keep them in the same order, but a hand-built
 `result_model` with reordered rows would get a wrong error.
+
+---
+
+## 2026-11-25 — Review of fix/genome-build-names (#223, #227)
+
+Found by the spec review subagent; outside that PR's scope.
+
+### 1. Shiny Create Table never offers to overwrite DBS or Indel tables
+
+The add-table observer in `inst/shiny/server.R` compares the selected name
+with the existing table names, but "DBS" and "Indel" are stored as "DBS78"
+and "IND83", so the overwrite prompt never shows for them and the table is
+replaced without asking.
+
+### 2. `table_genome_warning` is never rendered
+
+`inst/shiny/ui_tables.R` has `textOutput("table_genome_warning")`, but the
+server never sets `output$table_genome_warning`.
+
+### 3. The import tab offers hg18, which `select_genome()` rejects
+
+The import genome list in `inst/shiny/server.R` includes "hg18". It could
+be built from `supported_genomes()`.

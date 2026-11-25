@@ -535,7 +535,13 @@ build_standard_table <- function(musica, g, modality, strand_type = NULL,
         " already exists, use overwrite to continue."
       ))
     } else {
-      warning(paste0("Overwriting counts table: ", modality))
+      # Classed so callers that already confirmed, such as the Shiny app,
+      # can leave it out
+      overwriting <- warningCondition(
+        paste0("Overwriting counts table: ", modality),
+        class = "musicatk_overwrite_warning"
+      )
+      warning(overwriting)
     }
   }
 }

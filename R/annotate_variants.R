@@ -214,8 +214,10 @@ subset_variant_by_type <- function(tab, type) {
 #' Add transcript strand annotation to SBS variants (defined in genes only)
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param genome_build Which genome build to use: hg19, hg38, or a custom TxDb
-#' object
+#' @param genome_build Which genome build to use: \code{"hg19"} (also
+#' \code{"19"} or \code{"GRCh37"}), \code{"hg38"} (also \code{"38"} or
+#' \code{"GRCh38"}), in any case, or a custom TxDb object. See
+#' \code{\link{supported_genomes}}.
 #' @param build_table Automatically build a table from this annotation
 #' @details Each SBS in a gene gets \code{"T"} (transcribed) or \code{"U"}
 #' (untranscribed): the strand its pyrimidine (C or T) reference base is
@@ -239,23 +241,20 @@ subset_variant_by_type <- function(tab, type) {
 #' @export
 annotate_transcript_strand <- function(musica, genome_build,
                                        build_table = TRUE) {
-  # Anything but a TxDb or a single build name gets the error below
-  build <- ""
-  if (is.atomic(genome_build) && length(genome_build) == 1) {
-    build <- as.character(genome_build)
-  }
+  # Anything but a TxDb or a build in supported_genomes() gets the error
+  build <- .genome_build(genome_build)
+  txdb_pkgs <- .strand_data()$Transcript_Strand
   if (methods::is(genome_build, "TxDb")) {
     genes <- genes(genome_build)
-  } else if (build %in% c("19", "hg19")) {
-    genes <- genes(
-      TxDb.Hsapiens.UCSC.hg19.knownGene
-    )
-  } else if (build %in% c("38", "hg38")) {
-    genes <- genes(
-      TxDb.Hsapiens.UCSC.hg38.knownGene
-    )
+  } else if (build %in% names(txdb_pkgs)) {
+    pkg <- txdb_pkgs[[build]]
+    genes <- genes(getExportedValue(pkg, pkg))
   } else {
-    stop("Please select hg19, hg38, or provide a TxDb object")
+    stop(
+      "Please select ",
+      paste(supported_genomes("Transcript_Strand"), collapse = ", "),
+      ", or provide a TxDb object"
+    )
   }
 
   dat <- variants(musica)
@@ -480,21 +479,16 @@ annotate_replication_strand <- function(musica, rep_range, build_table = TRUE) {
   if (methods::is(rep_range, "GRanges")) {
     return(rep_range)
   }
-  build <- ""
-  if (is.atomic(rep_range) && length(rep_range) == 1) {
-    build <- tolower(as.character(rep_range))
-  }
-  name <- if (build %in% c("19", "hg19", "grch37")) {
-    "rep_range"
-  } else if (build %in% c("38", "hg38", "grch38")) {
-    "rep_range_hg38"
-  } else {
+  build <- .genome_build(rep_range)
+  data_sets <- .strand_data()$Replication_Strand
+  if (!build %in% names(data_sets)) {
     stop(
-      "Replication strand data is bundled for hg19 and hg38 only. For ",
-      "another genome build, pass rep_range as a GRanges object.",
+      "Replication strand data is bundled for ",
+      paste(supported_genomes("Replication_Strand"), collapse = " and "),
+      " only. For another genome build, pass rep_range as a GRanges object.",
       call. = FALSE
     )
   }
   # The lazy-loaded copy, so the .rda isn't read again on every call
-  getExportedValue("musicatk", name)
+  getExportedValue("musicatk", data_sets[[build]])
 }

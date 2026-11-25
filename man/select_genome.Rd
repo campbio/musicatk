@@ -8,7 +8,9 @@ select_genome(x)
 }
 \arguments{
 \item{x}{Select the hg19 or hg38 human genome or the mm9 or mm10
-mouse genome in UCSC format}
+mouse genome in UCSC format. Case doesn't matter, and \code{"19"},
+\code{"GRCh37"}, \code{"38"}, \code{"GRCh38"}, \code{"GRCm38"} and
+\code{"MGSCv37"} are also accepted.}
 }
 \value{
 Returns BSgenome of given version
@@ -18,4 +20,7 @@ Helper function to load common human or mouse genomes
 }
 \examples{
 g <- select_genome(x = "hg38")
+}
+\seealso{
+\code{\link{supported_genomes}} lists the builds.
 }

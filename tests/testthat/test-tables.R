@@ -516,3 +516,16 @@ test_that("combine_count_tables() names the missing tables (#137)", {
     "tables that don't exist: nope.*Current table names are: SBS96"
   )
 })
+
+test_that("the overwrite warning has its own class", {
+  # So the Shiny app can leave it out after the user confirmed (#223)
+  data(dbs_musica)
+  warn <- tryCatch(
+    suppressMessages(
+      build_standard_table(dbs_musica, modality = "DBS78", overwrite = TRUE)
+    ),
+    warning = function(w) w
+  )
+  expect_s3_class(warn, "musicatk_overwrite_warning")
+  expect_identical(conditionMessage(warn), "Overwriting counts table: DBS78")
+})
