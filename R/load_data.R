@@ -4,21 +4,23 @@ NULL
 #' Helper function to load common human or mouse genomes
 #'
 #' @param x Select the hg19 or hg38 human genome or the mm9 or mm10
-#' mouse genome in UCSC format
+#' mouse genome in UCSC format. Case doesn't matter, and \code{"19"},
+#' \code{"GRCh37"}, \code{"38"}, \code{"GRCh38"}, \code{"GRCm38"} and
+#' \code{"MGSCv37"} are also accepted.
 #' @return Returns BSgenome of given version
+#' @seealso \code{\link{supported_genomes}} lists the builds.
 #' @examples
 #' g <- select_genome(x = "hg38")
 #' @export
 select_genome <- function(x) {
-  # Choose genome build version
-  # Keep for now as a helper function
-  if (tolower(x) %in% c("hg19", "19", "grch37")) {
+  build <- .genome_build(x)
+  if (identical(build, "hg19")) {
     g <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
-  } else if (tolower(x) %in% c("hg38", "38", "grch38")) {
+  } else if (identical(build, "hg38")) {
     g <- BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38
-  } else if (tolower(x) %in% c("mm10", "grcm38")) {
+  } else if (identical(build, "mm10")) {
     g <- BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10
-  } else if (tolower(x) %in% c("mm9", "mgscv37")) {
+  } else if (identical(build, "mm9")) {
     g <- BSgenome.Mmusculus.UCSC.mm9::BSgenome.Mmusculus.UCSC.mm9
   } else {
     stop(
@@ -29,6 +31,65 @@ select_genome <- function(x) {
     )
   }
   return(g)
+}
+
+#' Genome builds that can be selected by name
+#'
+#' Lists the genome builds that musicatk functions accept by name, for all
+#' count tables or for the strand annotation of SBS192 tables. Other builds
+#' can still be used by passing a \code{BSgenome}, \code{TxDb} or
+#' \code{GRanges} object instead of a name.
+#'
+#' @param strand_type \code{NULL} (the default) for the builds that
+#' \code{\link{select_genome}} loads, which can build the SBS96, DBS78 and
+#' IND83 tables. \code{"Transcript_Strand"} for the builds with bundled
+#' gene annotation, used by \code{\link{annotate_transcript_strand}}, or
+#' \code{"Replication_Strand"} for the builds with bundled replication
+#' strand data, used by \code{\link{annotate_replication_strand}}. These
+#' are the \code{strand_type} values of
+#' \code{\link{build_standard_table}}.
+#' @return A character vector of UCSC build names. Each function also
+#' accepts these names in any case, and the aliases listed in
+#' \code{\link{select_genome}}.
+#' @examples
+#' supported_genomes()
+#' supported_genomes("Transcript_Strand")
+#' @export
+supported_genomes <- function(strand_type = NULL) {
+  if (is.null(strand_type)) {
+    return(c("hg19", "hg38", "mm9", "mm10"))
+  }
+  strand_types <- c("Transcript_Strand", "Replication_Strand")
+  if (!(is.character(strand_type) && length(strand_type) == 1 &&
+          strand_type %in% strand_types)) {
+    stop(
+      "strand_type must be NULL, \"Transcript_Strand\" or ",
+      "\"Replication_Strand\"."
+    )
+  }
+  c("hg19", "hg38")
+}
+
+# The UCSC name of a genome build given by name, such as "hg38" for "38",
+# "GRCh38" or "HG38", or NA when x isn't a single known build name. The one
+# parser for build names, so every function takes the same ones.
+.genome_build <- function(x) {
+  if (!(is.atomic(x) && length(x) == 1) || is.na(x)) {
+    return(NA_character_)
+  }
+  aliases <- list(
+    hg19 = c("hg19", "19", "grch37"),
+    hg38 = c("hg38", "38", "grch38"),
+    mm9 = c("mm9", "mgscv37"),
+    mm10 = c("mm10", "grcm38")
+  )
+  build <- tolower(as.character(x))
+  for (name in names(aliases)) {
+    if (build %in% aliases[[name]]) {
+      return(name)
+    }
+  }
+  NA_character_
 }
 
 #' Extract variants from mutliple objects

@@ -9,8 +9,10 @@ annotate_transcript_strand(musica, genome_build, build_table = TRUE)
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{genome_build}{Which genome build to use: hg19, hg38, or a custom TxDb
-object}
+\item{genome_build}{Which genome build to use: \code{"hg19"} (also
+\code{"19"} or \code{"GRCh37"}), \code{"hg38"} (also \code{"38"} or
+\code{"GRCh38"}), in any case, or a custom TxDb object. See
+\code{\link{supported_genomes}}.}
 
 \item{build_table}{Automatically build a table from this annotation}
 }

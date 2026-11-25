@@ -393,18 +393,11 @@ compare_cosmic_v3 <- function(musica, model_id, sample_type, modality = "SBS96",
 
 # Normalize a build label the same way select_genome() does
 .cosmic_build <- function(genome_build) {
-  if (is.numeric(genome_build)) {
-    genome_build <- as.character(genome_build)
-  }
-  build <- if (is.character(genome_build) && length(genome_build) == 1) {
-    tolower(genome_build)
-  } else {
-    ""
-  }
-  if (build %in% c("hg19", "19", "grch37")) {
+  build <- .genome_build(genome_build)
+  if (identical(build, "hg19")) {
     return("GRCh37")
   }
-  if (build %in% c("hg38", "38", "grch38")) {
+  if (identical(build, "hg38")) {
     return("GRCh38")
   }
   stop("genome_build must be one of hg19 (GRCh37) or hg38 (GRCh38)")

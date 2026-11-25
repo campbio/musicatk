@@ -46,6 +46,7 @@ reference:
   desc: Functions to create and subset musica objects
   contents:
   - '`select_genome`'
+  - '`supported_genomes`'
   - '`create_musica_from_variants`'  
   - '`create_musica_from_counts`' 
   - '`subset_musica_by_annotation`'
