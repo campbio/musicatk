@@ -489,3 +489,23 @@ test_that("a confirmed overwrite doesn't also show a warning (#223)", {
   expect_length(alerts(), 0)
   expect_identical(notes(), "Table created.")
 })
+
+test_that("Create Table asks before replacing a DBS or Indel table (#291)", {
+  musica_existing <- dbs_musica
+  # Stands in for an existing IND83 table, so the overwrite prompt applies
+  tables(musica_existing)[["IND83"]] <- tables(musica_existing)$SBS96
+  for (choice in c("DBS", "Indel")) {
+    modals <- record_modals()
+    notes <- record_notifications()
+    env <- shiny_server_env()
+    shiny::testServer(env$server, {
+      vals$musica <- musica_existing
+      session$setInputs(select_table = choice, table_genome_list = "hg38")
+      session$setInputs(add_table = 1)
+      expect_false(session$isClosed())
+      expect_identical(vals$musica, musica_existing)
+    })
+    expect_identical(modals(), 1)
+    expect_length(notes(), 0)
+  }
+})

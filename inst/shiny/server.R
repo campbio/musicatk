@@ -1136,6 +1136,8 @@ server <- function(input, output, session) {
       "SBS192 - Replication_Strand" = list(name = "SBS192_Rep",
                                            modality = "SBS192",
                                            strand_type = "Replication_Strand"),
+      "DBS" = list(name = "DBS78", modality = "DBS", strand_type = NULL),
+      "Indel" = list(name = "IND83", modality = "Indel", strand_type = NULL),
       list(name = choice, modality = choice, strand_type = NULL)
     )
   }
