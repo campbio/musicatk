@@ -1150,7 +1150,7 @@ server <- function(input, output, session) {
   }
 
   output$table_genome_warning <- renderText({
-    req(input$select_table)
+    req(input$select_table, input$table_genome_list)
     table_genome_problem(input$select_table, input$table_genome_list)
   })
 
