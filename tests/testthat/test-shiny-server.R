@@ -404,7 +404,7 @@ test_that("unsupported strand genomes are rejected before overwriting (#227)", {
     })
     expect_identical(modals(), 0)
     expect_length(alerts(), 1)
-    expect_match(alerts()[[1]]$text, "hg19 and hg38 only")
+    expect_match(alerts()[[1]]$text, "genomes: hg19, hg38\\.$")
   }
 })
 
@@ -420,7 +420,7 @@ test_that("an unsupported strand genome is rejected for a new table (#223)", {
     expect_identical(vals$musica, musica_sbs96)
   })
   expect_length(alerts(), 1)
-  expect_match(alerts()[[1]]$text, "hg19 and hg38 only")
+  expect_match(alerts()[[1]]$text, "genomes: hg19, hg38\\.$")
 })
 
 test_that("a supported strand genome still builds the table", {
@@ -460,4 +460,17 @@ test_that("warnings from building a table are shown as notifications (#223)", {
     notes(),
     c("2 of 9 variants have motifs not in the SBS96 schema", "Table created.")
   )
+})
+
+test_that("Create Table without a genome shows an alert", {
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    session$setInputs(select_table = "SBS96")
+    session$setInputs(add_table = 1)
+    expect_false(session$isClosed())
+  })
+  expect_length(alerts(), 1)
+  expect_match(alerts()[[1]]$text, "genomes: hg19, hg38, mm9, mm10\\.$")
 })

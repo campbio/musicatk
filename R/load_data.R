@@ -57,7 +57,7 @@ select_genome <- function(x) {
 #' @export
 supported_genomes <- function(strand_type = NULL) {
   if (is.null(strand_type)) {
-    return(c("hg19", "hg38", "mm9", "mm10"))
+    return(names(.genome_aliases()))
   }
   strand_types <- c("Transcript_Strand", "Replication_Strand")
   if (!(is.character(strand_type) && length(strand_type) == 1 &&
@@ -70,6 +70,16 @@ supported_genomes <- function(strand_type = NULL) {
   c("hg19", "hg38")
 }
 
+# The lowercase names accepted for each build that select_genome() loads
+.genome_aliases <- function() {
+  list(
+    hg19 = c("hg19", "19", "grch37"),
+    hg38 = c("hg38", "38", "grch38"),
+    mm9 = c("mm9", "mgscv37"),
+    mm10 = c("mm10", "grcm38")
+  )
+}
+
 # The UCSC name of a genome build given by name, such as "hg38" for "38",
 # "GRCh38" or "HG38", or NA when x isn't a single known build name. The one
 # parser for build names, so every function takes the same ones.
@@ -77,12 +87,7 @@ supported_genomes <- function(strand_type = NULL) {
   if (!(is.atomic(x) && length(x) == 1) || is.na(x)) {
     return(NA_character_)
   }
-  aliases <- list(
-    hg19 = c("hg19", "19", "grch37"),
-    hg38 = c("hg38", "38", "grch38"),
-    mm9 = c("mm9", "mgscv37"),
-    mm10 = c("mm10", "grcm38")
-  )
+  aliases <- .genome_aliases()
   build <- tolower(as.character(x))
   for (name in names(aliases)) {
     if (build %in% aliases[[name]]) {

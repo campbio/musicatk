@@ -1141,11 +1141,11 @@ server <- function(input, output, session) {
     # Check the genome first, so an unsupported one isn't found only after
     # the overwrite prompt
     builds <- supported_genomes(strand_type)
-    if (!input$table_genome_list %in% builds) {
+    if (!isTRUE(input$table_genome_list %in% builds)) {
       shinyalert::shinyalert(
         title = "Error",
-        text = paste0(input$select_table, " is available for ",
-                      paste(builds, collapse = " and "), " only."),
+        text = paste0(input$select_table, " needs one of these reference ",
+                      "genomes: ", paste(builds, collapse = ", "), "."),
         type = "error"
       )
       return()
