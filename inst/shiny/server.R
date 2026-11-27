@@ -503,6 +503,9 @@ server <- function(input, output, session) {
         vals$musica_upload <- readRDS(input$musica_file$datapath)
         vals$musica <- vals$musica_upload
       }
+      # An uploaded object doesn't record its build, so the genome of an
+      # object created earlier no longer applies
+      vals$genome <- NULL
 
       # check if any result objects present
       if (length(result_list(vals$musica)) > 0) {
@@ -1152,6 +1155,15 @@ server <- function(input, output, session) {
     paste0(choice, " needs one of these reference genomes: ",
            paste(builds, collapse = ", "), ".")
   }
+
+  # The builds select_genome() loads, starting at the genome the musica
+  # object was created with. Uploaded objects don't record their build, so
+  # the list stays selectable and starts at hg38 for them.
+  output$table_genome_ui <- renderUI({
+    selected <- if (is.null(vals$genome)) "hg38" else vals$genome
+    selectInput("table_genome_list", "Reference genome:", supported_genomes(),
+                selected = selected, width = "100%")
+  })
 
   output$table_genome_warning <- renderText({
     req(input$select_table, input$table_genome_list)

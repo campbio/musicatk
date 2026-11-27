@@ -20,9 +20,8 @@ shiny_panel_tables <- fluidPage(
                                    "SBS192 - Replication_Strand", "DBS",
                                    "Indel"),
                     selected = 1),
-        selectInput("table_genome_list", "Reference genome:",
-                    list("hg38", "hg19", "mm9", "mm10"),
-                    width = "100%"),
+        # Rendered by the server, which selects the import genome
+        uiOutput("table_genome_ui"),
         textOutput("table_genome_warning"),
         uiOutput("allow_table"),
         shinybusy::use_busy_spinner(spin = "double-bounce"),
