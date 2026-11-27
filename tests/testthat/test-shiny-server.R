@@ -489,3 +489,116 @@ test_that("a confirmed overwrite doesn't also show a warning (#223)", {
   expect_length(alerts(), 0)
   expect_identical(notes(), "Table created.")
 })
+
+test_that("Create Table asks before replacing a DBS or Indel table (#291)", {
+  musica_existing <- dbs_musica
+  # Stands in for an existing IND83 table, so the overwrite prompt applies
+  tables(musica_existing)[["IND83"]] <- tables(musica_existing)$SBS96
+  for (choice in c("DBS", "Indel")) {
+    modals <- record_modals()
+    notes <- record_notifications()
+    env <- shiny_server_env()
+    shiny::testServer(env$server, {
+      vals$musica <- musica_existing
+      session$setInputs(select_table = choice, table_genome_list = "hg38")
+      session$setInputs(add_table = 1)
+      expect_false(session$isClosed())
+      expect_identical(vals$musica, musica_existing)
+    })
+    expect_identical(modals(), 1)
+    expect_length(notes(), 0)
+  }
+})
+
+test_that("the import genome list offers only selectable builds (#292)", {
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    html <- as.character(output$genome_list$html)
+    values <- regmatches(html, gregexpr("value=\"[^\"]+\"", html))[[1]]
+    expect_setequal(gsub("value=|\"", "", values), supported_genomes())
+    expect_match(html, "value=\"hg38\" selected")
+  })
+})
+
+test_that("a failed musica object creation shows an alert (#292)", {
+  alerts <- record_shinyalerts()
+  spinners <- character()
+  local_mocked_bindings(
+    show_spinner = function(...) spinners <<- c(spinners, "show"),
+    hide_spinner = function(...) spinners <<- c(spinners, "hide"),
+    .package = "shinybusy"
+  )
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$var <- variants(musica_sbs96_tiny)
+    # select_genome() doesn't load hg18
+    session$setInputs(GenomeSelect = "hg18")
+    session$setInputs(get_musica_object = 1)
+    expect_false(session$isClosed())
+    expect_null(vals$musica)
+    expect_null(vals$genome)
+  })
+  expect_length(alerts(), 1)
+  expect_match(alerts()[[1]]$text, "not currently selectable")
+  expect_identical(spinners, c("show", "hide"))
+})
+
+test_that("warnings from creating a musica object are notifications (#292)", {
+  local_mocked_bindings(
+    create_musica_from_variants = function(...) {
+      warning("Some variants were dropped")
+      musica_sbs96_tiny
+    },
+    .package = "musicatk"
+  )
+  notes <- record_notifications()
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$var <- variants(musica_sbs96_tiny)
+    session$setInputs(GenomeSelect = "hg38")
+    session$setInputs(get_musica_object = 1)
+    expect_false(session$isClosed())
+    expect_identical(vals$musica, musica_sbs96_tiny)
+    expect_identical(vals$genome, "hg38")
+  })
+  expect_length(alerts(), 0)
+  expect_identical(notes(), c("Some variants were dropped",
+                              "Musica Object successfully created! "))
+})
+
+test_that("Build Tables says when the genome doesn't fit the table (#293)", {
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$musica <- musica_sbs96
+    session$setInputs(select_table = "SBS192 - Transcript_Strand",
+                      table_genome_list = "mm10")
+    hint <- output$table_genome_warning
+    expect_identical(hint, paste0("SBS192 - Transcript_Strand needs one of ",
+                                  "these reference genomes: hg19, hg38."))
+    # Create Table gives the same message
+    session$setInputs(add_table = 1)
+    expect_identical(alerts()[[1]]$text, hint)
+    session$setInputs(table_genome_list = "hg38")
+    expect_identical(output$table_genome_warning, "")
+    session$setInputs(select_table = "SBS96", table_genome_list = "mm10")
+    expect_identical(output$table_genome_warning, "")
+  })
+})
+
+test_that("creating a musica object before importing shows an error", {
+  alerts <- record_shinyalerts()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    session$setInputs(GenomeSelect = "hg38")
+    session$setInputs(get_musica_object = 1)
+    expect_false(session$isClosed())
+    expect_null(vals$musica)
+  })
+  expect_length(alerts(), 1)
+  expect_identical(alerts()[[1]]$title, "Error")
+  expect_identical(alerts()[[1]]$type, "error")
+  expect_identical(alerts()[[1]]$text,
+                   "Please import files first in the Import section.")
+})

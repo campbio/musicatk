@@ -764,3 +764,33 @@ server never sets `output$table_genome_warning`.
 
 The import genome list in `inst/shiny/server.R` includes "hg18". It could
 be built from `supported_genomes()`.
+
+---
+
+## 2026-11-25 — Review of fix/shiny-table-genome (#291, #292, #293)
+
+Found by `/code-review`; outside that PR's scope.
+
+### 1. Build Tables doesn't use the genome the musica object was made with
+
+The Build Tables genome list (`inst/shiny/ui_tables.R`) always starts at
+hg38, whatever was chosen on the import tab (`vals$genome`). A user who
+imports mm10 variants and builds SBS96 without changing it gets a table
+built against hg38, with no warning. The list could default to
+`vals$genome`, or Create Table could warn when they differ.
+
+### 2. The Build Tables genome list is hard-coded
+
+`inst/shiny/ui_tables.R` lists `"hg38", "hg19", "mm9", "mm10"` by hand,
+while the import list now comes from `supported_genomes()`. The choices
+could also be limited to `supported_genomes(strand_type)` for the selected
+table, which would make the #293 hint and the Create Table genome alert
+unnecessary.
+
+### 3. The import genome tooltip is out of date
+
+`inst/shiny/ui_musica.R` describes the genome list as "Full genome build
+versions of different organisms", but since #292 it offers only hg19,
+hg38, mm9 and mm10. The fix was left out of #292's PR because CI lints
+changed files in full, and this file has 26 existing lints; fix it with
+or after that file's lint cleanup.
