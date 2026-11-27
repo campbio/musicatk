@@ -1,5 +1,7 @@
 # musicatk 2.7.33 (2026-11-27)
-* Shiny app fix: the Build Tables tab's reference genome list starts at the genome the musica object was created with on the import tab. Before, it always started at hg38, so a table built from hg19, mm9 or mm10 variants without changing the list used the hg38 sequence, and for hg19 the hg38 transcript or replication strand data. Tables built that way now change. For an uploaded musica object, whose build isn't recorded, the list starts at hg38 as before. The list offers the builds from `supported_genomes()`, like the import tab's list (#295).
+* Shiny app fixes. Tables built with the default genome, and the Predict and Compare defaults after an upload, can change.
+  * The Build Tables tab's reference genome list starts at the genome the musica object was created with on the import tab. Before, it always started at hg38, so a table built from hg19, mm9 or mm10 variants without changing the list used the hg38 sequence, and for hg19 the hg38 transcript or replication strand data. For an uploaded musica object, whose build isn't recorded, the list starts at hg38 as before. The list offers the builds from `supported_genomes()`, like the import tab's list (#295).
+  * Uploading a musica object clears the genome of an object created earlier in the session. Before, an upload after creating an hg38 object kept hg38 as the default for the Predict tab's COSMIC set and the Compare tab's genome build; they now use their defaults for an unknown build, GRCh37 and hg19, as they do when an object is uploaded first (#295).
 
 # musicatk 2.7.32 (2026-11-25)
 * Shiny app fixes; results don't change.

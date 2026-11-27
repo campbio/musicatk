@@ -799,3 +799,19 @@ versions of different organisms", but since #292 it offers only hg19,
 hg38, mm9 and mm10. The fix was left out of #292's PR because CI lints
 changed files in full, and this file has 26 existing lints; fix it with
 or after that file's lint cleanup.
+
+---
+
+## 2026-11-27 — Review of fix/shiny-table-genome-default (#295)
+
+Found by `/code-review`; outside that PR's scope.
+
+### 1. Uploading a file that isn't a musica object ends the session
+
+The `input$upload_musica` observer in `inst/shiny/server.R` has no
+`tryCatch()` and doesn't check that the file holds a musica object. A
+corrupt `.rds` makes `readRDS()` error, and an `.rds` holding, say, a
+data.frame is stored in `vals$musica` before `result_list()` errors on it;
+either way the session ends. The upload could check
+`methods::is(x, "musica")` and show errors as alerts, as Create Musica
+does since #292.
