@@ -1158,8 +1158,12 @@ server <- function(input, output, session) {
 
   # The builds select_genome() loads, starting at the genome the musica
   # object was created with. Uploaded objects don't record their build, so
-  # the list stays selectable and starts at hg38 for them.
+  # the list stays selectable and starts at hg38 for them. It is rendered
+  # again after each create or upload, even when vals$genome is unchanged,
+  # so a genome chosen for an earlier object doesn't carry over.
   output$table_genome_ui <- renderUI({
+    input$get_musica_object
+    input$upload_musica
     selected <- if (is.null(vals$genome)) "hg38" else vals$genome
     selectInput("table_genome_list", "Reference genome:", supported_genomes(),
                 selected = selected, width = "100%")
