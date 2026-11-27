@@ -13,8 +13,9 @@ NULL
 #' Uses a genome object to find context and add it to the variant table
 #'
 #' @param musica Input samples
-#' @param g A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from.
+#' @param g A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+#' which genome reference the variants and their coordinates were derived
+#' from.
 #' @param flank_start Start of flank area to add, can be positive or negative
 #' @param flank_end End of flank area to add, can be positive or negative
 #' @param build_table Automatically build a table using the annotation and add

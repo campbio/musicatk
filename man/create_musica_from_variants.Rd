@@ -25,8 +25,9 @@ create_musica_from_variants(
 \item{x}{A data.table, matrix, or data.frame that contains columns with
 the variant information.}
 
-\item{genome}{A \linkS4class{BSgenome} object indicating which genome
-reference the variants and their coordinates were derived from.}
+\item{genome}{A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+which genome reference the variants and their coordinates were derived
+from.}
 
 \item{check_ref_chromosomes}{Whether to peform a check to ensure that
 the chromosomes in the \code{variant} object match the reference

@@ -1,8 +1,9 @@
 #' Uses a genome object to find context and generate standard SBS96 tables
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param g A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from.
+#' @param g A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+#' which genome reference the variants and their coordinates were derived
+#' from.
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created SBS96 count table object
 #' @keywords internal
@@ -136,8 +137,9 @@ create_sbs96_table <- function(musica, g, overwrite = FALSE) {
 #' using transcript strand
 #'
 #' @param musica Input samples
-#' @param g A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from.
+#' @param g A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+#' which genome reference the variants and their coordinates were derived
+#' from.
 #' @param strand_type Transcript_Strand or Replication_Strand
 #' @param overwrite Overwrite existing count table
 #' @return Returns the created SBS192 count table object built using either
@@ -447,8 +449,9 @@ rc <- function(dna) {
 #' in the middle of a repeat or a microhomology.
 #'
 #' @param musica A \code{\linkS4class{musica}} object.
-#' @param g A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from.
+#' @param g A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+#' which genome reference the variants and their coordinates were derived
+#' from.
 #' @param modality Modality of table to build. One of \code{"SBS96"},
 #' \code{"SBS192"}, \code{"DBS"}, or \code{"Indel"}.
 #' @param strand_type Strand type to use in SBS192 schema. One of

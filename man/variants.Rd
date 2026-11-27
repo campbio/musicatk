@@ -27,7 +27,7 @@ function.}
 the \link{create_musica_from_variants} or \link{create_musica_from_counts}
 function}
 
-\item{value}{A \code{\linkS4class{data.table}} or \code{data.frame} of
+\item{value}{A \code{\link[data.table]{data.table}} or \code{data.frame} of
 mutational variants and variant-level annotations. A \code{data.frame} is
 converted to a \code{data.table}.}
 }
