@@ -773,6 +773,8 @@ Found by `/code-review`; outside that PR's scope.
 
 ### 1. Build Tables doesn't use the genome the musica object was made with
 
+Filed as #295; fixed in 2.7.33.
+
 The Build Tables genome list (`inst/shiny/ui_tables.R`) always starts at
 hg38, whatever was chosen on the import tab (`vals$genome`). A user who
 imports mm10 variants and builds SBS96 without changing it gets a table
@@ -780,6 +782,9 @@ built against hg38, with no warning. The list could default to
 `vals$genome`, or Create Table could warn when they differ.
 
 ### 2. The Build Tables genome list is hard-coded
+
+Filed as #295; fixed in 2.7.33. The choices are not limited per
+table, so the #293 hint and alert stay.
 
 `inst/shiny/ui_tables.R` lists `"hg38", "hg19", "mm9", "mm10"` by hand,
 while the import list now comes from `supported_genomes()`. The choices
