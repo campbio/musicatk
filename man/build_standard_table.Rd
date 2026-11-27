@@ -17,8 +17,9 @@ build_standard_table(
 \arguments{
 \item{musica}{A \code{\linkS4class{musica}} object.}
 
-\item{g}{A \linkS4class{BSgenome} object indicating which genome
-reference the variants and their coordinates were derived from.}
+\item{g}{A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+which genome reference the variants and their coordinates were derived
+from.}
 
 \item{modality}{Modality of table to build. One of \code{"SBS96"},
 \code{"SBS192"}, \code{"DBS"}, or \code{"Indel"}.}

@@ -26,7 +26,9 @@ extract_variants(
 }
 \arguments{
 \item{inputs}{A vector or list of objects or file names. Objects can be
-\linkS4class{CollapsedVCF}, \linkS4class{ExpandedVCF}, \linkS4class{MAF},
+\link[VariantAnnotation:VCF-class]{CollapsedVCF},
+\link[VariantAnnotation:VCF-class]{ExpandedVCF},
+\link[maftools:MAF-class]{MAF},
 an object that inherits from \code{matrix} or \code{data.frame}, or
 character strings that denote the path to a vcf or maf file.}
 

@@ -10,8 +10,9 @@ create_sbs192_table(musica, g, strand_type, overwrite = FALSE)
 \arguments{
 \item{musica}{Input samples}
 
-\item{g}{A \linkS4class{BSgenome} object indicating which genome
-reference the variants and their coordinates were derived from.}
+\item{g}{A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+which genome reference the variants and their coordinates were derived
+from.}
 
 \item{strand_type}{Transcript_Strand or Replication_Strand}
 

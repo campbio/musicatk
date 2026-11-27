@@ -16,8 +16,9 @@ add_flank_to_variants(
 \arguments{
 \item{musica}{Input samples}
 
-\item{g}{A \linkS4class{BSgenome} object indicating which genome
-reference the variants and their coordinates were derived from.}
+\item{g}{A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+which genome reference the variants and their coordinates were derived
+from.}
 
 \item{flank_start}{Start of flank area to add, can be positive or negative}
 

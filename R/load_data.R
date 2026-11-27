@@ -124,7 +124,9 @@ supported_genomes <- function(strand_type = NULL) {
 #' will be ignored for these items.
 #'
 #' @param inputs A vector or list of objects or file names. Objects can be
-#' \linkS4class{CollapsedVCF}, \linkS4class{ExpandedVCF}, \linkS4class{MAF},
+#' \link[VariantAnnotation:VCF-class]{CollapsedVCF},
+#' \link[VariantAnnotation:VCF-class]{ExpandedVCF},
+#' \link[maftools:MAF-class]{MAF},
 #' an object that inherits from \code{matrix} or \code{data.frame}, or
 #' character strings that denote the path to a vcf or maf file.
 #' @param id A character vector the same length as \code{inputs} denoting
@@ -882,8 +884,9 @@ extract_variants_from_maf_file <- function(maf_file, extra_fields = NULL) {
 #'
 #' @param x A data.table, matrix, or data.frame that contains columns with
 #' the variant information.
-#' @param genome A \linkS4class{BSgenome} object indicating which genome
-#' reference the variants and their coordinates were derived from.
+#' @param genome A \link[BSgenome:BSgenome-class]{BSgenome} object indicating
+#' which genome reference the variants and their coordinates were derived
+#' from.
 #' @param check_ref_chromosomes Whether to peform a check to ensure that
 #' the chromosomes in the \code{variant} object match the reference
 #' chromosomes in the \code{genome} object. If there are mismatches, this
