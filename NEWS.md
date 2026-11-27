@@ -1,3 +1,6 @@
+# musicatk 2.7.33 (2026-11-27)
+* Shiny app fix: the Build Tables tab's reference genome list starts at the genome the musica object was created with on the import tab. Before, it always started at hg38, so a table built from hg19, mm9 or mm10 variants without changing the list used the hg38 sequence, and for hg19 the hg38 transcript or replication strand data. Tables built that way now change. For an uploaded musica object, whose build isn't recorded, the list starts at hg38 as before. The list offers the builds from `supported_genomes()`, like the import tab's list (#295).
+
 # musicatk 2.7.32 (2026-11-25)
 * Shiny app fixes; results don't change.
   * Create Table asks before replacing an existing DBS78 or IND83 table. Before, choosing DBS or Indel replaced the table without asking, because the app looked for tables named "DBS" and "Indel" (#291).
