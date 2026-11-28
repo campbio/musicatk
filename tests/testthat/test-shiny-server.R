@@ -587,6 +587,99 @@ test_that("Build Tables says when the genome doesn't fit the table (#293)", {
   })
 })
 
+# The value of the selected option in a rendered selectInput()
+selected_option <- function(ui) {
+  html <- as.character(ui$html)
+  sub("value=\"([^\"]+)\" selected", "\\1",
+      regmatches(html, regexpr("value=\"[^\"]+\" selected", html)))
+}
+
+test_that("the Build Tables genome list offers the selectable builds (#295)", {
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    html <- as.character(output$table_genome_ui$html)
+    values <- regmatches(html, gregexpr("value=\"[^\"]+\"", html))[[1]]
+    expect_identical(gsub("value=|\"", "", values), supported_genomes())
+    # With no import genome, hg38 is selected
+    expect_identical(selected_option(output$table_genome_ui), "hg38")
+  })
+})
+
+test_that("Build Tables selects the genome of the created object (#295)", {
+  local_mocked_bindings(
+    create_musica_from_variants = function(...) musica_sbs96_tiny,
+    .package = "musicatk"
+  )
+  record_notifications()
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$var <- variants(musica_sbs96_tiny)
+    expect_identical(selected_option(output$table_genome_ui), "hg38")
+    session$setInputs(GenomeSelect = "mm10")
+    session$setInputs(get_musica_object = 1)
+    expect_identical(selected_option(output$table_genome_ui), "mm10")
+  })
+})
+
+test_that("re-creating an object with the same genome resets the list (#295)", {
+  local_mocked_bindings(
+    create_musica_from_variants = function(...) musica_sbs96_tiny,
+    .package = "musicatk"
+  )
+  record_notifications()
+  # The rendered HTML is the same each time, so renders are counted: a
+  # choice made on the client is only replaced by rendering the list again
+  renders <- 0
+  select_input <- shiny::selectInput
+  local_mocked_bindings(
+    selectInput = function(...) {
+      if (identical(list(...)[[1]], "table_genome_list")) {
+        renders <<- renders + 1
+      }
+      select_input(...)
+    },
+    .package = "shiny"
+  )
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    vals$var <- variants(musica_sbs96_tiny)
+    session$setInputs(GenomeSelect = "mm10")
+    session$setInputs(get_musica_object = 1)
+    output$table_genome_ui
+    before <- renders
+    # The user picks another genome, then creates the object again
+    session$setInputs(table_genome_list = "hg19")
+    session$setInputs(get_musica_object = 2)
+    expect_identical(selected_option(output$table_genome_ui), "mm10")
+    expect_gt(renders, before)
+  })
+})
+
+test_that("an uploaded musica object resets the import genome (#295)", {
+  local_mocked_bindings(
+    create_musica_from_variants = function(...) musica_sbs96_tiny,
+    .package = "musicatk"
+  )
+  record_notifications()
+  path <- withr::local_tempfile(fileext = ".rds")
+  saveRDS(musica_sbs96_tiny, path)
+  env <- shiny_server_env()
+  shiny::testServer(env$server, {
+    # An object created earlier with mm10
+    vals$var <- variants(musica_sbs96_tiny)
+    session$setInputs(GenomeSelect = "mm10")
+    session$setInputs(get_musica_object = 1)
+    expect_identical(selected_option(output$table_genome_ui), "mm10")
+    session$setInputs(musica_file = list(name = "object.rds",
+                                         datapath = path))
+    session$setInputs(upload_musica = 1)
+    expect_identical(vals$musica, musica_sbs96_tiny)
+    # The uploaded object's build isn't known
+    expect_null(vals$genome)
+    expect_identical(selected_option(output$table_genome_ui), "hg38")
+  })
+})
+
 test_that("creating a musica object before importing shows an error", {
   alerts <- record_shinyalerts()
   env <- shiny_server_env()
